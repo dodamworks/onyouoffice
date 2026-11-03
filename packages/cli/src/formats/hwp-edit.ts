@@ -263,6 +263,9 @@ const HWP_GROUPS: { name: string; summary: string; ops: string[] }[] = [
       'list_fields',
       'list_notes',
       'read_style',
+      'read_note_settings',
+      'read_page_setup',
+      'read_formatting',
     ],
   },
   {
@@ -273,7 +276,15 @@ const HWP_GROUPS: { name: string; summary: string; ops: string[] }[] = [
   {
     name: 'format',
     summary: 'only the properties given change',
-    ops: ['format_text', 'format_paragraph', 'create_style', 'edit_style'],
+    ops: [
+      'format_text',
+      'format_paragraph',
+      'format_look',
+      'create_style',
+      'edit_style',
+      'set_page_setup',
+      'set_note_settings',
+    ],
   },
   {
     name: 'tables',
