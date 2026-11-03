@@ -83,9 +83,19 @@ const OPEN_WITH = [
     register: 'GenOfficeRegisterOpenWithEpub',
     unregister: 'GenOfficeUnregisterOpenWithEpub',
   },
+  {
+    // a Visio drawing opens as a new diagram: the diagram icon
+    ext: 'vsdx',
+    progId: 'OnyouOffice.VSDXDrawing',
+    define: 'GENOFFICE_VSDX_PROGID',
+    name: 'VSDX Drawing',
+    icon: 'diagram.ico',
+    register: 'GenOfficeRegisterOpenWithVsdx',
+    unregister: 'GenOfficeUnregisterOpenWithVsdx',
+  },
 ] as const
 
-describe('the .hwp / .hwpx / .xmind / .epub "Open with" registration', () => {
+describe('the .hwp / .hwpx / .xmind / .epub / .vsdx "Open with" registration', () => {
   it('covers only launchable extensions', () => {
     for (const { ext } of OPEN_WITH) expect(LAUNCHABLE_EXTS).toContain(ext)
   })
@@ -208,6 +218,9 @@ describe('the OnyouOffice Default-apps registration', () => {
     }
     for (const { ext, progId } of OPEN_WITH) expect(declared.get(ext), `.${ext}`).toBe(progId)
     expect(declared.get('odt')).toBe('OnyouOffice.OpenDocumentText')
+    // both diagram extensions land on the one ProgId the Windows list registers
+    expect(declared.get('drawio')).toBe('OnyouOffice.Diagram')
+    expect(declared.get('dio')).toBe('OnyouOffice.Diagram')
   })
 
   it('never advertises a type whose ProgId Windows does not register', () => {
