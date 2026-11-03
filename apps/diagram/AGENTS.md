@@ -67,6 +67,9 @@
 
 - Headless diagram exports use `headless-main.ts` and `exportDiagramHeadless`.
   `createDiagramHiddenWindow` supplies the isolated renderer for those operations.
+- Before opening a tab, `open-check.ts` validates diagram bytes through the model
+  and Visio containers through the existing ZIP gate. `setDiagramOpenFailedHook`
+  closes a failed import tab and reports its localized refusal to the shell.
 
 - 셸이 할 일: 특권 스킴 목록에 `DRAWIO_SCHEME_PRIVILEGE`를 더한다. `configureDiagramRuntime({ preloadPath, rendererUrl, rendererFile, drawioDir?, bridgeFile?, packaged?, newDocumentDir?, writeNewDocument? })`로 경로를 준다(묶음은 기본으로 `<모듈 출력>/drawio`, 다리는 `<모듈 출력>/bridge/bridge.js`). 기본 세션의 `installRendererProtocol`에 `diagram`을 더한다(파티션 쪽은 이 모듈이 등록한다). 복구 저장소의 편집기 목록에 `diagram`을 더한다.
 - 내보내는 함수: `createDiagramView`, `requestDiagramSave`, `requestDiagramClose`, `diagramSaveToPath`, `diagramIsDirty`, `diagramFilePath`, `diagramFileRenamed`, `diagramTabIdentity`, `discardDiagramRecovery`, `diagramRecoveryIdentity`, `writeDiagramCopiesNow`, `openDiagramFileWithDecision`, `openDiagramUntitledCopy`, `queueDiagramSeedFor`, `sendDiagramMenuCommand`, `sendDiagramExportRequest`, `sendDiagramPrintRequest`, `setDiagramFileSavedHook`, `setDiagramRecoveryTitleHook`, `setDiagramHelpHook`, `diagramRequestLog`, 상수 `DIAGRAM_PARTITION`, `DRAWIO_SCHEME_PRIVILEGE`. 앱 안 MCP용으로 `mcp-queries.ts`의 `diagramReadText`, `diagramReadPage`, `diagramApplyOps`.
