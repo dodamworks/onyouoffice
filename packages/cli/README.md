@@ -115,6 +115,14 @@ ranges, available ids, sheet names, usage lines) come back as fields in
 `detail` rather than only inside the message. Exit codes: `0` ok, `1` usage,
 `2` file, `3` conversion failed, `4` app not available.
 
+## Diagrams
+
+Use `onyouoffice diagram read file.drawio --json` to inspect pages, shapes and
+edges. Apply operations with `onyouoffice diagram apply file.drawio --ops ops.json`
+or create a diagram with `onyouoffice create --type drawio --mermaid flow.mmd --out flow.drawio`.
+Read `onyouoffice guide diagram` before preparing operations. Diagram conversion,
+Mermaid insertion and writes to `.drawio.svg` or `.drawio.png` require the app.
+
 ## Template merge
 
 `onyouoffice merge <template> --data <values> --out <file>` fills `{{key}}`

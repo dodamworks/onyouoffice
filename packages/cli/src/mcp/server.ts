@@ -68,6 +68,12 @@ const GUIDES: { uri: string; name: string; argv: string[]; description: string }
     description: 'every hwp_apply / create_hwp op with its fields',
   },
   {
+    uri: 'onyouoffice://guide/diagram',
+    name: 'Diagram ops reference',
+    argv: ['guide', 'diagram'],
+    description: 'every diagram_apply / create_drawio op with its fields',
+  },
+  {
     uri: 'onyouoffice://guide/slides',
     name: 'PowerPoint ops reference',
     argv: ['guide', 'slides'],
