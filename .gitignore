@@ -63,3 +63,5 @@ _scratch-*
 # Optional downloaded authoring helpers; project-owned skills remain versioned.
 /.agents/skills/crafting-effective-readmes/
 /.agents/skills/commit-work/
+# draw.io release downloaded and verified by vendor/drawio/bundle.mjs
+/vendor/drawio/.cache/
