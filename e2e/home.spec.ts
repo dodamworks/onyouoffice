@@ -8,7 +8,7 @@ test.describe('home screen', () => {
     try {
       await expect(page.locator('.home-hero')).toBeVisible()
       // the quick-create cards, the "Open file" browse card and the PDF tools card
-      await expect(page.locator('.quick-card')).toHaveCount(10)
+      await expect(page.locator('.quick-card')).toHaveCount(11)
       await expect(page.locator('.quick-card .quick-title')).toHaveText([
         'Open file',
         'Document',
@@ -20,6 +20,7 @@ test.describe('home screen', () => {
         'Markdown',
         'HTML',
         'Mind Map',
+        'Diagram',
       ])
       // the agent is not a document to make: it sits in the sidebar, under Knowledge Vault
       // and the project folders (decision 0088)
