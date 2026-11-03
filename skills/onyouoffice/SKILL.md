@@ -76,6 +76,7 @@ and `onyouoffice diagram apply file.drawio --ops ops.json` to edit them. Create 
 diagram with `onyouoffice create --type drawio --mermaid flow.mmd --out flow.drawio`.
 Diagram conversion, Mermaid insertion and writes to `.drawio.svg` or `.drawio.png`
 require the app. Existing path, overwrite and external-data rules still apply.
+Exporting all diagram pages writes a separate output file for each page.
 
 ## Which command
 
