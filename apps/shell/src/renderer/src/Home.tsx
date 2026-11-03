@@ -6,6 +6,8 @@ import type {
   ReactElement,
 } from 'react'
 import { KbAskPanel } from './KbAskPanel'
+import { useHomeKinds } from './SettingsHomeKinds'
+import { visibleHomeKinds } from '../../shared/home-kinds'
 import brandSymbol from './assets/brand-symbol-small.svg'
 import iconDocx from './assets/file-docx.svg'
 import iconXlsx from './assets/file-xlsx.svg'
@@ -1184,6 +1186,7 @@ export function Home({
 }) {
   const i18n = useI18n()
   const { t, lang } = i18n
+  const [homeKinds] = useHomeKinds()
   // ── Paged list state (rows loaded for the current view + filter) ──
   const [entries, setEntries] = useState<RecentEntry[]>([])
   /** total count under the current view + filter (not just the loaded rows) */
@@ -2070,14 +2073,27 @@ export function Home({
   ]
 
   function renderQuickCards() {
-    const cards = NEW_ITEMS.map((item) => (
+    const allItems = [
+      ...NEW_ITEMS,
+      {
+        ext: 'pdfTools',
+        title: t('pdfToolsCard'),
+        sub: t('pdfToolsCardSub'),
+        action: () => window.aiOfficePdfToolsHome.open(),
+      },
+    ]
+    const items = visibleHomeKinds(homeKinds).flatMap((kind) => {
+      const item = allItems.find((entry) => entry.ext === kind)
+      return item ? [item] : []
+    })
+    const cards = items.map((item) => (
       <button
         key={item.ext}
         data-format={item.ext}
         className="quick-card"
         onClick={() => void item.action()}
       >
-        <FileBadge ext={item.ext} size={30} />
+        <FileBadge ext={item.ext === 'pdfTools' ? 'pdf' : item.ext} size={30} />
         <span className="quick-text">
           <span className="quick-title-row">
             <span className="quick-title">{item.title}</span>
@@ -2086,7 +2102,6 @@ export function Home({
         </span>
       </button>
     ))
-    const afterPdf = NEW_ITEMS.findIndex((item) => item.ext === 'pdf') + 1
     return (
       <div className="quick-cards">
         <div className="quick-open">
@@ -2100,17 +2115,7 @@ export function Home({
           </button>
           <SupportedFormatsInfo t={t} />
         </div>
-        {cards.slice(0, afterPdf)}
-        <button className="quick-card" onClick={() => void window.aiOfficePdfToolsHome.open()}>
-          <FileBadge ext="pdf" size={30} />
-          <span className="quick-text">
-            <span className="quick-title-row">
-              <span className="quick-title">{t('pdfToolsCard')}</span>
-            </span>
-            <span className="quick-sub">{t('pdfToolsCardSub')}</span>
-          </span>
-        </button>
-        {cards.slice(afterPdf)}
+        {cards}
       </div>
     )
   }

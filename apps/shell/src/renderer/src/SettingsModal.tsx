@@ -64,6 +64,7 @@ import type { AiCatalogEntry, DocTheme, UiTheme } from '../../shared/home-api'
 import { ProviderLogo } from './provider-logos'
 import { IntegrationsPane, skillUpdateDue } from './IntegrationsPane'
 import { AiSection } from './SettingsAiSection'
+import { HomeKindsField } from './SettingsHomeKinds'
 import { QuickLookField } from './SettingsQuickLook'
 import { ResultStoreField } from './SettingsResultStore'
 import { useSubscriptionConnection } from './subscription-client'
@@ -2159,6 +2160,7 @@ export function SettingsModal({
                     }}
                   />
                 </div>
+                <HomeKindsField />
                 <QuickLookField />
                 <ResultStoreField />
               </>
