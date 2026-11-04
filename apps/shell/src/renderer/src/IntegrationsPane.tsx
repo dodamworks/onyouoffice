@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31: install the bundled product skill without an upstream distribution dependency.
+// Modified by Onyou Office on 2026-10-31: install the bundled product skill without an upstream distribution dependency.
 import { MCP_SERVER_NAME, mcpLaunch, SKILL_NAME, type McpLaunch } from '@genoffice/cli/mcp-launch'
 import { PRODUCT_COMMAND } from '@genoffice/i18n'
 import { useCallback, useEffect, useState } from 'react'

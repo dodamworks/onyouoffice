@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-01: exclude local-only review, profile and tool artifacts.
+// Modified by Onyou Office on 2026-11-01: exclude local-only review, profile and tool artifacts.
 // Repo-wide lint config (lint only — no formatter, so no whole-repo format diff).
 // Rules are tuned so the current codebase passes cleanly; tighten incrementally.
 import js from '@eslint/js'

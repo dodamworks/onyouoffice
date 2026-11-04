@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * Project folders: the shared contract between the shell main process and every
  * renderer that talks to it (the nine editor AI panels, the home ask panel and

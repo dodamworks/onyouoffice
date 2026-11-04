@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync } from 'node:fs'
 import { basename, dirname, isAbsolute, join } from 'node:path'
 import { agentConfigDir, type AgentId } from './agent-skills'

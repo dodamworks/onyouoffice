@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { APP_BINARY_NAME, CLI_BUNDLE_FILE, CLI_COMMAND } from './names'
 
 export { MCP_SERVER_NAME, SKILL_NAME } from './names'

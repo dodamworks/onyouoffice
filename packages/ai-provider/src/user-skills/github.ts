@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * GitHub addresses and the only connections skills make: reading which commit
  * a branch points at, and downloading that commit's zip archive. Requests go

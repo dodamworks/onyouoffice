@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-01: use the product skill as the synthetic Markdown seed.
+// Modified by Onyou Office on 2026-11-01: use the product skill as the synthetic Markdown seed.
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'

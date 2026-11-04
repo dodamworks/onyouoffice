@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31: assert independent product display names and default paths.
+// Modified by Onyou Office on 2026-10-31: assert independent product display names and default paths.
 // @vitest-environment node
 /**
  * A skill template's copy in a new HWP tab (spec 5.7): the view reads the copy

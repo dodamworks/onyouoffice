@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-03: measure native markers without scrolling the editor.
+// Modified by Onyou Office on 2026-11-03: measure native markers without scrolling the editor.
 /**
  * Right-clicking a misspelled word in the document body lists Chromium's
  * suggestions at the top of the Docs context menu, and picking one replaces

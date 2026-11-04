@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * Skill names never read or shown from any source, compared without case
  * (spec 3.6): the upstream program's skill (this app reads nothing the

@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-01: exercise the independent product project folder.
+// Modified by Onyou Office on 2026-11-01: exercise the independent product project folder.
 import { existsSync } from 'node:fs'
 import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'

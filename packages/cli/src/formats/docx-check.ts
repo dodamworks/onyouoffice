@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import type { Block, FieldDisplay } from '@genoffice/docx-engine'
 import { PRODUCT_NAME } from '@genoffice/i18n'
 import { excerpt, PLACEHOLDER, type IssueDraft } from '../check'

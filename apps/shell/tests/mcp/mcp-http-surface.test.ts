@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createServer, get as httpGet, request as httpRequest } from 'node:http'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'

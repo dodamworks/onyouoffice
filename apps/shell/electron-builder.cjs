@@ -1,5 +1,5 @@
 // Modified by Onyou Office: relocate the Unicode source notice; retain its installed name.
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * electron-builder configuration (kept out of package.json "build" because it
  * computes values and carries the packaging hooks).

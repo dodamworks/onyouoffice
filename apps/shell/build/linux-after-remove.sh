@@ -1,5 +1,5 @@
 #!/bin/sh
-# Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+# Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 # deb/rpm post-remove: drop the onyouoffice symlink only on a real uninstall.
 # rpm runs the old package's %postun after the new %post during an upgrade
 # (with $1 = 1); deb passes "upgrade" there. Removing then would kill the

@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { randomUUID } from 'node:crypto'
 import { existsSync, rmSync, statSync } from 'node:fs'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'

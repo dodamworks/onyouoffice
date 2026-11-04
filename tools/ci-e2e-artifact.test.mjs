@@ -1,4 +1,4 @@
-// Added by Dodam on 2026-11-03: reject stale/cross-platform or incomplete builds.
+// Added by Onyou Office on 2026-11-03: reject stale/cross-platform or incomplete builds.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'

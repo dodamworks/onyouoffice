@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-01: retain upstream behavior with independent Onyou Office identity.
+// Modified by Onyou Office on 2026-11-01: retain upstream behavior with independent Onyou Office identity.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

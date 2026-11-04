@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-02 for the localized product image label.
+// Modified by Onyou Office on 2026-11-02 for the localized product image label.
 import { productName } from '@genoffice/i18n'
 import type {
   UpdateNoteBlock,

@@ -1,5 +1,5 @@
 import { readNickname, writeNickname } from './nickname'
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { execSync, spawn } from 'node:child_process'
 import {
   existsSync,

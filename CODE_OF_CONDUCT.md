@@ -1,4 +1,4 @@
-<!-- Modified by Dodam on 2026-11-04: route Onyou conduct reports to its maintainers. -->
+<!-- Modified by Onyou Office on 2026-11-04: route Onyou conduct reports to its maintainers. -->
 
 # Contributor Covenant Code of Conduct
 

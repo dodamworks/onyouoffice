@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * The skill copy an agent session gets (spec 6.1): only enabled skills and the
  * project's, which one keeps a shared name and what the others are called,

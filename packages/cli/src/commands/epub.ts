@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * `epub translate` and `epub status` (spec §9): the book translation job of
  * the EPUB editor from the command line, modelled on `pdf translate` and

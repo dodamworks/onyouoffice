@@ -1,5 +1,5 @@
 # Modified by Onyou Office on 2026-11-04: include privacy-boundary and release-skill regressions.
-# Modified by Dodam on 2026-11-03: share verified Electron builds without dropping test coverage.
+# Modified by Onyou Office on 2026-11-03: share verified Electron builds without dropping test coverage.
 name: CI
 
 # Every PR and main push receives a verified scope decision and final result.

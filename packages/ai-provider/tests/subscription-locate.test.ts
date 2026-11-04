@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * Finding the program to start. Layouts are built in temp dirs: nothing here
  * runs or looks for the CLIs installed on the machine.

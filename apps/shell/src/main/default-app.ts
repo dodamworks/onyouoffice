@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { execFile } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { homedir } from 'node:os'

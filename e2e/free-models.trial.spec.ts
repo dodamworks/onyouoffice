@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-01: an opt-in trial may only use this product settings.
+// Modified by Onyou Office on 2026-11-01: an opt-in trial may only use this product settings.
 /**
  * Live trial of one OpenRouter `:free` model on the Word editor's tool loop.
  * Not part of the suite: it needs a real key and spends that key's free daily

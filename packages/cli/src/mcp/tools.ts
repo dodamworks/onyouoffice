@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { z } from 'zod'
 import type { CommandRegistry, OptionDef } from '../registry'
 import type { McpMode } from './run'

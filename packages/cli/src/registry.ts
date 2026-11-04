@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import type { ParsedArgs } from './args'
 import { branded } from './names'
 import type { CommandResult, Warning } from './result'

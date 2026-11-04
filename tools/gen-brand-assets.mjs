@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-02 for colour, locale and theme brand assets.
+// Modified by Onyou Office on 2026-11-02 for colour, locale and theme brand assets.
 /**
  * Regenerates every file derived from the Onyou Office brand sources in
  * apps/shell/build/brand/:

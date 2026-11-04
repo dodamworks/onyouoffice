@@ -1,4 +1,4 @@
-; Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+; Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 ; Keeps the genoffice command line (resources\cli, holding genoffice.cmd and the
 ; extension-less genoffice for Git Bash) on the installing user's PATH for the
 ; lifetime of the install. The value is read and written unexpanded

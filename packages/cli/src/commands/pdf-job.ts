@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * What `pdf ai-read` and `pdf translate` share (spec §9, §10): the route the
  * requests go on, the estimate a run without --yes answers with, the refusal

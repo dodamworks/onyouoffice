@@ -6,7 +6,7 @@ metadata:
   cli: '>=0.9.0'
 ---
 
-<!-- Modified by Dodam on 2026-11-01 for the independent Onyou Office identity. -->
+<!-- Modified by Onyou Office on 2026-11-01 for the independent Onyou Office identity. -->
 
 # onyouoffice — Onyou Office from the terminal
 

@@ -1,4 +1,4 @@
-<!-- Modified by Dodam on 2026-11-01 for the independent Onyou Office identity. -->
+<!-- Modified by Onyou Office on 2026-11-01 for the independent Onyou Office identity. -->
 
 # @genoffice/cli
 
