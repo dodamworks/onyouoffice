@@ -146,6 +146,9 @@ describe('third-party license aggregation', () => {
     }
     expect(text).toContain('Copyright (c) 2021, Kil Hyung-jin')
     expect(text).toContain('3. Rust crates (rhwp HWP engine, compiled into rhwp_bg.wasm)')
+    expect(text).toContain(
+      readFileSync(join(root, 'docs/third-party/LICENSE-UNICODE.txt'), 'utf8').trim(),
+    )
   })
 })
 
@@ -162,7 +165,7 @@ describe('license files in the installer', () => {
     const shipped = new Map(config.extraResources.map((e) => [e.to, e.from]))
     expect(shipped.get('LICENSE.txt')).toBe('../../LICENSE')
     expect(shipped.get('NOTICE.txt')).toBe('../../NOTICE')
-    expect(shipped.get('LICENSE-UNICODE.txt')).toBe('../../LICENSE-UNICODE.txt')
+    expect(shipped.get('LICENSE-UNICODE.txt')).toBe('../../docs/third-party/LICENSE-UNICODE.txt')
     expect(shipped.get('THIRD-PARTY-NOTICES.txt')).toBe('build/THIRD-PARTY-NOTICES.txt')
     for (const to of ['LICENSE.txt', 'NOTICE.txt', 'LICENSE-UNICODE.txt']) {
       expect(existsSync(resolve(shellRoot, shipped.get(to)!)), to).toBe(true)
@@ -170,7 +173,11 @@ describe('license files in the installer', () => {
     // packaging asserts the three sources exist, as it does for the wasm files
     const builder = readFileSync(join(shellRoot, 'electron-builder.cjs'), 'utf8')
     const assertion = builder.slice(builder.indexOf('function assertExtraResourceSources'))
-    for (const rel of ['../../LICENSE', '../../NOTICE', '../../LICENSE-UNICODE.txt']) {
+    for (const rel of [
+      '../../LICENSE',
+      '../../NOTICE',
+      '../../docs/third-party/LICENSE-UNICODE.txt',
+    ]) {
       expect(assertion.slice(0, assertion.indexOf('}\n'))).toContain(`'${rel}'`)
     }
   })

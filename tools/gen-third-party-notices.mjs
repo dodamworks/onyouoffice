@@ -1,3 +1,4 @@
+// Modified by Onyou Office: read the unchanged Unicode notice from docs/third-party.
 /**
  * Aggregates licenses of third-party components shipped with the installer
  * into apps/shell/build/THIRD-PARTY-NOTICES.txt.
@@ -744,7 +745,7 @@ Unicode Character Database 17.0.0, EquivalentUnifiedIdeograph.txt
 https://www.unicode.org/Public/17.0.0/ucd/EquivalentUnifiedIdeograph.txt
 
 `
-out += readFileSync(join(ROOT, 'LICENSE-UNICODE.txt'), 'utf8').trim() + '\n'
+out += readFileSync(join(ROOT, 'docs/third-party/LICENSE-UNICODE.txt'), 'utf8').trim() + '\n'
 
 // Hancom's condition for using its published HWP format document; the wording is fixed
 out += hr('6. Hangul (HWP) document format and trademarks')
