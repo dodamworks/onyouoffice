@@ -1,12 +1,27 @@
 <!-- Modified by Onyou Office on 2026-11-04. -->
 
-# Onyou Office
+<p align="center">
+  <img src="../../../apps/shell/build/brand/app-icon.svg" alt="Onyou Office" width="88" height="88">
+</p>
 
-**為你打造的 AI 智慧代理辦公應用程式。**
+<h1 align="center">Onyou Office</h1>
+
+<p align="center"><strong>為你打造的 AI 智慧代理辦公應用程式。</strong></p>
+
+<p align="center">
+  <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+</p>
 
 開啟文件，說明想修改的內容，然後在同一個視窗繼續工作。Onyou Office 將文件編輯器與 AI 代理整合於桌面應用程式。可用 AI 起草、修改，也能自行編輯。應用程式免費且開源，AI 連線為選用。
 
-[English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · [हिन्दी](hi.md) · [Bahasa Indonesia](id.md) · [Italiano](it.md) · [日本語](ja.md) · [한국어](ko.md) · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · [Русский](ru.md) · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · **繁體中文**
+<details>
+<summary>選擇語言 · 21種語言</summary>
+
+[English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · [हिन्दी](hi.md) · [Bahasa Indonesia](id.md) · [Italiano](it.md) · [日本語](ja.md) · [한국어](ko.md) · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · [Русский](ru.md) · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · **繁體中文** <!-- lang-switcher -->
+
+</details>
 
 ## 在同一處處理文件
 

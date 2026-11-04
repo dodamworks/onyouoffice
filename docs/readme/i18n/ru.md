@@ -1,12 +1,27 @@
 <!-- Modified by Onyou Office on 2026-11-04. -->
 
-# Onyou Office
+<p align="center">
+  <img src="../../../apps/shell/build/brand/app-icon.svg" alt="Onyou Office" width="88" height="88">
+</p>
 
-**Ваш офис с ИИ-агентами.**
+<h1 align="center">Onyou Office</h1>
+
+<p align="center"><strong>Ваш офис с ИИ-агентами.</strong></p>
+
+<p align="center">
+  <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+</p>
 
 Откройте документ, опишите нужные изменения и продолжайте в том же окне. Onyou Office объединяет редакторы документов и ИИ-агентов на компьютере. Создавайте черновики и правьте текст с ИИ или самостоятельно. Приложение бесплатное, с открытым кодом; подключение ИИ необязательно.
 
-[English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · [हिन्दी](hi.md) · [Bahasa Indonesia](id.md) · [Italiano](it.md) · [日本語](ja.md) · [한국어](ko.md) · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · **Русский** · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · [繁體中文](zh-TW.md)
+<details>
+<summary>Выбрать язык · 21 язык</summary>
+
+[English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · [हिन्दी](hi.md) · [Bahasa Indonesia](id.md) · [Italiano](it.md) · [日本語](ja.md) · [한국어](ko.md) · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · **Русский** · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · [繁體中文](zh-TW.md) <!-- lang-switcher -->
+
+</details>
 
 ## Документы в одном рабочем пространстве
 

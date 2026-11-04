@@ -1,12 +1,27 @@
 <!-- Modified by Onyou Office on 2026-11-04. -->
 
-# Onyou Office
+<p align="center">
+  <img src="../../../apps/shell/build/brand/app-icon.svg" alt="Onyou Office" width="88" height="88">
+</p>
 
-**あなたのための、AI エージェントと使うオフィス。**
+<h1 align="center">Onyou Office</h1>
+
+<p align="center"><strong>あなたのための、AI エージェントと使うオフィス。</strong></p>
+
+<p align="center">
+  <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+</p>
 
 文書を開き、変更したい内容を伝えて、そのまま同じウィンドウで作業を続けられます。Onyou Office は文書エディターと AI エージェントをひとつにしたデスクトップアプリです。AI で下書きや修正を行うことも、自分で編集することもできます。無料のオープンソースで、AI 接続は任意です。
 
-[English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · [हिन्दी](hi.md) · [Bahasa Indonesia](id.md) · [Italiano](it.md) · **日本語** · [한국어](ko.md) · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · [Русский](ru.md) · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · [繁體中文](zh-TW.md)
+<details>
+<summary>言語を選択 · 21言語</summary>
+
+[English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · [हिन्दी](hi.md) · [Bahasa Indonesia](id.md) · [Italiano](it.md) · **日本語** · [한국어](ko.md) · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · [Русский](ru.md) · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · [繁體中文](zh-TW.md) <!-- lang-switcher -->
+
+</details>
 
 ## 文書作業をひとつの場所で
 

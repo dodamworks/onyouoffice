@@ -1,12 +1,27 @@
 <!-- Modified by Onyou Office on 2026-11-04. -->
 
-# Onyou Office
+<p align="center">
+  <img src="../../../apps/shell/build/brand/app-icon.svg" alt="Onyou Office" width="88" height="88">
+</p>
 
-**Il tuo ufficio con agenti IA.**
+<h1 align="center">Onyou Office</h1>
+
+<p align="center"><strong>Il tuo ufficio con agenti IA.</strong></p>
+
+<p align="center">
+  <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+</p>
 
 Apri un documento, descrivi le modifiche e continua nella stessa finestra. Onyou Office unisce editor di documenti e agenti IA sul desktop. Crea bozze e revisioni con l’IA oppure modifica i file direttamente. L’app è gratuita e open source; l’IA è facoltativa.
 
-[English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · [हिन्दी](hi.md) · [Bahasa Indonesia](id.md) · **Italiano** · [日本語](ja.md) · [한국어](ko.md) · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · [Русский](ru.md) · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · [繁體中文](zh-TW.md)
+<details>
+<summary>Scegli la lingua · 21 lingue</summary>
+
+[English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · [हिन्दी](hi.md) · [Bahasa Indonesia](id.md) · **Italiano** · [日本語](ja.md) · [한국어](ko.md) · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · [Русский](ru.md) · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · [繁體中文](zh-TW.md) <!-- lang-switcher -->
+
+</details>
 
 ## I documenti in un unico spazio
 

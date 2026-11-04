@@ -1,12 +1,27 @@
 <!-- Modified by Onyou Office on 2026-11-04. -->
 
-# Onyou Office
+<p align="center">
+  <img src="../../../apps/shell/build/brand/app-icon.svg" alt="Onyou Office" width="88" height="88">
+</p>
 
-**AI एजेंट के साथ आपका अपना ऑफिस।**
+<h1 align="center">Onyou Office</h1>
+
+<p align="center"><strong>AI एजेंट के साथ आपका अपना ऑफिस।</strong></p>
+
+<p align="center">
+  <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+</p>
 
 दस्तावेज़ खोलें, बताएं कि क्या बदलना है और उसी विंडो में काम जारी रखें। Onyou Office डेस्कटॉप पर दस्तावेज़ संपादकों और AI एजेंट को एक साथ लाता है। AI से मसौदा और संशोधन कराएं या खुद संपादित करें। ऐप मुफ़्त और ओपन सोर्स है; AI जोड़ना वैकल्पिक है।
 
-[English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · **हिन्दी** · [Bahasa Indonesia](id.md) · [Italiano](it.md) · [日本語](ja.md) · [한국어](ko.md) · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · [Русский](ru.md) · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · [繁體中文](zh-TW.md)
+<details>
+<summary>अपनी भाषा चुनें · 21 भाषाएँ</summary>
+
+[English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · **हिन्दी** · [Bahasa Indonesia](id.md) · [Italiano](it.md) · [日本語](ja.md) · [한국어](ko.md) · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · [Русский](ru.md) · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · [繁體中文](zh-TW.md) <!-- lang-switcher -->
+
+</details>
 
 ## दस्तावेज़ों के लिए एक जगह
 
