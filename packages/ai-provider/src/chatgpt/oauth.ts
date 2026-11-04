@@ -139,6 +139,8 @@ export interface ChatGptCallbackOptions {
   /** the address to open, once the waiting server knows its port */
   authorizeUrl: (port: number) => string
   state: string
+  /** The issued client bound to this attempt; absent for a new registration. */
+  clientId?: string | undefined
   /** opens the sign-in page in the system browser; false when no browser took it */
   openBrowser: (url: string) => Promise<boolean>
   /** what the browser shows after the sign-in, by outcome */
@@ -175,8 +177,15 @@ export async function waitForChatGptCallback(
     }
     answered = true
     const code = url.searchParams.get('code')
-    const clientId = url.searchParams.get('client_id')
-    const ok = !url.searchParams.get('error') && !!code && !!clientId
+    const returnedClientId = url.searchParams.get('client_id')
+    const clientId = returnedClientId || options.clientId
+    const matches = !options.clientId || !returnedClientId || returnedClientId === options.clientId
+    const ok =
+      !url.searchParams.get('error') &&
+      !!code &&
+      !!clientId &&
+      clientId !== CHATGPT_DYNAMIC_CLIENT_ID &&
+      matches
     res.writeHead(200, {
       'Content-Type': 'text/html; charset=utf-8',
       'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'",

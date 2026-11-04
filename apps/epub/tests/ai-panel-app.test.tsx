@@ -141,26 +141,15 @@ describe('the AI panel in the editor', () => {
     )
   })
 
-  it('offers the four starters and sends nothing until the person sends', async () => {
-    const { api, aiStream } = fakeApi(false)
-    const el = await mount(api)
-    expect(starters(el)).toEqual([
-      'Summarize this chapter',
-      'Find in the book',
-      'Proofread this chapter',
-      'Translate the book',
-    ])
-    const button = el.querySelector('.ai-starter') as HTMLButtonElement
-    await act(async () => button.click())
-    await settle()
-    const box = el.querySelector('.ai-composer textarea') as HTMLTextAreaElement
-    expect(box.value).toBe('Summarize the chapter on screen in a few sentences.')
-    expect(aiStream).not.toHaveBeenCalled()
-  })
-
-  it('offers only the reading starters for a fixed-layout book', async () => {
-    const { api } = fakeApi(true)
-    const el = await mount(api)
-    expect(starters(el)).toEqual(['Summarize this chapter', 'Find in the book'])
-  })
+  it.each([false, true])(
+    'keeps the empty chat clear for fixed-layout=%s without sending',
+    async (fixedLayout) => {
+      const { api, aiStream } = fakeApi(fixedLayout)
+      const el = await mount(api)
+      expect(starters(el)).toEqual([])
+      const box = el.querySelector('.ai-composer textarea') as HTMLTextAreaElement
+      expect(box.value).toBe('')
+      expect(aiStream).not.toHaveBeenCalled()
+    },
+  )
 })

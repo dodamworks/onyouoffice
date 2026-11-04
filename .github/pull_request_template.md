@@ -22,6 +22,7 @@ Include before/after evidence for visible changes, or write "Not applicable."
 
 ## Contributor checklist
 
+- [ ] Screenshots, sample files and logs contain no personal data, credentials or private paths.
 - [ ] The change is focused and does not include unrelated reformatting or refactoring.
 - [ ] User-facing strings use the existing i18n resources.
 - [ ] File open/save changes include an appropriate round-trip or fidelity test.

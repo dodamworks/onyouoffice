@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
@@ -13,7 +14,7 @@ describe('cloud command plumbing', () => {
   it('locates the shell ai-settings.json without Electron and honours the override', () => {
     expect(aiSettingsPath({ GENOFFICE_AI_SETTINGS: '/x/ai.json' })).toBe('/x/ai.json')
     const p = aiSettingsPath({})
-    expect(p.endsWith(join('IeumOffice', 'ai-settings.json'))).toBe(true)
+    expect(p.endsWith(join('Onyou Office', 'ai-settings.json'))).toBe(true)
     if (process.platform === 'darwin') expect(p).toContain('Library/Application Support')
     expect(aiSettingsPath({ GENOFFICE_USER_DATA: '/ud' })).toBe(join('/ud', 'ai-settings.json'))
   })
@@ -24,7 +25,7 @@ describe('cloud command plumbing', () => {
     expect(aiDataDir({ GENOFFICE_USER_DATA: '/ud', GENOFFICE_AI_SETTINGS: '/x/y/ai.json' })).toBe(
       dirname('/x/y/ai.json'),
     )
-    expect(aiDataDir({}).endsWith('IeumOffice')).toBe(true)
+    expect(aiDataDir({}).endsWith('Onyou Office')).toBe(true)
   })
 
   it('ends the subscription CLIs it started when the process ends, by exit or by signal', () => {

@@ -7,7 +7,7 @@ Die Startseite ist GenOffices Startseite: eine Navigationsleiste links, Dateilis
 - **Zuletzt verwendet**: die zuletzt geöffneten Dateien. Jede Zeile trägt ihren Zeitpunkt — heute, gestern oder das Datum.
 - **Favoriten**: die von Ihnen mit einem Stern versehenen Dateien. Fahren Sie über eine Dateizeile und klicken Sie auf den Stern, um sie hinzuzufügen oder zu entfernen. **In Gruppe verschieben** im ⋯-Menü sortiert markierte Dateien in benannte Gruppen; die Markierungs-Ansicht filtert danach.
 - **Benutzerhandbuch**: öffnet dieses Handbuch.
-- **Ask AI**: das Wissensbasis-Panel — stellen Sie Fragen und erhalten Sie Antworten mit Quellen aus Ihren markierten Dateien (siehe unten).
+- **Wissensspeicher**: Standardmäßig werden in der App registrierte Dokumente verwendet: zuletzt geöffnete und markierte Dateien sowie hinzugefügte Ordner und Projekte. Nicht der gesamte Computer wird durchsucht.
 - **Projekte**: die Ordner (Projekte), mit denen die KI arbeiten kann. Legen Sie ein Projekt an oder verwenden Sie einen vorhandenen Ordner, und öffnen Sie eines, um seine Anweisungen, Erinnerungen, Dateien und Unterhaltungen zu verwalten. Siehe [Projekte](help://projects).
 - **Ordner**: Verzeichnisse, die Sie mit **Ordner hinzufügen…** zur Seitenleiste hinzufügen oder aus dem Dateimanager dorthin ziehen. Jedes wird zu einem Stammverzeichnis, das Sie öffnen, mit Unterordnern füllen, umbenennen und daraus entfernen können; geht eines offline, wird es als nicht verfügbar angezeigt und lässt sich aus der Liste nehmen. **Neuer Ordner** legt ein weiteres an.
 - **Die Zeile ganz unten**: zeigt, ob eine KI verbunden ist — **KI verbinden** oder den Namen des verbundenen Abonnements — und öffnet die Einstellungen.
@@ -56,11 +56,9 @@ Was die einzelnen Karten tun:
 
 > Tipp: Datei ▸ Neu in der Menüleiste erzeugt dieselben Dokumenttypen (⌘N/Ctrl+N erzeugt standardmäßig ein Textdokument); eine ins Fenster gezogene Datei wird direkt geöffnet.
 
-## Fragen Sie Ihre Wissensbasis
+## Wissensspeicher
 
-- Markieren Sie zuerst Dateien (jeden Typ, den die App liest); die Kopfzeile des Panels zählt den Bestand, und eine leere Wissensbasis bittet Sie, erst etwas zu markieren.
-- Antworten nennen die Herkunftsdateien; ein Klick auf eine Quelle öffnet die Datei in ihrem Editor.
-- Benötigt eine verbundene KI; siehe [Abonnement-Verbindung](help://subscription). Die Unterhaltung lebt nur im Speicher — das Schließen der App beendet sie.
-- Wählen Sie unter dem Eingabefeld ein Projekt, werden auch die Dateien des Ordners durchsucht und gelesen, und die Unterhaltung wird in diesem Ordner gespeichert, sodass Sie sie in einem anderen Editor fortsetzen können. Ohne Projekt lebt die Unterhaltung wie oben beschrieben nur im Speicher.
-- Die Suche läuft über den lokalen Dateiindex wie die Start-Suche; verschwundene Dateien fallen still aus dem Bestand.
-- Gruppen ordnen nur die Markierungsliste — die Wissensbasis umfasst immer alle markierten Dateien.
+- Standardmäßig werden in der App registrierte Dokumente verwendet: zuletzt geöffnete und markierte Dateien sowie hinzugefügte Ordner und Projekte. Nicht der gesamte Computer wird durchsucht.
+- Über dem Eingabefeld wählen Sie registrierte Dokumente, ein Projekt, einzelne Dokumente oder Favoriten. Ein Quellenwechsel beginnt einen neuen Chat und verwirft wartende Fragen.
+- Verbinden Sie KI unter Einstellungen → KI. Dateinamen und relevante Inhalte der gewählten Quelle können an den Anbieter gesendet werden. Versteckte und ausgeschlossene Projektdateien bleiben ausgeschlossen. Antworten nennen ihre Quellen.
+- Projektchats werden im Projektordner gespeichert. Andere Chats bleiben nur im Speicher und enden beim Schließen der App.

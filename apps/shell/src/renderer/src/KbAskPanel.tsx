@@ -1,3 +1,5 @@
+import { KB_SCOPE_LABELS, type KnowledgeSource } from './kb-scope-strings'
+import './kb-document-scope.css'
 import { useEffect, useRef, useState } from 'react'
 import {
   AgentLoop,
@@ -18,6 +20,7 @@ import {
 import {
   AiBlockedNotice,
   AiComposer,
+  AiMark,
   AiConnectPrompt,
   AiToolsUnsupportedNotice,
   AiTypingIndicator,
@@ -99,6 +102,7 @@ import {
   startedToolNote,
   storedToolNotes,
   toolRecordOf,
+  toolNoteLabel,
   type AskToolLabels,
   type ToolNote,
 } from './kb-ask-project'
@@ -119,15 +123,9 @@ import sendStop from './assets/send-stop.png'
  * nav), so answers cite the folder and file they came from and clicking a
  * citation opens that file in the app that owns it.
  *
- * Without a project the conversation lives in memory only; it does not
- * survive a restart. With a project chosen under the composer (spec 5.2,
- * 5.3.8) the chat is kept in that folder through the shared project chat
- * hook, the [chat ▾] menu appears in the head bar, and a run reads the
- * project folder plus the starred scope chosen above (spec 5.5). Going back
- * to "No project" brings back the in-memory chat that was there before.
- * An empty corpus gets an onboarding hero instead of a bare hint: the only
- * useful move there is going to Recents and starring files, so the panel
- * says so and offers the jump as a button.
+ * Without a project the conversation is kept in memory. With a project it is
+ * stored in that folder through the shared project-chat hook. Document source
+ * controls sit above the composer; count/group and connection details are below.
  */
 
 /** the editor id the home ask records its project chats under */
@@ -175,7 +173,6 @@ interface ConsolidatedMemory {
 
 export function KbAskPanel({
   onOpenPath,
-  onGoToRecents,
   connection,
   aiSettings,
   noticeDue,
@@ -253,6 +250,20 @@ export function KbAskPanel({
   /** the group asks are narrowed to (null = All). Starts at All whenever the
    *  panel opens and is stored nowhere: the choice is not remembered (spec 8.8) */
   const [scopeGroup, setScopeGroup] = useState<string | null>(null)
+  const [knowledgeSource, setKnowledgeSource] = useState<KnowledgeSource>(() =>
+    typeof window.aiOffice.kbCatalog === 'function' ? 'registered' : 'starred',
+  )
+  const [catalog, setCatalog] = useState<KbFileInfo[]>([])
+  const [chosenPaths, setChosenPaths] = useState<string[]>([])
+  const scopeTransitionRef = useRef(false)
+  const scopeLabels = KB_SCOPE_LABELS[lang]
+  const refreshCatalog = () => {
+    void window.aiOffice
+      .kbCatalog?.()
+      .then((files) => setCatalog(Array.isArray(files) ? files : []))
+      .catch(() => setCatalog([]))
+  }
+
   /** starred files in the chosen group, for the headbar (null until known) */
   const [scopeCount, setScopeCount] = useState<number | null>(null)
   /** the scope main minted for the latest narrowed run: the knowledge tools carry it on
@@ -319,6 +330,8 @@ export function KbAskPanel({
 
   /** the project chat hook opened a chat, or went back to "no project" */
   const showOpenedChat = (opened: ProjectChatOpened): void => {
+    heldRef.current = null
+    heldSkillUseRef.current = NO_SKILL_USE
     const loop = loopRef.current
     setProjectNotices([])
     setUnwritableNotice(false)
@@ -370,6 +383,38 @@ export function KbAskPanel({
   projectChatRef.current = projectChat
   /** the chosen project (null: no project) */
   const projectId = projectChat.projectId
+  useEffect(() => {
+    // Selection changes before an asynchronous project chat finishes loading.
+    heldRef.current = null
+    heldSkillUseRef.current = NO_SKILL_USE
+    if (projectId !== null && typeof window.aiOffice.kbCatalog === 'function')
+      setKnowledgeSource('project')
+  }, [projectId])
+  const resetKnowledgeConversation = () => {
+    heldRef.current = null
+    heldSkillUseRef.current = NO_SKILL_USE
+    loopRef.current?.reset()
+    windowMcpState()?.newConversation()
+    setMessages([])
+    memoryChatRef.current = null
+    endRunScope()
+  }
+  const chooseKnowledgeSource = async (source: KnowledgeSource) => {
+    if (busy || scopeTransitionRef.current) return
+    scopeTransitionRef.current = true
+    try {
+      if (source !== 'project') await projectChat.selectProject(null)
+      resetKnowledgeConversation()
+      setKnowledgeSource(source)
+      refreshCatalog()
+    } finally {
+      scopeTransitionRef.current = false
+    }
+  }
+  useEffect(() => {
+    if (knowledgeSource === 'registered') setCorpusCount(catalog.length)
+    if (knowledgeSource === 'selected') setCorpusCount(chosenPaths.length)
+  }, [knowledgeSource, catalog, chosenPaths])
   /** the provider a question would run on right now (null until the settings are read) */
   const providerChoice = aiSettings ? selectAiProvider(aiSettings, connection.statuses) : null
   const aiConnected = providerChoice?.connected === true
@@ -407,6 +452,7 @@ export function KbAskPanel({
 
   const chooseScope = (group: string | null): void => {
     if (busy) return
+    resetKnowledgeConversation()
     setScopeGroup(group)
     setScopeCount(null)
     if (group === null || typeof window.aiOffice?.starred !== 'function') return
@@ -425,9 +471,14 @@ export function KbAskPanel({
       setCorpusCount(0)
       return
     }
-    void window.aiOffice
-      .kbList()
-      .then((files) => {
+    void (
+      typeof window.aiOffice.kbCatalog === 'function'
+        ? window.aiOffice.kbCatalog()
+        : window.aiOffice.kbList()
+    )
+      .then((rawFiles) => {
+        const files = Array.isArray(rawFiles) ? rawFiles : []
+        if (typeof window.aiOffice.kbCatalog === 'function') setCatalog(files)
         corpusRef.current = files
         setCorpusCount(files.length)
       })
@@ -618,6 +669,7 @@ export function KbAskPanel({
     skillUse: SkillUse = NO_SKILL_USE,
   ): Promise<void> => {
     const instruction = (again ?? draft).trim()
+    if (scopeTransitionRef.current) return
     if (!instruction || busy) return
     const gate = askSendGate(known ?? aiSettings, connection.statuses, noticeDue)
     heldRef.current = gate === 'checking' ? instruction : null
@@ -661,12 +713,27 @@ export function KbAskPanel({
     // nothing; it never widens to every starred file. With a project chosen the
     // scope also covers that folder (spec 5.5): the group choice still applies
     // to the starred part.
-    const group = scopeGroup
+    const group = knowledgeSource === 'starred' ? scopeGroup : null
     const runProject = projectChatRef.current.projectId
     refreshGroups()
     let scope: string | undefined
     try {
-      scope = await openAskScope(window.aiOffice, group, runProject)
+      if (knowledgeSource === 'project' && runProject === null) {
+        setDraft(instruction)
+        setBusy(false)
+        return
+      }
+      scope =
+        knowledgeSource === 'starred'
+          ? await openAskScope(window.aiOffice, group, runProject)
+          : await window.aiOffice.kbOpenScope(
+              knowledgeSource === 'project'
+                ? { source: 'project', projectId: runProject! }
+                : {
+                    source: knowledgeSource,
+                    ...(knowledgeSource === 'selected' ? { paths: chosenPaths } : {}),
+                  },
+            )
     } catch (error) {
       if (askSeqRef.current !== seq) return
       stopWith(
@@ -703,6 +770,7 @@ export function KbAskPanel({
     if (corpusRef.current.length === 0 && (runProject === null || !listed)) {
       endRunScope()
       if (runProject !== null) stopWith(t('askUnknownError'))
+      else if (knowledgeSource !== 'starred') stopWith(scopeLabels.empty, false)
       else if (scope === undefined) stopWith(t('askEmptyCorpus'), false)
       else stopWith(t('askScopeGone'))
       return
@@ -941,10 +1009,14 @@ export function KbAskPanel({
     projectPanelText(lang, 'projectFallback')
   const askPlaceholder =
     projectId === null
-      ? t('askPlaceholder')
+      ? knowledgeSource === 'starred'
+        ? t('askPlaceholder')
+        : scopeLabels.placeholder
       : kbAskProjectText(
           lang,
-          (corpusCount ?? 0) > 0 ? 'askProjectStarsPlaceholder' : 'askProjectPlaceholder',
+          knowledgeSource !== 'project' && (corpusCount ?? 0) > 0
+            ? 'askProjectStarsPlaceholder'
+            : 'askProjectPlaceholder',
           { name: projectName },
         )
 
@@ -952,104 +1024,39 @@ export function KbAskPanel({
 
   return (
     <div className="kb-ask">
-      {corpusCount !== null && (corpusCount > 0 || projectId !== null) && (
-        <div className="kb-ask-headbar">
-          <b>
-            {projectId !== null
-              ? kbAskProjectText(lang, 'askProjectTitle', { name: projectName })
-              : t('askTitle')}
-          </b>
-          {/* the chosen project's chats (spec 5.3): only with a project */}
-          {projectId !== null && chat !== null && (
-            <ProjectChatMenu
-              lang={lang}
-              chats={projectChat.chats}
-              currentChatId={chat.kind === 'project' && !chat.isNew ? chat.chatId : null}
-              currentTitle={chat.kind === 'project' && chat.title ? chat.title : undefined}
-              legacy={projectChat.legacy}
-              legacyActive={chat.kind === 'legacy'}
-              disabled={busy}
-              onOpen={() => void projectChat.refreshChats()}
-              onSelect={(id) => void projectChat.openChat(id)}
-              onNewChat={() => void projectChat.newChat()}
-              onRename={(id, title) => void projectChat.renameChat(id, title)}
-              onDelete={(id) => void projectChat.deleteChat(id)}
-              onSelectLegacy={() => void projectChat.openLegacy()}
-            />
-          )}
-          {/* with a project and nothing starred, the star count says nothing */}
-          {(projectId === null || (corpusCount ?? 0) > 0 || scopeGroup !== null) && (
-            <span>
-              {scopeGroup === null
-                ? t('askCorpusCount', { n: String(corpusCount) })
-                : scopeCount === null
-                  ? scopeGroup
-                  : t('askCorpusCountGroup', { group: scopeGroup, n: String(scopeCount) })}
-            </span>
-          )}
-          {(groups.length > 0 || scopeGroup !== null) && (
-            <KbAskScopeChoice
-              groups={
-                scopeGroup === null || groups.includes(scopeGroup)
-                  ? groups
-                  : [...groups, scopeGroup]
-              }
-              chosen={scopeGroup}
-              disabled={busy}
-              allLabel={t('askScopeAll')}
-              ariaLabel={t('askScopeLabel')}
-              onChoose={chooseScope}
-            />
-          )}
-        </div>
-      )}
-      <div className="kb-ask-thread" ref={scrollRef}>
-        {messages.length === 0 && corpusCount === 0 && projectId === null && (
-          <div className="kb-ask-hero">
-            <div className="kb-ask-hero-icon" aria-hidden="true">
-              <IconBookOpen />
-            </div>
-            <h3>{t('askTitle')}</h3>
-            <p>{t('askHeroTagline')}</p>
-            <div className="kb-ask-steps">
-              <div className="kb-ask-step">
-                <span className="kb-ask-step-num">1</span>
-                <div>
-                  <b>{t('askStep1Title')}</b>
-                  <span>{t('askStep1Desc')}</span>
-                </div>
-              </div>
-              <div className="kb-ask-step">
-                <span className="kb-ask-step-num">2</span>
-                <div>
-                  <b>{t('askStep2Title')}</b>
-                  <span>{t('askStep2Desc')}</span>
-                </div>
-              </div>
-              <div className="kb-ask-step">
-                <span className="kb-ask-step-num">3</span>
-                <div>
-                  <b>{t('askStep3Title')}</b>
-                  <span>{t('askStep3Desc')}</span>
-                </div>
-              </div>
-            </div>
-            <button className="kb-ask-cta" type="button" onClick={onGoToRecents}>
-              <IconStar />
-              {t('askCtaRecents')}
-            </button>
-            {projectChat.available && (
-              <p className="kb-ask-hero-project">{kbAskProjectText(lang, 'askHeroProjectHint')}</p>
-            )}
+      <header className="kb-ask-headbar">
+        {messages.length > 0 && (
+          <div className="kb-vault-heading">
+            <h2>{t('askTitle')}</h2>
+            <p>{t('askIntro')}</p>
           </div>
         )}
-        {messages.length === 0 && projectId !== null && (
-          <p className="kb-ask-hint">
-            {kbAskProjectText(lang, 'askProjectIntro', { name: projectName })}
-          </p>
+        {/* the chosen project's chats (spec 5.3): only with a project */}
+        {projectId !== null && chat !== null && (
+          <ProjectChatMenu
+            lang={lang}
+            chats={projectChat.chats}
+            currentChatId={chat.kind === 'project' && !chat.isNew ? chat.chatId : null}
+            currentTitle={chat.kind === 'project' && chat.title ? chat.title : undefined}
+            legacy={projectChat.legacy}
+            legacyActive={chat.kind === 'legacy'}
+            disabled={busy}
+            onOpen={() => void projectChat.refreshChats()}
+            onSelect={(id) => void projectChat.openChat(id)}
+            onNewChat={() => void projectChat.newChat()}
+            onRename={(id, title) => void projectChat.renameChat(id, title)}
+            onDelete={(id) => void projectChat.deleteChat(id)}
+            onSelectLegacy={() => void projectChat.openLegacy()}
+          />
         )}
-        {messages.length === 0 && projectId === null && corpusCount !== null && corpusCount > 0 && (
-          <p className="kb-ask-hint">{t('askIntro')}</p>
+      </header>
+      <div className="kb-ask-thread" ref={scrollRef}>
+        {messages.length === 0 && (
+          <div className="kb-vault-welcome">
+            <AiMark size={48} />
+            <h2>{t('askTitle')}</h2>
+            <p>{t('askIntro')}</p>
+          </div>
         )}
         {messages.map((m, i) => (
           <div key={i} className={`kb-ask-msg kb-ask-${m.role}${m.isError ? ' kb-ask-error' : ''}`}>
@@ -1070,7 +1077,11 @@ export function KbAskPanel({
                     ) : note.kind === 'create' || note.kind === 'created' ? (
                       <IconFilePlus />
                     ) : null}
-                    {note.label}
+                    {toolNoteLabel(note, !!m.streaming, toolLabels(), {
+                      search: t('askToolSearchHistory'),
+                      read: t('askToolReadHistory'),
+                      create: t('askToolCreateHistory'),
+                    })}
                     {m.streaming && note.kind !== 'created' && j === m.toolNotes.length - 1
                       ? '…'
                       : ''}
@@ -1271,19 +1282,101 @@ export function KbAskPanel({
           {t('askUnknownError')}
         </p>
       )}
-      {connectHint && !connectPromptOpen && (
-        <p className="kb-ask-login">
-          {aiSubscriptionText(lang, connectHint.titleKey, {
-            provider: connectHint.providerName ?? '',
-          })}{' '}
-          <button type="button" className="kb-ask-login-link" onClick={onOpenAiSettings}>
-            {aiSubscriptionText(lang, 'actionOpenSettings')}
-          </button>
-        </p>
-      )}
       {aiSettings !== null && localModelCapabilities(aiSettings).tools === false && (
         <AiToolsUnsupportedNotice lang={lang} />
       )}
+      <div className="kb-document-scope">
+        <label>
+          <span>{scopeLabels.label}</span>
+          <select
+            value={knowledgeSource}
+            disabled={busy}
+            onChange={(event) => void chooseKnowledgeSource(event.target.value as KnowledgeSource)}
+          >
+            <option value="registered">{scopeLabels.registered}</option>
+            <option value="project">{scopeLabels.project}</option>
+            <option value="selected">{scopeLabels.selected}</option>
+            <option value="starred">{t('navStarred')}</option>
+          </select>
+        </label>
+        {knowledgeSource === 'selected' && (
+          <details
+            onToggle={(event) => {
+              if (event.currentTarget.open) refreshCatalog()
+            }}
+          >
+            <summary>
+              {scopeLabels.choose} ({chosenPaths.length})
+            </summary>
+            <div className="kb-document-choices">
+              {catalog.map((file) => (
+                <label key={file.path}>
+                  <input
+                    type="checkbox"
+                    disabled={busy}
+                    checked={chosenPaths.includes(file.path)}
+                    onChange={(event) => {
+                      resetKnowledgeConversation()
+                      setChosenPaths((prev) =>
+                        event.target.checked
+                          ? [...prev, file.path]
+                          : prev.filter((path) => path !== file.path),
+                      )
+                    }}
+                  />
+                  <span>
+                    <b>{file.name}</b>
+                    <small dir="auto">{file.path}</small>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </details>
+        )}
+        {projectChat.available &&
+        (knowledgeSource === 'project' || typeof window.aiOffice.kbCatalog !== 'function') ? (
+          <ProjectPicker
+            lang={lang}
+            projects={projects}
+            selectedId={projectId}
+            disabled={busy}
+            defaultParentFolder={defaultParentFolder}
+            onOpen={refreshProjects}
+            onSelect={(id) => void projectChat.selectProject(id)}
+            onCreate={(name, { otherPlace }) =>
+              void window.projectFolderApi
+                ?.createProject({ name, otherPlace })
+                .then(chooseAddedProject)
+                .catch(showActionFailed)
+            }
+            onAddFolder={() =>
+              void window.projectFolderApi
+                ?.addFolder()
+                .then(chooseAddedProject)
+                .catch(showActionFailed)
+            }
+            onRelocate={(id) =>
+              void window.projectFolderApi
+                ?.relocateProject({ projectId: id })
+                .then(chooseAddedProject)
+                .catch(showActionFailed)
+            }
+            onSetPinned={(id, pinned) =>
+              void window.projectFolderApi
+                ?.setPinned({ projectId: id, pinned })
+                .then(refreshProjects)
+                .catch(() => undefined)
+            }
+            onOpenInFileManager={(id) =>
+              void window.projectFolderApi
+                ?.openInFileManager({ projectId: id })
+                .catch(() => undefined)
+            }
+            onRemoveFromList={removeProjectFromList}
+          />
+        ) : undefined}
+      </div>
+      {messages.length > 0 && <p className="kb-scope-change">{scopeLabels.changeHint}</p>}
       <AiComposer
         value={draft}
         busy={busy}
@@ -1303,49 +1396,6 @@ export function KbAskPanel({
             <McpServerButton lang={lang} />
           </>
         }
-        footerBelow={
-          projectChat.available ? (
-            <ProjectPicker
-              lang={lang}
-              projects={projects}
-              selectedId={projectId}
-              disabled={busy}
-              defaultParentFolder={defaultParentFolder}
-              onOpen={refreshProjects}
-              onSelect={(id) => void projectChat.selectProject(id)}
-              onCreate={(name, { otherPlace }) =>
-                void window.projectFolderApi
-                  ?.createProject({ name, otherPlace })
-                  .then(chooseAddedProject)
-                  .catch(showActionFailed)
-              }
-              onAddFolder={() =>
-                void window.projectFolderApi
-                  ?.addFolder()
-                  .then(chooseAddedProject)
-                  .catch(showActionFailed)
-              }
-              onRelocate={(id) =>
-                void window.projectFolderApi
-                  ?.relocateProject({ projectId: id })
-                  .then(chooseAddedProject)
-                  .catch(showActionFailed)
-              }
-              onSetPinned={(id, pinned) =>
-                void window.projectFolderApi
-                  ?.setPinned({ projectId: id, pinned })
-                  .then(refreshProjects)
-                  .catch(() => undefined)
-              }
-              onOpenInFileManager={(id) =>
-                void window.projectFolderApi
-                  ?.openInFileManager({ projectId: id })
-                  .catch(() => undefined)
-              }
-              onRemoveFromList={removeProjectFromList}
-            />
-          ) : undefined
-        }
         onChange={setDraft}
         onSend={() => {
           const text = draft.trim()
@@ -1360,6 +1410,49 @@ export function KbAskPanel({
           finishLast()
         }}
       />
+      <div className="kb-vault-footer">
+        {corpusCount !== null && (
+          <div className="kb-vault-summary">
+            {/* with a project and nothing starred, the star count says nothing */}
+            {knowledgeSource !== 'project' &&
+              (projectId === null || (corpusCount ?? 0) > 0 || scopeGroup !== null) && (
+                <span>
+                  {knowledgeSource !== 'starred' || scopeGroup === null
+                    ? knowledgeSource === 'starred'
+                      ? t('askCorpusCount', { n: String(corpusCount) })
+                      : `${scopeLabels[knowledgeSource]} · ${corpusCount}`
+                    : scopeCount === null
+                      ? scopeGroup
+                      : t('askCorpusCountGroup', { group: scopeGroup, n: String(scopeCount) })}
+                </span>
+              )}
+            {knowledgeSource === 'starred' && (groups.length > 0 || scopeGroup !== null) && (
+              <KbAskScopeChoice
+                groups={
+                  scopeGroup === null || groups.includes(scopeGroup)
+                    ? groups
+                    : [...groups, scopeGroup]
+                }
+                chosen={scopeGroup}
+                disabled={busy}
+                allLabel={t('askScopeAll')}
+                ariaLabel={t('askScopeLabel')}
+                onChoose={chooseScope}
+              />
+            )}
+          </div>
+        )}
+        {connectHint && !connectPromptOpen && (
+          <p className="kb-ask-login">
+            {aiSubscriptionText(lang, connectHint.titleKey, {
+              provider: connectHint.providerName ?? '',
+            })}{' '}
+            <button type="button" className="kb-ask-login-link" onClick={onOpenAiSettings}>
+              {aiSubscriptionText(lang, 'actionOpenSettings')}
+            </button>
+          </p>
+        )}
+      </div>
     </div>
   )
 }
@@ -1404,43 +1497,6 @@ function KbAskScopeChoice({
         </button>
       ))}
     </div>
-  )
-}
-
-/** open book for the empty-corpus hero (inline, like every Home icon) */
-function IconBookOpen(): React.JSX.Element {
-  return (
-    <svg
-      width="26"
-      height="26"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 6.8C10.2 5.4 7.9 4.7 5.5 4.7c-.4 0-.8 0-1.2.1v12.9c.4-.1.8-.1 1.2-.1 2.4 0 4.7.7 6.5 2.1 1.8-1.4 4.1-2.1 6.5-2.1.4 0 .8 0 1.2.1V4.8c-.4-.1-.8-.1-1.2-.1-2.4 0-4.7.7-6.5 2.1z" />
-      <path d="M12 6.8v12.9" />
-    </svg>
-  )
-}
-
-function IconStar(): React.JSX.Element {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 3.6l2.6 5.2 5.8.9-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.9z" />
-    </svg>
   )
 }
 

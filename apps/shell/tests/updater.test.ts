@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -24,6 +25,14 @@ import type { UpdateUiState } from '../src/shared/update-api'
  * electron-updater's real GitHubProvider over canned github.com responses, so
  * the errors and the release it picks are the dependency's own.
  */
+
+const distribution = vi.hoisted(() => ({ configured: true }))
+vi.mock('@genoffice/i18n', async (original) => ({
+  ...(await original<typeof import('@genoffice/i18n')>()),
+  get PRODUCT_UPDATES_CONFIGURED() {
+    return distribution.configured
+  },
+}))
 
 const appState = { isPackaged: true, dataDir: '', version: '0.1.0' }
 const appListeners = new Map<string, () => void>()
@@ -339,6 +348,7 @@ function checkOffline(): void {
 }
 
 beforeEach(() => {
+  distribution.configured = true
   vi.resetModules()
   vi.useFakeTimers()
   appState.isPackaged = true
@@ -1575,5 +1585,21 @@ describe('checkForUpdatesNow (r148 manual check)', () => {
     expect(showUpdateWindow).toHaveBeenCalledTimes(1)
     expect(lastShownState().version).toBe('9.9.9')
     expect(showMessageBox).not.toHaveBeenCalled()
+  })
+})
+
+describe('local build without an update distribution', () => {
+  it('makes no feed request, and a manual check explains the unset endpoint', async () => {
+    distribution.configured = false
+    const { setUiLang } = await import('@genoffice/i18n')
+    setUiLang('en')
+    const updater = await import('../src/main/updater')
+    updater.initAutoUpdater(() => null)
+    await updater.checkForUpdatesNow()
+    expect(checkForUpdates).not.toHaveBeenCalled()
+    expect(openExternal).not.toHaveBeenCalled()
+    expect(showMessageBox).toHaveBeenCalledWith(
+      expect.objectContaining({ message: expect.stringContaining('not configured') }),
+    )
   })
 })

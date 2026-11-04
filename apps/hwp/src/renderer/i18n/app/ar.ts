@@ -55,6 +55,9 @@ export const ar = {
   aiEmptyBody:
     'اسأل عن المحتوى، أو اطلب تحسين الصياغة، أو تعبئة حقول النموذج. يظهر كل تغيير هنا ويمكن التراجع عنها دفعة واحدة.',
   aiComposerPlaceholder: 'اسأل عن هذا المستند أو اذكر ما تريد تغييره…',
+  aiToolbarSummary: 'تلخيص',
+  aiToolbarPolish: 'تحسين الصياغة',
+  aiToolbarPolishPrompt: 'حسّن المستند بأكمله لجعل الكتابة أوضح وأكثر سلاسة',
   aiStarterSummarize: 'تلخيص المستند',
   aiStarterSummarizePrompt: 'لخّص هذا المستند بإيجاز مع ذكر النقاط الأساسية فقط.',
   aiStarterProofread: 'تصحيح الإملاء والمسافات',
@@ -208,7 +211,7 @@ export const ar = {
   previewMargins: 'إظهار الهوامش',
   previewEditPage: 'تحرير هذه الصفحة',
   previewEditFailed: 'تعذر الانتقال إلى هذه الصفحة.',
-  checkTitle: 'فحص المستند',
+  checkTitle: 'فحص تنسيق المستند',
   checkRunning: 'جارٍ قراءة المستند…',
   checkFailed: 'تعذّرت قراءة المستند.',
   checkEmpty: 'لا توجد ملاحظات.',

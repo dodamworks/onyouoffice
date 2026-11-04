@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { dirname, join } from 'node:path'
 import { app, dialog, shell } from 'electron'
 import type { BrowserWindow } from 'electron'
@@ -17,7 +18,13 @@ import { createUpdateLog, UPDATE_LOG_FILE } from './update-log'
 import type { UpdateLogger } from './update-log'
 import { reopenedByInstaller, requestUpdateRestart, updateRestartRequested } from './update-restart'
 import type { UpdateInfo } from 'electron-updater'
-import { createI18n, getUiLang, htmlLang } from '@genoffice/i18n'
+import {
+  createI18n,
+  getUiLang,
+  htmlLang,
+  PRODUCT_UPDATES_CONFIGURED,
+  productServiceUnavailable,
+} from '@genoffice/i18n'
 import { GITHUB_LATEST_RELEASE_URL, githubReleaseTagUrl } from '@genoffice/electron-utils'
 import type {
   UpdateChannel,
@@ -794,6 +801,17 @@ export async function checkForUpdatesNow(): Promise<void> {
       fakeShowAgain()
       return
     }
+    if (!PRODUCT_UPDATES_CONFIGURED) {
+      await dialog.showMessageBox({
+        type: 'info',
+        title: tUpd(lang, 'updTitle'),
+        message: productServiceUnavailable(lang),
+        buttons: ['OK'],
+        defaultId: 0,
+        cancelId: 0,
+      })
+      return
+    }
     if (!updaterActive) {
       const { response } = await dialog.showMessageBox({
         type: 'info',
@@ -863,7 +881,7 @@ export function initAutoUpdater(
   // latest-linux.yml. On Linux the updater only works for AppImage runs
   // (electron-updater's AppImageUpdater needs the APPIMAGE env var the
   // AppImage runtime sets); deb installs update manually via apt.
-  if (!app.isPackaged) return
+  if (!app.isPackaged || !PRODUCT_UPDATES_CONFIGURED) return
   const isLinuxAppImage = process.platform === 'linux' && Boolean(process.env.APPIMAGE)
   if (process.platform !== 'win32' && process.platform !== 'darwin' && !isLinuxAppImage) return
 

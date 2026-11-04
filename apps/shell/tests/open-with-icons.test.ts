@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join, resolve } from 'node:path'
@@ -48,7 +49,7 @@ function instructions(name: string): string[] {
 const OPEN_WITH = [
   {
     ext: 'hwp',
-    progId: 'IeumOffice.HWPDocument',
+    progId: 'OnyouOffice.HWPDocument',
     define: 'GENOFFICE_HWP_PROGID',
     name: 'HWP Document',
     icon: 'hwp.ico',
@@ -57,7 +58,7 @@ const OPEN_WITH = [
   },
   {
     ext: 'hwpx',
-    progId: 'IeumOffice.HWPXDocument',
+    progId: 'OnyouOffice.HWPXDocument',
     define: 'GENOFFICE_HWPX_PROGID',
     name: 'HWPX Document',
     icon: 'hwp.ico',
@@ -66,7 +67,7 @@ const OPEN_WITH = [
   },
   {
     ext: 'xmind',
-    progId: 'IeumOffice.MindMap',
+    progId: 'OnyouOffice.MindMap',
     define: 'GENOFFICE_MINDMAP_PROGID',
     name: 'Mind Map',
     icon: 'mindmap.ico',
@@ -75,7 +76,7 @@ const OPEN_WITH = [
   },
   {
     ext: 'epub',
-    progId: 'IeumOffice.EPUBBook',
+    progId: 'OnyouOffice.EPUBBook',
     define: 'GENOFFICE_EPUB_PROGID',
     name: 'EPUB Book',
     icon: 'epub.ico',
@@ -92,7 +93,7 @@ describe('the .hwp / .hwpx / .xmind / .epub "Open with" registration', () => {
   it('uses a product-own ProgId within the Windows limits', () => {
     for (const { progId, define } of OPEN_WITH) {
       expect(nsh).toContain(`!define ${define} "${progId}"`)
-      expect(progId).toMatch(/^IeumOffice\.[A-Za-z][A-Za-z0-9]*$/)
+      expect(progId).toMatch(/^OnyouOffice\.[A-Za-z][A-Za-z0-9]*$/)
       // Windows limits a ProgId to 39 characters
       expect(progId.length).toBeLessThanOrEqual(39)
       expect(progId.toLowerCase()).not.toContain('genoffice')
@@ -161,12 +162,12 @@ describe('the .hwp / .hwpx / .xmind / .epub "Open with" registration', () => {
 /**
  * Windows' Default apps page records the ProgId an app declares for a type
  * when the app is in RegisteredApplications. Without the declaration it records
- * Applications\IeumOffice.exe, whose icon is the app logo: .hwp chosen before
+ * Applications\OnyouOffice.exe, whose icon is the app logo: .hwp chosen before
  * the per-type ProgId existed still shows that logo while .hwpx shows hwp.ico.
- * Capabilities only make IeumOffice a candidate; no default changes at install.
+ * Capabilities only make OnyouOffice a candidate; no default changes at install.
  */
-describe('the IeumOffice Default-apps registration', () => {
-  const CAPABILITIES = 'Software\\IeumOffice\\Capabilities'
+describe('the OnyouOffice Default-apps registration', () => {
+  const CAPABILITIES = 'Software\\OnyouOffice\\Capabilities'
 
   function declaredAssociations(): Map<string, string> {
     const defines = new Map(
@@ -206,7 +207,7 @@ describe('the IeumOffice Default-apps registration', () => {
       expect(declared.get(association.ext), `.${association.ext}`).toBe(association.name)
     }
     for (const { ext, progId } of OPEN_WITH) expect(declared.get(ext), `.${ext}`).toBe(progId)
-    expect(declared.get('odt')).toBe('IeumOffice.OpenDocumentText')
+    expect(declared.get('odt')).toBe('OnyouOffice.OpenDocumentText')
   })
 
   it('never advertises a type whose ProgId Windows does not register', () => {
@@ -227,7 +228,7 @@ describe('the IeumOffice Default-apps registration', () => {
     expect(instructions('GenOfficeUnregisterApplicationCapabilities')).toEqual([
       'DeleteRegValue SHELL_CONTEXT "Software\\RegisteredApplications" "${PRODUCT_NAME}"',
       'DeleteRegKey SHELL_CONTEXT "${GENOFFICE_CAPABILITIES_KEY}"',
-      'DeleteRegKey /ifempty SHELL_CONTEXT "Software\\IeumOffice"',
+      'DeleteRegKey /ifempty SHELL_CONTEXT "Software\\OnyouOffice"',
     ])
   })
 

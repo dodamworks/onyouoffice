@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { odtToDocx, odtToText } from '@genoffice/odt-engine'
@@ -30,7 +31,7 @@ beforeEach(() => {
 
 /** Nothing the conversion staged is left beside the output. */
 function leftovers(dir: string): string[] {
-  return readdirSync(dir).filter((name) => name.startsWith('.ieumoffice-odt-'))
+  return readdirSync(dir).filter((name) => name.startsWith('.onyouoffice-odt-'))
 }
 
 describe('convert routes through .odt', () => {

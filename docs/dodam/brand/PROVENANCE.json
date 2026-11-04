@@ -1,0 +1,73 @@
+{
+  "decision_date": "2026-11-02",
+  "product_names": {
+    "ko": "온유오피스",
+    "en": "Onyou Office"
+  },
+  "selected_design": "B: agent with two layered documents",
+  "selected_source": "source/B-selected-original.svg",
+  "selected_source_sha256": "16b81d1e9594b7d48999d2c50bca7e3bf37a86986bba2c539544417f977e4412",
+  "base_geometry": "The selected B artwork is unchanged; its square viewBox is cropped from 0 0 360 360 to 42 37 264 264 for consistent padding.",
+  "small_adjustments": "Same two documents, positions, tilts and face contour; eyes 15x27 -> 18x30 around the same centres, text bars 14 -> 16.",
+  "monochrome_construction": "Native CoreGraphics curve Boolean subtraction; the same outer geometry, with 5-unit separation at overlaps and real transparent eye/text counters.",
+  "wordmark": {
+    "family": "Pretendard",
+    "weight": 600,
+    "tracking_em": {
+      "ko": -0.02,
+      "en": -0.015
+    },
+    "construction": "HarfBuzz shaping and fontTools glyph outlines; no live SVG text"
+  },
+  "font": {
+    "version": "v1.3.9",
+    "source": "https://github.com/orioncactus/pretendard/releases/tag/v1.3.9",
+    "license": "fonts/Pretendard-OFL.txt",
+    "file": "fonts/PretendardVariable.woff2"
+  },
+  "archived_designs": {
+    "C-one-document.svg": "Alternative; not the small-size version of B",
+    "original-dimensional.svg": "Original with floor shadow and top highlight",
+    "A1-no-floor.svg": "Floor shadow removed only",
+    "A2-no-floor-no-hair.svg": "Floor and top highlight removed; preferred A revision",
+    "A3-paper-edge.svg": "Page tint/left-edge experiment; retained only for history"
+  },
+  "implementation_status": {
+    "desktop_app_applied": false,
+    "website_applied": false,
+    "os_icon_registration_tested": false
+  },
+  "asset_sha256": {
+    "logos/ai-mark.svg": "ccd725c2e6f7bdd479e296cfabd19d17c21a692d0cee0a90232b4ab53e8fa4f5",
+    "logos/logo-en-dark.svg": "b66632fa686a5db05e4e15ef8848b405fff8dd747e01ebc7c8978ebe9c1188f3",
+    "logos/logo-en.svg": "579a4d34a4e179c1ef4ed4e8b05ee951bf88b4f8e143dc8bd7331249d2a4ab3c",
+    "logos/logo-ko-dark.svg": "906cb6161b5ccddc465ba8cc8727fef2b914cbf5775c4611e7be209b8abd5200",
+    "logos/logo-ko.svg": "fbd4916cb79ee96aac315a3ecc29581d02f38cb9666be0d256a9ebc2ddab4bfc",
+    "logos/symbol-mono.svg": "32f5ddcc3c28563e490f2d9fe14284e2438dee29856035aaed6604b76a0826bb",
+    "logos/symbol-small.svg": "204232a534353d7526561d93f9aabffdfc0405d103f77e24a853d7b30abc6b56",
+    "logos/symbol-white.svg": "bbbbdc2afeaba94db15257dd329e521605b94b9b3c5e6e3aae4cf65a271e9e88",
+    "logos/symbol.svg": "f405c31f16a968f80d904a68745b5f3ee7eae9327a444fa539bd25a53540b199",
+    "native-inputs/ai-mark.svg": "ccd725c2e6f7bdd479e296cfabd19d17c21a692d0cee0a90232b4ab53e8fa4f5",
+    "native-inputs/app-icon-small.svg": "f09141cf4fb06a5bd6da5a17b1b58a14ae8256ff1ae75da22e45297d390bac32",
+    "native-inputs/app-icon.svg": "a8da53783c90768abdee1ab2c649855b1740090b6769ac67a5e66cd77dad9480",
+    "native-inputs/logo-lockup-dark.svg": "de611896434f6e57071cccef0a3d6eec1021b52819937873f852b867f4b28024",
+    "native-inputs/logo-lockup-ko-dark.svg": "e87d438eed7032a479546c2d49ddd88fbf4368e34129314b7bff10fabba64886",
+    "native-inputs/logo-lockup-ko.svg": "cc16e33d18e4a60162978d0921647036e22cc9ee0d90b1c47e08c86987195e92",
+    "native-inputs/logo-lockup.svg": "adf22b3e8c49cd9901da7cafd3e3e76791e842dd9f54b5302adc33c5a5c599ac",
+    "archive/A1-no-floor.svg": "73ced88c6929285c1d7ec9b9b35dde221bee557d53c9f75abbb14cef6ad66d4e",
+    "archive/A2-no-floor-no-hair.svg": "caebbf552cf51ff2f8c0b9269e9b8ed9aa60c0855a80db170f69f3e8d3775f27",
+    "archive/A3-paper-edge.svg": "b20e695809a66850e7cf1d43b2594b6f0e2786a7181a00f7d05d9b80beafb009",
+    "archive/C-one-document.svg": "4a62af3c7a8ed172ad1323d366f11e754a70174a09a3635493f195abbaee0a55",
+    "archive/ai-mark-original.svg": "1433d534ee01aa7d7e17281c181e6bda64c3366aab206b0ecb97c9f9651c559c",
+    "archive/original-dimensional.svg": "6dcf339b0504c6afd01048722495204cf7492dcdc8fbd89dbac1de20810bd0a0",
+    "source/B-selected-original.svg": "16b81d1e9594b7d48999d2c50bca7e3bf37a86986bba2c539544417f977e4412",
+    "source/wordmark-en.svg": "e31adc96790b4bf539b4fd5518d29f9c17382c0aa63a445a2faaba8bb652fcdf",
+    "source/wordmark-ko.svg": "fb5448bd118d7363cd2e43e290401b69215fe5e2fbdd84374136cb31ad43c7ad",
+    "fonts/Pretendard-OFL.txt": "b04538c9abec39a3db75108cf0af0fd9c77032fe8aa2cf38345b4d250e98e38e",
+    "fonts/PretendardVariable.woff2": "9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4",
+    "preview/brand-board-dark.png": "d05bdb97bb9df4aa3a51579cc38d162d20b1db41a6ffe2450a22167cc51dfcba",
+    "preview/brand-board.png": "d765710f3616eb59c581e81dc5480e0e562d396778cd9a1276a2b61bc50e6020"
+  },
+  "AI_button": "Existing speech bubble with two filled agent eyes; currentColor; runtime React integration deferred",
+  "dark_mode": "Primary symbol colours unchanged; only wordmark foreground changes. Mono is supplementary."
+}

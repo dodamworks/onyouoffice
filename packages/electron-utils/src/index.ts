@@ -59,6 +59,7 @@ export {
 export {
   DEFAULT_SAVE_DIR_KEY,
   configuredDefaultSaveDir,
+  legacyDefaultSaveDirs,
   defaultSaveDirFallback,
   isUsableSaveDir,
   readDefaultSaveDirSetting,

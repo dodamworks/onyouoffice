@@ -1,3 +1,5 @@
+// Modified by Dodam on 2026-10-31: use a product-specific external MCP configuration key.
+import { PRODUCT_COMMAND } from '@genoffice/i18n'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { McpStatus } from '../../shared/home-api'
@@ -14,7 +16,7 @@ import type { TFunc } from './locale'
  */
 export function mcpConfigExample(port: string): string {
   return JSON.stringify(
-    { mcpServers: { 'ieumoffice-editor': { url: `http://127.0.0.1:${port}/mcp` } } },
+    { mcpServers: { [`${PRODUCT_COMMAND}-editor`]: { url: `http://127.0.0.1:${port}/mcp` } } },
     null,
     2,
   )

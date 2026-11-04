@@ -29,14 +29,14 @@ describe('aiConnectGuideView', () => {
     )
     expect(view.open).toBeNull()
     expect(view.options).toEqual([
+      // one ChatGPT answer: it connects directly, and a Codex that needs work is no badge of it
+      { path: 'chatgpt', titleKey: 'guidePathCodexTitle', bodyKey: 'guidePathChatGptBody' },
       {
         path: 'claude-code',
         titleKey: 'guidePathClaudeTitle',
         bodyKey: 'guidePathClaudeBody',
         badgeKey: 'guideBadgeInstalled',
       },
-      // one ChatGPT answer: it connects directly, and a Codex that needs work is no badge of it
-      { path: 'chatgpt', titleKey: 'guidePathCodexTitle', bodyKey: 'guidePathChatGptBody' },
       { path: 'free', titleKey: 'guidePathFreeTitle', bodyKey: 'guidePathFreeBody' },
     ])
   })

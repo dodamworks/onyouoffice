@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -12,8 +13,8 @@ import { commandHelp } from '../src/registry'
 const REPO = resolve(__dirname, '../../..')
 const README_PATH = resolve(__dirname, '..', 'README.md')
 const SKILL_CANDIDATES = [
-  resolve(REPO, 'skills/ieumoffice/SKILL.md'),
-  resolve(__dirname, '..', 'skills/ieumoffice/SKILL.md'),
+  resolve(REPO, 'skills/onyouoffice/SKILL.md'),
+  resolve(__dirname, '..', 'skills/onyouoffice/SKILL.md'),
 ]
 
 function readFirst(paths: string[], label: string): { path: string; text: string } {
@@ -29,8 +30,8 @@ function readFirst(paths: string[], label: string): { path: string; text: string
 
 const readme = readFileSync(README_PATH, 'utf-8')
 // The command name the CLI README spells in its examples.
-const README_COMMAND = 'ieumoffice'
-const skillFile = readFirst(SKILL_CANDIDATES, 'ieumoffice SKILL.md')
+const README_COMMAND = 'onyouoffice'
+const skillFile = readFirst(SKILL_CANDIDATES, 'onyouoffice SKILL.md')
 
 function fencesOf(markdown: string): string {
   return [...markdown.matchAll(/```[\s\S]*?```/g)].map((m) => m[0]).join('\n')
@@ -126,9 +127,9 @@ describe('cli help/registry/readme/skill sync', () => {
       .list()
       .map((d) => d.name)
     const missing = names.filter((n) => !global.includes(n))
-    expect(missing, `ieumoffice help is missing commands: ${missing.join(', ')}`).toEqual([])
+    expect(missing, `onyouoffice help is missing commands: ${missing.join(', ')}`).toEqual([])
     for (const flag of ['--json', '--help', '--version']) {
-      expect(global.includes(flag), `ieumoffice help is missing global flag ${flag}`).toBe(true)
+      expect(global.includes(flag), `onyouoffice help is missing global flag ${flag}`).toBe(true)
     }
   })
 
@@ -137,7 +138,7 @@ describe('cli help/registry/readme/skill sync', () => {
     for (const def of defaultRegistry().list()) {
       const built = norm(commandHelp(def))
       const shown = norm(await helpFor(['help', def.name]))
-      if (!shown.includes(norm(`usage: ieumoffice ${def.usage}`))) {
+      if (!shown.includes(norm(`usage: onyouoffice ${def.usage}`))) {
         gaps.push(`${def.name}: 'help ${def.name}' omits its usage line`)
       }
       for (const opt of def.options ?? []) {
@@ -171,7 +172,7 @@ describe('cli help/registry/readme/skill sync', () => {
     const names = defaultRegistry()
       .list()
       .map((d) => d.name)
-    const missing = names.filter((n) => !body.includes(norm(`ieumoffice ${n}`)))
+    const missing = names.filter((n) => !body.includes(norm(`onyouoffice ${n}`)))
     const unexpected = missing.filter((n) => !SKILL_COMMAND_OMISSIONS.has(n))
     const stale = [...SKILL_COMMAND_OMISSIONS.keys()].filter((n) => !missing.includes(n))
     expect(

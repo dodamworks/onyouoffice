@@ -4,7 +4,7 @@ import { mkdtemp, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { launchShell, closeAndSaveVideo, waitForPageWithUrl } from './helpers'
-import { PRODUCT_NAME } from '../packages/i18n/src/product'
+import { DEFAULT_DOCUMENTS_DIR_NAME } from '../packages/i18n/src/product'
 
 // the preload exposes window.__genofficeDebug only under this env var
 process.env.GENOFFICE_DEBUG_HOOKS = '1'
@@ -28,7 +28,7 @@ test.describe('sheets: tiled paste of formulas survives save', () => {
       await app.evaluate(({ app: electronApp }, dir) => {
         electronApp.setPath('documents', dir)
       }, scratch)
-      const saveDir = join(scratch, PRODUCT_NAME)
+      const saveDir = join(scratch, DEFAULT_DOCUMENTS_DIR_NAME)
       // the workbook has no file yet: Save answers the Save As picker (genoffice#1036)
       await app.evaluate(
         ({ dialog }, target) => {
@@ -37,8 +37,8 @@ test.describe('sheets: tiled paste of formulas survives save', () => {
         join(saveDir, 'pasted.xlsx'),
       )
 
-      await expect(page.locator('.quick-card').nth(1)).toContainText('AI Sheets')
-      await page.locator('.quick-card').nth(1).click()
+      await expect(page.locator('.quick-card[data-format="xlsx"]')).toContainText('Spreadsheet')
+      await page.locator('.quick-card[data-format="xlsx"]').click()
 
       const sheets = await waitForPageWithUrl(app, '://sheets/')
       await sheets.waitForFunction(() => document.body.textContent?.includes('Sheet1'), null, {
@@ -76,7 +76,7 @@ test.describe('sheets: tiled paste of formulas survives save', () => {
         await sheet.getRange(0, 0, 1, 3).setValues([[10, 'hi', '=A1&"-x"']])
         sheet.getRange(0, 0, 1, 3).activate()
       })
-      await sheets.keyboard.press('Control+c')
+      await sheets.keyboard.press('ControlOrMeta+c')
       await sheets.waitForTimeout(300)
 
       // tile-paste into A2:C3 — row 3's formula cell becomes an si follower
@@ -97,7 +97,7 @@ test.describe('sheets: tiled paste of formulas survives save', () => {
         }
         debug.univerAPI.getActiveWorkbook().getActiveSheet().getRange(1, 0, 2, 3).activate()
       })
-      await sheets.keyboard.press('Control+v')
+      await sheets.keyboard.press('ControlOrMeta+v')
       await sheets.waitForTimeout(800)
 
       await app.evaluate(({ webContents }) => {

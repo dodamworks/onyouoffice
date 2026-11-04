@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { spawn } from 'node:child_process'
 import { extname } from 'node:path'
 import { PRODUCT_NAME } from '@genoffice/i18n'
@@ -168,7 +169,7 @@ export function parseTarget(args: ParsedArgs, path: string): ControlTarget | und
     EXIT.usage,
     `targets are supported for pptx, docx, odt, xlsx and pdf files, not ${ext || 'this file'}`,
     { supported: ['.pptx', '.docx', '.odt', '.xlsx', '.pdf'] },
-    { reason: 'unsupported', suggestion: 'run `ieumoffice open <file>` without a target' },
+    { reason: 'unsupported', suggestion: 'run `onyouoffice open <file>` without a target' },
   )
 }
 

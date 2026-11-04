@@ -39,6 +39,7 @@ const METHODS = [
   'removeTableLines',
   'deleteTable',
   'installFileMenu',
+  'installDocumentCheckMenu',
   'reveal',
   'selection',
   'replaceSelection',

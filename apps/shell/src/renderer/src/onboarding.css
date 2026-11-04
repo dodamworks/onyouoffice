@@ -30,6 +30,26 @@
   background: rgba(35, 36, 37, 0.4);
   backdrop-filter: blur(4px);
   font-family: var(--onb-font-sans);
+  word-break: normal;
+  overflow-wrap: anywhere;
+  hyphens: manual;
+}
+
+/* Keep Korean words intact; other scripts retain their native line-breaking rules. */
+:lang(ko) .onb-overlay {
+  word-break: keep-all;
+}
+
+.onb-title {
+  text-wrap: balance;
+}
+
+.onb-body,
+.onb-subtitle,
+.onb-note,
+.onb-connect .ai-sub-guide-path-body,
+.onb-connect .ai-sub-note {
+  text-wrap: pretty;
 }
 
 .onb-card {
@@ -70,6 +90,14 @@
   text-align: start;
 }
 
+.onb-slide[data-step='welcome'],
+.onb-slide[data-step='done'] {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-block: 24px;
+}
+
 .onb-slide.active {
   animation: onb-slide-in 0.25s ease-out;
 }
@@ -91,14 +119,14 @@
 
 .onb-art {
   display: block;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   color: var(--onb-text-primary);
 }
 
 .onb-art-logo {
-  width: 60px;
-  height: 60px;
-  border-radius: 13.5px;
+  width: 88px;
+  height: 88px;
+  border-radius: 20px;
 }
 
 /* decorative glyphs: exact design-spec vectors — 60px box, 4px strokes, bare
@@ -107,26 +135,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 60px;
+  width: 88px;
+  height: 88px;
   color: var(--onb-text-primary);
 }
 
 /* glyph drawn a notch smaller inside the fixed 60px slot (box size unchanged,
  * so the text rhythm below stays put) */
 .onb-art-badge svg {
-  width: 58px;
-  height: 58px;
+  width: 76px;
+  height: 76px;
 }
 
 /* each glyph carries different padding inside its canvas; pull it out so the
  * visible left edge of the artwork sits on the text axis below */
 .onb-art-ai {
-  margin-left: -7px;
+  align-self: center;
+  margin-left: 0;
 }
 
 .onb-art-check {
-  margin-left: -4px;
+  margin-left: 0;
+  border-radius: 24px;
+  background: var(--onb-bg-subtle);
+  color: var(--onb-brand);
 }
 
 .onb-title {
@@ -138,6 +170,7 @@
   color: var(--onb-text-primary);
 }
 
+/* The completion step still uses the subtitle style. */
 .onb-subtitle {
   margin: 0;
   font-size: 18px;
@@ -154,16 +187,6 @@
   color: var(--onb-text-secondary);
 }
 
-/* the closing step's last line reads as a footnote */
-.onb-body-dim {
-  color: var(--onb-text-tertiary);
-}
-
-/* the connect step has no subtitle: its lead paragraph sits right under the title */
-.onb-body-lead {
-  margin-top: 0;
-}
-
 /* step 2: one card per subscription provider, then the Codex line */
 .onb-connect {
   display: flex;
@@ -171,6 +194,30 @@
   gap: 8px;
   width: 100%;
   margin-top: 14px;
+}
+
+.onb-connect .ai-sub-guide {
+  gap: 12px;
+}
+
+.onb-connect .ai-sub-guide-paths {
+  gap: 8px;
+}
+
+.onb-connect .ai-sub-guide-path {
+  gap: 4px;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.onb-connect .ai-sub-guide-path-body {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.onb-connect .ai-sub-guide-info {
+  gap: 6px;
+  padding-top: 12px;
 }
 
 .onb-connect-failed {
@@ -365,4 +412,79 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Keep onboarding help available without making it the first-run reading task. */
+.onb-connect .ai-sub-guide-disclosure {
+  border-top: 1px solid var(--onb-border-default);
+  padding-top: 12px;
+  font-size: 13px;
+  color: var(--onb-text-secondary);
+}
+
+.onb-connect .ai-sub-guide-disclosure > summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.onb-connect .ai-sub-guide-disclosure > summary:focus-visible {
+  outline: 2px solid var(--onb-brand);
+  outline-offset: 4px;
+}
+
+.onb-connect .ai-sub-guide-disclosure .ai-sub-guide-info {
+  border-top: 0;
+}
+
+.onb-slide[data-step='connect'] > .onb-title {
+  align-self: center;
+}
+
+.onb-slide[data-step='done'] .onb-subtitle {
+  margin-top: 12px;
+  font-size: 16px;
+  color: var(--onb-text-secondary);
+  max-width: 36ch;
+}
+
+.onb-nickname {
+  width: min(320px, 100%);
+  margin-top: 28px;
+  text-align: start;
+}
+
+.onb-nickname label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--onb-text-primary);
+}
+
+.onb-nickname input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--onb-border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--onb-text-primary);
+  font: inherit;
+  font-size: 14px;
+}
+
+.onb-nickname input::placeholder {
+  color: var(--onb-text-secondary);
+}
+
+.onb-nickname input:focus-visible {
+  outline: 2px solid var(--onb-brand);
+  outline-offset: 2px;
+}
+
+.onb-nickname p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--onb-text-secondary);
+  text-wrap: pretty;
 }

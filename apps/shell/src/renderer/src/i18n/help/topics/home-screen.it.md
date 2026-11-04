@@ -7,7 +7,7 @@ Home è la pagina iniziale di GenOffice: una barra di navigazione a sinistra, el
 - **Recenti**: i file che hai aperto di recente. Ogni riga è datata — oggi, ieri o la data.
 - **Preferiti**: i file che hai messo tra i preferiti. Passa il puntatore su una riga di file e fai clic sulla stella per aggiungerlo o rimuoverlo. **Sposta nel gruppo** nel menu ⋯ ordina i preferiti in gruppi con nome; la vista Preferiti filtra per gruppo.
 - **Guida dell’utente**: apre questa guida.
-- **Ask AI**: il pannello della base di conoscenza — poni domande e ottieni risposte citate dai tuoi file preferiti (vedi sotto).
+- **Archivio delle conoscenze**: La fonte predefinita comprende i documenti registrati nell’app: file recenti e preferiti, cartelle aggiunte e progetti. Non cerca in tutto il computer.
 - **Progetti**: le cartelle (progetti) con cui l'IA può lavorare. Crea un progetto o usa una cartella esistente, e aprine uno per gestirne istruzioni, memoria, file e chat. Vedi [Progetti](help://projects).
 - **Cartelle**: le directory che aggiungi alla barra laterale con **Aggiungi cartella…**, oppure che ci trascini dal gestore di file. Ognuna diventa una radice che puoi aprire, riempire di sottocartelle, rinominare e rimuovere; una radice che va offline viene mostrata come non disponibile e può essere tolta dall'elenco. **Nuova cartella** ne crea un'altra.
 - **La riga in fondo**: mostra se l'IA è collegata — **Collega l’IA**, oppure il nome dell'abbonamento collegato — e apre le Impostazioni.
@@ -56,11 +56,9 @@ Cosa fa ogni scheda:
 
 > Suggerimento: File ▸ Nuovo nella barra dei menu crea gli stessi tipi di documento (⌘N/Ctrl+N crea per impostazione predefinita un documento di testo); trascinando un file nella finestra lo si apre.
 
-## Chiedi alla tua base di conoscenza
+## Archivio delle conoscenze
 
-- Preferisci prima dei file (qualsiasi tipo che l'app legga); l'intestazione del pannello conta il corpus, e una base vuota ti invita a preferire qualcosa.
-- Le risposte citano i file di provenienza; clicca una citazione per aprire il file nel suo editor.
-- Richiede un'IA collegata; vedi [Connessione con abbonamento](help://subscription). La conversazione vive solo in memoria — chiudere l'app la termina.
-- Scegli un progetto sotto il campo di input e anche i file della cartella vengono cercati e letti, mentre la chat viene conservata in quella cartella così puoi continuare in un altro editor. Senza progetto, la chat vive solo in memoria, come sopra.
-- La ricerca gira sull'indice locale dei file, come quella della Home; i file spariti escono dal corpus in silenzio.
-- I gruppi ordinano solo l'elenco Preferiti — la base di conoscenza abbraccia sempre tutti i file preferiti.
+- La fonte predefinita comprende i documenti registrati nell’app: file recenti e preferiti, cartelle aggiunte e progetti. Non cerca in tutto il computer.
+- Sopra la casella di testo scegli documenti registrati, un progetto, documenti specifici o preferiti. Cambiare fonte avvia una nuova chat e annulla le domande in attesa di connessione.
+- Collega l’IA in Impostazioni → IA. Nomi e contenuti pertinenti della fonte scelta possono essere inviati al fornitore. I file nascosti ed esclusi del progetto restano esclusi. Le risposte citano le fonti.
+- Le chat dei progetti sono salvate nella cartella del progetto. Le altre restano in memoria e terminano alla chiusura dell’app.

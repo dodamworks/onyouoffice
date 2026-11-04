@@ -59,6 +59,9 @@ export const es = {
   aiEmptyBody:
     'Pregunta sobre el texto, pide que se mejore la redacción o que se rellenen los campos de formulario. Cada cambio aparece aquí y se puede deshacer de una vez.',
   aiComposerPlaceholder: 'Pregunta sobre este documento o indica qué hay que cambiar…',
+  aiToolbarSummary: 'Resumir',
+  aiToolbarPolish: 'Mejorar',
+  aiToolbarPolishPrompt: 'Pule todo el documento para que la redacción sea más clara y fluida',
   aiStarterSummarize: 'Resumir',
   aiStarterSummarizePrompt: 'Resume brevemente este documento, solo los puntos clave.',
   aiStarterProofread: 'Corregir ortografía y espacios',
@@ -220,7 +223,7 @@ export const es = {
   previewMargins: 'Mostrar márgenes',
   previewEditPage: 'Editar esta página',
   previewEditFailed: 'No se pudo ir a esta página.',
-  checkTitle: 'Revisión del documento',
+  checkTitle: 'Comprobar formato del documento',
   checkRunning: 'Leyendo el documento…',
   checkFailed: 'No se pudo leer el documento.',
   checkEmpty: 'No hay nada que corregir.',

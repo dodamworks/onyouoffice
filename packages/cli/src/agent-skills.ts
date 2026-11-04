@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { createHash } from 'node:crypto'
 import {
   existsSync,
@@ -16,8 +17,8 @@ import JSZip from 'jszip'
 import { SKILL_NAME } from './names'
 
 /**
- * Installing the bundled `ieumoffice` skill into the coding agents found on this
- * machine, shared by Settings → Integrations and `ieumoffice skill`. Every write
+ * Installing the bundled `onyouoffice` skill into the coding agents found on this
+ * machine, shared by Settings → Integrations and `onyouoffice skill`. Every write
  * is a click in that pane or an explicit command; nothing installs on its own.
  * Pure functions over an injected home / env so the state table is
  * unit-testable without touching the real dotfolders.
@@ -46,7 +47,7 @@ export interface AgentTarget {
 }
 
 export type SkillInstallStatus =
-  /** no ieumoffice/ folder in the skills directory */
+  /** no onyouoffice/ folder in the skills directory */
   | 'missing'
   /** written by this app, same version and bytes as the bundled skill */
   | 'installed'
@@ -58,12 +59,12 @@ export type SkillInstallStatus =
   | 'foreign'
   /** a newer skill version than the one bundled, whoever wrote it */
   | 'newer'
-  /** ieumoffice/ exists but does not hold our skill */
+  /** onyouoffice/ exists but does not hold our skill */
   | 'occupied'
 
 export interface SkillInstallState {
   status: SkillInstallStatus
-  /** `<skillsDir>/ieumoffice/SKILL.md` */
+  /** `<skillsDir>/onyouoffice/SKILL.md` */
   path: string
   installedVersion?: string
   /** installed version is older than the bundled one (foreign rows offer an update then) */
@@ -405,7 +406,7 @@ export function uninstallSkill(skillsDir: string, ledger: SkillLedger): boolean 
   return true
 }
 
-/** `ieumoffice/SKILL.md` inside a zip: the layout claude.ai and the desktop apps accept for an uploaded skill. */
+/** `onyouoffice/SKILL.md` inside a zip: the layout claude.ai and the desktop apps accept for an uploaded skill. */
 export async function buildSkillZip(bundled: BundledSkill): Promise<Buffer> {
   const zip = new JSZip()
   zip.file(`${SKILL_NAME}/SKILL.md`, bundled.bytes, { date: new Date(0) })

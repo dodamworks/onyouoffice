@@ -1,7 +1,8 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 // Assembles the command line as a standalone archive for machines that do not
 // have the desktop app: agent sandboxes, servers, CI images. It carries the
 // same bundle, jsdom tree, wasm engines and xlsx sidecar the installed app
-// ships, so behaviour is identical to `ieumoffice` inside the app — only the
+// ships, so behaviour is identical to `onyouoffice` inside the app — only the
 // Electron binary is gone.
 //
 // usage: node pack-tarball.mjs --from <app resources dir> [--out <dir>] [--platform linux] [--arch x64] [--notices <dir>]
@@ -27,15 +28,15 @@ import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(here, '../..')
-const ARCHIVE_ROOT = 'ieumoffice-cli'
+const ARCHIVE_ROOT = 'onyouoffice-cli'
 
 /** Every entry the archive must carry; a missing one means a broken app build. */
 const REQUIRED = [
-  'cli/ieumoffice',
+  'cli/onyouoffice',
   'cli/genoffice.cjs',
   'cli/package.json',
   'cli/node_modules/jsdom/package.json',
-  'cli/skills/ieumoffice/SKILL.md',
+  'cli/skills/onyouoffice/SKILL.md',
   'wasm/pdfium.wasm',
   'wasm/rhwp_bg.wasm',
   'wasm/hb-subset.wasm',
@@ -61,7 +62,7 @@ function parseArgs(argv) {
 }
 
 export function archiveName(version, platform, arch) {
-  return `ieumoffice-cli_${version}_${platform}-${arch}.tar.gz`
+  return `onyouoffice-cli_${version}_${platform}-${arch}.tar.gz`
 }
 
 /** The version the archive reports: CI injects the release version, a checkout reads the bundle's banner or the package's. */
@@ -116,14 +117,14 @@ export function packTarball({ from, out, platform, arch, notices, env = process.
   mkdirSync(target, { recursive: true })
   const archive = join(target, archiveName(version, platform, arch))
 
-  const staging = mkdtempSync(join(tmpdir(), 'ieumoffice-cli-'))
+  const staging = mkdtempSync(join(tmpdir(), 'onyouoffice-cli-'))
   try {
     copyInto(staging, from, ['cli', 'wasm', 'native'])
     for (const notice of noticeFiles) {
       cpSync(notice, join(staging, ARCHIVE_ROOT, notice.split(/[\\/]/).pop()))
     }
     // the launcher resolves its own location through a PATH symlink, so it must stay executable
-    chmodSync(join(staging, ARCHIVE_ROOT, 'cli/ieumoffice'), 0o755)
+    chmodSync(join(staging, ARCHIVE_ROOT, 'cli/onyouoffice'), 0o755)
     execFileSync('tar', ['-czf', archive, '-C', staging, ARCHIVE_ROOT], { stdio: 'inherit' })
   } finally {
     rmSync(staging, { recursive: true, force: true })

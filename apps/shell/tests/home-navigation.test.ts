@@ -125,33 +125,36 @@ function selected(): string[] {
 }
 
 describe('Home sidebar navigation', () => {
-  it.each(['Recent', 'Starred'])('shows only Ask AI as selected after leaving %s', async (from) => {
-    await click(nav(from))
-    expect(selected()).toEqual([from])
-    await click(nav('Ask AI'))
-    expect(container.querySelector('.kb-ask')).not.toBeNull()
-    expect(selected()).toEqual(['Ask AI'])
-    expect(nav('Ask AI').getAttribute('aria-current')).toBe('page')
-    expect(nav(from).hasAttribute('aria-current')).toBe(false)
-    expect(fetch).not.toHaveBeenCalled()
-    await click(nav(from))
-    expect(selected()).toEqual([from])
-    expect(nav(from).getAttribute('aria-current')).toBe('page')
-    expect(container.querySelector('.kb-ask')).toBeNull()
-    expect(container.querySelector('.content')?.textContent).toContain('brief.docx')
-    if (from === 'Starred')
-      expect(container.querySelector('.content')?.textContent).not.toContain('budget.xlsx')
-  })
+  it.each(['Recent', 'Starred'])(
+    'shows only Knowledge Vault as selected after leaving %s',
+    async (from) => {
+      await click(nav(from))
+      expect(selected()).toEqual([from])
+      await click(nav('Knowledge Vault'))
+      expect(container.querySelector('.kb-ask')).not.toBeNull()
+      expect(selected()).toEqual(['Knowledge Vault'])
+      expect(nav('Knowledge Vault').getAttribute('aria-current')).toBe('page')
+      expect(nav(from).hasAttribute('aria-current')).toBe(false)
+      expect(fetch).not.toHaveBeenCalled()
+      await click(nav(from))
+      expect(selected()).toEqual([from])
+      expect(nav(from).getAttribute('aria-current')).toBe('page')
+      expect(container.querySelector('.kb-ask')).toBeNull()
+      expect(container.querySelector('.content')?.textContent).toContain('brief.docx')
+      if (from === 'Starred')
+        expect(container.querySelector('.content')?.textContent).not.toContain('budget.xlsx')
+    },
+  )
 
-  it('keeps the file-type filter when returning from Ask AI', async () => {
+  it('keeps the file-type filter when returning from Knowledge Vault', async () => {
     const docs = [...container.querySelectorAll<HTMLButtonElement>('.filter-pill')].find(
       (button) => button.textContent === 'Docs',
     )!
     await click(docs)
     expect(container.querySelector('.content')?.textContent).toContain('brief.docx')
     expect(container.querySelector('.content')?.textContent).not.toContain('budget.xlsx')
-    await click(nav('Ask AI'))
-    expect(selected()).toEqual(['Ask AI'])
+    await click(nav('Knowledge Vault'))
+    expect(selected()).toEqual(['Knowledge Vault'])
     await click(nav('Recent'))
     expect(container.querySelector('.filter-pill.active')?.textContent).toBe('Docs')
     expect(container.querySelector('.content')?.textContent).toContain('brief.docx')

@@ -4,7 +4,7 @@ Chaque éditeur peut appeler le panneau IA: sélectionnez quelque chose, donnez 
 
 ## L’ouvrir et s’en servir
 
-- Le panneau a besoin d’une IA connectée. Si aucune ne l’est, il affiche les cartes de connexion au lieu d’une erreur ; voir [Connexion par abonnement](help://subscription).
+- Connectez l’IA dans Paramètres → IA. [AI](help://subscription)
 - Entrées: le **bouton IA** du ruban de chaque éditeur, **Demander à l’IA** dans les menus contextuels, ou Demander à l’IA sur la barre de marquage.
 - Décrivez la tâche en langage naturel (réécrire ceci / transformer cette colonne en pourcentages / remettre cette page en page…) et appuyez sur Entrée.
 - Les réponses sont rendues **en flux**; lorsque l’IA a besoin d’outils (lire le document, le modifier), elle les exécute et continue jusqu’au bout.
@@ -24,7 +24,7 @@ Chaque éditeur peut appeler le panneau IA: sélectionnez quelque chose, donnez 
 - **Slides**: génération d’un diaporama complet, ajustement de la disposition, réécriture des textes.
 - **PDF**: questions et résumés sur le texte ou les pages sélectionnées.
 - **Markdown / HTML**: réécriture, développement, traduction.
-- **Accueil ▸ Ask AI** répond à partir de vos fichiers étoilés et les cite — le panneau de base de connaissances a sa propre section au chapitre Accueil, et le panneau IA de Docs porte la même compétence.
+- **Réserve de connaissances**: La source par défaut comprend les documents enregistrés dans l’application : fichiers récents et favoris, dossiers ajoutés et projets. Elle ne couvre pas tout l’ordinateur. Au-dessus de la saisie, choisissez les documents enregistrés, un projet, des documents précis ou les favoris. Changer de source ouvre une nouvelle conversation et annule toute question en attente de connexion. [Home](help://home-screen)
 
 ## Joindre des documents ouverts
 

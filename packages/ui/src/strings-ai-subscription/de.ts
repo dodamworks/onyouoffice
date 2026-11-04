@@ -106,14 +106,13 @@ export const de = {
   pickerNotConnected: 'KI verbinden',
   guideQuestion: 'Welche KI nutzen Sie bereits?',
   guidePathClaudeTitle: 'Ich habe ein kostenpflichtiges Claude-Abonnement',
-  guidePathClaudeBody:
-    'Ein Pro- oder Max-Tarif ist nötig. Mit einem kostenlosen Claude-Konto ist keine Verbindung möglich.',
+  guidePathClaudeBody: 'Erfordert ein Pro- oder Max-Abo und ein Verbindungsprogramm auf Ihrem PC.',
   guidePathCodexTitle: 'Ich nutze ChatGPT',
   guidePathCodexBody:
     'Melden Sie sich mit Ihrem ChatGPT-Konto beim Codex-Programm von OpenAI an. Der kostenlose Tarif erlaubt nur wenig Nutzung.',
   guidePathFreeTitle: 'Noch keins von beiden',
   guidePathFreeBody:
-    'Verbinden Sie in etwa einer Minute eine kostenlose KI. Solange Sie sie kostenlos nutzen, kann das Gesendete zur Verbesserung der KI dieses Unternehmens verwendet werden.',
+    'Kostenlose KI über OpenRouter oder Gemini verbinden. Anbieter können gesendete Inhalte zur Verbesserung ihrer KI nutzen.',
   guideBack: 'Anderen Weg wählen',
   guideBadgeReady: 'Verbunden',
   guideBadgeInstalled: 'Installiert',
@@ -153,8 +152,7 @@ export const de = {
   actionCopyInfo: 'Infos für Hilfe kopieren',
   copyInfoDone: 'Kopiert',
   actionConnectHelp: 'Jeden Schritt am Bildschirm ansehen (Seite auf Koreanisch)',
-  guidePathChatGptBody:
-    'Melden Sie sich mit Ihrem ChatGPT-Konto an und nutzen Sie Ihren Tarif. Keine Installation nötig. Der kostenlose Tarif erlaubt nur wenig Nutzung.',
+  guidePathChatGptBody: 'Im Browser anmelden. Die Nutzungslimits Ihres Tarifs gelten.',
   guideUseCodex: 'Nutzen Sie das Codex-Programm bereits auf diesem PC? Über Codex verbinden',
   guideUseDirect: 'Direkt in der App verbinden, ohne Codex',
   chatgptLoginNote:

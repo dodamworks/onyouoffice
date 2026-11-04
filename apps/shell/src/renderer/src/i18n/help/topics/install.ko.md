@@ -1,4 +1,8 @@
+<!-- Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build. -->
+
 # GenOffice 설치
+
+> 온유오피스 내부 개발 빌드입니다. 자체 다운로드·업데이트·고객지원 페이지는 아직 설정되지 않았습니다. 아래 설치·배포 설명과 링크는 원본 프로젝트의 참고 자료이며 온유오피스의 배포 안내가 아닙니다.
 
 모든 버전은 GitHub에 있는 프로젝트의 [Releases 페이지](https://github.com/pblsketch/openoffice/releases/latest)에 올라옵니다. 이 버전은 Windows용으로 배포됩니다.
 

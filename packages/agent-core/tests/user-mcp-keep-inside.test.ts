@@ -16,6 +16,7 @@ const toolMessage = (name: string, isError = false): AgentMessage => ({
 
 function setup(opts: { keepInside?: string[]; failing?: string[]; async?: boolean } = {}) {
   let history: AgentMessage[] = []
+  let conversationVersion = 0
   const keepInside = new Set(opts.keepInside ?? ['notes', 'mail'])
   const executed: string[] = []
   const editor: AgentSkill = {
@@ -44,12 +45,17 @@ function setup(opts: { keepInside?: string[]; failing?: string[]; async?: boolea
   const skill = guardReceivedContent(composeSkills('x', '', [editor]), {
     keepsInside: (server) => keepInside.has(server),
     messages: () => history,
+    conversationVersion: () => conversationVersion,
   })
   return {
     skill,
     executed,
     keepInside,
     setHistory: (h: AgentMessage[]) => (history = h),
+    openConversation: (h: AgentMessage[]) => {
+      conversationVersion++
+      history = h
+    },
     run: async (name: string, input: Record<string, unknown> = {}) =>
       await skill.executeTool(call(name, input)),
   }
@@ -78,6 +84,41 @@ describe('keepInsideRefusalText', () => {
 })
 
 describe('guardReceivedContent', () => {
+  it('clears the old guard when a saved chat replaces history before the next run', async () => {
+    const { skill, run, openConversation } = setup()
+    await run('mcp__notes__read')
+    expect((await run('web_search')).isError).toBe(true)
+    openConversation([{ role: 'user', text: 'unrelated saved conversation' }])
+    skill.buildContext?.()
+    expect((await run('web_search')).isError).toBeFalsy()
+    expect([...skill.keptInsideServers]).toEqual([])
+
+    openConversation([toolMessage('mcp__mail__read')])
+    skill.buildContext?.()
+    expect([...skill.keptInsideServers]).toEqual(['mail'])
+    expect((await run('mcp__mail__read')).isError).toBeFalsy()
+    expect((await run('mcp__notes__read')).isError).toBe(true)
+  })
+
+  it('does not hold a late tool result from a conversation that was reset', async () => {
+    let version = 0
+    let finish!: (result: ToolExecution) => void
+    const skill = guardReceivedContent(
+      {
+        id: 'pending',
+        systemPrompt: '',
+        tools: [],
+        executeTool: () => new Promise<ToolExecution>((resolve) => (finish = resolve)),
+      },
+      { keepsInside: () => true, messages: () => [], conversationVersion: () => version },
+    )
+    const pending = skill.executeTool(call('mcp__notes__read'))
+    version++
+    finish({ output: 'old result', summary: 'old' })
+    await pending
+    expect([...skill.keptInsideServers]).toEqual([])
+  })
+
   it('lets every tool run before any keep-inside content comes in', async () => {
     const { run, executed } = setup()
     await run('web_search', { query: 'q' })

@@ -3,8 +3,7 @@ import type { zh } from './zh'
 export const de = {
   windowTitle: 'Agent',
   homeCardSub: 'In einem Ordner mit Claude Code oder Codex arbeiten',
-  intro:
-    'Der Agent führt Ihr Claude Code oder Codex in einem Ordner Ihrer Wahl aus. Er kann die Dateien darin lesen, neue erstellen, Ihre Skills nutzen, Skripte ausführen und in GenOffice geöffnete Dokumente ändern.',
+  intro: 'Erstellen und bearbeiten Sie Dateien mit KI in einem gewählten Ordner.',
   folderLabel: 'Projektordner',
   folderPick: 'Ordner wählen…',
   folderNone: 'Kein Ordner gewählt',

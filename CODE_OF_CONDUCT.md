@@ -1,3 +1,5 @@
+<!-- Modified by Dodam on 2026-11-04: route Onyou conduct reports to its maintainers. -->
+
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge
@@ -56,12 +58,9 @@ an individual is officially representing the community in public spaces.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement through
-GitHub's
-[private vulnerability reporting](https://github.com/pblsketch/openoffice/security/advisories/new)
-channel on this repository (used here as the private contact channel for
-conduct reports as well). All complaints will be reviewed and investigated
-promptly and fairly.
+reported privately to the Onyou maintainers at support@onyouoffice.com. For security
+reports, follow [SECURITY.md](SECURITY.md). Complaints will be reviewed and
+investigated fairly; response times are not guaranteed.
 
 All community leaders are obligated to respect the privacy and security of the
 reporter of any incident.

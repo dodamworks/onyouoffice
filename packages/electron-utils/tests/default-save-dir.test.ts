@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -6,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   configuredDefaultSaveDir,
+  legacyDefaultSaveDirs,
   defaultSaveDirFallback,
   isUsableSaveDir,
   readDefaultSaveDirSetting,
@@ -92,15 +94,15 @@ describe('configuredDefaultSaveDir', () => {
     expect(configuredDefaultSaveDir(app)).toBe(custom)
   })
 
-  it('falls back to <Documents>/<product name> without a setting', () => {
+  it('falls back to the lowercase documents directory without a setting', () => {
     const userData = join(root, 'userData')
     const documents = join(root, 'Documents')
     mkdirSync(userData, { recursive: true })
     const app = {
       getPath: (name: 'userData' | 'documents') => (name === 'userData' ? userData : documents),
     }
-    expect(configuredDefaultSaveDir(app)).toBe(join(documents, 'IeumOffice'))
-    expect(existsSync(join(documents, 'IeumOffice'))).toBe(true)
+    expect(configuredDefaultSaveDir(app)).toBe(join(documents, 'onyouoffice'))
+    expect(existsSync(join(documents, 'onyouoffice'))).toBe(true)
     // the upstream app's folder is its own: never created or reused here
     expect(existsSync(join(documents, 'GenOffice'))).toBe(false)
   })
@@ -123,20 +125,20 @@ describe('a blocked Documents folder', () => {
     mkdirSync(userData, { recursive: true })
     mkdirSync(documents, { recursive: true })
     // a file where the folder should be: neither creatable nor writable as a folder
-    writeFileSync(join(documents, 'IeumOffice'), 'x')
+    writeFileSync(join(documents, 'onyouoffice'), 'x')
     expect(configuredDefaultSaveDir(appAt(userData, documents, home))).toBe(
-      join(home, 'IeumOffice'),
+      join(home, 'onyouoffice'),
     )
     expect(defaultSaveDirFallback()).toEqual({
-      blocked: join(documents, 'IeumOffice'),
-      using: join(home, 'IeumOffice'),
+      blocked: join(documents, 'onyouoffice'),
+      using: join(home, 'onyouoffice'),
     })
   })
 
   it('skips the blocked folder for a while instead of retrying on every call, then picks it up', () => {
     vi.useFakeTimers({ toFake: ['Date'] })
-    const blocked = join(root, 'Documents', 'IeumOffice')
-    const next = join(root, 'home', 'IeumOffice')
+    const blocked = join(root, 'Documents', 'onyouoffice')
+    const next = join(root, 'home', 'onyouoffice')
     mkdirSync(join(root, 'Documents'))
     writeFileSync(blocked, 'x')
     expect(resolveDefaultSaveDir(null, [blocked, next])).toBe(next)
@@ -157,4 +159,35 @@ describe('a blocked Documents folder', () => {
     expect(isUsableSaveDir(join(root, 'created', 'nested'))).toBe(true)
     expect(existsSync(join(root, 'created', 'nested'))).toBe(true)
   })
+})
+
+it('keeps existing spaced document folders readable without moving their files', () => {
+  const documents = join(root, 'Documents'),
+    home = join(root, 'home'),
+    userData = join(root, 'data')
+  const legacy = join(documents, 'Onyou Office')
+  mkdirSync(legacy, { recursive: true })
+  writeFileSync(join(legacy, 'keep.txt'), 'unchanged')
+  const app = {
+    getPath: (kind: 'documents' | 'home' | 'userData') => ({ documents, home, userData })[kind],
+  }
+  expect(configuredDefaultSaveDir(app)).toBe(join(documents, 'onyouoffice'))
+  expect(legacyDefaultSaveDirs(app)).toEqual([legacy])
+  expect(existsSync(join(legacy, 'keep.txt'))).toBe(true)
+})
+
+it('does not add legacy document roots to a custom save location or isolated profile', () => {
+  const documents = join(root, 'Documents'),
+    home = join(root, 'home'),
+    userData = join(root, 'data')
+  mkdirSync(join(documents, 'Onyou Office'), { recursive: true })
+  mkdirSync(userData)
+  writeFileSync(
+    join(userData, 'app-settings.json'),
+    JSON.stringify({ defaultSaveDir: join(root, 'custom') }),
+  )
+  const app = {
+    getPath: (kind: 'documents' | 'home' | 'userData') => ({ documents, home, userData })[kind],
+  }
+  expect(legacyDefaultSaveDirs(app)).toEqual([])
 })

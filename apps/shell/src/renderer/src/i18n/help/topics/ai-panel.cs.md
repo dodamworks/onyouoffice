@@ -4,7 +4,7 @@ Každý editor může vyvolat panel AI: vyberte něco, zadejte pokyn a sledujte 
 
 ## Otevření a používání
 
-- Panel potřebuje připojenou AI. Není-li žádná připojena, zobrazí místo chyby karty pro připojení; viz [Připojení předplatného](help://subscription).
+- Připojte AI v Nastavení → AI. [AI](help://subscription)
 - Vstupy: **tlačítko AI** na pásku každého editoru, **Zeptat se AI** v kontextových nabídkách nebo Zeptat se AI na liště značení.
 - Popište úkol běžnými slovy (přepsat to / udělat z této sloupce procenta / přelayoutovat tuto stránku...) a stiskněte Enter.
 - Odpovědi se vykreslují **průběžně**; když AI potřebuje nástroje (přečíst dokument, upravit ho), použije je a pokračuje až do dokončení.
@@ -24,7 +24,7 @@ Každý editor může vyvolat panel AI: vyberte něco, zadejte pokyn a sledujte 
 - **Slides**: vytvoření celé prezentace, úprava rozvržení, přepis textů.
 - **PDF**: otázky, odpovědi a shrnutí nad vybraným textem nebo stránkami.
 - **Markdown / HTML**: přepsat, rozšířit, přeložit.
-- **Domů ▸ Ask AI** odpovídá z vašich souborů s hvězdičkou a cituje je — panel znalostní báze má vlastní sekci v kapitole Domů a AI panel Docs nese tutéž dovednost.
+- **Znalostní úložiště**: Výchozím zdrojem jsou dokumenty registrované v aplikaci: nedávné a oblíbené soubory, přidané složky a projekty. Neprohledává se celý počítač. Nad vstupním polem vyberte registrované dokumenty, projekt, konkrétní dokumenty nebo oblíbené soubory. Změna zdroje zahájí nový chat a zruší otázky čekající na připojení. [Home](help://home-screen)
 
 ## Připojení otevřených dokumentů
 

@@ -4,7 +4,7 @@ Elke editor kan het AI-paneel oproepen: selecteer iets, geef een instructie en z
 
 ## Openen en gebruiken
 
-- Het paneel heeft een verbonden AI nodig. Is er geen verbonden, dan toont het de verbindingskaarten in plaats van een foutmelding; zie [Abonnementsverbinding](help://subscription).
+- Verbind AI via Instellingen → AI. [AI](help://subscription)
 - Instappen: de **AI-knop** op het lint van elke editor, **Vraag AI** in contextmenu's, of Vraag AI op de markeringsbalk.
 - Beschrijf de taak in gewone taal (herschrijf dit / maak deze kolom percentages / herbereken deze pagina...) en druk op Enter.
 - Antwoorden worden **gestreamd** weergegeven; heeft de AI gereedschap nodig (het document lezen, het bewerken), dan voert het dat uit en gaat het door tot het klaar is.
@@ -24,7 +24,7 @@ Elke editor kan het AI-paneel oproepen: selecteer iets, geef een instructie en z
 - **Slides**: de hele presentatie genereren, indeling bijstellen, teksten herschrijven.
 - **PDF**: vragen en antwoorden en samenvattingen op basis van geselecteerde tekst of pagina's.
 - **Markdown / HTML**: herschrijven, uitbreiden, vertalen.
-- **Start ▸ Ask AI** antwoordt uit uw bestanden met ster en citeert ze — het kennisbank-paneel heeft een eigen sectie in het hoofdstuk Start, en het AI-paneel van Docs heeft dezelfde vaardigheid.
+- **Kennisopslag**: De standaardbron bevat documenten die in de app zijn geregistreerd: recente en favoriete bestanden, toegevoegde mappen en projecten. Niet de hele computer wordt doorzocht. Kies boven het invoerveld geregistreerde documenten, een project, specifieke documenten of favorieten. Een andere bron begint een nieuwe chat en annuleert vragen die op verbinding wachten. [Home](help://home-screen)
 
 ## Geopende documenten bijvoegen
 

@@ -1,10 +1,11 @@
+# Modified by Onyou Office on 2026-11-04: include privacy-boundary and release-skill regressions.
+# Modified by Dodam on 2026-11-03: share verified Electron builds without dropping test coverage.
 name: CI
 
-# Test gate for every PR and push: changed-file formatting, lint, typecheck across
-# all workspaces, and the full unit-test suite (engine packages and app tests; the
-# sheets suite also runs the Rust xlsx-sidecar tests). Installers are built and
-# published by hand (docs/releasing.ko.md) — this workflow never builds or uploads
-# one, and it uses no repository secret.
+# Every PR and main push receives a verified scope decision and final result.
+# Non-runtime reference documents/artwork/data receive dedicated validation.
+# Product code/assets, tooling, dependencies, CI policy and unknown comparisons
+# retain every existing application check. No releases or real-provider trials.
 
 on:
   push:
@@ -17,11 +18,85 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Real-provider trials are opt-in locally, never part of unattended CI.
+env:
+  CI: 'true'
+  # Cached runner images can resolve a floating major to different patch releases.
+  CI_NODE_VERSION: '24.22.2'
+  IEUM_AGENT_REAL: ''
+  TRIAL_MODEL: ''
+
 permissions:
   contents: read
+  actions: read
 
 jobs:
-  test:
+  scope:
+    name: Change scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      full_ci: ${{ steps.classify.outputs.full_ci }}
+      checks_required: ${{ steps.classify.outputs.checks_required }}
+      unit_required: ${{ steps.classify.outputs.unit_required }}
+      e2e_required: ${{ steps.classify.outputs.e2e_required }}
+      reused_run_id: ${{ steps.reuse.outputs.reused_run_id }}
+      reference_check: ${{ steps.classify.outputs.reference_check }}
+      base_sha: ${{ steps.classify.outputs.base_sha }}
+      head_sha: ${{ steps.classify.outputs.head_sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.CI_NODE_VERSION }}
+      - name: Verify change classification
+        run: node --test tools/ci-scope.test.mjs tools/ci-workspaces.test.mjs tools/ci-e2e-artifact.test.mjs tools/ci-reuse.test.mjs tools/ci-impact.test.mjs tools/check-public-boundary.test.mjs tools/release-readiness-skill.test.mjs
+      - name: Classify complete change
+        id: classify
+        run: node tools/ci-scope.mjs
+      - name: Check exact main-merge validation reuse
+        id: reuse
+        if: github.event_name == 'push' && steps.classify.outputs.checks_required == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI_PLAN: ${{ toJSON(steps.classify.outputs) }}
+        run: node tools/ci-reuse.mjs lookup
+
+  references:
+    name: Reference validation
+    needs: scope
+    if: needs.scope.outputs.reference_check == 'true' && needs.scope.outputs.reused_run_id == ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tools/reference-requirements.txt
+      - name: Install isolated reference validators
+        run: |
+          python -m pip install --require-hashes --only-binary=:all: -r tools/reference-requirements.txt
+      - name: Test reference validators
+        run: python -m unittest discover -s tools -p 'check_reference_test.py' -v
+      - name: Validate reference changes and affected links
+        env:
+          REFERENCE_BASE: ${{ needs.scope.outputs.base_sha }}
+          REFERENCE_HEAD: ${{ needs.scope.outputs.head_sha }}
+        run: python tools/check-reference.py --base "$REFERENCE_BASE" --head "$REFERENCE_HEAD"
+
+  checks:
+    needs: scope
+    if: needs.scope.outputs.checks_required == 'true' && needs.scope.outputs.reused_run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -33,7 +108,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22
+          node-version: ${{ env.CI_NODE_VERSION }}
           cache: npm
           cache-dependency-path: package-lock.json
 
@@ -82,6 +157,8 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             FORMAT_BASE_REF=$(git rev-parse HEAD^1)
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            FORMAT_BASE_REF=$(git merge-base HEAD origin/main)
           fi
           npm run format:check
 
@@ -91,6 +168,8 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             FORMAT_BASE_REF=$(git rev-parse HEAD^1)
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            FORMAT_BASE_REF=$(git merge-base HEAD origin/main)
           fi
           npm run check:theme-colors
 
@@ -102,6 +181,8 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             FORMAT_BASE_REF=$(git rev-parse HEAD^1)
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            FORMAT_BASE_REF=$(git merge-base HEAD origin/main)
           fi
           npm run check:skill-version
 
@@ -139,28 +220,81 @@ jobs:
       - name: Check committed fixtures match the generator
         run: git diff --exit-code -- fixtures/generated
 
-      # pptx-engine's OOXML schema gate validates saved decks with xmllint
-      # (tools/ooxml-validate); the runner image is not guaranteed to have it.
+  unit:
+    needs: scope
+    if: needs.scope.outputs.unit_required == 'true' && needs.scope.outputs.reused_run_id == ''
+    name: unit (${{ matrix.group }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [libraries, docs, sheets-shell, editors]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.CI_NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Setup Rust
+        # SHA-pinned (third-party action); the ref no longer selects the
+        # toolchain, so it is passed explicitly.
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable branch, 2026-07
+        with:
+          toolchain: stable
+
+      - name: Cache cargo (xlsx-sidecar)
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        with:
+          workspaces: apps/sheets/native/xlsx-engine
+
+      # electron's postinstall downloads its binary from GitHub Releases on every
+      # fresh install; a cache hit skips the download (and its 5xx flakes)
+      - name: Cache electron binaries
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/electron
+          # own prefix: the build workflows' electron-* entries also hold
+          # ~/.cache/electron-builder, and a saved key is never updated
+          key: electron-bin-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: electron-bin-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate document fixtures
+        run: npm run fixtures
+
       - name: Install xmllint
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libxml2-utils
 
-      - name: Test
-        run: npm test
+      # CLI tests must see a finished sidecar, even on a cold isolated runner.
+      - name: Build sidecar for CLI coverage
+        if: matrix.group == 'libraries'
+        run: npm run native:build -w @genoffice/sheets
 
-      # Preservation gate: a no-op-adjacent edit through the OOXML gateway must
-      # leave every untouched package entry byte-identical (fails closed otherwise).
+      - name: Unit tests
+        run: node tools/ci-workspaces.mjs ${{ matrix.group }}
+
       - name: Sheets compatibility gate
+        if: matrix.group == 'sheets-shell'
         run: |
           npm run fixtures -w @genoffice/sheets
           npm run compat -w @genoffice/sheets
 
-  e2e:
-    # 22.04, not -latest: 24.04's AppArmor hardening blocks Electron renderer
-    # spawn under xvfb even with --no-sandbox and the userns sysctl lifted
+  e2e-build:
+    name: Build Electron test apps
+    needs: scope
+    if: needs.scope.outputs.e2e_required == 'true' && needs.scope.outputs.reused_run_id == ''
     runs-on: ubuntu-22.04
-    # A cold font install took 24m in #124; leave room for the full serial
-    # Electron suite as well as setup. Individual test timeouts stay unchanged.
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -168,7 +302,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22
+          node-version: ${{ env.CI_NODE_VERSION }}
           cache: npm
           cache-dependency-path: package-lock.json
 
@@ -198,6 +332,75 @@ jobs:
 
       - name: Build apps
         run: npm run build:all
+
+      - name: Record build identity
+        run: node tools/ci-e2e-artifact.mjs write
+
+      # tar retains executable permissions, including the Rust sidecar.
+      - name: Archive test runtime
+        run: |
+          tar -czf "$RUNNER_TEMP/e2e-build.tar.gz" \
+            apps/*/out packages/cli/dist \
+            apps/sheets/native/xlsx-engine/target/release/xlsx-sidecar
+
+      - name: Share build within this run
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-linux-${{ github.sha }}
+          path: ${{ runner.temp }}/e2e-build.tar.gz
+          compression-level: 0
+          retention-days: 1
+          overwrite: true
+
+  e2e:
+    needs: [scope, e2e-build]
+    if: needs.scope.outputs.e2e_required == 'true' && needs.scope.outputs.reused_run_id == ''
+    name: e2e (${{ matrix.shard }}/3)
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    # 22.04, not -latest: 24.04's AppArmor hardening blocks Electron renderer
+    # spawn under xvfb even with --no-sandbox and the userns sysctl lifted
+    runs-on: ubuntu-22.04
+    # A cold font install took 24m in #124; leave room for the full serial
+    # Electron suite as well as setup. Individual test timeouts stay unchanged.
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.CI_NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # electron's postinstall downloads its binary from GitHub Releases on every
+      # fresh install; a cache hit skips the download (and its 5xx flakes)
+      - name: Cache electron binaries
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/electron
+          # own prefix: the build workflows' electron-* entries also hold
+          # ~/.cache/electron-builder, and a saved key is never updated
+          key: electron-bin-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: electron-bin-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download this run's build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: e2e-linux-${{ github.sha }}
+          path: ${{ runner.temp }}/e2e-build
+
+      - name: Restore and verify test runtime
+        run: |
+          tar -xzf "$RUNNER_TEMP/e2e-build/e2e-build.tar.gz"
+          node tools/ci-e2e-artifact.mjs verify
 
       - name: Generate sheets fixtures
         run: npm run fixtures -w @genoffice/sheets
@@ -232,6 +435,7 @@ jobs:
         run: npx playwright install chromium
 
       - name: Markdown browser tests
+        if: matrix.shard == 1
         run: npx playwright test --config apps/markdown/playwright.config.ts
 
       # Electron needs a display server on Linux runners. DEBUG=pw:browser
@@ -240,14 +444,50 @@ jobs:
       - name: E2E (Electron shell)
         env:
           DEBUG: 'pw:browser'
-        run: xvfb-run --auto-servernum -- npm run test:e2e
+        run: xvfb-run --auto-servernum -- npm run test:e2e -- --shard=${{ matrix.shard }}/3 --max-failures=1
 
       - name: Upload E2E artifacts on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: e2e-artifacts
+          name: e2e-artifacts-${{ matrix.shard }}
           path: |
             e2e/artifacts
             e2e/test-results
+            test-results/markdown-roundtrip
+          retention-days: 7
+
+  result:
+    name: CI result
+    needs: [scope, references, checks, unit, e2e-build, e2e]
+    # A cancelled dependency must be rejected, not turn this required gate into a successful skip.
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.CI_NODE_VERSION }}
+      - name: Verify required results
+        env:
+          CI_NEEDS: ${{ toJSON(needs) }}
+        run: node tools/ci-scope.mjs --verify
+
+      - name: Record successful PR validation
+        if: github.event_name == 'pull_request' && needs.scope.outputs.checks_required == 'true'
+        env:
+          CI_NEEDS: ${{ toJSON(needs) }}
+        run: node tools/ci-reuse.mjs attest
+
+      - name: Keep validation-plan proof
+        if: github.event_name == 'pull_request' && needs.scope.outputs.checks_required == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-validated-${{ github.run_attempt }}
+          path: validation.json
           retention-days: 7

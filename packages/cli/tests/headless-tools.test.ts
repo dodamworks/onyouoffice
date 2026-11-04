@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -582,7 +583,7 @@ describe('no trace of the removed login', () => {
   ])('%s does not look for the removed login or its command line', (file) => {
     const source = readFileSync(join(__dirname, '..', 'src', file), 'utf8')
     expect(source).not.toMatch(
-      /cloudToolsEnabled|auth\.json|GENOFFICE_AUTH_DIR|~\/\.(genoffice|ieumoffice)/,
+      /cloudToolsEnabled|auth\.json|GENOFFICE_AUTH_DIR|~\/\.(genoffice|onyouoffice)/,
     )
   })
 })

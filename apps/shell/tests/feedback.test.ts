@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -41,7 +42,7 @@ describe('feedback strings', () => {
   })
 
   it('never types the product name', () => {
-    expect(JSON.stringify(FEEDBACK_STRINGS)).not.toMatch(/IeumOffice|이음오피스|GenOffice/)
+    expect(JSON.stringify(FEEDBACK_STRINGS)).not.toMatch(/Onyou Office|온유오피스|GenOffice/)
   })
 })
 
@@ -71,8 +72,8 @@ describe('the diagnostics block', () => {
 })
 
 describe('the survey address', () => {
-  it('is the published Google Form, not a repository or a local path', () => {
-    expect(FEEDBACK_SURVEY_URL).toMatch(/^https:\/\/(docs\.google\.com\/forms\/d\/e\/|forms\.gle\/)/)
+  it('leaves an unconfigured survey empty instead of routing to upstream', () => {
+    expect(FEEDBACK_SURVEY_URL).toBe('')
     expect(FEEDBACK_SURVEY_URL).not.toMatch(/REPLACE|example\.com/)
     expect(FEEDBACK_SURVEY_URL).not.toMatch(/github\.com/)
     expect(FEEDBACK_SURVEY_URL).not.toMatch(/[\\/](Users|home)[\\/]/)

@@ -446,3 +446,13 @@
   padding-top: 8px;
   border-top: 1px solid var(--border);
 }
+
+/* Send feedback stays small; connection setup belongs to the settings screen. */
+.ai-sub-connect-status {
+  padding: 4px 0 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}

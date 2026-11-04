@@ -260,6 +260,7 @@ function useSigningInStalled(signingIn: boolean): boolean {
  * Pass the result of `selectAiProvider(settings, statuses)` as `choice`.
  */
 export function AiConnectPrompt({
+  settingsOnly = false,
   choice,
   statuses,
   lang,
@@ -269,6 +270,8 @@ export function AiConnectPrompt({
   onOpenConnectHelp,
   ...actions
 }: AiSubscriptionCardActions & {
+  /** Panel connections are managed in Settings; show feedback only after a blocked send. */
+  readonly settingsOnly?: boolean | undefined
   readonly choice: AiProviderChoice
   readonly statuses: AiSubscriptionStatuses
   readonly lang: Lang
@@ -293,6 +296,19 @@ export function AiConnectPrompt({
   }, [attention, shown])
   if (!view) return null
   const params = { provider: view.providerName ?? '' }
+  if (settingsOnly) {
+    if (!attention) return null
+    return (
+      <div
+        ref={promptRef}
+        className="ai-sub-connect-status"
+        role="status"
+        data-reason={choice.connected ? undefined : choice.reason}
+      >
+        {aiSubscriptionText(lang, view.titleKey, params)}
+      </div>
+    )
+  }
   return (
     <div
       ref={promptRef}

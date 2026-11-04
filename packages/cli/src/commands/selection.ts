@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { PRODUCT_NAME } from '@genoffice/i18n'
 import { controlEndpoint, controlRequest } from '../control'
 import { resolveInput } from '../fs'
@@ -16,7 +17,7 @@ export const selectionCommand: CommandDef = {
     if (!endpoint) {
       throw new CliError(EXIT.app, `${PRODUCT_NAME} is not running`, undefined, {
         reason: 'app_unavailable',
-        suggestion: `run \`ieumoffice open ${path}\` and ask the user to select something`,
+        suggestion: `run \`onyouoffice open ${path}\` and ask the user to select something`,
       })
     }
     const result = await controlRequest(endpoint, { cmd: 'selection', path })

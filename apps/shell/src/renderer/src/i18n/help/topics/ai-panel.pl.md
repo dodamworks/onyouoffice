@@ -4,7 +4,7 @@ Każdy edytor może przywołać panel AI: zaznacz coś, wydaj polecenie i obserw
 
 ## Otwieranie i używanie
 
-- Panel wymaga połączonego AI. Gdy żadne nie jest połączone, zamiast błędu pokazuje karty połączenia; zobacz [Połączenie z subskrypcją](help://subscription).
+- Połącz AI w Ustawienia → AI. [AI](help://subscription)
 - Wejścia: **przycisk AI** na wstążce każdego edytora, **Zapytaj AI** w menu kontekstowych albo Zapytaj AI na pasku oznaczeń.
 - Opisz zadanie zwykłymi słowami (przepisz to / zamień tę kolumnę na procenty / ułóż tę stronę od nowa...) i naciśnij Enter.
 - Odpowiedzi są renderowane **strumieniowo**; gdy AI potrzebuje narzędzi (odczytać dokument, go zmienić), wykonuje je i kontynuuje aż do końca.
@@ -24,7 +24,7 @@ Każdy edytor może przywołać panel AI: zaznacz coś, wydaj polecenie i obserw
 - **Slides**: generowanie całej prezentacji, korekta układu, przepisywanie tekstów.
 - **PDF**: pytania i odpowiedzi oraz streszczenia na podstawie zaznaczonego tekstu lub stron.
 - **Markdown / HTML**: przepisywanie, rozbudowa, tłumaczenie.
-- **Strona główna ▸ Ask AI** odpowiada z plików oznaczonych gwiazdką i je cytuje — panel bazy wiedzy ma własną sekcję w rozdziale o stronie głównej, a panel AI w Docs ma tę samą umiejętność.
+- **Magazyn wiedzy**: Domyślnym źródłem są dokumenty zarejestrowane w aplikacji: ostatnie i ulubione pliki, dodane foldery oraz projekty. Nie przeszukuje to całego komputera. Nad polem wpisywania wybierz zarejestrowane dokumenty, projekt, konkretne dokumenty lub ulubione. Zmiana źródła rozpoczyna nową rozmowę i anuluje pytania oczekujące na połączenie. [Home](help://home-screen)
 
 ## Załączanie otwartych dokumentów
 

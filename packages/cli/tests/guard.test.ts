@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -182,7 +183,7 @@ describe('audit log', () => {
   })
 
   it('defaults under ~/.genoffice and honours GENOFFICE_AUDIT_LOG', () => {
-    expect(auditLogPath({})).toMatch(/[\\/]\.ieumoffice[\\/]cli-audit\.jsonl$/)
+    expect(auditLogPath({})).toMatch(/[\\/]\.onyouoffice[\\/]cli-audit\.jsonl$/)
     expect(auditLogPath({ GENOFFICE_AUDIT_LOG: 'off' })).toBeNull()
     expect(auditLogPath({ GENOFFICE_AUDIT_LOG: '/x/y.jsonl' })).toBe('/x/y.jsonl')
   })

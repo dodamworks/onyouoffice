@@ -1,6 +1,7 @@
 import {
   aiPanelWidthAtPointer,
   AiPanelSideButton,
+  AiPanelFontSizeButtons,
   AiModelPicker,
   type AiModelPickerBridge,
 } from '@genoffice/ui'
@@ -167,7 +168,6 @@ function entryFromProject(m: ProjectChatEntry & { skillProposals?: string[] }): 
 }
 
 /** the empty conversation's suggested questions (reading-assist spec 4.4); a click sends one */
-const SUGGESTED_QUESTIONS = ['airQuestion1', 'airQuestion2', 'airQuestion3'] as const
 
 /** longest selection excerpt echoed on a user bubble */
 const SCOPE_TEXT_MAX = 200
@@ -1130,10 +1130,16 @@ export function AiPanel({
         aria-label={aiSubscriptionText(lang, 'aiAssistant')}
       />
       <header className="ai-panel-header">
-        <span className="ai-panel-title">
-          <AiMark size={22} />
-          {aiSubscriptionText(lang, 'aiAssistant')}
-        </span>
+        <div className="ai-panel-heading">
+          <span className="ai-panel-title">
+            <AiMark size={22} />
+            {aiSubscriptionText(lang, 'aiAssistant')}
+          </span>
+          <AiPanelFontSizeButtons
+            lang={lang}
+            onChange={(patch) => window.pdfApi.setAiPanelPrefs(patch)}
+          />
+        </div>
         <div className="ai-panel-header-actions">
           <AiPanelSideButton
             lang={lang}
@@ -1164,46 +1170,6 @@ export function AiPanel({
       {overview}
 
       <div className="ai-chat" ref={chatRef} onScroll={onChatScroll}>
-        {chat.length === 0 && (
-          <div className="ai-chat-empty">
-            <div className="ai-chat-empty-title">{t('aiEmptyTitle')}</div>
-            <div className="ai-chat-empty-body">{t('aiEmptyBody')}</div>
-            <div className="ai-quick-actions">
-              <button
-                className="ai-quick-btn"
-                onClick={() =>
-                  send(t(hasScopeSelection ? 'aiQuickSummarySelPrompt' : 'aiQuickSummaryPrompt'))
-                }
-              >
-                {t('aiQuickSummary')}
-              </button>
-              <button
-                className="ai-quick-btn"
-                onClick={() =>
-                  send(
-                    t(hasScopeSelection ? 'aiQuickKeyPointsSelPrompt' : 'aiQuickKeyPointsPrompt'),
-                  )
-                }
-              >
-                {t('aiQuickKeyPoints')}
-              </button>
-            </div>
-            <div className="ai-suggested" role="group" aria-label={t('airSuggested')}>
-              {SUGGESTED_QUESTIONS.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  className="ai-suggested-btn"
-                  data-question={key}
-                  dir="auto"
-                  onClick={() => send(t(key))}
-                >
-                  {t(key)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
         {chat.map((entry, i) => {
           if (entry.role === 'user') {
             return (
@@ -1296,6 +1262,7 @@ export function AiPanel({
         )}
         {sendGate.connectChoice && (
           <AiConnectPrompt
+            settingsOnly
             choice={sendGate.connectChoice}
             statuses={connection.statuses}
             lang={lang}
@@ -1426,6 +1393,7 @@ export function AiPanel({
           footerStart={
             <>
               <AiModelPicker
+                connectInSettings
                 bridge={MODEL_BRIDGE}
                 lang={lang}
                 subscriptionStatuses={connection.statuses}

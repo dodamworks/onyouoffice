@@ -4,11 +4,11 @@
  * without a shell, with a minimal environment, in an empty folder, and the
  * process (with whatever it started) ends with the connection.
  */
-import { spawn, type ChildProcess, type SpawnOptions } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { execFileSync, spawn, type ChildProcess, type SpawnOptions } from 'node:child_process'
+import { existsSync, realpathSync } from 'node:fs'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, resolve, sep } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // each start of the fixture loads the MCP SDK, about two seconds on a slow disk
@@ -339,7 +339,12 @@ describe('a running server', () => {
     expect(call!.options.shell).toBe(false)
     const where = JSON.parse(textOf(await connection.callTool('cwd', {})))
     expect(where.entries).toEqual([])
-    expect(resolve(where.cwd).toLowerCase().startsWith(resolve(work).toLowerCase())).toBe(true)
+    // macOS resolves /var to /private/var in the child's actual working directory.
+    expect(
+      realpathSync(where.cwd)
+        .toLowerCase()
+        .startsWith(`${realpathSync(work).toLowerCase()}${sep}`),
+    ).toBe(true)
   })
 
   it('passes shell characters in the arguments through as plain text', async () => {
@@ -380,6 +385,17 @@ describe('a running server', () => {
         process.platform === 'win32' ? n.toUpperCase() : n,
       ),
     )
+    // macOS injects this into Node even with an empty environment. Verify it is
+    // the OS default, rather than allowing an arbitrary inherited app value.
+    if (process.platform === 'darwin') {
+      const osDefault = execFileSync(
+        process.execPath,
+        ['-e', 'process.stdout.write(process.env.__CF_USER_TEXT_ENCODING ?? "")'],
+        { env: {}, encoding: 'utf8' },
+      )
+      expect(env.__CF_USER_TEXT_ENCODING ?? '').toBe(osDefault)
+      allowed.add('__CF_USER_TEXT_ENCODING')
+    }
     const unexpected = names.filter(
       (name) => !allowed.has(process.platform === 'win32' ? name.toUpperCase() : name),
     )

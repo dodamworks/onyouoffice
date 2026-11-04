@@ -48,6 +48,7 @@ export function AiConnectGuide({
   codexNotice = false,
   renderAfterCard,
   onOpenConnectHelp,
+  helpSummary,
   ...actions
 }: AiSubscriptionCardActions & {
   readonly statuses: AiSubscriptionStatuses
@@ -59,6 +60,8 @@ export function AiConnectGuide({
   readonly freeContent?: React.ReactNode
   /** a free connection is made (a host that reads the free settings knows) */
   readonly freeConnected?: boolean | undefined
+  /** Optional disclosure label for compact hosts such as first-run onboarding. */
+  readonly helpSummary?: string | undefined
   /** the line about Codex, wherever Codex can be picked: the question and its own path */
   readonly codexNotice?: boolean | undefined
   /** anything the host shows under a provider's card (a launch that failed) */
@@ -152,6 +155,7 @@ export function AiConnectGuide({
         <CopyInfo
           statuses={statuses}
           lang={lang}
+          summary={helpSummary}
           onOpenHelp={onOpenConnectHelp && (() => onOpenConnectHelp(view.open))}
         />
       )}
@@ -235,10 +239,12 @@ function CopyInfo({
   statuses,
   lang,
   onOpenHelp,
+  summary,
 }: {
   readonly statuses: AiSubscriptionStatuses
   readonly lang: Lang
   readonly onOpenHelp?: (() => void) | undefined
+  readonly summary?: string | undefined
 }): React.JSX.Element {
   const [copied, setCopied] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -258,7 +264,7 @@ function CopyInfo({
       })
       .catch(() => undefined)
   }
-  return (
+  const content = (
     <div className="ai-sub-guide-info">
       {onOpenHelp && (
         <button
@@ -281,5 +287,13 @@ function CopyInfo({
         {aiSubscriptionText(lang, copied ? 'copyInfoDone' : 'actionCopyInfo')}
       </button>
     </div>
+  )
+  return summary ? (
+    <details className="ai-sub-guide-disclosure">
+      <summary>{summary}</summary>
+      {content}
+    </details>
+  ) : (
+    content
   )
 }

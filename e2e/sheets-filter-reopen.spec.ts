@@ -4,7 +4,7 @@ import { mkdtemp, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { launchShell, closeAndSaveVideo, waitForPageWithUrl } from './helpers'
-import { PRODUCT_NAME } from '../packages/i18n/src/product'
+import { DEFAULT_DOCUMENTS_DIR_NAME } from '../packages/i18n/src/product'
 
 // the preload exposes window.__genofficeDebug only under this env var
 process.env.GENOFFICE_DEBUG_HOOKS = '1'
@@ -33,7 +33,7 @@ test.describe('sheets: filter criteria survive save and reopen', () => {
       await app.evaluate(({ app: electronApp }, dir) => {
         electronApp.setPath('documents', dir)
       }, scratch)
-      const saveDir = join(scratch, PRODUCT_NAME)
+      const saveDir = join(scratch, DEFAULT_DOCUMENTS_DIR_NAME)
       // the workbook has no file yet: Save answers the Save As picker (genoffice#1036)
       await app.evaluate(
         ({ dialog }, target) => {
@@ -42,8 +42,8 @@ test.describe('sheets: filter criteria survive save and reopen', () => {
         join(saveDir, 'filtered.xlsx'),
       )
 
-      await expect(page.locator('.quick-card').nth(1)).toContainText('AI Sheets')
-      await page.locator('.quick-card').nth(1).click()
+      await expect(page.locator('.quick-card[data-format="xlsx"]')).toContainText('Spreadsheet')
+      await page.locator('.quick-card[data-format="xlsx"]').click()
 
       const sheets = await waitForPageWithUrl(app, '://sheets/')
       await sheets.waitForFunction(() => document.body.textContent?.includes('Sheet1'), null, {

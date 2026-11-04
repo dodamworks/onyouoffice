@@ -290,7 +290,7 @@ describe('generate hand-off in the PPT editor', () => {
     await flush()
 
     expect(agentHarness.run).not.toHaveBeenCalled()
-    expect(container.querySelector('.ai-sub-prompt')).not.toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).not.toBeNull()
     expect(composer(container).value).toBe(REQUEST)
     expect(composerChips(container)).toEqual([BRIEF.path, PLAN.path])
     expect(bridge.report).not.toHaveBeenCalled()
@@ -454,7 +454,7 @@ describe('generate hand-off in the PPT editor', () => {
     })
     await flush()
     expect(agentHarness.run).not.toHaveBeenCalled()
-    expect(container.querySelector('.ai-sub-prompt')).not.toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).not.toBeNull()
     expect(composer(container).value).toBe('')
   })
 })

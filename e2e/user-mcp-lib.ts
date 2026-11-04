@@ -1,20 +1,18 @@
 /**
  * Shared bits for the exploratory user-MCP specs (user-mcp-*.spec.ts):
- * scratch folders under F:\ieum-scratch\user-mcp-fix2\e2e (or the OS temp folder
- * elsewhere), the two local test servers, and a launch that also points the
- * app's home folder at a scratch folder so nothing reads the real one.
+ * scratch folders in an OS temporary directory, two local test servers, and
+ * a launch that points the app's home at scratch data, never the real one.
  */
 import { spawn, type ChildProcess } from 'node:child_process'
-import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import type { Page } from '@playwright/test'
 import { freeMcpPort, launchShell, type LaunchedApp } from './helpers'
 
-export const SCRATCH = existsSync('F:\\ieum-scratch')
-  ? 'F:\\ieum-scratch\\user-mcp-fix2\\e2e'
-  : join(tmpdir(), 'user-mcp-fix2-e2e')
+// macOS Unix socket paths are limited to 104 bytes. Its normal tmpdir already
+// uses most of that budget before the per-test userData/control.sock suffix.
+export const SCRATCH = join(process.platform === 'darwin' ? '/tmp' : tmpdir(), 'onyou-user-mcp-e2e')
 export const SHOTS = join(SCRATCH, 'shots')
 export const FIXTURES = resolve(__dirname, 'user-mcp-fixtures')
 export const STDIO_SERVER = join(FIXTURES, 'stdio-server.mjs')

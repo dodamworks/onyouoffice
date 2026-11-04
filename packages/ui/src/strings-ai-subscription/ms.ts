@@ -102,14 +102,13 @@ export const ms = {
   pickerNotConnected: 'Sambungkan AI',
   guideQuestion: 'AI mana yang sudah anda gunakan?',
   guidePathClaudeTitle: 'Saya ada langganan Claude berbayar',
-  guidePathClaudeBody:
-    'Memerlukan pelan Pro atau Max. Akaun Claude percuma tidak boleh disambungkan.',
+  guidePathClaudeBody: 'Memerlukan pelan Pro atau Max dan program sambungan pada PC anda.',
   guidePathCodexTitle: 'Saya guna ChatGPT',
   guidePathCodexBody:
     'Log masuk ke program Codex OpenAI dengan akaun ChatGPT anda. Pelan percuma hanya membenarkan sedikit penggunaan.',
   guidePathFreeTitle: 'Belum ada kedua-duanya',
   guidePathFreeBody:
-    'Sambungkan AI percuma dalam masa kira-kira seminit. Semasa anda menggunakannya secara percuma, kandungan yang anda hantar mungkin digunakan untuk menambah baik AI syarikat itu.',
+    'Sambungkan AI percuma melalui OpenRouter atau Gemini. Penyedia mungkin menggunakan kandungan yang dihantar untuk menambah baik AI mereka.',
   guideBack: 'Pilih cara lain',
   guideBadgeReady: 'Disambungkan',
   guideBadgeInstalled: 'Dipasang',
@@ -149,8 +148,7 @@ export const ms = {
   actionCopyInfo: 'Salin maklumat untuk bantuan',
   copyInfoDone: 'Disalin',
   actionConnectHelp: 'Lihat setiap langkah pada skrin (halaman dalam bahasa Korea)',
-  guidePathChatGptBody:
-    'Log masuk dengan akaun ChatGPT anda dan gunakan pelan anda. Tiada apa-apa perlu dipasang. Pelan percuma hanya membenarkan sedikit penggunaan.',
+  guidePathChatGptBody: 'Log masuk dalam pelayar. Had penggunaan pelan anda terpakai.',
   guideUseCodex: 'Sudah menggunakan program Codex pada PC ini? Sambung dengan Codex',
   guideUseDirect: 'Sambung terus dalam aplikasi, tanpa Codex',
   chatgptLoginNote:

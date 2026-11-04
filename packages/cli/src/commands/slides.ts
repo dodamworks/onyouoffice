@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-11-01: retain upstream behavior with independent Onyou Office identity.
 import { basename, dirname } from 'node:path'
 import { flagBool, flagString } from '../args'
 import {
@@ -122,7 +123,7 @@ export const slidesCommand: CommandDef = {
           undefined,
           {
             reason: verb === undefined ? 'missing_argument' : 'invalid_argument',
-            suggestion: 'run `ieumoffice help slides`',
+            suggestion: 'run `onyouoffice help slides`',
           },
         )
     }
@@ -327,7 +328,7 @@ async function check(
       notes: style
         ? []
         : ['no style.md beside the outline: write the style sheet before the pages'],
-      next: 'write pages/01.json … one file per outline page, running `ieumoffice slides check <page.json>` on each',
+      next: 'write pages/01.json … one file per outline page, running `onyouoffice slides check <page.json>` on each',
     }
     if (errors.length) {
       throw new CliError(
@@ -460,7 +461,7 @@ async function replace(
         : null,
       offPalette: r.stage?.offPalette ?? [],
       notes: stage.notes,
-      next: 'element ids on the rebuilt slide are new: run `ieumoffice slides read` before targeting them',
+      next: 'element ids on the rebuilt slide are new: run `onyouoffice slides read` before targeting them',
     },
   }
 }

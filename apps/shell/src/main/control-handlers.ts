@@ -1,5 +1,6 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync } from 'node:fs'
-import { PRODUCT_NAME } from '@genoffice/i18n'
+import { PRODUCT_NAME, PRODUCT_COMMAND } from '@genoffice/i18n'
 import type { WebContents } from 'electron'
 import type {
   ControlReply,
@@ -59,7 +60,7 @@ export function controlHandler(host: ControlHost): (req: ControlRequest) => Prom
     const tab = host.findTab(req.path)
     if (!tab) {
       return fail('file_not_open_in_gui', `${PRODUCT_NAME} does not have ${req.path} open`, {
-        suggestion: `ieumoffice open ${req.path}`,
+        suggestion: `${PRODUCT_COMMAND} open ${req.path}`,
       })
     }
     return ask(tab.webContents, { cmd: 'selection' }, host.readyTimeoutMs)

@@ -174,15 +174,14 @@ describe('sheets AI panel: not connected', () => {
       aiBusy: false,
       subscription: subscriptionOf(stored, known),
     })
-    const prompt = host.querySelector('.ai-sub-prompt')
-    expect(prompt?.getAttribute('data-reason')).toBe('no-subscription')
+    expect(host.querySelector('.ai-sub-connect-status')).toBeNull()
     // which AI the user has comes first; each answer leads to its own card
-    expect(prompt?.querySelectorAll('.ai-sub-guide-path')).toHaveLength(3)
+    expect(host.querySelectorAll('.ai-sub-guide-path')).toHaveLength(0)
     expect(scrolled).toEqual([])
 
     // App.tsx refused the send and counted it
     p.set({ subscription: subscriptionOf(stored, known, { connectAttention: 1 }) })
-    expect(scrolled).toEqual([host.querySelector('.ai-sub-prompt')])
+    expect(scrolled).toEqual([host.querySelector('.ai-sub-connect-status')])
     // the draft is still in the composer
     expect(host.querySelector('textarea')!.value).toBe('sum column B')
   })
@@ -209,7 +208,7 @@ describe('sheets AI panel: first-connection notice', () => {
     panel({ chat: [], prompt: '', aiBusy: false, subscription })
     const notice = host.querySelector('.ai-sub-first')
     expect(notice).not.toBeNull()
-    expect(host.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(host.querySelector('.ai-sub-connect-status')).toBeNull()
     act(() => notice!.querySelector('button')!.click())
     expect(subscription.onAcknowledgeNotice).toHaveBeenCalledOnce()
   })

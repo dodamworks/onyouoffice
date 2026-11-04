@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-11-01: an opt-in trial may only use this product settings.
 /**
  * Live trial of one OpenRouter `:free` model on the Word editor's tool loop.
  * Not part of the suite: it needs a real key and spends that key's free daily
@@ -7,6 +8,7 @@
  * The key is copied from the installed app's settings into a scratch folder
  * and never printed.
  */
+import { USER_DATA_DIR_NAME } from '@genoffice/i18n'
 import { test, expect, type Page } from '@playwright/test'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -17,7 +19,7 @@ const MODEL = process.env.TRIAL_MODEL ?? ''
 const RUN_TIMEOUT = 240_000
 
 async function storedKey(): Promise<string> {
-  const path = join(process.env.APPDATA ?? '', 'IeumOffice', 'ai-settings.json')
+  const path = join(process.env.APPDATA ?? '', USER_DATA_DIR_NAME, 'ai-settings.json')
   const settings = JSON.parse(await readFile(path, 'utf8'))
   return settings.providers.openrouter.apiKey
 }
@@ -46,7 +48,7 @@ test(`free model trial: ${MODEL}`, async () => {
   const report: Record<string, unknown> = { model: MODEL, pass: false }
   let editor: Page | undefined
   try {
-    await page.locator('.quick-card').first().click()
+    await page.locator('.quick-card[data-format="docx"]').click()
     editor = await waitForPageWithUrl(app, '://docs/')
     const docPage = editor.locator('.doc-page[contenteditable="true"]')
     await docPage.waitFor()

@@ -16,6 +16,7 @@ import {
   AiBlockedNotice,
   AiComposer,
   AiConnectPrompt,
+  AiPanelFontSizeButtons,
   AiFirstConnectionNotice,
   AiInputTruncatedNotice,
   AiMark,
@@ -117,7 +118,7 @@ import { createSearchSkill } from './search-skill'
 import { createElectronTransport } from './transport'
 import { blockedRunFor, mergeSubscriptionUsage, type BlockedRun } from './connection'
 import { useSubscriptionConnection } from './subscription-client'
-import { blankNewMapSheet, type MapAiHost, MapTurn, revertTurn } from './map-tools'
+import { type MapAiHost, MapTurn, revertTurn } from './map-tools'
 import sendEnterOn from './assets/send-enter-on.png'
 import sendEnterOff from './assets/send-enter-off.png'
 import sendStop from './assets/send-stop.png'
@@ -144,14 +145,6 @@ export interface MindmapAiRunStart {
   text: string
   attachments: AttachmentMeta[]
 }
-
-/** [chip label, composer prefill] */
-const STARTERS = [
-  ['aiStarterNewMap', 'aiStarterNewMapPrompt'],
-  ['aiStarterExpand', 'aiStarterExpandPrompt'],
-  ['aiStarterTidy', 'aiStarterTidyPrompt'],
-  ['aiStarterSummarize', 'aiStarterSummarizePrompt'],
-] as const
 
 /** clipboard bitmap MIME → attachment extension (matches ATTACHMENT_IMAGE_EXTS) */
 const PASTE_MIME_EXT: Record<string, string> = {
@@ -1723,8 +1716,6 @@ export function AiPanel({
     resizer.setPointerCapture(e.pointerId)
   }
 
-  const mapIsBlank = chat.length === 0 && blankNewMapSheet(host) !== null
-
   return (
     <aside
       ref={asideRef}
@@ -1751,10 +1742,16 @@ export function AiPanel({
         aria-label={aiSubscriptionText(lang, 'aiAssistant')}
       />
       <header className="ai-panel-header">
-        <span className="ai-panel-title">
-          <AiMark size={22} />
-          {aiSubscriptionText(lang, 'aiAssistant')}
-        </span>
+        <div className="ai-panel-heading">
+          <span className="ai-panel-title">
+            <AiMark size={22} />
+            {aiSubscriptionText(lang, 'aiAssistant')}
+          </span>
+          <AiPanelFontSizeButtons
+            lang={lang}
+            onChange={(patch) => window.mindmapApi.setAiPanelPrefs(patch)}
+          />
+        </div>
         <div className="ai-panel-header-actions">
           {projectChatMenu}
           {chat.length > 0 && (
@@ -1781,27 +1778,6 @@ export function AiPanel({
       </header>
 
       <div className="ai-chat" ref={chatRef} onScroll={onChatScroll}>
-        {chat.length === 0 && (
-          <div className="ai-chat-empty">
-            <div className="ai-chat-empty-title">{t('aiEmptyTitle')}</div>
-            <div className="ai-chat-empty-body">{t('aiEmptyBody')}</div>
-            <div className="ai-starter-list">
-              {(mapIsBlank ? STARTERS.slice(0, 1) : STARTERS).map(([label, promptKey]) => (
-                <button
-                  type="button"
-                  key={label}
-                  className="ai-starter"
-                  onClick={() => {
-                    setPrompt(t(promptKey))
-                    inputRef.current?.focus()
-                  }}
-                >
-                  {t(label)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
         {chat.map((entry, i) => {
           if (entry.role === 'user') {
             return (
@@ -1939,6 +1915,7 @@ export function AiPanel({
         <div className="ai-composer">
           {sendGate.connectChoice ? (
             <AiConnectPrompt
+              settingsOnly
               choice={sendGate.connectChoice}
               statuses={subscription.statuses}
               lang={lang}
@@ -2026,6 +2003,7 @@ export function AiPanel({
           footerStart={
             <>
               <AiModelPicker
+                connectInSettings
                 bridge={MODEL_BRIDGE}
                 lang={lang}
                 subscriptionStatuses={subscription.statuses}

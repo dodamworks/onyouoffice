@@ -208,3 +208,17 @@ describe('subscription preload API', () => {
     await expect(api.statuses()).rejects.toThrow('No handler registered')
   })
 })
+
+it('normalizes AI panel preference events and removes the exact listener on unsubscribe', () => {
+  const home = electronMocks.exposed.get('aiOffice') as import('../src/shared/home-api').HomeApi
+  const changed = vi.fn()
+  const off = home.onAiPanelPrefsChanged(changed)
+  const [channel, listener] = electronMocks.on.mock.calls.at(-1)!
+  expect(channel).toBe('app:ai-panel-prefs-changed')
+  listener({}, { fontSize: 'custom', customFontSize: 20 })
+  expect(changed).toHaveBeenCalledWith(
+    expect.objectContaining({ fontSize: 'custom', customFontSize: 20, side: 'left' }),
+  )
+  off()
+  expect(electronMocks.removeListener).toHaveBeenCalledWith(channel, listener)
+})

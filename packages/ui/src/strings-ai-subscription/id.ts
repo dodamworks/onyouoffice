@@ -98,13 +98,13 @@ export const id = {
   pickerNotConnected: 'Hubungkan AI',
   guideQuestion: 'AI apa yang sudah Anda gunakan?',
   guidePathClaudeTitle: 'Saya punya langganan Claude berbayar',
-  guidePathClaudeBody: 'Perlu paket Pro atau Max. Akun Claude gratis tidak bisa terhubung.',
+  guidePathClaudeBody: 'Memerlukan paket Pro atau Max dan program penghubung di PC Anda.',
   guidePathCodexTitle: 'Saya memakai ChatGPT',
   guidePathCodexBody:
     'Masuk ke program Codex dari OpenAI dengan akun ChatGPT Anda. Paket gratis hanya memberi sedikit pemakaian.',
   guidePathFreeTitle: 'Belum punya keduanya',
   guidePathFreeBody:
-    'Hubungkan AI gratis dalam sekitar satu menit. Selama Anda memakainya secara gratis, konten yang Anda kirim dapat digunakan untuk meningkatkan AI perusahaan tersebut.',
+    'Hubungkan AI gratis melalui OpenRouter atau Gemini. Penyedia dapat memakai konten yang Anda kirim untuk meningkatkan AI mereka.',
   guideBack: 'Pilih cara lain',
   guideBadgeReady: 'Terhubung',
   guideBadgeInstalled: 'Terpasang',
@@ -144,8 +144,7 @@ export const id = {
   actionCopyInfo: 'Salin info untuk bantuan',
   copyInfoDone: 'Disalin',
   actionConnectHelp: 'Lihat setiap langkah di layar (halaman berbahasa Korea)',
-  guidePathChatGptBody:
-    'Masuk dengan akun ChatGPT Anda dan gunakan paket Anda. Tidak perlu memasang apa pun. Paket gratis hanya memberi sedikit pemakaian.',
+  guidePathChatGptBody: 'Masuk di browser. Batas penggunaan paket Anda berlaku.',
   guideUseCodex: 'Sudah memakai program Codex di PC ini? Hubungkan dengan Codex',
   guideUseDirect: 'Hubungkan langsung di aplikasi, tanpa Codex',
   chatgptLoginNote:

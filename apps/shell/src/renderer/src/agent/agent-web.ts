@@ -1,4 +1,20 @@
-import type { AgentActionView, AgentProjectPrefs } from '../../../shared/agent-api'
+import type {
+  AgentActionView,
+  AgentProjectPrefs,
+  AgentProvider,
+  AgentConnection,
+} from '../../../shared/agent-api'
+
+/** Keep a usable selection; an unavailable default may yield only to a ready subscription. */
+export function initialAgentProvider(
+  preferred: AgentProvider,
+  connections: Record<AgentProvider, AgentConnection>,
+): AgentProvider {
+  if (connections[preferred] === 'ready' || connections[preferred] === 'metered-accepted')
+    return preferred
+  if (Object.values(connections).includes('checking')) return preferred
+  return (['claude-code', 'codex'] as const).find((id) => connections[id] === 'ready') ?? preferred
+}
 import type { AgentWebStringKey } from '../i18n/strings-agent-web'
 
 /**

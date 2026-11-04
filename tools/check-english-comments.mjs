@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Modified by Dodam on 2026-10-31: validate the current working tree including unstaged renames.
 // Repository-wide English-only guard: no Chinese may appear in tracked code
 // comments or documentation prose. Catch violations in the change that
 // introduces them.
@@ -7,13 +8,15 @@
 // text, zh-UI matchers), as are the AI prompt guides (runtime resources that
 // legitimately show CJK examples), translated READMEs under an i18n directory,
 // and the language-switcher line that names those translations.
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
 const HAN = /[\u3400-\u9fff]/
 
-const git = spawnSync('git', ['ls-files'], { encoding: 'utf8' })
+const git = spawnSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
+  encoding: 'utf8',
+})
 if (git.status !== 0) {
   console.error(git.stderr)
   process.exit(git.status ?? 1)
@@ -22,6 +25,7 @@ const root = spawnSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf
 
 const violations = []
 for (const file of git.stdout.trim().split('\n')) {
+  if (!existsSync(join(root, file))) continue
   const isCode = /\.(ts|tsx|mjs|cjs|js|rs)$/.test(file)
   const isHashCode = /\.(py|sh)$/.test(file)
   const isDoc =

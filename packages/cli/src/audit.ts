@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { appendFileSync, mkdirSync, renameSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -5,8 +6,8 @@ import { HOME_DIR_NAME } from './names'
 
 /**
  * One JSON line per executed command, so the person who let an agent loose
- * with ieumoffice can see afterwards what it touched. Default location
- * ~/.ieumoffice/cli-audit.jsonl; GENOFFICE_AUDIT_LOG=<path> redirects, `off`
+ * with onyouoffice can see afterwards what it touched. Default location
+ * ~/.onyouoffice/cli-audit.jsonl; GENOFFICE_AUDIT_LOG=<path> redirects, `off`
  * disables. Never throws: a failed audit write must not fail the command.
  */
 export interface AuditRecord {

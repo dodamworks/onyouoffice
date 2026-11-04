@@ -100,13 +100,13 @@ export const vi = {
   pickerNotConnected: 'Kết nối AI',
   guideQuestion: 'Bạn đang dùng AI nào?',
   guidePathClaudeTitle: 'Tôi có gói đăng ký Claude trả phí',
-  guidePathClaudeBody: 'Cần có gói Pro hoặc Max. Tài khoản Claude miễn phí không kết nối được.',
+  guidePathClaudeBody: 'Cần gói Pro hoặc Max và chương trình kết nối trên máy tính.',
   guidePathCodexTitle: 'Tôi dùng ChatGPT',
   guidePathCodexBody:
     'Đăng nhập vào chương trình Codex của OpenAI bằng tài khoản ChatGPT của bạn. Gói miễn phí chỉ cho dùng một ít.',
   guidePathFreeTitle: 'Tôi chưa có cái nào',
   guidePathFreeBody:
-    'Kết nối AI miễn phí trong khoảng một phút. Trong thời gian dùng miễn phí, nội dung bạn gửi có thể được dùng để cải thiện AI của công ty đó.',
+    'Kết nối AI miễn phí qua OpenRouter hoặc Gemini. Nhà cung cấp có thể dùng nội dung bạn gửi để cải thiện AI.',
   guideBack: 'Chọn cách khác',
   guideBadgeReady: 'Đã kết nối',
   guideBadgeInstalled: 'Đã cài đặt',
@@ -146,8 +146,7 @@ export const vi = {
   actionCopyInfo: 'Sao chép thông tin để nhờ hỗ trợ',
   copyInfoDone: 'Đã sao chép',
   actionConnectHelp: 'Xem từng bước trên màn hình (trang tiếng Hàn)',
-  guidePathChatGptBody:
-    'Đăng nhập bằng tài khoản ChatGPT và dùng gói của bạn. Không cần cài đặt gì. Gói miễn phí chỉ cho dùng một ít.',
+  guidePathChatGptBody: 'Đăng nhập trong trình duyệt. Áp dụng giới hạn sử dụng của gói.',
   guideUseCodex: 'Đã dùng chương trình Codex trên máy tính này? Kết nối bằng Codex',
   guideUseDirect: 'Kết nối trực tiếp trong ứng dụng, không cần Codex',
   chatgptLoginNote:

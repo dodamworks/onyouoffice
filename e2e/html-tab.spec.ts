@@ -15,7 +15,7 @@ test.describe('html editor', () => {
     const launched = await launchShell({ onboardingSeen: true, videoDir: 'new-html-tab' })
     const { app, page } = launched
     try {
-      const card = page.locator('.quick-card', { hasText: 'AI HTML' })
+      const card = page.locator('.quick-card', { hasText: 'HTML' })
       await expect(card).toHaveCount(1)
       await card.click()
 
@@ -26,7 +26,7 @@ test.describe('html editor', () => {
       const editorPage = await waitForPageWithUrl(app, '://html/')
       await expect(editorPage.locator('.ribbon-body')).toBeVisible()
       await expect(editorPage.locator('.preview-frame')).toBeVisible()
-      // blank document: the AI panel offers the design / write intent cards and swaps its starters
+      // blank document: the AI panel keeps its design / write intent cards without example prompts
       const copilot = editorPage.locator('.copilot')
       if (!(await copilot.isVisible())) await editorPage.locator('.ai-rail').click()
       const cards = copilot.getByRole('radio')
@@ -34,7 +34,7 @@ test.describe('html editor', () => {
       await expect(cards.first()).toHaveAttribute('aria-checked', 'true')
       await cards.nth(1).click()
       await expect(cards.nth(1)).toHaveAttribute('aria-checked', 'true')
-      await expect(copilot.locator('.ai-starter').first()).toHaveText(/Write an article/)
+      await expect(copilot.locator('.ai-starter')).toHaveCount(0)
       // preview-only by default; the source pane stays mounted but hidden
       await expect(editorPage.locator('.pane-source')).toBeHidden()
       await editorPage.locator('.rb-view', { hasText: /Source/ }).click()

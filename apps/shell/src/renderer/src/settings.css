@@ -1290,3 +1290,23 @@
 .set-local-actions {
   justify-content: space-between;
 }
+
+/* Legal notices are separate paragraphs, not competing value columns. */
+.set-about-notices .set-field-text {
+  display: block;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.set-about-notices .set-field-desc + .set-field-desc {
+  margin-top: 12px;
+}
+
+.set-about-contact .set-field-text {
+  display: block;
+}
+
+.set-about-contact .set-field-value {
+  margin-top: 6px;
+  white-space: nowrap;
+}

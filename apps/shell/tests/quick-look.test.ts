@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -261,7 +262,7 @@ describe('Quick Look 21-language dictionary', () => {
         expect(text, `${lang}.${key}`).not.toContain(UPSTREAM_PRODUCT_NAME)
       }
     }
-    expect(quickLookText('ko', 'openInEditor')).toContain('이음오피스')
+    expect(quickLookText('ko', 'openInEditor')).toContain('온유오피스')
     expect(quickLookText('en', 'openInEditor')).toContain(PRODUCT_NAME)
   })
 })

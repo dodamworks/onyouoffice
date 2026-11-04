@@ -3,8 +3,7 @@ import type { zh } from './zh'
 export const zhTW = {
   windowTitle: '代理程式',
   homeCardSub: '在資料夾中使用 Claude Code 或 Codex 工作',
-  intro:
-    '代理程式會在你選擇的資料夾中執行你的 Claude Code 或 Codex。它可以讀取其中的檔案、建立新檔案、使用你的技能、執行指令碼，並修改在 GenOffice 中開啟的文件。',
+  intro: '在所選資料夾中與 AI 一起建立和編輯檔案。',
   folderLabel: '專案資料夾',
   folderPick: '選擇資料夾…',
   folderNone: '尚未選擇資料夾',

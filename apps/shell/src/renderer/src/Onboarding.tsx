@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  AiConnectGuide,
-  AiMark,
-  aiSubscriptionProviderName,
-  aiSubscriptionText,
-} from '@genoffice/ui'
+import { AiConnectGuide, AiMark, aiSubscriptionProviderName } from '@genoffice/ui'
 import { FREE_AI_PROVIDERS, freeAiConnected } from '@genoffice/ai-provider/browser'
 import appIcon from './assets/app-icon.png'
 import { FirstConnectionDialog } from './FirstConnectionNotice'
@@ -21,6 +16,7 @@ import {
 import type { OnboardingStepId } from './onboarding-steps'
 import type { SubscriptionConnection } from './subscription-client'
 import { usableSubscriptionProviders } from './subscription-status'
+import { NICKNAME_MAX, normalizeNickname } from '../../shared/nickname'
 import './onboarding.css'
 
 interface OnboardingProps {
@@ -33,8 +29,7 @@ interface OnboardingProps {
   onNoticeAcknowledge: () => void
 }
 
-/* exact vectors from the design spec:
- * 60px canvas, 4px strokes — same visual mass as the 60px app icon */
+/* Reuse the existing artwork; onboarding CSS controls its display size. */
 function SlideArt({ step }: { step: OnboardingStepId }) {
   if (step === 'welcome') {
     return <img className="onb-art onb-art-logo" src={appIcon} alt="" />
@@ -73,6 +68,24 @@ export function Onboarding({
   const { t, lang } = useI18n()
   const [index, setIndex] = useState(0)
   const [submitting, setSubmitting] = useState(false)
+  const [nickname, setNickname] = useState('')
+  const [nicknameFailed, setNicknameFailed] = useState(false)
+  const savedNickname = useRef('')
+  const nicknameEdited = useRef(false)
+  useEffect(() => {
+    let alive = true
+    void window.aiOffice
+      ?.getNickname?.()
+      .then((raw) => {
+        if (!alive) return
+        savedNickname.current = normalizeNickname(raw)
+        if (!nicknameEdited.current) setNickname(savedNickname.current)
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [])
   const cardRef = useRef<HTMLDivElement>(null)
   const isLast = isLastOnboardingStep(index)
   // the notice waits for the step that is about the connection
@@ -104,9 +117,26 @@ export function Onboarding({
 
   // never waits for a connection: the connect step is left like any other
   const next = () => {
+    if (submitting) return
     const target = nextOnboardingStep(index)
-    if (target === null) finish()
-    else setIndex(target)
+    if (target === null) {
+      finish()
+      return
+    }
+    const value = normalizeNickname(nickname)
+    if (index === 0 && value !== savedNickname.current) {
+      setSubmitting(true)
+      setNicknameFailed(false)
+      void Promise.resolve()
+        .then(() => window.aiOffice.setNickname(value))
+        .then((stored) => {
+          savedNickname.current = normalizeNickname(stored)
+          setNickname(savedNickname.current)
+          setIndex(target)
+        })
+        .catch(() => setNicknameFailed(true))
+        .finally(() => setSubmitting(false))
+    } else setIndex(target)
   }
 
   // move focus into the dialog on mount so keyboard users start inside it
@@ -141,8 +171,13 @@ export function Onboarding({
         if (!card) return
         // inactive slides stay mounted (stacked for the height lock) but are
         // inert — their buttons must not enter the tab cycle
-        const focusables = Array.from(card.querySelectorAll<HTMLElement>('button')).filter(
-          (el) => !el.closest('[inert]') && !el.hasAttribute('disabled'),
+        const focusables = Array.from(
+          card.querySelectorAll<HTMLElement>('button, summary, input, select, textarea, a[href]'),
+        ).filter(
+          (el) =>
+            !el.closest('[inert]') &&
+            !el.hasAttribute('disabled') &&
+            (!el.closest('details:not([open])') || el.tagName === 'SUMMARY'),
         )
         if (focusables.length === 0) return
         const first = focusables[0]
@@ -163,9 +198,16 @@ export function Onboarding({
         }
         return
       }
-      const buttonFocused =
-        event.target instanceof HTMLElement && event.target.closest('button') !== null
-      if ((event.key === 'Enter' && !buttonFocused) || event.key === 'ArrowRight') next()
+      // Arrow keys in the optional nickname field edit text rather than change slides.
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.closest('input, textarea, select, [contenteditable="true"]')
+      )
+        return
+      const controlFocused =
+        event.target instanceof HTMLElement &&
+        event.target.closest('button, summary, input, select, textarea, a[href]') !== null
+      if ((event.key === 'Enter' && !controlFocused) || event.key === 'ArrowRight') next()
       if (event.key === 'ArrowLeft') setIndex((i) => previousOnboardingStep(i))
     }
     window.addEventListener('keydown', onKeyDown)
@@ -176,15 +218,38 @@ export function Onboarding({
     if (step === 'welcome') {
       return (
         <>
-          <p className="onb-subtitle">{t('onbWelcomeSubtitle')}</p>
           <p className="onb-body">{t('onbWelcomeBody')}</p>
+          <div className="onb-nickname">
+            <label htmlFor="onb-nickname">{t('nicknameLabel')}</label>
+            <input
+              id="onb-nickname"
+              type="text"
+              value={nickname}
+              placeholder={t('nicknamePlaceholder')}
+              aria-describedby="onb-nickname-desc"
+              maxLength={NICKNAME_MAX}
+              autoComplete="off"
+              spellCheck={false}
+              disabled={submitting}
+              onChange={(event) => {
+                nicknameEdited.current = true
+                setNickname(event.target.value)
+                setNicknameFailed(false)
+              }}
+            />
+            <p id="onb-nickname-desc">{t('nicknameDesc')}</p>
+            {nicknameFailed && (
+              <p className="onb-connect-failed" role="alert">
+                {t('nicknameSaveFailed')}
+              </p>
+            )}
+          </div>
         </>
       )
     }
     if (step === 'connect') {
       return (
         <>
-          <p className="onb-body onb-body-lead">{aiSubscriptionText(lang, 'connectBody')}</p>
           <div className="onb-connect">
             <AiConnectGuide
               statuses={connection.statuses}
@@ -201,6 +266,7 @@ export function Onboarding({
               // no subscription: the free connections open right here
               freeContent={<FreeAiCards t={t} compact />}
               freeConnected={freeConnected}
+              helpSummary={t('onbConnectHelp')}
               codexNotice
               renderAfterCard={(provider) =>
                 connection.failed[provider] && (
@@ -228,7 +294,6 @@ export function Onboarding({
               })
             : t('onbDoneNotConnected')}
         </p>
-        <p className="onb-body onb-body-dim">{t('onbBody3')}</p>
       </>
     )
   }
@@ -272,9 +337,11 @@ export function Onboarding({
             ))}
           </div>
           <div className="onb-nav">
-            <button className="onb-skip" disabled={submitting} onClick={finish}>
-              {t('onbSkip')}
-            </button>
+            {!isLast && (
+              <button className="onb-skip" disabled={submitting} onClick={finish}>
+                {t('onbSkip')}
+              </button>
+            )}
             {index > 0 && (
               <button
                 className="onb-back"

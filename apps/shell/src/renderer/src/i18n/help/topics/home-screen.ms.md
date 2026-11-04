@@ -7,7 +7,7 @@ Laman Utama ialah halaman permulaan GenOffice: bar navigasi di kiri, senarai fai
 - **Terkini**: fail yang baru dibuka oleh anda. Setiap baris dicap dengan waktunya — hari ini, semalam atau tarikh.
 - **Berbintang**: fail yang anda tandakan dengan bintang. Halakan kursor ke baris fail dan klik bintang untuk menambah atau membuangnya. **Alih ke kumpulan** dalam menu ⋯ menyusun fail berbintang ke kumpulan bernama; paparan Berbintang menapis mengikutnya.
 - **Panduan Pengguna**: membuka manual ini.
-- **Ask AI**: panel pangkalan pengetahuan — ajukan soalan dan terima jawapan yang memetik fail anda yang berbintang (lihat bawah).
+- **Gudang pengetahuan**: Sumber lalai ialah dokumen yang didaftarkan dalam aplikasi: fail terkini dan kegemaran, folder yang ditambah serta projek. Carian tidak meliputi seluruh komputer.
 - **Projek**: folder (projek) yang boleh digunakan oleh AI. Cipta projek atau guna folder sedia ada, dan buka satu untuk mengurus arahan, ingatan, fail dan perbualannya. Lihat [Projek](help://projects).
 - **Folder**: direktori yang anda tambah ke bar sisi dengan **Tambah folder…**, atau yang anda seret masuk daripada pengurus fail. Setiap satu menjadi lokasi yang boleh dibuka, boleh dicipta subdirektori di dalamnya, boleh dinamakan semula dan boleh dibuang; lokasi yang menjadi luar talian ditandakan sebagai tidak tersedia dan boleh dibuang daripada senarai. **Folder baharu** mencipta satu lagi.
 - **Baris di bahagian bawah**: menunjukkan sama ada AI sudah disambungkan — **Sambungkan AI**, atau nama langganan yang disambungkan — dan membuka Tetapan.
@@ -56,11 +56,9 @@ Apa yang setiap kad lakukan:
 
 > Petua: Fail ▸ Baharu pada bar menu mencipta jenis dokumen yang sama. Pintasan ⌘N/Ctrl+N secara lalai mencipta dokumen teks. Menyeret fail ke dalam tingkap akan membukanya.
 
-## Tanya pangkalan pengetahuan anda
+## Gudang pengetahuan
 
-- Bintangi fail dahulu (jenis apa pun yang aplikasi baca); kepala panel mengira korpus, dan pangkalan kosong menjemput anda membintangi sesuatu.
-- Jawapan memetik fail sumbernya; klik petikan untuk membuka fail dalam penyuntingnya.
-- Memerlukan AI yang disambungkan; lihat [Sambungan langganan](help://subscription). Perbualan hanya hidup dalam ingatan — menutup aplikasi mengakhirinya.
-- Pilih projek di bawah kotak input dan fail dalam folder itu turut dicari dan dibaca, dan perbualan disimpan dalam folder itu supaya anda boleh meneruskannya dalam editor lain. Tanpa projek, perbualan hanya hidup dalam ingatan seperti di atas.
-- Carian berjalan pada indeks fail setempat, seperti carian Laman Utama; fail yang hilang gugur senyap daripada korpus.
-- Kumpulan hanya menyusun senarai Berbintang — pangkalan pengetahuan sentiasa merangkumi semua fail berbintang.
+- Sumber lalai ialah dokumen yang didaftarkan dalam aplikasi: fail terkini dan kegemaran, folder yang ditambah serta projek. Carian tidak meliputi seluruh komputer.
+- Di atas ruang input, pilih dokumen berdaftar, projek, dokumen tertentu atau kegemaran. Menukar sumber memulakan perbualan baharu dan membatalkan soalan yang menunggu sambungan.
+- Sambungkan AI melalui Tetapan → AI. Nama fail dan kandungan berkaitan daripada sumber pilihan boleh dihantar kepada penyedia AI. Fail projek yang tersembunyi dan dikecualikan kekal dikecualikan. Jawapan menyatakan sumber.
+- Perbualan projek disimpan dalam folder projek. Perbualan lain hanya dalam memori dan tamat apabila aplikasi ditutup.

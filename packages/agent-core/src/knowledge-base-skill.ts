@@ -2,7 +2,7 @@ import type { AgentToolDef } from './types'
 import type { AgentSkill } from './skill'
 
 /**
- * The reader's starred files (the star corpus) as a searchable, readable body.
+ * The documents in the chosen scope as a searchable, readable body.
  *
  * The skill is storage-agnostic on purpose: deps inject the three main-process
  * operations (list / search / read), so it carries no electron or index
@@ -67,7 +67,7 @@ export function formatKbSize(bytes: number): string {
 }
 
 const KB_SYSTEM_PROMPT = `## Knowledge base
-The user's starred files form a knowledge base; each turn's context
+The documents in the selected scope form a knowledge base; each turn's context
 lists them (index | folder | file | type | size, with the absolute path).
 - Use it only when the request refers to those files or their contents; drafting,
   rewriting or formatting the open document from the request alone never needs it.
@@ -99,7 +99,7 @@ export function kbCiteHref(path: string): string {
 }
 
 const KB_EMPTY =
-  'The knowledge base is empty (the user has starred no files). Do not search it again; work from the request and the open document.'
+  'The knowledge base is empty (no documents are available in the selected scope). Do not search it again; work from the request and the open document.'
 
 export function createKnowledgeBaseSkill(deps: KnowledgeBaseDeps): AgentSkill {
   const readTool: AgentToolDef = {
@@ -127,7 +127,7 @@ export function createKnowledgeBaseSkill(deps: KnowledgeBaseDeps): AgentSkill {
       {
         name: 'search_knowledge_base',
         description:
-          'Full-text search over the knowledge base (the user’s starred files), for requests that refer to those files; not for writing or formatting from the request alone. ' +
+          'Full-text search over the knowledge base (the documents in the selected scope), for requests that refer to those files; not for writing or formatting from the request alone. ' +
           'Returns the matching files with a snippet around the first hit. Literal-word matching: ' +
           'retry with synonyms or the other language when it returns nothing.',
         inputSchema: {
@@ -154,7 +154,7 @@ export function createKnowledgeBaseSkill(deps: KnowledgeBaseDeps): AgentSkill {
         withPaths.length <= KB_CONTEXT_MAX_CHARS
           ? withPaths
           : `${plain.join('\n')}\n\n(The corpus is large; cite links come with search results.)`
-      return `Knowledge base — the user's starred files (index | folder | file | type | size):\n${body}`
+      return `Knowledge base — the documents in the selected scope (index | folder | file | type | size):\n${body}`
     },
     executeTool: async (call) => {
       if (deps.listFiles().length === 0) {

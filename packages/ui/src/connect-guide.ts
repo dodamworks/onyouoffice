@@ -22,7 +22,7 @@ export type AiConnectPath = AiSubscriptionProviderId | 'free'
  * directly, and the Codex program is a way within it (a link on that path),
  * so nobody has to choose between two ChatGPT answers (decision 0081).
  */
-export const AI_CONNECT_PATHS: readonly AiConnectPath[] = ['claude-code', 'chatgpt', 'free']
+export const AI_CONNECT_PATHS: readonly AiConnectPath[] = ['chatgpt', 'claude-code', 'free']
 
 export interface AiConnectPathOption {
   readonly path: AiConnectPath

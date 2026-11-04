@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { basename, dirname, extname, isAbsolute, join, resolve } from 'node:path'
 import { flagBool, flagString } from '../args'
@@ -55,13 +56,13 @@ export const createCommand: CommandDef = {
       name: 'ops',
       value: 'file',
       description:
-        'pptx: JSON array of ops (or {"ops":[...]}) applied one by one to a blank one-slide deck (later ops can target slides added earlier); hwp / hwpx: the `hwp apply` ops run on a blank A4 document (see `ieumoffice guide hwp`); "-" reads stdin. See `ieumoffice guide slides`.',
+        'pptx: JSON array of ops (or {"ops":[...]}) applied one by one to a blank one-slide deck (later ops can target slides added earlier); hwp / hwpx: the `hwp apply` ops run on a blank A4 document (see `onyouoffice guide hwp`); "-" reads stdin. See `onyouoffice guide slides`.',
     },
     {
       name: 'spec',
       value: 'file',
       description:
-        'pptx: a deck spec (pages of px-positioned text, shapes and images on a 1280x720 canvas) built into one slide per page, or a directory of one-page spec files taken in name order; "-" reads stdin. See `ieumoffice guide slides spec` and `ieumoffice guide slides design`.',
+        'pptx: a deck spec (pages of px-positioned text, shapes and images on a 1280x720 canvas) built into one slide per page, or a directory of one-page spec files taken in name order; "-" reads stdin. See `onyouoffice guide slides spec` and `onyouoffice guide slides design`.',
     },
     {
       name: 'outline',
@@ -73,7 +74,7 @@ export const createCommand: CommandDef = {
       name: 'from',
       value: 'file',
       description:
-        'xlsx: a .csv, or a .json holding a 2-D array of cell values or { "sheets": [{ "name", "rows" }] }; strings starting with "=" are formulas. docx: a .md file, or a .html file holding a restricted-HTML fragment (see `ieumoffice guide docs`). pdf: any .md/.html/.docx/.xlsx/.pptx file, printed by the GenOffice renderer',
+        'xlsx: a .csv, or a .json holding a 2-D array of cell values or { "sheets": [{ "name", "rows" }] }; strings starting with "=" are formulas. docx: a .md file, or a .html file holding a restricted-HTML fragment (see `onyouoffice guide docs`). pdf: any .md/.html/.docx/.xlsx/.pptx file, printed by the GenOffice renderer',
     },
     {
       name: 'header',
@@ -137,7 +138,7 @@ export const createCommand: CommandDef = {
       return {
         summary: `created ${basename(output)}`,
         outputPath: output,
-        detail: { via: 'ieumoffice --headless-export', summary: r.summary },
+        detail: { via: 'onyouoffice --headless-export', summary: r.summary },
       }
     }
     if (type === 'hwp' || type === 'hwpx') return createHwp(type, args, ctx, output)
@@ -257,7 +258,7 @@ async function createPptxFromSpec(
 ): Promise<{ bytes: Uint8Array; slides: number; detail: CommandResult['detail'] }> {
   const spec = flagString(args, 'spec')!
   const next =
-    'ieumoffice slides audit <file> for the geometry audit; ieumoffice slides render <file> --out <dir> for PNGs; ieumoffice slides replace <file> --slide n --spec <page.json> to rebuild one page'
+    'onyouoffice slides audit <file> for the geometry audit; onyouoffice slides render <file> --out <dir> for PNGs; onyouoffice slides replace <file> --slide n --spec <page.json> to rebuild one page'
   const outlinePath = flagString(args, 'outline')
   const dir = spec === '-' ? null : specDirectory(spec, ctx)
   if (dir) {

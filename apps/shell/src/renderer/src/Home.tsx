@@ -1,11 +1,12 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type {
   DragEvent as ReactDragEvent,
   PointerEvent as ReactPointerEvent,
   ReactElement,
 } from 'react'
-import logoLockup from './assets/genoffice-logo.svg'
 import { KbAskPanel } from './KbAskPanel'
+import brandSymbol from './assets/brand-symbol-small.svg'
 import iconDocx from './assets/file-docx.svg'
 import iconXlsx from './assets/file-xlsx.svg'
 import iconPptx from './assets/file-pptx.svg'
@@ -55,6 +56,7 @@ import { FirstConnectionDialog } from './FirstConnectionNotice'
 import { LaunchRecoveryList } from './RecoveryList'
 import type { SubscriptionConnection } from './subscription-client'
 import { subscriptionSummary } from './subscription-status'
+import { normalizeNickname } from '../../shared/nickname'
 import './pdf-tools/globals'
 import './quick-look/globals'
 import './quick-look/quick-look.css'
@@ -107,11 +109,112 @@ const FILE_ICONS: Record<string, string> = {
   epub: iconEpub,
 }
 
-/* Formats the open-local card advertises. Too long for the card at any window
-   width, so it ellipsizes and a hover ScreenTip carries the full list. Keep in
-   sync with the main-process open-dialog filter (OPEN_DIALOG_EXTENSIONS). */
-const OPEN_LOCAL_EXTENSIONS =
-  '.docx / .odt / .xlsx / .xlsm / .xls / .csv / .tsv / .pptx / .pdf / .md / .html / .xmind / .hwp / .hwpx / .epub'
+/* Keep the advertised groups aligned with OPEN_DIALOG_EXTENSIONS in Shell main. */
+const OPEN_LOCAL_FORMATS: readonly { label: StringKey; extensions: readonly string[] }[] = [
+  { label: 'filterDocs', extensions: ['docx', 'doc', 'odt'] },
+  { label: 'filterSheets', extensions: ['xlsx', 'xlsm', 'xls', 'csv', 'tsv'] },
+  { label: 'filterSlides', extensions: ['pptx', 'ppt'] },
+  { label: 'filterPdf', extensions: ['pdf'] },
+  { label: 'formatText', extensions: ['md', 'markdown', 'txt', 'json'] },
+  { label: 'filterHtml', extensions: ['html', 'htm'] },
+  { label: 'filterMindmap', extensions: ['xmind'] },
+  { label: 'filterHwp', extensions: ['hwp', 'hwpx'] },
+  { label: 'filterEpub', extensions: ['epub'] },
+]
+const OPEN_LOCAL_EXTENSIONS = OPEN_LOCAL_FORMATS.flatMap((group) => group.extensions)
+  .map((ext) => `.${ext}`)
+  .join(' / ')
+
+function SupportedFormatsInfo({ t }: { t: I18n['t'] }) {
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLElement>(null)
+  useDismissablePopover(open, () => setOpen(false), { inside: () => [wrapRef.current] })
+  useLayoutEffect(() => {
+    if (!open) return
+    const place = () => {
+      const trigger = wrapRef.current?.getBoundingClientRect()
+      const panel = panelRef.current
+      if (!trigger || !panel) return
+      const box = panel.getBoundingClientRect()
+      const left = Math.max(
+        16,
+        Math.min(trigger.right - box.width, fixedViewportWidth() - box.width - 16),
+      )
+      const below = trigger.bottom + 8
+      const top =
+        below + box.height <= document.documentElement.clientHeight - 16
+          ? below
+          : Math.max(16, trigger.top - box.height - 8)
+      panel.style.left = `${left}px`
+      panel.style.top = `${top}px`
+    }
+    place()
+    window.addEventListener('resize', place)
+    window.addEventListener('scroll', place, true)
+    return () => {
+      window.removeEventListener('resize', place)
+      window.removeEventListener('scroll', place, true)
+    }
+  }, [open])
+  return (
+    <div
+      className="quick-info-wrap"
+      ref={wrapRef}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.stopPropagation()
+          setOpen(false)
+        }
+      }}
+    >
+      <button
+        type="button"
+        className="quick-info"
+        aria-label={t('supportedFormats')}
+        aria-expanded={open}
+        aria-controls="home-supported-formats"
+        onClick={() => setOpen((value) => !value)}
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 11v6" strokeLinecap="round" />
+          <circle cx="12" cy="7.5" r=".75" fill="currentColor" stroke="none" />
+        </svg>
+      </button>
+      {open && (
+        <section
+          id="home-supported-formats"
+          className="supported-formats"
+          ref={panelRef}
+          aria-label={t('supportedFormats')}
+        >
+          <h2>{t('supportedFormats')}</h2>
+          <dl>
+            {OPEN_LOCAL_FORMATS.map((group) => (
+              <div key={group.label}>
+                <dt>{t(group.label)}</dt>
+                <dd>
+                  {group.extensions.map((ext) => (
+                    <span key={ext}>.{ext}</span>
+                  ))}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+    </div>
+  )
+}
 
 /** drag payload of home file/folder rows (JSON array of absolute paths) */
 const DRAG_PATHS_MIME = 'application/x-genoffice-paths'
@@ -300,11 +403,11 @@ const FILTERS: { key: string; label: StringKey }[] = [
   { key: 'docx', label: 'filterDocs' },
   { key: 'xlsx', label: 'filterSheets' },
   { key: 'pptx', label: 'filterSlides' },
+  { key: 'hwp', label: 'filterHwp' },
   { key: 'pdf', label: 'filterPdf' },
   { key: 'md', label: 'filterMd' },
   { key: 'html', label: 'filterHtml' },
   { key: 'xmind', label: 'filterMindmap' },
-  { key: 'hwp', label: 'filterHwp' },
   { key: 'epub', label: 'filterEpub' },
 ]
 
@@ -1159,6 +1262,23 @@ export function Home({
   const [confirmDelete, setConfirmDelete] = useState<string[] | null>(null)
   // unavailable recent entry (missing flag) the user clicked — offer list removal
   const [confirmMissing, setConfirmMissing] = useState<RecentEntry | null>(null)
+  const [nickname, setNickname] = useState('')
+  useEffect(() => {
+    let alive = true
+    void window.aiOffice
+      .getNickname?.()
+      .then((value) => {
+        if (alive) setNickname(normalizeNickname(value))
+      })
+      .catch(() => {})
+    const off = window.aiOffice.onNicknameChanged?.((value) =>
+      setNickname(normalizeNickname(value)),
+    )
+    return () => {
+      alive = false
+      off?.()
+    }
+  }, [])
   const [greetAskKey] = useState(
     () => GREET_ASK_KEYS[Math.floor(Math.random() * GREET_ASK_KEYS.length)]!,
   )
@@ -1902,6 +2022,18 @@ export function Home({
       action: () => window.aiOffice.newSlide(newFileOpts),
     },
     {
+      ext: 'hwp',
+      title: t('newHwp'),
+      sub: '.hwp',
+      action: () => window.aiOffice.newHwp(newFileOpts),
+    },
+    {
+      ext: 'pdf',
+      title: t('newPdf'),
+      sub: '.pdf',
+      action: () => window.aiOffice.newPdf(newFileOpts),
+    },
+    {
       ext: 'md',
       title: t('newMarkdown'),
       sub: '.md',
@@ -1919,51 +2051,40 @@ export function Home({
       sub: '.xmind',
       action: () => window.aiOffice.newMindmap(newFileOpts),
     },
-    {
-      ext: 'hwp',
-      title: t('newHwp'),
-      sub: '.hwp',
-      action: () => window.aiOffice.newHwp(newFileOpts),
-    },
-    {
-      ext: 'pdf',
-      title: t('newPdf'),
-      sub: '.pdf',
-      action: () => window.aiOffice.newPdf(newFileOpts),
-    },
   ]
 
   function renderQuickCards() {
+    const cards = NEW_ITEMS.map((item) => (
+      <button
+        key={item.ext}
+        data-format={item.ext}
+        className="quick-card"
+        onClick={() => void item.action()}
+      >
+        <FileBadge ext={item.ext} size={30} />
+        <span className="quick-text">
+          <span className="quick-title-row">
+            <span className="quick-title">{item.title}</span>
+          </span>
+          <span className="quick-sub">{item.sub}</span>
+        </span>
+      </button>
+    ))
+    const afterPdf = NEW_ITEMS.findIndex((item) => item.ext === 'pdf') + 1
     return (
       <div className="quick-cards">
-        {NEW_ITEMS.map((item) => (
-          <button key={item.ext} className="quick-card" onClick={() => void item.action()}>
-            <FileBadge ext={item.ext} size={30} />
-            <span className="quick-text">
-              <span className="quick-title-row">
-                <span className="quick-title">{item.title}</span>
-                <span className="ai-chip">AI</span>
-              </span>
-              <span className="quick-sub">{item.sub}</span>
+        <div className="quick-open">
+          <button className="quick-card" onClick={() => void window.aiOffice.browse()}>
+            <span className="quick-folder">
+              <FolderIcon size={18} />
             </span>
-          </button>
-        ))}
-        <button
-          className="quick-card"
-          onClick={() => void window.aiOffice.browse()}
-          data-tip={OPEN_LOCAL_EXTENSIONS}
-        >
-          <span className="quick-folder">
-            <FolderIcon size={18} />
-          </span>
-          <span className="quick-text">
-            <span className="quick-title-row">
+            <span className="quick-text">
               <span className="quick-title">{t('openLocal')}</span>
             </span>
-            <span className="quick-sub">{OPEN_LOCAL_EXTENSIONS}</span>
-          </span>
-        </button>
-        {/* decision 0030: PDF tasks without AI, in their own window */}
+          </button>
+          <SupportedFormatsInfo t={t} />
+        </div>
+        {cards.slice(0, afterPdf)}
         <button className="quick-card" onClick={() => void window.aiOfficePdfToolsHome.open()}>
           <FileBadge ext="pdf" size={30} />
           <span className="quick-text">
@@ -1973,6 +2094,7 @@ export function Home({
             <span className="quick-sub">{t('pdfToolsCardSub')}</span>
           </span>
         </button>
+        {cards.slice(afterPdf)}
       </div>
     )
   }
@@ -3110,7 +3232,9 @@ export function Home({
             ? 'greetAfternoon'
             : 'greetEvening'
     const cjk = lang === 'zh' || lang === 'zh-TW' || lang === 'ja'
-    const greeting = `${t(greetKey)}${cjk ? '。' : '. '}`
+    const greeting = nickname
+      ? t('greetNamed', { greeting: t(greetKey), name: `\u2068${nickname}\u2069` })
+      : `${t(greetKey)}${cjk ? '。' : '. '}`
     return (
       <main className="content">
         <section className="quick-start" aria-label={t('secQuickStart')}>
@@ -3323,7 +3447,10 @@ export function Home({
         style={sidebarWidth === null ? undefined : { width: sidebarWidth }}
       >
         <div className="sidebar-logo">
-          <img className="logo-lockup" src={logoLockup} alt={productName(lang)} />
+          <span className="logo-lockup">
+            <img className="logo-symbol" src={brandSymbol} alt="" aria-hidden="true" />
+            <span className="logo-wordmark">{productName(lang)}</span>
+          </span>
           {RELEASE_IS_BETA && (
             <span className="beta-badge" title={t('betaTooltip')}>
               {t('betaBadge')}

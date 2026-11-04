@@ -146,7 +146,7 @@ test.describe('generate hand-off: PPT editor', () => {
       await expect(chips).toHaveCount(2)
       await expect(chips.nth(0)).toHaveAttribute('data-tip', brief)
       await expect(chips.nth(1)).toHaveAttribute('data-tip', notes)
-      await expect(editor.locator('.ai-sub-prompt')).toBeVisible()
+      await expect(editor.locator('.ai-sub-connect-status')).toBeVisible()
       await expect.poll(snapshot).toEqual({ queued: 0, taken: 1, runs: [], streams: 0 })
       await editor.screenshot({ path: shot('slides-handoff-not-connected') })
 
@@ -163,7 +163,7 @@ test.describe('generate hand-off: PPT editor', () => {
           if (!wc.isDestroyed()) send.call(wc, 'ai:subscription-changed', g.__t15Statuses)
         }
       })
-      await expect(editor.locator('.ai-sub-prompt')).toHaveCount(0)
+      await expect(editor.locator('.ai-sub-connect-status')).toHaveCount(0)
       // still nothing sent by itself after the sign-in
       expect((await snapshot()).streams).toBe(0)
       await composer.focus()

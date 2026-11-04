@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -14,7 +15,7 @@ afterEach(() => {
 const table = (text: string): TableModel => ({ rows: [[{ paras: [text] }]] })
 
 async function convert(model: TableModel) {
-  const dir = mkdtempSync(join(tmpdir(), 'ieumoffice-nested-md-'))
+  const dir = mkdtempSync(join(tmpdir(), 'onyouoffice-nested-md-'))
   dirs.push(dir)
   const zip = await JSZip.loadAsync(await buildBlankDocx())
   const xml = await zip.file('word/document.xml')!.async('string')

@@ -333,9 +333,9 @@ describe('AiPanel subscription gate (slides)', () => {
     await flushEffects()
 
     expect(agentHarness.run).not.toHaveBeenCalled()
-    expect(container.querySelector('.ai-sub-prompt')).not.toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).not.toBeNull()
     // which AI the user has comes first; each answer leads to its own card
-    expect(container.querySelectorAll('.ai-sub-guide-path')).toHaveLength(3)
+    expect(container.querySelectorAll('.ai-sub-guide-path')).toHaveLength(0)
     expect(container.querySelector('.ai-msg-error')).toBeNull()
     expect(container.querySelector('.ai-sub-first')).toBeNull()
   })
@@ -349,7 +349,7 @@ describe('AiPanel subscription gate (slides)', () => {
 
     expect(agentHarness.run).toHaveBeenCalledTimes(1)
     expect(agentHarness.run).toHaveBeenCalledWith('Polish this slide', [])
-    expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
   })
 
   it('first use of a subscription → the notice comes first; acknowledging saves it and starts the request', async () => {
@@ -362,7 +362,7 @@ describe('AiPanel subscription gate (slides)', () => {
     expect(agentHarness.run).not.toHaveBeenCalled()
     const notice = container.querySelector('.ai-sub-first')
     expect(notice).not.toBeNull()
-    expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
 
     await act(async () => {
       notice!.querySelector('button')!.click()
@@ -387,7 +387,7 @@ describe('AiPanel subscription gate (slides)', () => {
       const { container } = mount(createElement(AiPanel, panelProps({ settings: seenSettings })))
       await flushEffects()
       // no request yet: the check runs without a prompt flashing up
-      expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+      expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
 
       type(container, 'Make it shorter')
       pressEnter(container)
@@ -400,7 +400,7 @@ describe('AiPanel subscription gate (slides)', () => {
       await emit(statusMap('signed-out', 'not-installed'))
       await flushEffects()
       expect(agentHarness.run).not.toHaveBeenCalled()
-      const prompt = container.querySelector('.ai-sub-prompt')
+      const prompt = container.querySelector('.ai-sub-connect-status')
       expect(prompt).not.toBeNull()
       expect(scrolled).toContain(prompt)
       expect(composer(container).value).toBe('Make it shorter')
@@ -447,7 +447,7 @@ describe('AiPanel subscription gate (slides)', () => {
       await flushEffects()
       expect(agentHarness.run).not.toHaveBeenCalled()
       expect(composer(container).value).toBe('Make it shorter')
-      expect(scrolled).toContain(container.querySelector('.ai-sub-prompt'))
+      expect(scrolled).toContain(container.querySelector('.ai-sub-connect-status'))
       expect(container.querySelector('.ai-msg-error')).toBeNull()
     } finally {
       delete (Element.prototype as { scrollIntoView?: unknown }).scrollIntoView

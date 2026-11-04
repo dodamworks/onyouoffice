@@ -465,3 +465,23 @@ body {
   font-size: 12px;
   color: var(--text-secondary);
 }
+
+.agent-intro,
+.agent-choice-text,
+.agent-notice {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* Keep the initial choices and acknowledgement within the default window. */
+.agent-setup {
+  gap: 10px;
+}
+
+.agent-setup .agent-section {
+  gap: 4px;
+}
+
+.agent-setup .agent-choice {
+  padding-block: 6px;
+}

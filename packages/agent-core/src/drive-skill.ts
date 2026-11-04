@@ -338,7 +338,11 @@ function composeGuarded(
   ]
   const composed = composeSkills(id, intro, all)
   const kept = mcp
-    ? guardReceivedContent(composed, { keepsInside: (server) => mcp.keepsInside(server), messages })
+    ? guardReceivedContent(composed, {
+        keepsInside: (server) => mcp.keepsInside(server),
+        messages,
+        conversationVersion: () => mcp.conversationVersion,
+      })
     : composed
   return guardOutbound(guardDriveContent(kept, drive), windowOutboundBridge(), messages)
 }

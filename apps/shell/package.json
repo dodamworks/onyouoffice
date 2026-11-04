@@ -1,13 +1,13 @@
 {
   "name": "@genoffice/shell",
-  "productName": "IeumOffice",
+  "productName": "Onyou Office",
   "version": "0.12.10",
   "license": "Apache-2.0",
   "homepage": "https://github.com/pblsketch/openoffice",
   "private": true,
-  "description": "IeumOffice",
+  "description": "Onyou Office",
   "main": "out/main/index.js",
-  "desktopName": "ieumoffice.desktop",
+  "desktopName": "onyouoffice.desktop",
   "scripts": {
     "dev": "electron-vite dev --watch",
     "build": "electron-vite build",
@@ -52,5 +52,6 @@
     "vite": "^7.3.1",
     "vitest": "^4.1.11"
   },
-  "author": "pblsketch <pblsketch@users.noreply.github.com>"
+  "author": "Onyou Office <support@onyouoffice.com>",
+  "x-dodam-modified": "Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build."
 }

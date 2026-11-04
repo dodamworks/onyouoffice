@@ -8,6 +8,7 @@
  * the viewer search). The preload bridge and the store and structure channels
  * are fakes; "sending" means a call to the fake `aiStream`.
  */
+import { strings } from '../src/renderer/i18n/strings'
 import { act, createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -28,7 +29,6 @@ import { InsightsCard, type InsightsCardProps } from '../src/renderer/ai/insight
 import type { PdfAppDeps } from '../src/renderer/ai/tools'
 import { DocumentJobSession } from '../src/renderer/doc-jobs/job-session'
 import { LocaleProvider } from '../src/renderer/i18n/locale'
-import { strings } from '../src/renderer/i18n/strings'
 import type { PdfStoreWriteRequest } from '../src/shared/ipc'
 
 const translate = createI18n(strings)
@@ -207,23 +207,26 @@ async function renderPanel(
 
 const suggested = (el: Element) => [...el.querySelectorAll('.ai-suggested-btn')] as HTMLElement[]
 
-describe('suggested questions', () => {
-  it('shows the three questions in an empty conversation, worded as pinned', async () => {
+async function sendRequest(panel: Element, text: string) {
+  await act(async () => {
+    const box = q(panel, '.ai-composer textarea') as HTMLTextAreaElement
+    Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(box, text)
+    box.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  await click(q(panel, '.ai-send-btn') as HTMLElement)
+}
+
+describe('empty conversation and typed requests', () => {
+  it('keeps the empty conversation free of suggestion and quick-action buttons', async () => {
     const panel = await renderPanel(statusesOf('ready', 'signed-out'))
-    expect(suggested(panel).map((b) => b.textContent)).toEqual([
-      'Summarize the key points',
-      'What are the conclusions and evidence?',
-      'What is missing or weak?',
-    ])
-    expect(strings.ko.airQuestion1).toBe('이 문서의 핵심을 정리해 줘')
-    expect(strings.ko.airQuestion2).toBe('결론과 그 근거를 페이지와 함께 알려 줘')
-    expect(strings.ko.airQuestion3).toBe('빠졌거나 약한 부분이 있어?')
+    expect(suggested(panel)).toHaveLength(0)
+    expect(q(panel, '.ai-quick-actions')).toBeNull()
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
   })
 
-  it('sends the question once per click and leaves the empty state', async () => {
+  it('sends a typed question once and leaves the empty state', async () => {
     const panel = await renderPanel(statusesOf('ready', 'signed-out'))
-    await click(suggested(panel)[1]!)
+    await sendRequest(panel, 'What are the conclusions and evidence?')
     await until(() => bridge.starts.length > 0, 'the send')
     expect(bridge.starts).toHaveLength(1)
     expect(JSON.stringify(bridge.starts[0]!.messages)).toContain(
@@ -237,9 +240,9 @@ describe('suggested questions', () => {
 
   it('shows the connect prompt instead of sending when nothing is connected', async () => {
     const panel = await renderPanel(statusesOf('signed-out', 'not-installed'))
-    await click(suggested(panel)[0]!)
+    await sendRequest(panel, 'Summarize the key points')
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
-    expect(q(panel, '.ai-sub-prompt')).not.toBeNull()
+    expect(q(panel, '.ai-sub-connect-status')).not.toBeNull()
     expect((q(panel, '.ai-composer textarea') as HTMLTextAreaElement).value).toBe(
       'Summarize the key points',
     )

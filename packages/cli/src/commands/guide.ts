@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { flagBool } from '../args'
 import type { CommandDef } from '../registry'
 import { docsCatalog } from '../formats/docx'
@@ -47,17 +48,17 @@ export const guideCommand: CommandDef = {
         'guides available for: slides, docs, sheets, hwp',
         {
           usage:
-            'ieumoffice guide slides | ieumoffice guide docs | ieumoffice guide sheets | ieumoffice guide hwp',
+            'onyouoffice guide slides | onyouoffice guide docs | onyouoffice guide sheets | onyouoffice guide hwp',
         },
         {
           reason: domain === undefined ? 'missing_argument' : 'invalid_argument',
-          suggestion: 'run `ieumoffice guide slides|docs|sheets|hwp`',
+          suggestion: 'run `onyouoffice guide slides|docs|sheets|hwp`',
         },
       )
     }
     if (domain === 'slides' && (topic === 'design' || topic === 'spec')) {
       const { SLIDES_GUIDES } = await import('@genoffice/pipelines/slides')
-      return { summary: SLIDES_GUIDES[topic].content }
+      return { summary: branded(SLIDES_GUIDES[topic].content) }
     }
     if (domain === 'slides' && topic === 'templates') {
       return templatesGuide(args.positionals[2], json)
@@ -86,7 +87,7 @@ export const guideCommand: CommandDef = {
           reason: 'invalid_argument',
           suggestion: guess
             ? `did you mean ${guess}?`
-            : `run \`ieumoffice guide ${domain}\` for the groups and ops`,
+            : `run \`onyouoffice guide ${domain}\` for the groups and ops`,
         },
       )
     }
@@ -131,13 +132,13 @@ async function load(
       if (index) return docs.opSignatureIndex()
       if (group) return docs.opGuide(group)!
       return [
-        'Op groups (ieumoffice guide slides <group> prints one; ieumoffice guide slides <op> prints one op):',
+        'Op groups (onyouoffice guide slides <group> prints one; onyouoffice guide slides <op> prints one op):',
         docs.opGuideCatalog(),
         '',
-        'Building a new deck: `ieumoffice guide slides design` (the staged workflow: style sheet, outline, one page file at a time, build, QC) and `ieumoffice guide slides spec` (the outline and page spec JSON for `ieumoffice slides check` and `ieumoffice create --type pptx --spec`).',
+        'Building a new deck: `onyouoffice guide slides design` (the staged workflow: style sheet, outline, one page file at a time, build, QC) and `onyouoffice guide slides spec` (the outline and page spec JSON for `onyouoffice slides check` and `onyouoffice create --type pptx --spec`).',
         '',
         'Every op: { "op": "<name>", "target": { "slide": <index|"s_n">, "el"?: "e_*" }, ...fields }.',
-        'Units are EMU (914400 per inch; suffixes in/cm/mm/pt/px accepted); font sizes are pt. `ieumoffice slides read <file>` lists ids and geometry.',
+        'Units are EMU (914400 per inch; suffixes in/cm/mm/pt/px accepted); font sizes are pt. `onyouoffice slides read <file>` lists ids and geometry.',
         'Vocabulary:',
         docs.opVocabulary(),
       ].join('\n')
@@ -161,8 +162,8 @@ function slidesCatalog(docs: SlidesOpDocs): OpCatalog {
 
 function docsGuideText(catalog: OpCatalog, htmlRules: string, group?: string): string {
   const lines = [
-    'Word ops (ieumoffice docs apply --ops): a JSON array; every entry has "op".',
-    'Targets: { "blockIndexes": [..] } or { "nodeType": "docHeading"|"docParagraph"|"docListItem"|"image", "headingLevel"? }; get indexes from `ieumoffice docs read`.',
+    'Word ops (onyouoffice docs apply --ops): a JSON array; every entry has "op".',
+    'Targets: { "blockIndexes": [..] } or { "nodeType": "docHeading"|"docParagraph"|"docListItem"|"image", "headingLevel"? }; get indexes from `onyouoffice docs read`.',
     'Field notation: bare = string, n = number, bool = boolean, ? = optional, a|b = one of.',
     '',
     ...renderGroups(catalog, group),
@@ -173,8 +174,8 @@ function docsGuideText(catalog: OpCatalog, htmlRules: string, group?: string): s
 
 function hwpGuideText(catalog: OpCatalog, group?: string): string {
   return [
-    'Hangul ops (ieumoffice hwp apply --ops, ieumoffice create --type hwp|hwpx --ops): a JSON array; every entry is { "op": "<name>", ...fields }. They are the tools the in-app AI uses on the same document, and answer with the same text.',
-    'Places are found by their text: anchor / find is exact text inside one paragraph or one table cell. When it occurs more than once the op is refused with the places listed; pass occurrence (1-based, as find_text lists them). Read the document first: `ieumoffice hwp read`, or the read ops below.',
+    'Hangul ops (onyouoffice hwp apply --ops, onyouoffice create --type hwp|hwpx --ops): a JSON array; every entry is { "op": "<name>", ...fields }. They are the tools the in-app AI uses on the same document, and answer with the same text.',
+    'Places are found by their text: anchor / find is exact text inside one paragraph or one table cell. When it occurs more than once the op is refused with the places listed; pass occurrence (1-based, as find_text lists them). Read the document first: `onyouoffice hwp read`, or the read ops below.',
     'Nothing that would drop a table, picture, form field or memo is done: such an op is refused and the document stays as it was. The file is written in the format it was opened in (or the --out extension); an overwritten file is kept as <name>.bak.',
     'Field notation: bare = string, n = number, bool = boolean, ? = optional, a|b = one of.',
     '',
@@ -218,7 +219,7 @@ async function templatesGuide(id: string | undefined, json: boolean): Promise<Co
     })
     return {
       summary: [
-        'Built-in deck templates (`ieumoffice guide slides templates <id>` prints one as a style sheet to save as deck/style.md):',
+        'Built-in deck templates (`onyouoffice guide slides templates <id>` prints one as a style sheet to save as deck/style.md):',
         ...lines,
       ].join('\n'),
       ...(json ? { detail: { templates: all.map(brief) } } : {}),
@@ -236,12 +237,12 @@ async function templatesGuide(id: string | undefined, json: boolean): Promise<Co
         reason: 'invalid_argument',
         suggestion: guess
           ? `did you mean ${guess}?`
-          : 'run `ieumoffice guide slides templates` for the list',
+          : 'run `onyouoffice guide slides templates` for the list',
       },
     )
   }
   const shipped = branded(
-    `These fonts ship with GenOffice: ${fontList(t).join(', ')}; a deck that names them shows in them in the app and in \`ieumoffice slides render\`.`,
+    `These fonts ship with GenOffice: ${fontList(t).join(', ')}; a deck that names them shows in them in the app and in \`onyouoffice slides render\`.`,
   )
   return {
     summary: `${t.styleSheet}\n\n${shipped}`,

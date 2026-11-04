@@ -3,6 +3,8 @@ import { createEditor } from '@rhwp/editor'
 import type { ChromeVisibility, RhwpEditor } from '@rhwp/editor'
 import type { Params } from '@genoffice/i18n'
 import {
+  AiMark,
+  aiSubscriptionText,
   aiPanelInitiallyOpen,
   rememberAiPanelOpen,
   skillTemplateText,
@@ -17,6 +19,7 @@ import { createAgentBridge } from './ai/agent-bridge'
 import {
   DIRTY_EVENT,
   FILE_COMMAND_EVENT,
+  DOCUMENT_CHECK_EVENT,
   MEMO_NOT_COPIED_EVENT,
   MEMO_REMOVED_EVENT,
 } from '../../studio-plugin/agent-plugin.mjs'
@@ -155,7 +158,7 @@ export default function App() {
   const [notice, setNotice] = useState<Notice | null>(null)
   const [aiOpen, setAiOpen] = useState(() => aiPanelInitiallyOpen(AI_OPEN_KEY))
   const [checkOpen, setCheckOpen] = useState(false)
-  /** a request the check panel hands to the AI input box; `nonce` says it is a new one */
+  /** a request the toolbar or check panel hands to the AI input box; `nonce` says it is a new one */
   const [aiPrefill, setAiPrefill] = useState<{ text: string; nonce: number } | null>(null)
   /** counts changes made through the bridge, so the check panel can read the document again */
   const [docRevision, setDocRevision] = useState(0)
@@ -468,6 +471,8 @@ export default function App() {
         print: t('filePrint'),
       })
       .catch(() => {})
+    void agentBridge.installDocumentCheckMenu(t('checkTitle')).catch(() => {})
+    const onDocumentCheck = () => setCheckOpen(true)
     const onCommand = (event: Event) => {
       const command = (event as CustomEvent<unknown>).detail
       if (
@@ -485,9 +490,11 @@ export default function App() {
       setMemoOpen(true)
       setMemoInsertTick((tick) => tick + 1)
     }
+    frame.addEventListener(DOCUMENT_CHECK_EVENT, onDocumentCheck)
     frame.addEventListener(FILE_COMMAND_EVENT, onCommand)
     frame.addEventListener(MEMO_INSERT_EVENT, onMemoInsert)
     return () => {
+      frame.removeEventListener(DOCUMENT_CHECK_EVENT, onDocumentCheck)
       frame.removeEventListener(FILE_COMMAND_EVENT, onCommand)
       frame.removeEventListener(MEMO_INSERT_EVENT, onMemoInsert)
     }
@@ -880,14 +887,39 @@ export default function App() {
     <div className={`hwp-app${presenting ? ' hwp-presenting' : ''}`} data-phase={phase}>
       {phase === 'ready' && (
         <div className="hwp-topbar">
-          <button
-            type="button"
-            className="hwp-topbar-button"
-            aria-pressed={checkOpen}
-            onClick={() => setCheckOpen((open) => !open)}
-          >
-            {t('checkTitle')}
-          </button>
+          <div className="hwp-ai-actions">
+            <button
+              type="button"
+              className="hwp-topbar-button hwp-ai-toggle"
+              aria-pressed={aiOpen}
+              onClick={() => setAiOpen((open) => !open)}
+            >
+              <AiMark size={16} />
+              {aiSubscriptionText(lang, 'aiAssistant')}
+            </button>
+            <button
+              type="button"
+              className="hwp-topbar-button"
+              data-ai-action="summary"
+              onClick={() => {
+                setAiPrefill({ text: t('aiStarterSummarizePrompt'), nonce: Date.now() })
+                setAiOpen(true)
+              }}
+            >
+              {t('aiToolbarSummary')}
+            </button>
+            <button
+              type="button"
+              className="hwp-topbar-button"
+              data-ai-action="polish"
+              onClick={() => {
+                setAiPrefill({ text: t('aiToolbarPolishPrompt'), nonce: Date.now() })
+                setAiOpen(true)
+              }}
+            >
+              {t('aiToolbarPolish')}
+            </button>
+          </div>
           <MemoToggle open={memoOpen} onToggle={() => setMemoOpen((open) => !open)} />
           <label className={`autosave-toggle${autoSave ? ' on' : ''}`} data-tip={t('autoSaveTip')}>
             <span className="autosave-knob" />

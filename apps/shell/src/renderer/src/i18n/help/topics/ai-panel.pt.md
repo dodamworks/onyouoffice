@@ -4,7 +4,7 @@ Todos os editores podem chamar o painel de IA: selecione algo, dê uma instruç�
 
 ## Abrir e usar
 
-- O painel precisa de uma IA conectada. Se não houver nenhuma, mostra os cartões de conexão em vez de um erro; consulte [Conexão por assinatura](help://subscription).
+- Conecte a IA em Configurações → IA. [AI](help://subscription)
 - Pontos de entrada: o **botão de IA** no friso de cada editor, **Perguntar à IA** nos menus de contexto, ou Perguntar à IA na barra de marcação.
 - Descreva a tarefa por palavras normais (reescrever isto / transformar esta coluna em percentagens / refazer a disposição desta página...) e prima Enter.
 - As respostas são renderizadas **em fluxo**; quando a IA precisa de ferramentas (ler o documento, editá-lo), executa-as e continua até terminar.
@@ -24,7 +24,7 @@ Todos os editores podem chamar o painel de IA: selecione algo, dê uma instruç�
 - **Slides**: gerar a apresentação inteira, ajustar o layout, reescrever os textos.
 - **PDF**: perguntas e respostas e resumos com base no texto ou nas páginas selecionadas.
 - **Markdown / HTML**: reescrever, desenvolver, traduzir.
-- **Início ▸ Ask AI** responde a partir dos seus arquivos favoritados e os cita — o painel de base de conhecimento tem a própria seção no capítulo Início, e o painel de IA do Docs carrega a mesma capacidade.
+- **Arquivo de conhecimento**: A fonte padrão inclui documentos registrados no aplicativo: arquivos recentes e favoritos, pastas adicionadas e projetos. Não pesquisa o computador inteiro. Acima da entrada, escolha documentos registrados, um projeto, documentos específicos ou favoritos. Mudar a fonte inicia uma nova conversa e cancela perguntas aguardando conexão. [Home](help://home-screen)
 
 ## Anexar documentos abertos
 

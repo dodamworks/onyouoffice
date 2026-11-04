@@ -18,7 +18,9 @@ test('lists the findings of a form with tables inside tables', async () => {
     const hwp = await waitForPageWithUrl(launched.app, '://hwp/')
     await hwp.waitForSelector('.hwp-app[data-phase="ready"]', { timeout: 90_000 })
 
-    await hwp.getByRole('button', { name: 'Document check', exact: true }).click()
+    const studio = hwp.frameLocator('.hwp-editor-host iframe')
+    await studio.locator('#menu-bar .menu-item[data-menu="tool"] .menu-title').click()
+    await studio.locator('.md-item[data-cmd="ext:ieum-document-check"]').click()
     const panel = hwp.locator('.doc-check')
     await expect(panel).toBeVisible()
 
@@ -52,11 +54,13 @@ test('says so when a document has nothing to fix', async () => {
   const launched = await launchShell({ onboardingSeen: true, videoDir: 'hwp-doc-check-clean' })
   const { page } = launched
   try {
-    await page.locator('.quick-card').nth(6).click()
+    await page.locator('.quick-card[data-format="hwp"]').click()
     const hwp = await waitForPageWithUrl(launched.app, '://hwp/')
     await hwp.waitForSelector('.hwp-app[data-phase="ready"]', { timeout: 90_000 })
 
-    await hwp.getByRole('button', { name: 'Document check', exact: true }).click()
+    const studio = hwp.frameLocator('.hwp-editor-host iframe')
+    await studio.locator('#menu-bar .menu-item[data-menu="tool"] .menu-title').click()
+    await studio.locator('.md-item[data-cmd="ext:ieum-document-check"]').click()
     await expect(hwp.locator('.doc-check')).toContainText('Nothing to fix.')
   } finally {
     await closeAndSaveVideo(launched, 'hwp-doc-check-clean')

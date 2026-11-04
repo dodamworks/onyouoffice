@@ -4,7 +4,7 @@ Every editor can summon the AI panel: select something, give an instruction, wat
 
 ## Opening and using it
 
-- The panel needs a connected AI. With none connected it shows the connect cards instead of an error; see [Subscription connection](help://subscription).
+- Connect AI in Settings → AI. [AI](help://subscription)
 - Entries: the **AI button** in each editor's ribbon, **Ask AI** in context menus, or Ask AI on the markup bar.
 - Describe the task in plain language (rewrite this / make this column percentages / re-layout this page...) and press Enter.
 - Replies render **streamed**; when the AI needs tools (read the document, edit it) it executes and continues until done.
@@ -24,7 +24,7 @@ Every editor can summon the AI panel: select something, give an instruction, wat
 - **Slides**: whole-deck generation, layout adjustment, copy rewriting.
 - **PDF**: Q&A and summaries against selected text or pages.
 - **Markdown / HTML**: rewrite, extend, translate.
-- **Home ▸ Ask AI** answers from your starred files and cites them — the knowledge-base panel has its own section on Home, and the Docs AI panel carries the same skill.
+- **Knowledge Vault**: The default source is all documents registered in the app: recent and starred files, added folders and projects. It does not search your entire computer. Above the input, choose registered documents, a project, specific documents or starred files. Changing the source starts a new chat and cancels any waiting question. [Home](help://home-screen)
 
 ## Attaching open documents
 

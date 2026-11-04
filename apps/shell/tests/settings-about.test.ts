@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * @vitest-environment jsdom
  */
@@ -5,7 +6,13 @@ import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { LANGS, PRODUCT_CONTACT_EMAIL, PRODUCT_REPO_SLUG } from '@genoffice/i18n'
+import {
+  LANGS,
+  PRODUCT_CONTACT_EMAIL,
+  PRODUCT_REPO_SLUG,
+  PRODUCT_UPDATES_CONFIGURED,
+  PRODUCT_FEEDBACK_URL,
+} from '@genoffice/i18n'
 import type { Lang } from '@genoffice/i18n'
 import type { HomeApi } from '../src/shared/home-api'
 import { LocaleProvider } from '../src/renderer/src/locale'
@@ -125,8 +132,8 @@ describe('Settings → About', () => {
       '본 제품은 한글과컴퓨터의 한글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.',
     )
     expect(text).toContain('rhwp')
-    expect(text).toContain('이음오피스는 Microsoft, 한글과컴퓨터')
-    expect(text).toContain('이음오피스는 Apache License 2.0에 따라 있는 그대로 제공되며')
+    expect(text).toContain('온유오피스는 Microsoft, 한글과컴퓨터')
+    expect(text).toContain('온유오피스는 Apache License 2.0에 따라 있는 그대로 제공되며')
   })
 
   it('has every notice in every UI language, each naming the product by token', () => {
@@ -162,4 +169,21 @@ describe('Settings → About', () => {
     const distinct = new Set(LANGS.map((lang) => strings[lang].viewOnGitHub))
     expect(distinct.size).toBeGreaterThanOrEqual(LANGS.length - 2)
   })
+})
+
+it('keeps unconfigured service controls inactive and legal notices together', async () => {
+  await openAbout()
+  const update = host.querySelector<HTMLButtonElement>(
+    '[role="switch"][aria-label="' + strings.en.setAutoUpdateCheck + '"]',
+  )!
+  expect(update.disabled).toBe(!PRODUCT_UPDATES_CONFIGURED)
+  if (!PRODUCT_UPDATES_CONFIGURED) expect(update.getAttribute('aria-checked')).toBe('false')
+  const feedback = buttonLabeled(
+    PRODUCT_FEEDBACK_URL ? strings.en.feedbackOpen : strings.en.setFeedback,
+  )
+  expect(feedback.disabled).toBe(!PRODUCT_FEEDBACK_URL)
+  const notices = host.querySelector('.set-about-notices')!
+  expect(notices.querySelectorAll('.set-field-desc')).toHaveLength(4)
+  expect(notices.textContent).toContain('GenOffice')
+  expect(notices.textContent).toContain('rhwp')
 })

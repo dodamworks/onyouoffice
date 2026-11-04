@@ -14,7 +14,7 @@ export const ms = {
   renameHint: 'Nama folder kekal sama.',
   openInExplorer: 'Buka dalam File Explorer',
   openInFinder: 'Tunjukkan dalam Finder',
-  trustUse: 'menghantar arahan dan memori kepada AI',
+  trustUse: 'arahan dan ingatan digunakan dalam permintaan AI',
   trustWithout: 'digunakan tanpa arahan',
   trustWithoutDesc:
     'Arahan, memori dan sembang dari PC lain tidak dihantar kepada AI, dan memori tidak ditambah.',
@@ -27,8 +27,9 @@ export const ms = {
   tabMemory: 'Memori',
   tabFiles: 'Fail',
   tabChats: 'Sembang',
-  instructionsDesc:
-    'Peraturan kerja yang diikuti AI dalam projek ini. Ia disertakan dalam setiap permintaan daripada panel AI yang memilih projek ini.',
+  instructionsDesc: 'Tulis peraturan yang perlu diikuti AI dalam projek ini.',
+  instructionsLength: '{count} / {limit} aksara',
+  instructionsTooLong: 'Arahan sedia ada dikekalkan. Pendekkan sebelum menyimpan.',
   instructionsPlaceholder:
     'Contoh: tulis laporan dengan nada rasmi, dan tarikh seperti 30 Okt 2026.',
   save: 'Simpan',
@@ -39,13 +40,12 @@ export const ms = {
   withoutNotSent:
     'Projek ini digunakan tanpa arahan, jadi buat masa ini ia tidak dihantar kepada AI.',
   memoryDesc:
-    'Nota yang dicatat AI semasa bersembang. Padam yang salah atau tidak diperlukan lagi.',
-  memoryEnabled: 'Simpan memori',
-  memoryEnabledDesc:
-    'Jika dimatikan, AI tidak menulis apa-apa yang baharu. Memori sedia ada masih dibaca.',
+    'Nota yang disimpan AI semasa perbualan. Disyorkan untuk mengemasnya apabila melebihi 8,000 aksara.',
+  memoryEnabled: 'Simpan ingatan baharu secara automatik',
+  memoryEnabledDesc: 'Ingatan sedia ada masih digunakan apabila pilihan ini dimatikan.',
   memoryLength: '{count} entri · {chars} aksara',
-  memoryEmpty: 'Belum ada memori.',
-  memoryEditAll: 'Edit semua',
+  memoryEmpty: 'Ingatan daripada perbualan anda akan dipaparkan di sini.',
+  memoryEditAll: 'Sunting ingatan',
   memoryEditLabel: 'Semua memori',
   memoryConflict: 'Terdapat salinan konflik penyegerakan: {names}',
   consolidating: 'Sedang mengemas…',
@@ -63,9 +63,8 @@ export const ms = {
   consolidateUndone: 'Dikembalikan seperti sebelum dikemas.',
   undoFailed: 'Tidak dapat membuat asal.',
   removeMemoryAria: 'Padam memori ini: {text}',
-  filesDesc:
-    'Fail yang boleh dilihat AI dalam projek ini. Fail tersembunyi dan folder .ieumoffice tidak disertakan.',
-  filesEmpty: 'Tiada fail yang boleh dilihat AI.',
+  filesDesc: 'Fail projek yang boleh dirujuk oleh AI.',
+  filesEmpty: 'Tambah dokumen ke folder projek untuk melihatnya di sini.',
   filesLoadFailed: 'Senarai fail tidak dapat dibaca.',
   filesCount: '{count} fail',
   loadMore: 'Tunjukkan lagi',
@@ -75,13 +74,11 @@ export const ms = {
     'Fail ini hanya ada di awan. Jika AI mahu membacanya, anda akan ditanya dahulu sebelum dimuat turun.',
   hideFromAi: 'Sembunyikan daripada AI',
   hideFromAiAria: 'Sembunyikan daripada AI: {name}',
-  ignoredTitle: 'Fail yang disembunyikan daripada AI',
-  ignoredDesc:
-    'Senarai ini hanya dipaparkan pada skrin ini. Buat asal supaya AI dapat melihat fail semula.',
+  ignoredTitle: 'Fail yang dikecualikan daripada AI',
+  ignoredDesc: 'Pulihkan fail supaya AI boleh merujuknya semula.',
   ignoredEmpty: 'Tiada.',
   restoreAria: 'Buat asal: {name}',
-  chatsDesc:
-    'Sembang dalam projek ini. Klik satu untuk menyambungnya dalam panel AI dokumen yang terakhir menggunakannya.',
+  chatsDesc: 'Perbualan AI dalam projek ini disimpan di sini.',
   actionFailed: 'Tidak berjaya. Sila cuba lagi.',
   loadFailed: 'Projek tidak dapat dibaca.',
   addExistingFolder: 'Guna folder sedia ada',

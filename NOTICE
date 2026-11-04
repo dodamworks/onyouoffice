@@ -101,6 +101,12 @@ licensed under the SIL Open Font License, Version 1.1. Each family's license tex
 packages/ui/template-fonts/README.md records the license evidence and the
 exact source of every file. All files were downloaded on 2026-10-14.
 
+The Shell sidebar also embeds the unmodified Pretendard v1.3.9 variable
+WOFF2 for its live product-name text. The identical OFL text is included in
+resources/template-fonts/Pretendard-OFL.txt and beside the source font in
+apps/shell/src/renderer/src/assets/brand/Pretendard-OFL.txt. Document fonts
+and document typography are unchanged.
+
 - Pretendard 1.309 (release v1.3.9), SIL OFL 1.1 with Reserved Font Name
   "Pretendard", https://github.com/orioncactus/pretendard
 - Noto Serif KR 2.003, SIL OFL 1.1 (Reserved Font Name "Source"), outlines
@@ -231,3 +237,10 @@ The Apache License 2.0 grants no rights to the names or logos "IeumOffice",
 Contact
 
 Trademark and copyright reports and licensing questions: pblsketch@gmail.com
+
+
+Onyou Office modifications, 2026-10-31
+Product identity and local storage/registration namespaces are separated from
+IeumOffice. Update distribution and feedback endpoints are unconfigured.
+Upstream code, document engines and attribution above are retained.
+Onyou Office rights contact: support@onyouoffice.com

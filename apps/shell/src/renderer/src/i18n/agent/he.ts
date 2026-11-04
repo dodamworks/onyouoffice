@@ -3,8 +3,7 @@ import type { zh } from './zh'
 export const he = {
   windowTitle: 'סוכן',
   homeCardSub: 'עבודה בתיקייה עם Claude Code או Codex',
-  intro:
-    'הסוכן מפעיל את Claude Code או Codex שלך בתיקייה שתבחר. הוא יכול לקרוא את הקבצים שבה, ליצור קבצים חדשים, להשתמש במיומנויות שלך, להריץ סקריפטים ולשנות מסמכים הפתוחים ב-GenOffice.',
+  intro: 'צרו וערכו קבצים בעזרת AI בתיקייה שתבחרו.',
   folderLabel: 'תיקיית הפרויקט',
   folderPick: 'בחירת תיקייה…',
   folderNone: 'לא נבחרה תיקייה',

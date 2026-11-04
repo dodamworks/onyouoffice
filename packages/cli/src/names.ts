@@ -1,4 +1,5 @@
-import { brandText, PRODUCT_NAME } from '@genoffice/i18n'
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+import { brandText, PRODUCT_NAME, PRODUCT_COMMAND } from '@genoffice/i18n'
 
 /**
  * The names this product registers on a user's machine. The upstream GenOffice
@@ -9,7 +10,7 @@ import { brandText, PRODUCT_NAME } from '@genoffice/i18n'
  */
 
 /** the terminal command, and the launcher file in <resources>/cli (Windows: `<name>.cmd`) */
-export const CLI_COMMAND = 'ieumoffice'
+export const CLI_COMMAND = PRODUCT_COMMAND
 
 /** the bundled CLI entry beside the launchers: a file inside the app, not a registered name */
 export const CLI_BUNDLE_FILE = 'genoffice.cjs'
@@ -38,5 +39,5 @@ export function launcherFileName(platform: string): string {
  * called GenOffice must be printed as it is, so those name PRODUCT_NAME directly.
  */
 export function branded(text: string): string {
-  return brandText(text, 'en')
+  return brandText(text.replace(/\bIeumOffice\b/g, PRODUCT_NAME), 'en')
 }

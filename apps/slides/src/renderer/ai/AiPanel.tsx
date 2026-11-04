@@ -1,6 +1,7 @@
 import {
   aiPanelWidthAtPointer,
   AiPanelSideButton,
+  AiPanelFontSizeButtons,
   AiModelPicker,
   type AiModelPickerBridge,
   AiBlockedNotice,
@@ -76,7 +77,6 @@ import { extractJsonObject, parseOutlineJson } from './outline-json'
 import { createDeckContextGate } from './deck-context-gate'
 import { buildPageSystemPrompt } from './page-system-prompt'
 import { templateSelectionState } from './template-selection-state'
-import { TemplateStartGallery } from './TemplateGallery'
 import { TemplatePicker } from './TemplatePicker'
 import { EditQueueCard } from './EditQueueCard'
 import { deriveDeckProgressView, type DeckProgressSnapshot } from './deck-progress-view'
@@ -108,7 +108,7 @@ import {
   screenshotAllowed,
   settingsSupportVision,
 } from './slide-qc'
-import { useI18n, t as tGlobal, aiLangDirective, getLang, type TFunc } from '../i18n/locale'
+import { useI18n, t as tGlobal, aiLangDirective, getLang } from '../i18n/locale'
 import {
   AiQueueStrip,
   AI_QUEUE_LABELS,
@@ -359,12 +359,6 @@ function entryFromStored(
     ...(m.otherEditorTools ? { otherEditorTools: m.otherEditorTools } : {}),
   }
 }
-
-/** Empty deck → generation starters; deck with content → polish starters */
-const starterPrompts = (t: TFunc, deckEmpty: boolean): string[] =>
-  deckEmpty
-    ? [t('aiStarterGenReport'), t('aiStarterGenLaunch'), t('aiStarterGenTraining')]
-    : [t('aiStarterPolishTitle'), t('aiStarterTighten'), t('aiStarterProofread')]
 
 interface AiPanelProps {
   /** the deck while it can go along as a skill's template (spec 5.7) */
@@ -2599,10 +2593,16 @@ export function AiPanel({
         aria-label={aiSubscriptionText(lang, 'aiAssistant')}
       />
       <div className="ai-panel-header">
-        <span className="ai-panel-title">
-          <AiMark size={22} />
-          {aiSubscriptionText(lang, 'aiAssistant')}
-        </span>
+        <div className="ai-panel-heading">
+          <span className="ai-panel-title">
+            <AiMark size={22} />
+            {aiSubscriptionText(lang, 'aiAssistant')}
+          </span>
+          <AiPanelFontSizeButtons
+            lang={lang}
+            onChange={(patch) => window.slidesApi.setAiPanelPrefs(patch)}
+          />
+        </div>
         <div className="ai-panel-header-actions">
           <AiPanelSideButton
             lang={lang}
@@ -2662,33 +2662,6 @@ export function AiPanel({
             ))}
             <div className="ai-history-sep">{t('aiHistorySep')}</div>
           </>
-        )}
-        {chat.length === 0 && historicChat.length === 0 && (
-          <div className="ai-chat-empty">
-            <div className="ai-chat-empty-title">
-              {t(deckEmpty ? 'aiEmptyGenTitle' : 'aiEmptyTitle')}
-            </div>
-            <div className="ai-chat-empty-body">
-              {t(deckEmpty ? 'aiEmptyGenBody1' : 'aiEmptyBody1')}
-              <br />
-              {t(deckEmpty ? 'aiEmptyGenBody2' : 'aiEmptyBody2')}
-            </div>
-            <div className="ai-starter-list">
-              {starterPrompts(t, deckEmpty ?? false).map((p) => (
-                <button
-                  key={p}
-                  className="ai-starter"
-                  onClick={() => {
-                    setInput(p)
-                    inputRef.current?.focus()
-                  }}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-            {deckEmpty && <TemplateStartGallery />}
-          </div>
         )}
         {chat.map((entry, i) => {
           if (
@@ -2897,6 +2870,7 @@ export function AiPanel({
           {attachNotice && <div className="ai-attach-notice">{attachNotice}</div>}
           {sendGate.connectChoice && (
             <AiConnectPrompt
+              settingsOnly
               choice={sendGate.connectChoice}
               statuses={connection.statuses}
               lang={lang}
@@ -2922,10 +2896,7 @@ export function AiPanel({
           )}
           {projectPanel.notices}
           <AiSubscriptionUsageLine usage={subscriptionUsage} lang={lang} />
-          <TemplatePicker
-            deckEmpty={deckEmpty ?? false}
-            galleryShown={!!deckEmpty && chat.length === 0 && historicChat.length === 0}
-          />
+          <TemplatePicker deckEmpty={deckEmpty ?? false} galleryShown={false} />
           {projectPanel.hint}
           <div className="ai-input-box">
             <AiQueueStrip
@@ -3047,6 +3018,7 @@ export function AiPanel({
             />
             <div className="ai-input-footer">
               <AiModelPicker
+                connectInSettings
                 bridge={MODEL_BRIDGE}
                 lang={lang}
                 subscriptionStatuses={connection.statuses}

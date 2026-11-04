@@ -100,14 +100,13 @@ export const ru = {
   pickerNotConnected: 'Подключить ИИ',
   guideQuestion: 'Каким ИИ вы уже пользуетесь?',
   guidePathClaudeTitle: 'У меня платная подписка Claude',
-  guidePathClaudeBody:
-    'Нужен тариф Pro или Max. С бесплатной учётной записью Claude подключиться нельзя.',
+  guidePathClaudeBody: 'Нужны подписка Pro или Max и программа подключения на компьютере.',
   guidePathCodexTitle: 'Я пользуюсь ChatGPT',
   guidePathCodexBody:
     'Войдите в программу Codex от OpenAI с учётной записью ChatGPT. Бесплатный тариф даёт лишь небольшой объём использования.',
   guidePathFreeTitle: 'Пока никаким',
   guidePathFreeBody:
-    'Бесплатный ИИ можно подключить примерно за минуту. Пока вы пользуетесь им бесплатно, отправленное вами может использоваться для улучшения ИИ этой компании.',
+    'Подключите бесплатный ИИ через OpenRouter или Gemini. Провайдеры могут использовать отправленное для улучшения своего ИИ.',
   guideBack: 'Выбрать другой способ',
   guideBadgeReady: 'Подключено',
   guideBadgeInstalled: 'Установлено',
@@ -147,8 +146,7 @@ export const ru = {
   actionCopyInfo: 'Скопировать сведения для помощи',
   copyInfoDone: 'Скопировано',
   actionConnectHelp: 'Посмотреть каждый шаг на экране (страница на корейском)',
-  guidePathChatGptBody:
-    'Войдите с учётной записью ChatGPT и пользуйтесь своим тарифом. Ничего устанавливать не нужно. Бесплатный тариф даёт лишь небольшой объём использования.',
+  guidePathChatGptBody: 'Войдите в браузере. Действуют лимиты вашего тарифа.',
   guideUseCodex: 'Уже пользуетесь программой Codex на этом компьютере? Подключиться через Codex',
   guideUseDirect: 'Подключиться прямо в приложении, без Codex',
   chatgptLoginNote:

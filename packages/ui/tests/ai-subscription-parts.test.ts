@@ -577,8 +577,8 @@ describe('AiConnectPrompt', () => {
     expect(host.querySelector('.ai-sub-guide-question')!.textContent).toBe(en.guideQuestion)
     // what is already there shows next to each answer
     expect(paths()).toEqual([
-      ['claude-code', en.guideBadgeInstalled],
       ['chatgpt', null],
+      ['claude-code', en.guideBadgeInstalled],
       ['free', null],
     ])
     expect(host.textContent).toContain(en.guidePathCodexTitle)
@@ -649,7 +649,7 @@ describe('AiConnectPrompt', () => {
     click('[data-action="guide-back"]')
     expect(host.querySelector('.ai-sub-guide-question')).not.toBeNull()
     // a Codex sign-in shows on the one ChatGPT answer
-    expect(paths()[1]).toEqual(['chatgpt', en.cardSigningIn])
+    expect(paths()[0]).toEqual(['chatgpt', en.cardSigningIn])
   })
 
   it('the free path points to the free connections in Settings', () => {
@@ -727,8 +727,8 @@ describe('AiConnectPrompt', () => {
   it('shows a provider that has not reported yet as checking', () => {
     render(defaultAiSettings(), {})
     expect(paths()).toEqual([
-      ['claude-code', null],
       ['chatgpt', null],
+      ['claude-code', null],
       ['free', null],
     ])
     click('[data-path="claude-code"]')
@@ -1465,5 +1465,23 @@ describe('AiModelPicker under the subscription contract', () => {
     const rows = [...host.querySelectorAll<HTMLButtonElement>('.ai-model-item')]
     await act(async () => rows[1]!.click())
     expect(setSettings.mock.calls[0]![0].provider).toBe('anthropic')
+  })
+})
+
+describe('AI panel connection presentation', () => {
+  it('keeps setup out of the conversation and reports a blocked send without provider cards', () => {
+    const props = {
+      choice: selectAiProvider(defaultAiSettings(), {}),
+      statuses: {},
+      lang: 'en' as const,
+      settingsOnly: true,
+      ...cardActions(),
+    }
+    act(() => root.render(createElement(AiConnectPrompt, props)))
+    expect(host.textContent).toBe('')
+    act(() => root.render(createElement(AiConnectPrompt, { ...props, attention: 1 })))
+    expect(host.querySelector('[role="status"]')?.textContent).toBeTruthy()
+    expect(host.querySelector('.ai-sub-guide, .ai-sub-card')).toBeNull()
+    expect(host.querySelector('button')).toBeNull()
   })
 })

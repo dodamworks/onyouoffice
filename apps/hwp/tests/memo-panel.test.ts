@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31: assert independent product display names and default paths.
 /** @vitest-environment jsdom */
 // The decisions of the memo panel without a browser or an editor: document
 // order, read-only reasons, empty bodies, page labels, selection previews,
@@ -213,7 +214,7 @@ describe('the author of a new memo', () => {
     expect(authorNameOf({ value: '   ', fallback: ' pc ' })).toBe('pc')
     expect(authorNameOf({ value: '', fallback: '' })).toBe(MEMO_FALLBACK_AUTHOR)
     expect(authorNameOf(null)).toBe(MEMO_FALLBACK_AUTHOR)
-    expect(MEMO_FALLBACK_AUTHOR).toBe('IeumOffice')
+    expect(MEMO_FALLBACK_AUTHOR).toBe('Onyou Office')
   })
 
   it('takes out separators and control characters and cuts at 64 units', () => {

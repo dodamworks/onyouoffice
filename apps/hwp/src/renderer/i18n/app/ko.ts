@@ -56,6 +56,9 @@ export const ko = {
   aiEmptyBody:
     '내용을 묻거나, 표현을 다듬거나, 누름틀을 채워 달라고 해 보세요. 고친 곳은 여기에 표시되고 한 번에 되돌릴 수 있습니다.',
   aiComposerPlaceholder: '이 문서에 대해 묻거나 고칠 곳을 알려 주세요…',
+  aiToolbarSummary: '요약',
+  aiToolbarPolish: '다듬기',
+  aiToolbarPolishPrompt: '문서 전체를 다듬어 더 명확하고 매끄럽게 만들어 주세요',
   aiStarterSummarize: '문서 요약',
   aiStarterSummarizePrompt: '이 문서를 핵심만 간단히 요약해 줘.',
   aiStarterProofread: '맞춤법·띄어쓰기 고치기',
@@ -210,7 +213,7 @@ export const ko = {
   previewMargins: '여백 보기',
   previewEditPage: '현재 쪽 편집',
   previewEditFailed: '이 쪽으로 이동하지 못했습니다.',
-  checkTitle: '문서 점검',
+  checkTitle: '문서 형식 점검',
   checkRunning: '문서를 읽는 중…',
   checkFailed: '문서를 읽지 못했습니다.',
   checkEmpty: '걸린 항목이 없습니다.',

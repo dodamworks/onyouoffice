@@ -6,7 +6,7 @@
 /// setting.
 import { accessSync, constants, mkdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
-import { PRODUCT_NAME } from '@genoffice/i18n'
+import { PRODUCT_NAME, DEFAULT_DOCUMENTS_DIR_NAME } from '@genoffice/i18n'
 
 /** the subset of Electron's `app` needed here (kept structural: this package has no Electron dependency) */
 export interface PathProvider {
@@ -147,11 +147,28 @@ export function defaultSaveDirFallback(): { blocked: string; using: string } | n
 export function configuredDefaultSaveDir(app: PathProvider): string {
   const settingsPath = join(app.getPath('userData'), 'app-settings.json')
   const fallbacks = [
-    join(app.getPath('documents'), PRODUCT_NAME),
+    join(app.getPath('documents'), DEFAULT_DOCUMENTS_DIR_NAME),
     // outside the folders Controlled Folder Access protects by default
-    join(app.getPath('home'), PRODUCT_NAME),
+    join(app.getPath('home'), DEFAULT_DOCUMENTS_DIR_NAME),
     // always writable for the app itself
-    join(app.getPath('userData'), PRODUCT_NAME),
+    join(app.getPath('userData'), DEFAULT_DOCUMENTS_DIR_NAME),
   ]
   return resolveDefaultSaveDir(readDefaultSaveDirSetting(settingsPath), fallbacks)
+}
+
+/** Keep existing Onyou documents reachable without renaming or moving their folders. */
+export function legacyDefaultSaveDirs(app: PathProvider): string[] {
+  const configured = readDefaultSaveDirSetting(join(app.getPath('userData'), 'app-settings.json'))
+  if (
+    configured !== null &&
+    !['documents', 'home', 'userData'].some(
+      (kind) =>
+        configured ===
+        join(app.getPath(kind as 'documents' | 'home' | 'userData'), DEFAULT_DOCUMENTS_DIR_NAME),
+    )
+  )
+    return []
+  return ['documents', 'home', 'userData']
+    .map((kind) => join(app.getPath(kind as 'documents' | 'home' | 'userData'), PRODUCT_NAME))
+    .filter(isDirectory)
 }

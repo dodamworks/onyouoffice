@@ -1,6 +1,7 @@
 import {
   aiPanelWidthAtPointer,
   AiPanelSideButton,
+  AiPanelFontSizeButtons,
   AiModelPicker,
   type AiModelPickerBridge,
   AiBlockedNotice,
@@ -1269,10 +1270,16 @@ export function AiPanel({
         aria-label={aiSubscriptionText(lang, 'aiAssistant')}
       />
       <header className="ai-panel-header">
-        <span className="ai-panel-title">
-          <AiMark size={22} />
-          {aiSubscriptionText(lang, 'aiAssistant')}
-        </span>
+        <div className="ai-panel-heading">
+          <span className="ai-panel-title">
+            <AiMark size={22} />
+            {aiSubscriptionText(lang, 'aiAssistant')}
+          </span>
+          <AiPanelFontSizeButtons
+            lang={lang}
+            onChange={(patch) => window.markdownApi.setAiPanelPrefs(patch)}
+          />
+        </div>
         <div className="ai-panel-header-actions">
           <AiPanelSideButton
             lang={lang}
@@ -1301,41 +1308,6 @@ export function AiPanel({
       </header>
 
       <div className="ai-chat" ref={chatRef} onScroll={onChatScroll}>
-        {chat.length === 0 && (
-          <div className="ai-chat-empty">
-            <div className="ai-chat-empty-title">{t('aiEmptyTitle')}</div>
-            <div className="ai-chat-empty-body">{t('aiEmptyBody')}</div>
-            <div className="ai-starter-list">
-              <button
-                className="ai-starter"
-                onClick={() => {
-                  setPrompt(t('aiQuickDraftPrompt'))
-                  inputRef.current?.focus()
-                }}
-              >
-                {t('aiQuickDraft')}
-              </button>
-              <button
-                className="ai-starter"
-                onClick={() => {
-                  setPrompt(t('aiQuickPolishPrompt'))
-                  inputRef.current?.focus()
-                }}
-              >
-                {t('aiQuickPolish')}
-              </button>
-              <button
-                className="ai-starter"
-                onClick={() => {
-                  setPrompt(t('aiQuickMindMapPrompt'))
-                  inputRef.current?.focus()
-                }}
-              >
-                {t('aiQuickMindMap')}
-              </button>
-            </div>
-          </div>
-        )}
         {chat.map((entry, i) => {
           if (entry.role === 'user') {
             return (
@@ -1492,6 +1464,7 @@ export function AiPanel({
         <McpPermissionCard lang={lang} />
         {sendGate.connectChoice && (
           <AiConnectPrompt
+            settingsOnly
             choice={sendGate.connectChoice}
             statuses={statuses ?? {}}
             lang={lang}
@@ -1646,6 +1619,7 @@ export function AiPanel({
           footerStart={
             <>
               <AiModelPicker
+                connectInSettings
                 bridge={MODEL_BRIDGE}
                 lang={lang}
                 subscriptionStatuses={statuses ?? {}}

@@ -57,6 +57,9 @@ export const ru = {
   aiEmptyBody:
     'Спросите о содержании, попросите улучшить формулировки или заполнить поля формы. Каждое изменение показано здесь, и все их можно отменить разом.',
   aiComposerPlaceholder: 'Спросите об этом документе или укажите, что изменить…',
+  aiToolbarSummary: 'Сводка',
+  aiToolbarPolish: 'Улучшить текст',
+  aiToolbarPolishPrompt: 'Отредактируйте весь документ, чтобы текст стал яснее и плавнее',
   aiStarterSummarize: 'Краткое содержание',
   aiStarterSummarizePrompt: 'Кратко изложи этот документ, только главное.',
   aiStarterProofread: 'Исправить орфографию и пробелы',
@@ -215,7 +218,7 @@ export const ru = {
   previewMargins: 'Показать поля',
   previewEditPage: 'Изменить эту страницу',
   previewEditFailed: 'Не удалось перейти на эту страницу.',
-  checkTitle: 'Проверка документа',
+  checkTitle: 'Проверка оформления документа',
   checkRunning: 'Чтение документа…',
   checkFailed: 'Не удалось прочитать документ.',
   checkEmpty: 'Замечаний нет.',

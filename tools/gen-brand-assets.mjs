@@ -1,12 +1,15 @@
+// Modified by Dodam on 2026-11-02 for colour, locale and theme brand assets.
 /**
- * Regenerates every file derived from the IeumOffice brand sources in
+ * Regenerates every file derived from the Onyou Office brand sources in
  * apps/shell/build/brand/:
  *
  *   app-icon.svg        -> app / installer icons (png, ico, icns, Linux size
  *                          set) and the in-app app-icon.png copies
  *   app-icon-small.svg  -> the same icon redrawn bolder for slots of 32 px and
  *                          below (optional: without it app-icon.svg is used)
- *   logo-lockup.svg     -> the shell sidebar logo (copied verbatim)
+ *   logo-lockup.svg     -> outlined presentation export (copied verbatim)
+ *   logo-lockup-dark.svg -> colour-preserving preview only
+ *   symbol-small.svg    -> the Home symbol beside live product-name text
  *
  * To rebrand, replace those SVGs and run:
  *   node tools/gen-brand-assets.mjs
@@ -211,20 +214,21 @@ async function writePreview(page, outFile) {
   const icon = (size) =>
     `data:image/png;base64,${readFileSync(join(root, LINUX_ICON_DIR, `${size}x${size}.png`)).toString('base64')}`
   const lockup = svgDataUrl(LOCKUP_SVG)
+  const darkLockup = svgDataUrl(join(brandDir, 'logo-lockup-dark.svg'))
   const aiMark = readFileSync(AI_MARK_SVG, 'utf8').replace(/^[\s\S]*?(?=<svg)/, '')
-  const row = (background, color, invert) =>
+  const row = (background, color, artwork) =>
     `<div style="background:${background};color:${color};padding:28px;display:flex;align-items:flex-end;gap:28px">` +
     [256, 48, 32, 16]
       .map((size) => `<img src="${icon(size)}" width="${size}" height="${size}">`)
       .join('') +
-    `<img src="${lockup}" height="56" style="margin-left:24px;filter:invert(${invert})">` +
+    `<img src="${artwork}" height="56" style="margin-left:24px">` +
     [30, 26, 22, 18, 14]
       .map((size) => aiMark.replace('width="24" height="24"', `width="${size}" height="${size}"`))
       .join('') +
     '</div>'
   await page.setViewportSize({ width: 1100, height: 640 })
   await page.setContent(
-    `<body style="margin:0">${row('#f3f3f3', '#1f1f1f', 0)}${row('#1e1e1e', '#e8e8e8', 1)}</body>`,
+    `<body style="margin:0">${row('#f3f3f3', '#1f1f1f', lockup)}${row('#1e1e1e', '#e8e8e8', darkLockup)}</body>`,
   )
   writeFileSync(outFile, await page.screenshot({ fullPage: true }))
   console.log(`wrote preview ${outFile}`)
@@ -266,6 +270,11 @@ try {
     })),
   )
   for (const target of ICNS_TARGETS) write(target, icns)
+
+  copyFileSync(
+    join(brandDir, 'symbol-small.svg'),
+    join(root, 'apps/shell/src/renderer/src/assets/brand-symbol-small.svg'),
+  )
 
   copyFileSync(LOCKUP_SVG, join(root, LOCKUP_TARGET))
   console.log(`wrote ${LOCKUP_TARGET}`)

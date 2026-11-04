@@ -7,7 +7,7 @@ Inicio es la página de arranque de GenOffice: una barra de navegación a la izq
 - **Recientes**: los archivos que abrió recientemente. Cada fila lleva su momento: hoy, ayer o la fecha.
 - **Destacados**: los archivos que marcó como destacados. Pase el cursor por una fila y haga clic en la estrella para añadirlos o quitarlos. **Mover a grupo** en el menú ⋯ ordena los archivos destacados en grupos con nombre; la vista Destacados filtra por ellos.
 - **Guía del usuario**: abre este manual.
-- **Ask AI**: el panel de base de conocimiento — pregunta y recibe respuestas citadas desde tus archivos destacados (ver abajo).
+- **Almacén de conocimiento**: La fuente predeterminada incluye los documentos registrados en la aplicación: archivos recientes y favoritos, carpetas añadidas y proyectos. No se busca en todo el equipo.
 - **Proyectos**: las carpetas (proyectos) con las que puede trabajar la IA. Cree un proyecto o use una carpeta existente, y abra uno para gestionar sus instrucciones, su memoria, sus archivos y sus chats. Véase [Proyectos](help://projects).
 - **Carpetas**: los directorios que añade a la barra lateral con **Añadir carpeta…**, o que arrastra hasta ella desde el explorador de archivos. Cada uno se convierte en una raíz que puede abrir, en la que crear subcarpetas, renombrar y quitar; la que se quede sin conexión se muestra como no disponible y se puede quitar de la lista. **Nueva carpeta** crea otra.
 - **La fila de abajo del todo**: muestra si hay una IA conectada —**Conectar IA**, o el nombre de la suscripción conectada— y abre Configuración.
@@ -56,11 +56,9 @@ Qué hace cada tarjeta:
 
 > Sugerencia: Archivo ▸ Nuevo en la barra de menús crea los mismos tipos de documento (⌘N/Ctrl+N crea un documento de texto de forma predeterminada); arrastrar un archivo a la ventana lo abre.
 
-## Pregunta a tu base de conocimiento
+## Almacén de conocimiento
 
-- Destaca primero archivos (cualquier tipo que la app lea); la cabecera del panel cuenta el corpus, y una base vacía te invita a destacar algo.
-- Las respuestas citan los archivos de origen; haz clic en una cita para abrir el archivo en su editor.
-- Necesita una IA conectada; véase [Conexión por suscripción](help://subscription). La conversación vive solo en memoria — cerrar la app la termina.
-- Si elige un proyecto debajo del campo de entrada, también se buscan y se leen los archivos de esa carpeta, y el chat se guarda en ella para poder seguir en otro editor. Sin proyecto, el chat vive solo en memoria, como se indica arriba.
-- La búsqueda usa el índice local de archivos, como la de Inicio; los archivos desaparecidos se salen del corpus sin ruido.
-- Los grupos solo organizan la lista Destacados — la base de conocimiento siempre abarca todos los archivos destacados.
+- La fuente predeterminada incluye los documentos registrados en la aplicación: archivos recientes y favoritos, carpetas añadidas y proyectos. No se busca en todo el equipo.
+- Sobre la entrada puede elegir documentos registrados, un proyecto, documentos concretos o favoritos. Cambiar la fuente inicia un chat nuevo y cancela las preguntas en espera de conexión.
+- Conecte la IA en Ajustes → IA. Los nombres y el contenido pertinente de la fuente elegida pueden enviarse al proveedor. Los archivos ocultos y excluidos del proyecto siguen excluidos. Las respuestas citan sus fuentes.
+- Los chats de proyecto se guardan en su carpeta. Los demás quedan en memoria y desaparecen al cerrar la aplicación.

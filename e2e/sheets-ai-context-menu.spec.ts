@@ -74,7 +74,7 @@ test('sheets: Ask AI opens the composer without changing a single cell or dragge
   let diagnosticPage: Page | undefined
   try {
     await launched.app.evaluate(({ app }, dir) => app.setPath('documents', dir), scratch)
-    await launched.page.locator('.quick-card').nth(1).click()
+    await launched.page.locator('.quick-card[data-format="xlsx"]').click()
     const sheets = await waitForPageWithUrl(launched.app, '://sheets/')
     diagnosticPage = sheets
     await sheets.waitForFunction(() => !!(window as unknown as DebugWindow).__genofficeDebug)

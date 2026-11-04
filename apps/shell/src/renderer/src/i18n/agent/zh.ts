@@ -5,8 +5,7 @@
 export const zh = {
   windowTitle: '智能体',
   homeCardSub: '在文件夹中用 Claude Code 或 Codex 工作',
-  intro:
-    '智能体会在你选择的文件夹中运行你的 Claude Code 或 Codex。它可以读取其中的文件、创建新文件、使用你的技能、运行脚本，并修改在 GenOffice 中打开的文档。',
+  intro: '在所选文件夹中与 AI 一起创建和编辑文件。',
   folderLabel: '项目文件夹',
   folderPick: '选择文件夹…',
   folderNone: '尚未选择文件夹',

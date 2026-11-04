@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -22,12 +23,12 @@ describe('structured errors', () => {
   it('names the reason for command-line mistakes', async () => {
     const unknown = (await run(['frobnicate', '--json'])).json()
     expect(unknown).toMatchObject({ status: 'error', code: 1, error: 'unknown_command' })
-    expect(unknown.suggestion).toContain('ieumoffice help')
+    expect(unknown.suggestion).toContain('onyouoffice help')
     expect(unknown.detail.commands).toContain('info')
 
     const option = (await run(['info', DOCX, '--dry-run', '--json'])).json()
     expect(option).toMatchObject({ error: 'unknown_option' })
-    expect(option.suggestion).toContain('ieumoffice help info')
+    expect(option.suggestion).toContain('onyouoffice help info')
 
     expect((await run(['info', '--json'])).json().error).toBe('missing_argument')
     expect((await run(['convert', DOCX, '--json'])).json().error).toBe('missing_argument')
@@ -57,8 +58,8 @@ describe('structured errors', () => {
   it('prints the suggestion as a hint line in human mode', async () => {
     const r = await run(['frobnicate'])
     expect(r.code).toBe(1)
-    expect(r.stderr).toContain('ieumoffice: unknown command: frobnicate')
-    expect(r.stderr).toContain('hint: run `ieumoffice help`')
+    expect(r.stderr).toContain('onyouoffice: unknown command: frobnicate')
+    expect(r.stderr).toContain('hint: run `onyouoffice help`')
   })
 
   it('lifts ranges, ids and usage lines out of guided op errors', () => {
@@ -136,7 +137,7 @@ describe('structured errors', () => {
     const target = (await run(['slides', 'apply', file, '--ops', ops, '--json'])).json()
     expect(target).toMatchObject({ error: 'target_not_found' })
     expect(target.detail.failures[0].available.length).toBeGreaterThan(0)
-    expect(target.suggestion).toContain('ieumoffice slides read')
+    expect(target.suggestion).toContain('onyouoffice slides read')
 
     writeFileSync(ops, JSON.stringify([{ op: 'frobnicate', target: { slide: 0 } }]))
     const unknown = (await run(['slides', 'apply', file, '--ops', ops, '--json'])).json()
@@ -155,7 +156,7 @@ describe('structured errors', () => {
     writeFileSync(ops, JSON.stringify([{ op: 'frobnicate', target: { blockIndexes: [0] } }]))
     const unknown = (await run(['docs', 'apply', file, '--ops', ops, '--json'])).json()
     expect(unknown).toMatchObject({ code: 1, error: 'unknown_op' })
-    expect(unknown.suggestion).toContain('ieumoffice guide docs')
+    expect(unknown.suggestion).toContain('onyouoffice guide docs')
 
     writeFileSync(
       ops,
@@ -169,7 +170,7 @@ describe('structured errors', () => {
       reason: 'out_of_range',
       valid_range: [0, 40],
     })
-    expect(blocks.suggestion).toContain('ieumoffice docs read')
+    expect(blocks.suggestion).toContain('onyouoffice docs read')
 
     const range = (await run(['docs', 'read', file, '--range', '5000-6000', '--json'])).json()
     expect(range).toMatchObject({ error: 'out_of_range' })
@@ -190,7 +191,7 @@ describe('structured errors', () => {
     const unknown = (await run(['sheet', 'apply', file, '--ops', ops, '--json'])).json()
     expect(unknown).toMatchObject({ error: 'unknown_op' })
     expect(unknown.detail.supported).toContain('set_cell')
-    expect(unknown.suggestion).toContain('ieumoffice guide sheets')
+    expect(unknown.suggestion).toContain('onyouoffice guide sheets')
   })
 })
 

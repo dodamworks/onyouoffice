@@ -14,7 +14,7 @@ export const nl = {
   renameHint: 'De map houdt zijn naam.',
   openInExplorer: 'Openen in Verkenner',
   openInFinder: 'Tonen in Finder',
-  trustUse: 'instructies en geheugen gaan naar de AI',
+  trustUse: 'instructies en geheugen worden gebruikt bij AI-verzoeken',
   trustWithout: 'in gebruik zonder instructies',
   trustWithoutDesc:
     'Instructies, geheugen en chats van andere pc’s worden niet naar de AI gestuurd, en er wordt geen geheugen bijgehouden.',
@@ -27,8 +27,9 @@ export const nl = {
   tabMemory: 'Geheugen',
   tabFiles: 'Bestanden',
   tabChats: 'Chats',
-  instructionsDesc:
-    'Werkregels die de AI in dit project volgt. Ze gaan mee met elk verzoek uit een AI-paneel waarin dit project is gekozen.',
+  instructionsDesc: 'Schrijf de regels die de AI in dit project moet volgen.',
+  instructionsLength: '{count} / {limit} tekens',
+  instructionsTooLong: 'Je bestaande instructies blijven bewaard. Kort ze in voordat je opslaat.',
   instructionsPlaceholder:
     'Bijvoorbeeld: rapporten in een formele toon schrijven en datums als 30 okt. 2026.',
   save: 'Opslaan',
@@ -39,13 +40,12 @@ export const nl = {
   withoutNotSent:
     'Dit project wordt zonder instructies gebruikt, dus dit gaat voorlopig niet naar de AI.',
   memoryDesc:
-    'Notities die de AI tijdens het chatten bijhield. Verwijder wat fout is of niet meer nodig.',
-  memoryEnabled: 'Geheugen bijhouden',
-  memoryEnabledDesc:
-    'Uitgeschakeld schrijft de AI niets nieuws. Bestaand geheugen wordt nog steeds gelezen.',
+    'Notities die de AI tijdens gesprekken bewaart. Opruimen wordt aanbevolen boven 8.000 tekens.',
+  memoryEnabled: 'Nieuwe herinneringen automatisch opslaan',
+  memoryEnabledDesc: 'Bestaande herinneringen worden ook gebruikt als dit uit staat.',
   memoryLength: '{count} items · {chars} tekens',
-  memoryEmpty: 'Nog geen geheugen.',
-  memoryEditAll: 'Alles bewerken',
+  memoryEmpty: 'Herinneringen uit je gesprekken verschijnen hier.',
+  memoryEditAll: 'Geheugen bewerken',
   memoryEditLabel: 'Hele geheugen',
   memoryConflict: 'Er zijn kopieën door een synchronisatieconflict: {names}',
   consolidating: 'Bezig met opruimen…',
@@ -62,9 +62,8 @@ export const nl = {
   consolidateUndone: 'Terug naar hoe het was vóór het opruimen.',
   undoFailed: 'Ongedaan maken lukte niet.',
   removeMemoryAria: 'Dit geheugen verwijderen: {text}',
-  filesDesc:
-    'Bestanden die de AI in dit project kan zien. Verborgen bestanden en de map .ieumoffice vallen erbuiten.',
-  filesEmpty: 'Er zijn geen bestanden die de AI kan zien.',
+  filesDesc: 'Projectbestanden die de AI kan raadplegen.',
+  filesEmpty: 'Voeg documenten toe aan de projectmap om ze hier te zien.',
   filesLoadFailed: 'De bestandslijst kon niet worden gelezen.',
   filesCount: '{count} bestanden',
   loadMore: 'Meer tonen',
@@ -74,13 +73,11 @@ export const nl = {
     'Dit bestand staat alleen in de cloud. Wil de AI het lezen, dan wordt je eerst gevraagd het te downloaden.',
   hideFromAi: 'Verbergen voor AI',
   hideFromAiAria: 'Verbergen voor AI: {name}',
-  ignoredTitle: 'Voor de AI verborgen bestanden',
-  ignoredDesc:
-    'Deze lijst is alleen op dit scherm te zien. Maak ongedaan om de AI een bestand weer te laten zien.',
+  ignoredTitle: 'Bestanden uitgesloten van AI',
+  ignoredDesc: 'Herstel een bestand zodat de AI het weer kan raadplegen.',
   ignoredEmpty: 'Geen.',
   restoreAria: 'Ongedaan maken: {name}',
-  chatsDesc:
-    'Chats in dit project. Klik op een chat om verder te gaan in het AI-paneel van het document waarin hij het laatst werd gebruikt.',
+  chatsDesc: 'AI-gesprekken in dit project worden hier opgeslagen.',
   actionFailed: 'Dat lukte niet. Probeer het opnieuw.',
   loadFailed: 'Het project kon niet worden gelezen.',
   addExistingFolder: 'Bestaande map gebruiken',

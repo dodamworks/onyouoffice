@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import JSZip from 'jszip'
@@ -31,7 +32,7 @@ describe('genoffice docx (docs editor under jsdom)', () => {
     const html = join(dir, 'brief.html')
     writeFileSync(
       html,
-      '<h1>Brief</h1><p>Hello <strong>ieumoffice</strong>.</p><ul><li>one</li><li>two</li></ul>',
+      '<h1>Brief</h1><p>Hello <strong>onyouoffice</strong>.</p><ul><li>one</li><li>two</li></ul>',
     )
     const fromHtml = join(dir, 'brief.docx')
     const h = await run(['create', '--type', 'docx', '--from', html, '--out', fromHtml, '--json'])
@@ -65,7 +66,7 @@ describe('genoffice docx (docs editor under jsdom)', () => {
       JSON.stringify([
         { op: 'findReplace', find: firstText.split(' ')[0], replace: 'GENOFFICE' },
         { op: 'setFont', target: { blockIndexes: [0] }, color: 'FF0000', bold: true },
-        { op: 'insert_content', afterBlockIndex: 0, html: '<p>Inserted by ieumoffice.</p>' },
+        { op: 'insert_content', afterBlockIndex: 0, html: '<p>Inserted by onyouoffice.</p>' },
         {
           op: 'replace_blocks',
           startBlockIndex: 2,
@@ -83,13 +84,13 @@ describe('genoffice docx (docs editor under jsdom)', () => {
     expect(applied.code).toBe(0)
     expect(applied.json().detail.blocks).toBe(before.blocks + 1)
     const xml = await documentXml(copy)
-    expect(xml).toContain('Inserted by ieumoffice.')
+    expect(xml).toContain('Inserted by onyouoffice.')
     expect(xml).toContain('Replaced heading')
     expect(xml).toContain('GENOFFICE')
     expect(xml).toContain('<w:color w:val="FF0000"/>')
 
     const after = await run(['docs', 'read', copy, '--range', '1', '--json'])
-    expect(after.json().detail.items[0].text).toBe('Inserted by ieumoffice.')
+    expect(after.json().detail.items[0].text).toBe('Inserted by onyouoffice.')
   })
 
   it('restructures a table: rows, columns, merges, cell format and style land in the docx', async () => {

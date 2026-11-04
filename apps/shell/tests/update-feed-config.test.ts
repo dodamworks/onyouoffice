@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
@@ -83,9 +84,7 @@ describe('unsigned Windows builds can update', () => {
     // publisherName only from a signing certificate it was configured with
     // (app-builder-lib PublishManager.getAppUpdatePublishConfiguration)
     const config = loadBuilderConfig()
-    expect(config.publish).toEqual([
-      { provider: 'github', owner: PRODUCT_REPO_OWNER, repo: PRODUCT_REPO_NAME },
-    ])
+    expect(config.publish).toBeNull()
     expect(config.win.signtoolOptions).toBeUndefined()
     expect(config.win.azureSignOptions).toBeUndefined()
     expect(config.win.verifyUpdateCodeSignature).not.toBe(true)

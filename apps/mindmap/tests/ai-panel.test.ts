@@ -432,7 +432,7 @@ describe('a run asked for from outside the panel', () => {
     expect(composer().value).toBe('Make a map from these notes')
     const chips = [...container.querySelectorAll('.ai-attachments .ai-attachment-card-name')]
     expect(chips.map((chip) => chip.textContent)).toEqual(['a.docx', 'b.xmind'])
-    expect(container.querySelector('.ai-sub-prompt')).not.toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).not.toBeNull()
   })
 
   it('when connected, starts the run with the files and reports that it started', async () => {

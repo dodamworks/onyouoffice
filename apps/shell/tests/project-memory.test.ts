@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { describe, expect, it } from 'vitest'
 import {
   applyMemoryOp,
@@ -15,9 +16,9 @@ const today = '2026-10-29'
 describe('memoryHeader', () => {
   it('is one HTML comment line naming the product', () => {
     expect(memoryHeader('ko')).toMatch(/^<!-- .+ -->$/)
-    expect(memoryHeader('ko')).toContain('이음오피스')
+    expect(memoryHeader('ko')).toContain('온유오피스')
     expect(HEADER).toMatch(/^<!-- .+ -->$/)
-    expect(HEADER).toContain('IeumOffice')
+    expect(HEADER).toContain('Onyou Office')
   })
 })
 

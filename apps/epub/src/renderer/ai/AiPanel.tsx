@@ -14,6 +14,7 @@ import {
   AiBlockedNotice,
   AiComposer,
   AiConnectPrompt,
+  AiPanelFontSizeButtons,
   AiFirstConnectionNotice,
   AiInputTruncatedNotice,
   AiMark,
@@ -124,16 +125,6 @@ import fileImageIcon from './assets/file-image.png'
 import filePdfIcon from './assets/file-pdf.png'
 import filePptIcon from './assets/file-ppt.png'
 import fileWordIcon from './assets/file-word.png'
-
-/** [chip label, composer prefill] */
-const STARTERS = [
-  ['aiStarterSummary', 'aiStarterSummaryPrompt'],
-  ['aiStarterFind', 'aiStarterFindPrompt'],
-  ['aiStarterProofread', 'aiStarterProofreadPrompt'],
-  ['aiStarterTranslate', 'aiStarterTranslatePrompt'],
-] as const
-/** what a fixed-layout book offers: it can be read, not changed or translated */
-const READ_ONLY_STARTERS = STARTERS.slice(0, 2)
 
 /** clipboard bitmap MIME → attachment extension (matches ATTACHMENT_IMAGE_EXTS) */
 const PASTE_MIME_EXT: Record<string, string> = {
@@ -1519,8 +1510,6 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
     resizer.setPointerCapture(e.pointerId)
   }
 
-  const starters = host.book()?.fixedLayout ? READ_ONLY_STARTERS : STARTERS
-
   return (
     <aside
       ref={asideRef}
@@ -1547,10 +1536,16 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
         aria-label={aiSubscriptionText(lang, 'aiAssistant')}
       />
       <header className="ai-panel-header">
-        <span className="ai-panel-title">
-          <AiMark size={22} />
-          {aiSubscriptionText(lang, 'aiAssistant')}
-        </span>
+        <div className="ai-panel-heading">
+          <span className="ai-panel-title">
+            <AiMark size={22} />
+            {aiSubscriptionText(lang, 'aiAssistant')}
+          </span>
+          <AiPanelFontSizeButtons
+            lang={lang}
+            onChange={(patch) => window.epubApi.setAiPanelPrefs(patch)}
+          />
+        </div>
         <div className="ai-panel-header-actions">
           {projectChatMenu}
           {chat.length > 0 && (
@@ -1577,27 +1572,6 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
       </header>
 
       <div className="ai-chat" ref={chatRef} onScroll={onChatScroll}>
-        {chat.length === 0 && (
-          <div className="ai-chat-empty">
-            <div className="ai-chat-empty-title">{t('aiEmptyTitle')}</div>
-            <div className="ai-chat-empty-body">{t('aiEmptyBody')}</div>
-            <div className="ai-starter-list">
-              {starters.map(([label, promptKey]) => (
-                <button
-                  type="button"
-                  key={label}
-                  className="ai-starter"
-                  onClick={() => {
-                    setPrompt(t(promptKey))
-                    inputRef.current?.focus()
-                  }}
-                >
-                  {t(label)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
         {chat.map((entry, i) => {
           if (entry.role === 'user') {
             return (
@@ -1707,6 +1681,7 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
         <div className="ai-composer">
           {sendGate.connectChoice ? (
             <AiConnectPrompt
+              settingsOnly
               choice={sendGate.connectChoice}
               statuses={subscription.statuses}
               lang={lang}
@@ -1793,6 +1768,7 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
           footerStart={
             <>
               <AiModelPicker
+                connectInSettings
                 bridge={MODEL_BRIDGE}
                 lang={lang}
                 subscriptionStatuses={subscription.statuses}

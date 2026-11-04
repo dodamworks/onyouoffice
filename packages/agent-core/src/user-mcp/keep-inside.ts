@@ -27,6 +27,8 @@ export interface ReceivedContentGuardDeps {
   keepsInside(server: string): boolean
   /** the conversation so far (the loop's history, restored transcripts included) */
   messages(): readonly AgentMessage[]
+  /** Changes synchronously on an explicit conversation reset, before history restoration. */
+  conversationVersion?(): number
 }
 
 export interface ReceivedContentGuardedSkill extends AgentSkill {
@@ -95,8 +97,23 @@ export function guardReceivedContent(
   deps: ReceivedContentGuardDeps,
 ): ReceivedContentGuardedSkill {
   let held = new Set<string>()
+  let version = deps.conversationVersion?.()
+  const syncConversation = () => {
+    const next = deps.conversationVersion?.()
+    if (next !== version) {
+      held = new Set()
+      version = next
+    }
+  }
 
-  const record = (call: AgentToolCall, result: ToolExecution): ToolExecution => {
+  const record = (
+    call: AgentToolCall,
+    result: ToolExecution,
+    startedIn: number | undefined,
+  ): ToolExecution => {
+    syncConversation()
+    // An old conversation's pending result must not contaminate its replacement.
+    if (startedIn !== version) return result
     const server = keptServerOf(call.name, result.isError, deps.keepsInside)
     if (server !== null) held.add(server)
     return result
@@ -111,9 +128,11 @@ export function guardReceivedContent(
       return skill.tools
     },
     get keptInsideServers() {
+      syncConversation()
       return held
     },
     buildContext: () => {
+      syncConversation()
       // run start: a new chat holds nothing; a transcript restored from disk
       // may hold content received in an earlier session
       const history = deps.messages()
@@ -122,11 +141,15 @@ export function guardReceivedContent(
       return skill.buildContext?.() ?? ''
     },
     executeTool: (call, signal) => {
+      syncConversation()
+      const startedIn = version
       const refusal = keepInsideRefusal(call, held)
       if (refusal !== null) return { output: refusal, isError: true, summary: call.name }
       const result = skill.executeTool(call, signal)
       if (!isMcpToolName(call.name)) return result
-      return result instanceof Promise ? result.then((r) => record(call, r)) : record(call, result)
+      return result instanceof Promise
+        ? result.then((r) => record(call, r, startedIn))
+        : record(call, result, startedIn)
     },
     ...(skill.verifyResponse ? { verifyResponse: skill.verifyResponse.bind(skill) } : {}),
   }

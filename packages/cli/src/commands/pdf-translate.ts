@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * `pdf translate <file.pdf> --to <lang> [--pages] [--format pdf,md,epub]
  * [--bilingual] [--out] [--partial] [--restart] [--yes] [--allow-paid]
@@ -215,7 +216,7 @@ export async function pdfTranslate(
     throw new CliError(EXIT.usage, 'there is no text to translate on these pages', undefined, {
       reason: 'unsupported',
       suggestion:
-        'a scanned PDF has no text layer: read its pages with `ieumoffice pdf ai-read` first',
+        'a scanned PDF has no text layer: read its pages with `onyouoffice pdf ai-read` first',
     })
   }
   const model = { provider: route.provider, model: route.model }

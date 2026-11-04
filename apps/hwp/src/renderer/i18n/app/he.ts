@@ -54,6 +54,9 @@ export const he = {
   aiEmptyBody:
     'אפשר לשאול על התוכן, לבקש ליטוש ניסוח או מילוי של שדות טופס. כל שינוי מופיע כאן, ואפשר לבטל את כולם בבת אחת.',
   aiComposerPlaceholder: 'שאלו על המסמך הזה או כתבו מה לשנות…',
+  aiToolbarSummary: 'סיכום',
+  aiToolbarPolish: 'שיפור ניסוח',
+  aiToolbarPolishPrompt: 'לטש את המסמך כולו כדי שהכתיבה תהיה ברורה וזורמת יותר',
   aiStarterSummarize: 'סיכום המסמך',
   aiStarterSummarizePrompt: 'סכם את המסמך הזה בקצרה, רק את עיקרי הדברים.',
   aiStarterProofread: 'תיקון כתיב ורווחים',
@@ -208,7 +211,7 @@ export const he = {
   previewMargins: 'הצג שוליים',
   previewEditPage: 'ערוך עמוד זה',
   previewEditFailed: 'לא ניתן לעבור לעמוד זה.',
-  checkTitle: 'בדיקת מסמך',
+  checkTitle: 'בדיקת עיצוב המסמך',
   checkRunning: 'קורא את המסמך…',
   checkFailed: 'לא ניתן היה לקרוא את המסמך.',
   checkEmpty: 'אין מה לתקן.',

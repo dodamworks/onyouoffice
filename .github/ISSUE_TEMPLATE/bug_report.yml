@@ -6,7 +6,7 @@ body:
     id: app
     attributes:
       label: App
-      description: Which part of the suite is affected?
+      description: Which part of Onyou Office is affected? Use synthetic files; do not attach personal documents or credentials.
       options:
         - Docs (docs)
         - Sheets (sheets)
@@ -15,6 +15,8 @@ body:
         - Markdown (markdown)
         - HTML (html)
         - Mind map (mindmap)
+        - Hangul / HWP (hwp)
+        - EPUB (epub)
         - Shell / home screen
         - AI panel / subscription connection / providers
         - Command line / MCP / agent skill

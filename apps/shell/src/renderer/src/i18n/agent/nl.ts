@@ -3,8 +3,7 @@ import type { zh } from './zh'
 export const nl = {
   windowTitle: 'Agent',
   homeCardSub: 'Werk in een map met Claude Code of Codex',
-  intro:
-    'De agent voert je Claude Code of Codex uit in een map die je kiest. Hij kan de bestanden daarin lezen, nieuwe maken, je skills gebruiken, scripts uitvoeren en documenten wijzigen die in GenOffice geopend zijn.',
+  intro: 'Maak en bewerk bestanden met AI in een map naar keuze.',
   folderLabel: 'Projectmap',
   folderPick: 'Kies een map…',
   folderNone: 'Geen map gekozen',

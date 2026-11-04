@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31: use a product-specific external MCP configuration key.
 /**
  * @vitest-environment jsdom
  */
@@ -106,7 +107,7 @@ describe('MCP local server section', () => {
 
     // config example names the server apart from the stdio entry, with the streamable URL
     const code = host.querySelector('.set-code')
-    expect(code?.textContent).toContain('"ieumoffice-editor"')
+    expect(code?.textContent).toContain('"onyouoffice-editor"')
     expect(code?.textContent).not.toContain('"ieumoffice"')
     expect(code?.textContent).toContain('http://127.0.0.1:3093/mcp')
 

@@ -57,6 +57,9 @@ export const hi = {
   aiEmptyBody:
     'सामग्री के बारे में पूछें, शब्दों को सुधरवाएँ या फ़ॉर्म फ़ील्ड भरवाएँ। हर बदलाव यहाँ दिखता है और सभी को एक साथ वापस लिया जा सकता है।',
   aiComposerPlaceholder: 'इस दस्तावेज़ के बारे में पूछें या बताएँ कि क्या बदलना है…',
+  aiToolbarSummary: 'सारांश',
+  aiToolbarPolish: 'लेखन सुधारें',
+  aiToolbarPolishPrompt: 'पूरे दस्तावेज़ को परिष्कृत करें ताकि लेखन अधिक स्पष्ट और प्रवाहपूर्ण हो',
   aiStarterSummarize: 'दस्तावेज़ का सार',
   aiStarterSummarizePrompt: 'इस दस्तावेज़ का संक्षेप में सार बताओ, केवल मुख्य बिंदु।',
   aiStarterProofread: 'वर्तनी और रिक्त स्थान ठीक करें',
@@ -215,7 +218,7 @@ export const hi = {
   previewMargins: 'हाशिये दिखाएँ',
   previewEditPage: 'इस पृष्ठ को संपादित करें',
   previewEditFailed: 'इस पृष्ठ पर नहीं जाया जा सका।',
-  checkTitle: 'दस्तावेज़ जाँच',
+  checkTitle: 'दस्तावेज़ स्वरूप जाँच',
   checkRunning: 'दस्तावेज़ पढ़ा जा रहा है…',
   checkFailed: 'दस्तावेज़ पढ़ा नहीं जा सका।',
   checkEmpty: 'सुधारने के लिए कुछ नहीं मिला।',

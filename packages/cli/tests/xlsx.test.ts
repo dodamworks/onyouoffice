@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-11-01: separate unsupported-function coverage from supported FILTER behavior.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import JSZip from 'jszip'
@@ -637,18 +638,33 @@ describe('formula cache policy', () => {
         table,
         JSON.stringify([
           [1, 2, 3],
-          ['=FILTER(A1:C1,A1:C1>1)', '=1/0', '=SUM(A1:C1)', '="#N/A"'],
+          [
+            '=FILTER(A1:C1,A1:C1>1)',
+            '=1/0',
+            '=SUM(A1:C1)',
+            '="#N/A"',
+            '=ONYOUNOTIMPLEMENTED(A1)',
+            '=FILTER(A1:C1,A1:C1>2)',
+          ],
         ]),
       )
       const out = join(dir, 't.xlsx')
       const r = await run(['create', '--type', 'xlsx', '--from', table, '--out', out, '--json'])
       expect(r.code).toBe(0)
-      expect(r.json().warnings[0].message).toContain('A2')
+      // IronCalc 0.9 supports FILTER; an explicitly unknown function exercises
+      // the uncached-function policy without relying on an old engine gap.
+      expect(r.json().warnings).toEqual([
+        { code: 'formulas_not_cached', message: expect.stringContaining('t!E2') },
+      ])
       const sheet = await part(out, 'xl/worksheets/sheet1.xml')
       expect(sheet).toMatch(
         /<c r="A2"[^>]*\bcm="1"[^>]*><f t="array" ref="A2">_xlfn\._xlws\.FILTER\(/,
       )
       expect(sheet).not.toContain('#NAME?')
+      const unknown = /<c r="E2"[^>]*>(.*?)<\/c>/.exec(sheet)?.[1]
+      expect(unknown).toContain('<f>ONYOUNOTIMPLEMENTED(A1)</f>')
+      expect(unknown).not.toContain('<v')
+      expect(sheet).toMatch(/<c r="F2"[^>]*>.*?<v>3<\/v>/)
       expect(sheet).toMatch(/<c r="B2"[^>]*\bt="e"[^>]*>.*?<v>#DIV\/0!<\/v>/)
       // text that spells an error is still text
       expect(sheet).toMatch(/<c r="D2"[^>]*\bt="str"[^>]*>.*?<v>#N\/A<\/v>/)

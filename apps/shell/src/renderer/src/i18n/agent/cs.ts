@@ -3,8 +3,7 @@ import type { zh } from './zh'
 export const cs = {
   windowTitle: 'Agent',
   homeCardSub: 'Práce ve složce s Claude Code nebo Codex',
-  intro:
-    'Agent spouští váš Claude Code nebo Codex ve složce, kterou si vyberete. Může číst soubory v ní, vytvářet nové, používat vaše dovednosti, spouštět skripty a měnit dokumenty otevřené v GenOffice.',
+  intro: 'Vytvářejte a upravujte soubory s AI ve vybrané složce.',
   folderLabel: 'Složka projektu',
   folderPick: 'Vybrat složku…',
   folderNone: 'Není vybrána žádná složka',

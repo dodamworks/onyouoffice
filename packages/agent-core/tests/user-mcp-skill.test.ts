@@ -420,7 +420,9 @@ describe('the conversation state (spec 7.5, 7.6)', () => {
     state.subscribe(listener)
     state.setServerOffInChat('law', true)
     state.allowInChat('mcp__law__search')
+    const version = state.conversationVersion
     state.newConversation()
+    expect(state.conversationVersion).toBe(version + 1)
     expect(state.serversOffInChat().size).toBe(0)
     expect(state.allowedInChat('mcp__law__search')).toBe(false)
     expect(listener).toHaveBeenCalled()
@@ -602,6 +604,16 @@ describe('composing with the window bridges', () => {
     history = [userMessage]
     expect((await exec('mcp__law__search')).isError).toBeFalsy()
     expect(windowMcpUsableServers()).toEqual(new Set(['notes', 'law']))
+
+    // Opening a saved chat resets and restores synchronously: buildContext
+    // never observes empty history, but the old guard must still be dropped.
+    await exec('mcp__notes__read')
+    expect((await exec('web_search')).isError).toBe(true)
+    windowMcpState()!.newConversation()
+    history = [{ role: 'user', text: 'a different saved chat' }]
+    skill.buildContext?.()
+    expect((await exec('web_search')).isError).toBeFalsy()
+    expect((await exec('mcp__law__search')).isError).toBeFalsy()
   })
 
   it('drops every MCP tool, its prompt block and its servers while internet tools are off', async () => {

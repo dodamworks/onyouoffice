@@ -102,14 +102,13 @@ export const pt = {
   pickerNotConnected: 'Conectar IA',
   guideQuestion: 'Qual IA você já usa?',
   guidePathClaudeTitle: 'Tenho uma assinatura paga do Claude',
-  guidePathClaudeBody:
-    'É preciso ter um plano Pro ou Max. Uma conta gratuita do Claude não consegue se conectar.',
+  guidePathClaudeBody: 'Requer um plano Pro ou Max e um programa de conexão no computador.',
   guidePathCodexTitle: 'Uso o ChatGPT',
   guidePathCodexBody:
     'Entre no programa Codex da OpenAI com sua conta do ChatGPT. O plano gratuito permite pouco uso.',
   guidePathFreeTitle: 'Nenhuma ainda',
   guidePathFreeBody:
-    'Conecte uma IA gratuita em cerca de um minuto. Enquanto você usa de graça, o que você envia pode ser usado para melhorar a IA dessa empresa.',
+    'Conecte IA gratuita pelo OpenRouter ou Gemini. Os provedores podem usar o que você envia para melhorar a IA deles.',
   guideBack: 'Escolher outra forma',
   guideBadgeReady: 'Conectado',
   guideBadgeInstalled: 'Instalado',
@@ -149,8 +148,7 @@ export const pt = {
   actionCopyInfo: 'Copiar informações para ajuda',
   copyInfoDone: 'Copiado',
   actionConnectHelp: 'Ver cada passo na tela (página em coreano)',
-  guidePathChatGptBody:
-    'Entre com sua conta do ChatGPT e use o seu plano. Não é preciso instalar nada. O plano gratuito permite pouco uso.',
+  guidePathChatGptBody: 'Entre pelo navegador. Os limites de uso do seu plano se aplicam.',
   guideUseCodex: 'Já usa o programa Codex neste PC? Conectar com o Codex',
   guideUseDirect: 'Conectar direto no aplicativo, sem o Codex',
   chatgptLoginNote:

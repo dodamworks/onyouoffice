@@ -1,3 +1,4 @@
+export { AiPanelFontSizeButtons } from './AiPanelFontSizeButtons'
 export { AiPanelSideButton } from './AiPanelSideButton'
 export { DriveAttachButton, drivePickedOf } from './DriveAttachButton'
 export type { DriveAttachPicked } from './DriveAttachButton'

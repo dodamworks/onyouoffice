@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31: assert independent product display names and default paths.
 import { act, createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -194,8 +195,7 @@ describe('AiPanel under the subscription contract', () => {
     const bridge = installBridge({ statuses: statusMap('signed-out', 'not-installed') })
     const container = await mountPanel()
 
-    const prompt = container.querySelector('.ai-sub-prompt')
-    expect(prompt?.getAttribute('data-reason')).toBe('no-subscription')
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
     expect(scrolled).toEqual([])
 
     await sendMessage(container, 'summarize this')
@@ -204,18 +204,13 @@ describe('AiPanel under the subscription contract', () => {
     expect(composerText(container)).toBe('summarize this')
     expect(container.querySelector('.ai-msg-user')).toBeNull()
     // the refused send points at the prompt
-    expect(scrolled).toContain(container.querySelector('.ai-sub-prompt'))
+    expect(scrolled).toContain(container.querySelector('.ai-sub-connect-status'))
 
-    // which AI the user has comes first; each answer leads to its own card
-    await click(container, '.ai-sub-prompt [data-path="claude-code"]')
-    await click(container, '.ai-sub-prompt [data-action="login"]')
-    expect(bridge.subscription.login).toHaveBeenCalledWith('claude-code')
-    await click(container, '.ai-sub-prompt [data-action="guide-back"]')
-    // the Codex program is a way within the one ChatGPT answer
-    await click(container, '.ai-sub-prompt [data-path="chatgpt"]')
-    await click(container, '.ai-sub-prompt [data-action="guide-alternate"]')
-    await click(container, '.ai-sub-prompt [data-action="install"]')
-    expect(bridge.subscription.install).toHaveBeenCalledWith('codex')
+    await click(container, '.ai-model-chip')
+    expect(bridge.api.openAiModelSettings).toHaveBeenCalledOnce()
+    expect(container.querySelector('.ai-sub-guide, .ai-sub-card')).toBeNull()
+    expect(bridge.subscription.login).not.toHaveBeenCalled()
+    expect(bridge.subscription.install).not.toHaveBeenCalled()
   })
 
   it('does not send the refused request once a subscription connects', async () => {
@@ -231,7 +226,7 @@ describe('AiPanel under the subscription contract', () => {
     // minutes may have passed at the sign-in page: the run must be asked for again
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
     expect(composerText(container)).toBe('summarize this')
-    expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
   })
 
   it('reads a bridge without subscription handlers as still checking', async () => {
@@ -240,12 +235,12 @@ describe('AiPanel under the subscription contract', () => {
     const container = await mountPanel()
 
     // nobody is waiting on the check yet: no prompt flashes up
-    expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
     await sendMessage(container, 'hello')
     // held: nothing is sent, and the cards show the check the request waits for
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
     expect(composerText(container)).toBe('hello')
-    expect(container.querySelector('.ai-sub-prompt')).not.toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
     expect(container.querySelector('.ai-msg-error')).toBeNull()
   })
 
@@ -264,7 +259,7 @@ describe('AiPanel under the subscription contract', () => {
     expect(bridge.api.aiStream).toHaveBeenCalledTimes(1)
     expect(composerText(container)).toBe('')
     expect(container.querySelector('.ai-msg-user')?.textContent).toContain('summarize this')
-    expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
   })
 
   it('a send held during the status check falls to the connect prompt when the answer is "not connected"', async () => {
@@ -279,7 +274,7 @@ describe('AiPanel under the subscription contract', () => {
     act(() => bridge.setStatuses(statusMap('signed-out', 'not-installed')))
     await settle()
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
-    const prompt = container.querySelector('.ai-sub-prompt')
+    const prompt = container.querySelector('.ai-sub-connect-status')
     expect(prompt?.getAttribute('data-reason')).toBe('no-subscription')
     expect(scrolled).toContain(prompt)
     expect(composerText(container)).toBe('summarize this')
@@ -294,7 +289,7 @@ describe('AiPanel under the subscription contract', () => {
     const bridge = installBridge({ statuses: statusMap('ready', 'not-installed') })
     const container = await mountPanel()
 
-    expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
     expect(container.querySelector('.ai-sub-first')).not.toBeNull()
     await sendMessage(container, 'first request')
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
@@ -514,7 +509,7 @@ describe('AiPanel under the subscription contract', () => {
     })
     const container = await mountPanel()
     await sendMessage(container, 'hello')
-    expect(bridge.requests[0]!.system).toContain('IeumOffice Markdown')
+    expect(bridge.requests[0]!.system).toContain('Onyou Office Markdown')
     expect(bridge.requests[0]!.system).not.toContain('GenOffice')
   })
 })

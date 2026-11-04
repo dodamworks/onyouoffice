@@ -1,10 +1,11 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * electron-builder configuration (kept out of package.json "build" because it
  * computes values and carries the packaging hooks).
  *
- * Auto-update reads the releases of the product's public GitHub repository
- * (see `publish` below): nothing is injected from the environment and no
- * secret is needed to build an installer that updates itself.
+ * The updater implementation is retained, but this local product build has
+ * no distribution feed (publish is null). Source attribution is independent
+ * of update delivery; do not route product updates to the upstream repository.
  */
 
 const { execFileSync } = require('node:child_process')
@@ -19,16 +20,14 @@ const { join } = require('node:path')
 // folder, the executable name, the userData folder and the Windows ProgIds.
 // None of them may coincide with the upstream GenOffice app, so both can be
 // installed on one machine without touching each other's registration.
-const APP_ID = 'io.github.pblsketch.ieumoffice'
-const PRODUCT_NAME = 'IeumOffice'
+const APP_ID = 'pet.dodam.onyouoffice'
+const PRODUCT_NAME = 'Onyou Office'
 // package.json "name" of the packaged app (the workspace keeps upstream's
 // "@genoffice/shell"): electron-builder and electron-updater name the per-user
 // folder that caches the installer and downloaded updates after it
 // (<local app data>/<name>-updater), so a shared name is a shared folder.
-const PACKAGED_APP_NAME = 'ieumoffice'
-const REPO_OWNER = 'pblsketch'
-const REPO_NAME = 'openoffice'
-const MAINTAINER = 'pblsketch <pblsketch@users.noreply.github.com>'
+const PACKAGED_APP_NAME = 'onyouoffice'
+const MAINTAINER = 'Onyou Office <support@onyouoffice.com>'
 
 // GENOFFICE_MAC_X64=1 — package the Intel (x64) dmg/zip alongside arm64.
 // The release build on GitHub's Mac runner sets it (.github/workflows/
@@ -347,7 +346,7 @@ const WIN_OPEN_WITH_ONLY_EXTS = new Set(['txt', 'json', 'xmind', 'hwp', 'hwpx', 
 // the other's open command and either uninstall delete it: Windows gets
 // product-scoped ProgIds instead ("IeumOffice.WordDocument"). The same ids are
 // spelled out in src/main/default-app.ts and build/installer.nsh.
-const winProgId = (name) => `${PRODUCT_NAME}.${name.replace(/[^A-Za-z0-9]/g, '')}`
+const winProgId = (name) => `OnyouOffice.${name.replace(/[^A-Za-z0-9]/g, '')}`
 const FILE_ASSOCIATIONS = [
   {
     ext: 'docx',
@@ -608,12 +607,12 @@ const config = {
       to: 'cli/genoffice.cjs',
     },
     {
-      from: '../../packages/cli/bin/ieumoffice',
-      to: 'cli/ieumoffice',
+      from: '../../packages/cli/bin/onyouoffice',
+      to: 'cli/onyouoffice',
     },
     {
-      from: '../../packages/cli/bin/ieumoffice.cmd',
-      to: 'cli/ieumoffice.cmd',
+      from: '../../packages/cli/bin/onyouoffice.cmd',
+      to: 'cli/onyouoffice.cmd',
     },
     // the CLI's version (Settings → Integrations shows it) and the agent skill
     // the same pane installs into Claude Code / Codex / …; bytes identical to the repo file
@@ -622,8 +621,8 @@ const config = {
       to: 'cli/package.json',
     },
     {
-      from: '../../skills/ieumoffice/SKILL.md',
-      to: 'cli/skills/ieumoffice/SKILL.md',
+      from: '../../skills/onyouoffice/SKILL.md',
+      to: 'cli/skills/onyouoffice/SKILL.md',
     },
     // runtime deps the genoffice bundle leaves external (jsdom for the Word/Markdown
     // paths); collected by packages/cli/collect-deps.mjs during its build
@@ -678,8 +677,8 @@ const config = {
     fileAssociations: FILE_ASSOCIATIONS,
     hardenedRuntime: true,
     gatekeeperAssess: false,
-    entitlements: 'build/entitlements.mac.plist',
-    entitlementsInherit: 'build/entitlements.mac.plist',
+    entitlements: join(__dirname, 'build/entitlements.mac.plist'),
+    entitlementsInherit: join(__dirname, 'build/entitlements.mac.plist'),
     notarize: true,
     extraResources: [
       {
@@ -786,7 +785,7 @@ const config = {
   // treats successive releases as upgrades of the same package and never
   // collides with an upstream genoffice deb install.
   deb: {
-    artifactName: 'ieumoffice_${version}_${arch}.deb',
+    artifactName: 'onyouoffice_${version}_${arch}.deb',
     packageName: PACKAGED_APP_NAME,
     // Ubuntu 24.04 (and Debian 13) rebuilt part of the X/GTK stack for 64-bit
     // time_t and renamed those packages with a "t64" suffix: where the old
@@ -825,7 +824,7 @@ const config = {
   // the rpm is a GitHub-Release download only, so latest-linux.yml lists
   // AppImage + deb.
   rpm: {
-    artifactName: 'ieumoffice-${version}.${arch}.rpm',
+    artifactName: 'onyouoffice-${version}.${arch}.rpm',
     packageName: PACKAGED_APP_NAME,
     publish: null,
     afterInstall: 'build/linux-after-install.sh',
@@ -867,7 +866,7 @@ const config = {
   dmg: {
     sign: true,
   },
-  afterAllArtifactBuild: 'build/notarize-dmg.js',
+  afterAllArtifactBuild: join(__dirname, 'build/notarize-dmg.js'),
 }
 
 // Windows in-package code signing. Security features that judge every PE
@@ -920,19 +919,9 @@ config.dmg.sign = false
 // the arm64 name stays the one the site and the README point at.
 config.dmg.artifactName = '${productName}-${version}-${arch}.${ext}'
 
-// Auto-update feed: the releases of the public repository. Always configured,
-// so every installer carries an app-update.yml and can update itself — the
-// repository is public, which is why no token or feed URL has to be injected.
-// This only names the feed. Whether a build also uploads is the --publish
-// flag's business: pass `--publish never` to package without creating a
-// release (electron-builder would otherwise try to on a tagged CI build).
-config.publish = [
-  {
-    provider: 'github',
-    owner: REPO_OWNER,
-    repo: REPO_NAME,
-  },
-]
+// No Onyou distribution has been published. Keep the updater implementation,
+// but ship no upstream feed and do not invent a product endpoint.
+config.publish = null
 
 // CI's "-c.extraMetadata.version=..." CLI override deep-merges with this block,
 // so the version and the packaged name survive together.

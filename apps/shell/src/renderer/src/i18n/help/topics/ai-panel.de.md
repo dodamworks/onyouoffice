@@ -4,7 +4,7 @@ Jeder Editor kann den KI-Bereich aufrufen: Etwas auswählen, eine Anweisung gebe
 
 ## Öffnen und verwenden
 
-- Der Bereich braucht eine verbundene KI. Ist keine verbunden, zeigt er statt einer Fehlermeldung die Karten zum Verbinden; siehe [Abonnement-Verbindung](help://subscription).
+- Verbinden Sie KI unter Einstellungen → KI. [AI](help://subscription)
 - Einstiegspunkte: die **KI-Schaltfläche** im Menüband jedes Editors, **KI fragen** in den Kontextmenüs oder KI fragen in der Markierungsleiste.
 - Beschreiben Sie die Aufgabe in normaler Sprache (dies umformulieren / diese Spalte in Prozent umrechnen / diese Seite neu setzen …) und drücken Sie die Eingabetaste.
 - Antworten werden **gestreamt**; wenn die KI Werkzeuge braucht (Dokument lesen, bearbeiten), führt sie sie aus und macht weiter, bis die Aufgabe erledigt ist.
@@ -24,7 +24,7 @@ Jeder Editor kann den KI-Bereich aufrufen: Etwas auswählen, eine Anweisung gebe
 - **Slides**: Erzeugen eines kompletten Decks, Layout anpassen, Texte umformulieren.
 - **PDF**: Fragen und Zusammenfassungen zum ausgewählten Text oder zu ausgewählten Seiten.
 - **Markdown / HTML**: umformulieren, ausbauen, übersetzen.
-- **Start ▸ Ask AI** antwortet aus Ihren markierten Dateien und nennt die Quellen — das Wissensbasis-Panel hat im Start-Kapitel einen eigenen Abschnitt, und das Docs-KI-Panel beherrscht dieselbe Fähigkeit.
+- **Wissensspeicher**: Standardmäßig werden in der App registrierte Dokumente verwendet: zuletzt geöffnete und markierte Dateien sowie hinzugefügte Ordner und Projekte. Nicht der gesamte Computer wird durchsucht. Über dem Eingabefeld wählen Sie registrierte Dokumente, ein Projekt, einzelne Dokumente oder Favoriten. Ein Quellenwechsel beginnt einen neuen Chat und verwirft wartende Fragen. [Home](help://home-screen)
 
 ## Geöffnete Dokumente anhängen
 

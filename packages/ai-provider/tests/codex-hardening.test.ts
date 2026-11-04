@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { EventEmitter } from 'node:events'
 import { PassThrough } from 'node:stream'
@@ -237,7 +238,7 @@ describe('Codex app-server launch', () => {
     const h = harness()
     await run(callbacks().cb)
     const child = h.child()
-    const product = PRODUCT_NAME.toLowerCase()
+    const product = 'onyouoffice'
     expect(child.paramsOf('initialize')).toMatchObject({
       clientInfo: { name: product, title: PRODUCT_NAME, version: '0.1.0' },
     })

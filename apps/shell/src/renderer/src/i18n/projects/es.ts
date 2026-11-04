@@ -14,7 +14,7 @@ export const es = {
   renameHint: 'La carpeta conserva su nombre.',
   openInExplorer: 'Abrir en el Explorador de archivos',
   openInFinder: 'Mostrar en el Finder',
-  trustUse: 'enviando instrucciones y memoria a la IA',
+  trustUse: 'las instrucciones y la memoria se usan en las solicitudes a la IA',
   trustWithout: 'en uso sin instrucciones',
   trustWithoutDesc:
     'No se envían a la IA las instrucciones, la memoria ni los chats de otros PC, y no se guarda memoria.',
@@ -27,8 +27,9 @@ export const es = {
   tabMemory: 'Memoria',
   tabFiles: 'Archivos',
   tabChats: 'Chats',
-  instructionsDesc:
-    'Reglas de trabajo que sigue la IA en este proyecto. Acompañan cada solicitud de un panel de IA que tenga este proyecto elegido.',
+  instructionsDesc: 'Escribe las reglas que debe seguir la IA en este proyecto.',
+  instructionsLength: '{count} / {limit} caracteres',
+  instructionsTooLong: 'Las instrucciones actuales se conservan. Acórtalas antes de guardar.',
   instructionsPlaceholder:
     'Por ejemplo: redactar los informes en tono formal y las fechas como 30 oct. 2026.',
   save: 'Guardar',
@@ -38,13 +39,13 @@ export const es = {
   readAgentsFiles: 'Leer también AGENTS.md y CLAUDE.md de la raíz de la carpeta como instrucciones',
   withoutNotSent:
     'Este proyecto se usa sin instrucciones, así que por ahora esto no se envía a la IA.',
-  memoryDesc: 'Notas que la IA tomó mientras chateaba. Borra lo que esté mal o ya no haga falta.',
-  memoryEnabled: 'Guardar memoria',
-  memoryEnabledDesc:
-    'Si se desactiva, la IA no escribe nada nuevo. La memoria existente se sigue leyendo.',
+  memoryDesc:
+    'Notas que la IA guarda durante las conversaciones. Se recomienda organizarlas al superar los 8.000 caracteres.',
+  memoryEnabled: 'Guardar nuevos recuerdos automáticamente',
+  memoryEnabledDesc: 'Los recuerdos existentes se siguen usando al desactivar esta opción.',
   memoryLength: '{count} entradas · {chars} caracteres',
-  memoryEmpty: 'Aún no hay memoria.',
-  memoryEditAll: 'Editar todo',
+  memoryEmpty: 'Los recuerdos de tus conversaciones aparecerán aquí.',
+  memoryEditAll: 'Editar memoria',
   memoryEditLabel: 'Toda la memoria',
   memoryConflict: 'Hay copias por conflicto de sincronización: {names}',
   consolidating: 'Ordenando…',
@@ -62,9 +63,8 @@ export const es = {
   consolidateUndone: 'Se volvió a como estaba antes de ordenar.',
   undoFailed: 'No se pudo deshacer.',
   removeMemoryAria: 'Borrar esta memoria: {text}',
-  filesDesc:
-    'Archivos que la IA puede ver en este proyecto. Se excluyen los archivos ocultos y la carpeta .ieumoffice.',
-  filesEmpty: 'No hay archivos que la IA pueda ver.',
+  filesDesc: 'Archivos del proyecto que la IA puede consultar.',
+  filesEmpty: 'Añade documentos a la carpeta del proyecto para verlos aquí.',
   filesLoadFailed: 'No se pudo leer la lista de archivos.',
   filesCount: '{count} archivos',
   loadMore: 'Mostrar más',
@@ -74,13 +74,11 @@ export const es = {
     'Este archivo solo está en la nube. Si la IA quiere leerlo, se te pregunta antes de descargarlo.',
   hideFromAi: 'Ocultar a la IA',
   hideFromAiAria: 'Ocultar a la IA: {name}',
-  ignoredTitle: 'Archivos ocultos a la IA',
-  ignoredDesc:
-    'Esta lista solo se muestra en esta pantalla. Deshaz para que la IA vuelva a ver un archivo.',
+  ignoredTitle: 'Archivos excluidos de la IA',
+  ignoredDesc: 'Restaura un archivo para que la IA pueda volver a consultarlo.',
   ignoredEmpty: 'Ninguno.',
   restoreAria: 'Deshacer: {name}',
-  chatsDesc:
-    'Chats de este proyecto. Haz clic en uno para seguirlo en el panel de IA del último documento que lo usó.',
+  chatsDesc: 'Las conversaciones con la IA de este proyecto se guardan aquí.',
   actionFailed: 'No funcionó. Inténtalo de nuevo.',
   loadFailed: 'No se pudo leer el proyecto.',
   addExistingFolder: 'Usar una carpeta existente',

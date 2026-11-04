@@ -27,7 +27,7 @@ test.describe('#2029 the comment author follows Settings → General → User na
       expect(saved.authorName).toBe('Ada Lovelace')
       await shellPage.locator('.set-close').click()
 
-      await shellPage.locator('.quick-card', { hasText: 'AI Slides' }).click()
+      await shellPage.locator('.quick-card', { hasText: 'Presentation' }).click()
       const editor = await waitForPageWithUrl(launched.app, '://slides/')
       await editor.waitForSelector('.stage-wrap canvas', { timeout: 30_000 })
 

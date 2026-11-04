@@ -271,7 +271,7 @@ describe('the default view', () => {
     const labels = [...host.querySelectorAll('.set-nav-item')].map((item) =>
       item.textContent?.trim(),
     )
-    expect(labels).toEqual(['Account', 'AI', 'Skills', 'General', 'Integrations', 'About'])
+    expect(labels).toEqual(['AI', 'Skills', 'General', 'Integrations', 'About'])
   })
 
   it('shows both subscription cards, the free cards, and no paid key input', async () => {
@@ -340,24 +340,19 @@ describe('the default view', () => {
     expect(host.querySelector('#set-ai-search-key')).not.toBeNull()
   })
 
-  it('shows where each subscription stands in the account section', async () => {
+  it('routes the legacy account target to the consolidated AI connections', async () => {
     installHome(defaultAiSettings())
     installSubscription({
       'claude-code': status('claude-code', 'ready', { planName: 'max' }),
       codex: status('codex', 'not-installed'),
     })
-    await openModal()
-    const rows = [...host.querySelectorAll<HTMLElement>('.set-field[data-provider]')]
-    expect(rows.map((row) => row.textContent)).toEqual([
-      'ClaudeConnected · max',
-      'ChatGPTNot signed in',
-      'CodexNot installed',
-    ])
-    expect(host.textContent).not.toMatch(/credits/i)
-
-    await click(button('Manage connections'))
+    await openModal({ section: 'account' })
+    expect(nav('Account')).toBeUndefined()
     expect(nav('AI')?.classList.contains('active')).toBe(true)
+    expect(card('claude-code').getAttribute('data-state')).toBe('ready')
+    expect(card('codex').getAttribute('data-state')).toBe('not-installed')
     expect(host.querySelectorAll('.ai-sub-card:not(.free-ai-card)')).toHaveLength(3)
+    expect(host.textContent).not.toMatch(/credits/i)
   })
 })
 
@@ -567,8 +562,10 @@ describe('the account on a card', () => {
     installHome(defaultAiSettings())
     installSubscription(signedIn())
     await openModal()
-    // the account section sums up the state and names nobody
-    expect(host.textContent).not.toContain(ACCOUNT)
+    // The consolidated view names the account only inside its connection card.
+    const outsideCards = host.cloneNode(true) as HTMLElement
+    outsideCards.querySelectorAll('.ai-sub-card').forEach((node) => node.remove())
+    expect(outsideCards.textContent).not.toContain(ACCOUNT)
 
     await openAiSection()
     expect(card('claude-code').querySelector('.ai-sub-account')?.textContent).toBe(
@@ -1150,7 +1147,7 @@ describe('without the main-process handlers', () => {
     installHome(defaultAiSettings())
     delete window.aiOfficeSubscription
     await openModal()
-    expect(host.querySelectorAll('.set-field[data-provider]')).toHaveLength(3)
+    expect(host.querySelectorAll('.ai-sub-card[data-state="checking"]')).toHaveLength(3)
     await openAiSection()
     expect(host.querySelectorAll('.ai-sub-card[data-state="checking"]')).toHaveLength(3)
     await settle()

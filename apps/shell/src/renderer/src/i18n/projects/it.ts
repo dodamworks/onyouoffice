@@ -14,7 +14,7 @@ export const it = {
   renameHint: 'La cartella mantiene il suo nome.',
   openInExplorer: 'Apri in Esplora file',
   openInFinder: 'Mostra nel Finder',
-  trustUse: 'istruzioni e memoria inviate all’IA',
+  trustUse: 'le istruzioni e la memoria vengono usate nelle richieste all’IA',
   trustWithout: 'in uso senza istruzioni',
   trustWithoutDesc:
     'Istruzioni, memoria e chat di altri PC non vengono inviate all’IA, e non si raccoglie memoria.',
@@ -27,8 +27,9 @@ export const it = {
   tabMemory: 'Memoria',
   tabFiles: 'File',
   tabChats: 'Chat',
-  instructionsDesc:
-    'Regole di lavoro che l’IA segue in questo progetto. Accompagnano ogni richiesta di un pannello IA con questo progetto scelto.',
+  instructionsDesc: 'Scrivi le regole che l’IA deve seguire in questo progetto.',
+  instructionsLength: '{count} / {limit} caratteri',
+  instructionsTooLong: 'Le istruzioni esistenti vengono conservate. Accorciale prima di salvare.',
   instructionsPlaceholder:
     'Per esempio: scrivere i rapporti in tono formale e le date come 30 ott 2026.',
   save: 'Salva',
@@ -39,13 +40,12 @@ export const it = {
   withoutNotSent:
     'Questo progetto è in uso senza istruzioni, quindi per ora non viene inviato all’IA.',
   memoryDesc:
-    'Note che l’IA ha preso durante le chat. Elimina ciò che è sbagliato o non serve più.',
-  memoryEnabled: 'Raccogli memoria',
-  memoryEnabledDesc:
-    'Se disattivata, l’IA non scrive nulla di nuovo. La memoria esistente viene ancora letta.',
+    'Note conservate dall’IA durante le conversazioni. Si consiglia di riordinarle oltre 8.000 caratteri.',
+  memoryEnabled: 'Salva automaticamente nuovi ricordi',
+  memoryEnabledDesc: 'I ricordi esistenti vengono usati anche quando questa opzione è disattivata.',
   memoryLength: '{count} voci · {chars} caratteri',
-  memoryEmpty: 'Ancora nessuna memoria.',
-  memoryEditAll: 'Modifica tutto',
+  memoryEmpty: 'I ricordi delle tue conversazioni appariranno qui.',
+  memoryEditAll: 'Modifica memoria',
   memoryEditLabel: 'Tutta la memoria',
   memoryConflict: 'Ci sono copie da conflitto di sincronizzazione: {names}',
   consolidating: 'Riordino in corso…',
@@ -62,9 +62,8 @@ export const it = {
   consolidateUndone: 'Tornato a com’era prima del riordino.',
   undoFailed: 'Impossibile annullare.',
   removeMemoryAria: 'Elimina questa memoria: {text}',
-  filesDesc:
-    'File che l’IA può vedere in questo progetto. I file nascosti e la cartella .ieumoffice sono esclusi.',
-  filesEmpty: 'Non ci sono file che l’IA può vedere.',
+  filesDesc: 'File del progetto che l’IA può consultare.',
+  filesEmpty: 'Aggiungi documenti alla cartella del progetto per vederli qui.',
   filesLoadFailed: 'Impossibile leggere l’elenco dei file.',
   filesCount: '{count} file',
   loadMore: 'Mostra altro',
@@ -74,13 +73,11 @@ export const it = {
     'Questo file è solo nel cloud. Se l’IA vuole leggerlo, ti viene chiesto prima di scaricarlo.',
   hideFromAi: 'Nascondi all’IA',
   hideFromAiAria: 'Nascondi all’IA: {name}',
-  ignoredTitle: 'File nascosti all’IA',
-  ignoredDesc:
-    'Questo elenco appare solo in questa schermata. Annulla per far rivedere un file all’IA.',
+  ignoredTitle: 'File esclusi dall’IA',
+  ignoredDesc: 'Ripristina un file per consentire all’IA di consultarlo di nuovo.',
   ignoredEmpty: 'Nessuno.',
   restoreAria: 'Annulla: {name}',
-  chatsDesc:
-    'Le chat di questo progetto. Fai clic su una per continuarla nel pannello IA dell’ultimo documento che l’ha usata.',
+  chatsDesc: 'Le conversazioni con l’IA di questo progetto vengono salvate qui.',
   actionFailed: 'Non ha funzionato. Riprova.',
   loadFailed: 'Impossibile leggere il progetto.',
   addExistingFolder: 'Usa una cartella esistente',

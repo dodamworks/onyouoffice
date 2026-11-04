@@ -4,7 +4,7 @@ Ogni editor può richiamare il pannello IA: seleziona qualcosa, dai un'istruzion
 
 ## Come aprirlo e usarlo
 
-- Il pannello ha bisogno di un'IA collegata. Se non ce n'è nessuna, mostra le schede di collegamento invece di un errore; vedi [Connessione con abbonamento](help://subscription).
+- Collega l’IA in Impostazioni → IA. [AI](help://subscription)
 - Punti d'ingresso: il **pulsante AI** nella barra multifunzione di ogni editor, **Chiedi all'IA** nei menu contestuali oppure Chiedi all'IA sulla barra di annotazione.
 - Descrivi l'attività in linguaggio naturale (riscrivi questo / trasforma questa colonna in percentuali / riorganizza l'impaginazione di questa pagina...) e premi Invio.
 - Le risposte vengono renderizzate **in streaming**; quando l'IA ha bisogno di strumenti (leggere il documento, modificarlo) li usa e prosegue fino alla fine.
@@ -24,7 +24,7 @@ Ogni editor può richiamare il pannello IA: seleziona qualcosa, dai un'istruzion
 - **Slides**: generazione dell'intera presentazione, regolazione del layout, riscrittura dei testi.
 - **PDF**: domande e risposte e riassunti sul testo o sulle pagine selezionate.
 - **Markdown / HTML**: riscrivere, estendere, tradurre.
-- **Home ▸ Ask AI** risponde dai tuoi file preferiti e li cita — il pannello della base di conoscenza ha una sua sezione nel capitolo Home, e il pannello IA di Docs porta la stessa capacità.
+- **Archivio delle conoscenze**: La fonte predefinita comprende i documenti registrati nell’app: file recenti e preferiti, cartelle aggiunte e progetti. Non cerca in tutto il computer. Sopra la casella di testo scegli documenti registrati, un progetto, documenti specifici o preferiti. Cambiare fonte avvia una nuova chat e annulla le domande in attesa di connessione. [Home](help://home-screen)
 
 ## Allegare documenti aperti
 

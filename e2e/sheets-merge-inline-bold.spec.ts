@@ -96,8 +96,8 @@ async function openBlankWorkbook(videoDir: string) {
   await app.evaluate(({ app: electronApp }, dir) => {
     electronApp.setPath('documents', dir)
   }, scratch)
-  await expect(page.locator('.quick-card').nth(1)).toContainText('AI Sheets')
-  await page.locator('.quick-card').nth(1).click()
+  await expect(page.locator('.quick-card[data-format="xlsx"]')).toContainText('Spreadsheet')
+  await page.locator('.quick-card[data-format="xlsx"]').click()
   const sheets = await waitForPageWithUrl(app, '://sheets/')
   await sheets.waitForFunction(() => document.body.textContent?.includes('Sheet1'), null, {
     timeout: 30_000,

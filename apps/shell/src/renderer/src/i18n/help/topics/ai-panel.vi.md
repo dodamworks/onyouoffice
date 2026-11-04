@@ -4,7 +4,7 @@ Mọi trình soạn thảo đều có thể gọi bảng AI: chọn một nội 
 
 ## Mở và sử dụng
 
-- Bảng này cần một AI đã kết nối. Khi chưa có, nó hiển thị các thẻ kết nối thay vì báo lỗi; xem [Kết nối gói đăng ký](help://subscription).
+- Kết nối AI trong Cài đặt → AI. [AI](help://subscription)
 - Các lối vào: **nút AI** trên dải ruy-bâng của từng trình soạn thảo, **Hỏi AI** trong menu ngữ cảnh, hoặc Hỏi AI trên thanh đánh dấu.
 - Mô tả công việc bằng ngôn ngữ tự nhiên (viết lại đoạn này / biến cột này thành phần trăm / bố cục lại trang này...) rồi nhấn Enter.
 - Câu trả lời hiển thị **dạng luồng**; khi AI cần công cụ (đọc tài liệu, sửa tài liệu) thì nó thực thi và tiếp tục cho tới khi xong.
@@ -24,7 +24,7 @@ Mọi trình soạn thảo đều có thể gọi bảng AI: chọn một nội 
 - **Slides**: tạo cả bộ trang chiếu, điều chỉnh bố cục, viết lại nội dung.
 - **PDF**: hỏi đáp và tóm tắt dựa trên văn bản hoặc trang đã chọn.
 - **Markdown / HTML**: viết lại, mở rộng, dịch.
-- **Trang chủ ▸ Ask AI** trả lời từ các tệp bạn đánh sao và trích dẫn chúng — bảng cơ sở tri thức có mục riêng trong chương Trang chủ, và bảng AI của Docs cũng mang kỹ năng ấy.
+- **Kho kiến thức**: Nguồn mặc định là tài liệu đã đăng ký trong ứng dụng: tệp gần đây và yêu thích, thư mục đã thêm và dự án. Không tìm kiếm toàn bộ máy tính. Phía trên ô nhập, chọn tài liệu đã đăng ký, dự án, tài liệu cụ thể hoặc mục yêu thích. Đổi nguồn sẽ bắt đầu cuộc trò chuyện mới và hủy câu hỏi đang chờ kết nối. [Home](help://home-screen)
 
 ## Đính kèm tài liệu đang mở
 

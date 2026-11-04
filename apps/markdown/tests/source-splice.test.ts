@@ -1,5 +1,6 @@
+// Modified by Dodam on 2026-10-31: validate the current working tree including unstaged renames.
 import { execSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it, vi } from 'vitest'
 import { Editor } from '@tiptap/core'
@@ -258,9 +259,12 @@ describe('source splice', () => {
   // 294 topic bodies, which is what pushed it over on this branch.
   it('round-trips every markdown file in the repository', { timeout: 120_000 }, () => {
     const root = execSync('git rev-parse --show-toplevel', { encoding: 'utf8' }).trim()
-    const files = execSync('git ls-files -- "*.md"', { cwd: root, encoding: 'utf8' })
+    const files = execSync('git ls-files --cached --others --exclude-standard -- "*.md"', {
+      cwd: root,
+      encoding: 'utf8',
+    })
       .split('\n')
-      .filter(Boolean)
+      .filter((file) => file && existsSync(join(root, file)))
     expect(files.length).toBeGreaterThan(20)
     const editor = createEditor()
     const declined: string[] = []

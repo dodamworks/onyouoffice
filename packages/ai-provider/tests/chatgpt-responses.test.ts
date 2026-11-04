@@ -11,6 +11,7 @@ import {
   CHATGPT_RESPONSES_URL,
   chatChatGpt,
   chatGptModelsOf,
+  listChatGptModels,
   streamChatGpt,
 } from '../src/chatgpt/responses'
 import { CHATGPT_PLAN_SCOPE } from '../src/chatgpt/oauth'
@@ -205,6 +206,34 @@ describe('a ChatGPT turn', () => {
       errorProvider: 'chatgpt',
     })
     expect(await conn.state()).toEqual({ signedIn: false })
+  })
+
+  it('clears a revoked session discovered while loading models before inference', async () => {
+    const conn = connection()
+    const api = fakeApi(() => Response.json({ error: { code: 'token_revoked' } }, { status: 401 }))
+    const error = await run(api, { conn, model: '' }).promise.catch((e: unknown) => e)
+    expect(aiStreamErrorFields(error)).toEqual({
+      errorCode: 'signed-out',
+      errorProvider: 'chatgpt',
+    })
+    expect(await conn.state()).toEqual({ signedIn: false })
+    expect(api.calls.map((call) => call.url)).toEqual([CHATGPT_MODELS_URL])
+  })
+
+  it('also clears revoked sessions from status model refreshes', async () => {
+    const conn = connection()
+    const api = fakeApi(() => new Response('Unauthorized', { status: 401 }))
+    await expect(listChatGptModels({ connection: conn, fetch: api.fetch })).rejects.toBeInstanceOf(
+      AiRunError,
+    )
+    expect(await conn.state()).toEqual({ signedIn: false })
+  })
+
+  it('preserves the session when model discovery is temporarily unavailable', async () => {
+    const conn = connection()
+    const api = fakeApi(() => Response.json({ detail: 'temporarily unavailable' }, { status: 503 }))
+    await expect(listChatGptModels({ connection: conn, fetch: api.fetch })).rejects.toThrow('503')
+    expect(await conn.state()).toEqual({ signedIn: true })
   })
 
   it('says signed out, and sends nothing, without a connection', async () => {

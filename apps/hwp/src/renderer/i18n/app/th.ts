@@ -56,6 +56,9 @@ export const th = {
   aiEmptyBody:
     'ถามเกี่ยวกับเนื้อหา ให้ช่วยขัดเกลาถ้อยคำ หรือให้กรอกฟิลด์แบบฟอร์มได้ การแก้ไขทุกจุดจะแสดงที่นี่และยกเลิกได้ในครั้งเดียว',
   aiComposerPlaceholder: 'ถามเกี่ยวกับเอกสารนี้ หรือบอกว่าต้องการแก้ตรงไหน…',
+  aiToolbarSummary: 'สรุป',
+  aiToolbarPolish: 'ปรับปรุงข้อความ',
+  aiToolbarPolishPrompt: 'ขัดเกลาเอกสารทั้งฉบับให้อ่านชัดเจนและลื่นไหลขึ้น',
   aiStarterSummarize: 'สรุปเอกสาร',
   aiStarterSummarizePrompt: 'ช่วยสรุปเอกสารนี้สั้น ๆ เฉพาะประเด็นสำคัญ',
   aiStarterProofread: 'แก้คำสะกดและการเว้นวรรค',
@@ -210,7 +213,7 @@ export const th = {
   previewMargins: 'แสดงระยะขอบ',
   previewEditPage: 'แก้ไขหน้านี้',
   previewEditFailed: 'ไม่สามารถไปยังหน้านี้ได้',
-  checkTitle: 'ตรวจสอบเอกสาร',
+  checkTitle: 'ตรวจสอบรูปแบบเอกสาร',
   checkRunning: 'กำลังอ่านเอกสาร…',
   checkFailed: 'อ่านเอกสารไม่สำเร็จ',
   checkEmpty: 'ไม่มีรายการที่ต้องแก้',

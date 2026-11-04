@@ -57,6 +57,9 @@ export const pl = {
   aiEmptyBody:
     'Zapytaj o treść, poproś o wygładzenie sformułowań albo o wypełnienie pól formularza. Każda zmiana jest tu wymieniona i można je cofnąć za jednym razem.',
   aiComposerPlaceholder: 'Zapytaj o ten dokument lub napisz, co zmienić…',
+  aiToolbarSummary: 'Podsumuj',
+  aiToolbarPolish: 'Popraw tekst',
+  aiToolbarPolishPrompt: 'Dopracuj cały dokument, aby tekst był jaśniejszy i płynniejszy',
   aiStarterSummarize: 'Streść dokument',
   aiStarterSummarizePrompt: 'Streść krótko ten dokument, tylko najważniejsze punkty.',
   aiStarterProofread: 'Popraw pisownię i spacje',
@@ -215,7 +218,7 @@ export const pl = {
   previewMargins: 'Pokaż marginesy',
   previewEditPage: 'Edytuj tę stronę',
   previewEditFailed: 'Nie można przejść do tej strony.',
-  checkTitle: 'Sprawdzanie dokumentu',
+  checkTitle: 'Sprawdź format dokumentu',
   checkRunning: 'Odczytywanie dokumentu…',
   checkFailed: 'Nie udało się odczytać dokumentu.',
   checkEmpty: 'Nie ma nic do poprawy.',

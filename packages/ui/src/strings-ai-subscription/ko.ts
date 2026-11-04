@@ -92,14 +92,13 @@ export const ko = {
   pickerNotConnected: 'AI 연결',
   guideQuestion: '지금 쓰고 있는 AI가 있나요?',
   guidePathClaudeTitle: 'Claude 유료 구독이 있어요',
-  guidePathClaudeBody:
-    'Pro 또는 Max 요금제가 있어야 합니다. 무료 Claude 계정으로는 연결되지 않습니다.',
+  guidePathClaudeBody: 'Pro·Max 구독과 PC용 연결 프로그램이 필요합니다.',
   guidePathCodexTitle: 'ChatGPT를 써요',
   guidePathCodexBody:
     'ChatGPT 계정으로 OpenAI의 Codex 프로그램에 로그인해서 씁니다. 무료 요금제는 쓸 수 있는 양이 적습니다.',
   guidePathFreeTitle: '아직 없어요',
   guidePathFreeBody:
-    '무료 AI를 1분 안에 연결할 수 있습니다. 무료로 쓰는 동안 보낸 내용은 그 회사의 AI 개선에 쓰일 수 있습니다.',
+    'OpenRouter·Gemini를 무료로 연결합니다. 보낸 내용은 제공자의 AI 개선에 쓰일 수 있습니다.',
   guideBack: '다른 방법 고르기',
   guideBadgeReady: '연결됨',
   guideBadgeInstalled: '설치됨',
@@ -138,8 +137,7 @@ export const ko = {
   actionCopyInfo: '도움 요청용 정보 복사',
   copyInfoDone: '복사했습니다',
   actionConnectHelp: '연결하는 방법 화면으로 보기',
-  guidePathChatGptBody:
-    'ChatGPT 계정으로 로그인하면 그 요금제 안에서 씁니다. 프로그램을 설치하지 않아도 됩니다. 무료 요금제는 쓸 수 있는 양이 적습니다.',
+  guidePathChatGptBody: '브라우저에서 로그인합니다. 요금제별 사용 한도가 적용됩니다.',
   guideUseCodex: '이 PC에서 Codex 프로그램을 이미 쓰고 있나요? Codex로 연결',
   guideUseDirect: 'Codex 없이 앱에서 바로 연결',
   chatgptLoginNote:

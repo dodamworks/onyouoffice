@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { PRODUCT_NAME } from '@genoffice/i18n'
@@ -24,7 +25,7 @@ import { buildArgv, resolveTools, toolShape, type ResolvedTool } from './tools'
 
 const ABOUT = `${PRODUCT_NAME}: create, read, convert, edit and render Office documents locally (docx, xlsx, pptx, pdf, md, html, csv). The app need not be running; render, convert-to-pdf and create_pdf start a hidden ${PRODUCT_NAME} process for a few seconds.`
 const WORKFLOW = [
-  'Editing: read the file with the *_read tool, write the ops with the op reference from guide (or the ieumoffice://guide/* resources), then *_apply. A rejected op names its index and reason; fix that op and resend the whole batch.',
+  'Editing: read the file with the *_read tool, write the ops with the op reference from guide (or the onyouoffice://guide/* resources), then *_apply. A rejected op names its index and reason; fix that op and resend the whole batch.',
   'A new presentation: a short deck (up to about 5 slides, or concrete content without a design brief) is one create_pptx call with ops or a spec, then slides_render. Longer or design-sensitive decks a person will present: deck_start (style sheet + outline), deck_page once per page in order, deck_build, then slides_render to look and slides_audit for geometry, deck_replace to fix a page. Edits to an existing deck: slides_read + slides_apply, keeping its design.',
 ]
 
@@ -49,43 +50,43 @@ export function remoteInstructions(baseUrl: string): string {
 
 const GUIDES: { uri: string; name: string; argv: string[]; description: string }[] = [
   {
-    uri: 'ieumoffice://guide/docs',
+    uri: 'onyouoffice://guide/docs',
     name: 'Word ops reference',
     argv: ['guide', 'docs'],
     description: 'every docs_apply op with its fields and the restricted-HTML rules',
   },
   {
-    uri: 'ieumoffice://guide/sheets',
+    uri: 'onyouoffice://guide/sheets',
     name: 'Excel ops reference',
     argv: ['guide', 'sheets'],
     description: 'every sheet_apply DSL op with its fields',
   },
   {
-    uri: 'ieumoffice://guide/hwp',
+    uri: 'onyouoffice://guide/hwp',
     name: 'Hangul ops reference',
     argv: ['guide', 'hwp'],
     description: 'every hwp_apply / create_hwp op with its fields',
   },
   {
-    uri: 'ieumoffice://guide/slides',
+    uri: 'onyouoffice://guide/slides',
     name: 'PowerPoint ops reference',
     argv: ['guide', 'slides'],
     description: 'the slides_apply op groups and vocabulary',
   },
   {
-    uri: 'ieumoffice://guide/slides/design',
+    uri: 'onyouoffice://guide/slides/design',
     name: 'Deck design guide',
     argv: ['guide', 'slides', 'design'],
     description: 'the staged deck workflow: style sheet, outline, one page at a time, build, QC',
   },
   {
-    uri: 'ieumoffice://guide/slides/spec',
+    uri: 'onyouoffice://guide/slides/spec',
     name: 'Deck spec format',
     argv: ['guide', 'slides', 'spec'],
     description: 'the outline and one-page spec JSON the deck_* tools take',
   },
   {
-    uri: 'ieumoffice://guide/slides/templates',
+    uri: 'onyouoffice://guide/slides/templates',
     name: 'Deck templates',
     argv: ['guide', 'slides', 'templates'],
     description:
@@ -97,7 +98,7 @@ const GUIDES: { uri: string; name: string; argv: string[]; description: string }
 async function templateGuides(): Promise<typeof GUIDES> {
   const { listSlideTemplates } = await import('@genoffice/pipelines/slides/templates')
   return listSlideTemplates().map((t) => ({
-    uri: `ieumoffice://guide/slides/templates/${t.id}`,
+    uri: `onyouoffice://guide/slides/templates/${t.id}`,
     name: `Deck template: ${t.name}`,
     argv: ['guide', 'slides', 'templates', t.id],
     description: `the ${t.name} template as a style sheet (${t.scheme}): ${t.description}`,
@@ -120,7 +121,7 @@ export async function createMcpServer(
   const remote = ctx.mode === 'http'
   const typed = opts.compactSchemas ? undefined : await (typedSchemas ??= loadTypedSchemas())
   const server = new McpServer(
-    { name: 'ieumoffice', version: VERSION },
+    { name: 'onyouoffice', version: VERSION },
     { instructions: remote ? remoteInstructions(ctx.baseUrl ?? '') : INSTRUCTIONS },
   )
 

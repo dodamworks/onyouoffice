@@ -4,7 +4,7 @@ Todos los editores pueden invocar el panel de IA: seleccione algo, dé una instr
 
 ## Abrirlo y usarlo
 
-- El panel necesita una IA conectada. Si no hay ninguna, muestra las tarjetas de conexión en lugar de un error; vea [Conexión por suscripción](help://subscription).
+- Conecte la IA en Ajustes → IA. [AI](help://subscription)
 - Entradas: el **botón de IA** en la cinta de opciones de cada editor, **Pedir a la IA** en los menús contextuales, o Preguntar a la IA en la barra de marcado.
 - Describa la tarea en lenguaje natural (reescribir esto / convertir esta columna en porcentajes / rehacer el diseño de esta página…) y pulse Intro.
 - Las respuestas se renderizan **en streaming**; cuando la IA necesita herramientas (leer el documento, editarlo), las ejecuta y sigue hasta terminar.
@@ -24,7 +24,7 @@ Todos los editores pueden invocar el panel de IA: seleccione algo, dé una instr
 - **Slides**: generación de una presentación completa, ajuste del diseño, reescritura de los textos.
 - **PDF**: preguntas y resúmenes sobre el texto o las páginas seleccionadas.
 - **Markdown / HTML**: reescribir, ampliar, traducir.
-- **Inicio ▸ Ask AI** responde desde tus archivos destacados y los cita — el panel de base de conocimiento tiene su propia sección en el capítulo Inicio, y el panel de IA de Docs lleva la misma capacidad.
+- **Almacén de conocimiento**: La fuente predeterminada incluye los documentos registrados en la aplicación: archivos recientes y favoritos, carpetas añadidas y proyectos. No se busca en todo el equipo. Sobre la entrada puede elegir documentos registrados, un proyecto, documentos concretos o favoritos. Cambiar la fuente inicia un chat nuevo y cancela las preguntas en espera de conexión. [Home](help://home-screen)
 
 ## Adjuntar documentos abiertos
 
