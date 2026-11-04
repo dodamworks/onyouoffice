@@ -1,22 +1,24 @@
-# Public release preparation
+# Source publication and installer releases
 
-This source tree is being prepared for its first public Onyou Office release.
-The repository remains private and no official installer/update feed is published.
+Onyou Office is a development version that can be built and run from source.
+Official installers and an update feed are not available yet. Source publication
+and installer distribution follow separate checks and release decisions.
 
-Before publication:
+## Before making the source public
 
 - Review the final source/ref range, README, license and upstream acknowledgements.
 - Confirm that private profiles, local paths, keys, personal documents/photos and
   internal operational records are absent from the material being published.
   Review embedded document media and metadata, not just filename extensions.
-- Run the complete required CI and review for the final product/tooling changes.
-  Historic successful runs do not validate a changed final commit.
+- Run the checks and review required by the [CI policy](dodam/CI-POLICY.md) for
+  the final change scope. Reuse evidence only when its source inputs and scope
+  still match.
 - Publish supported formats and known limitations accurately. Direct ChatGPT
   consent remains a known issue; Codex verification does not certify that route.
 - Confirm the product support address receives mail and can reply using the
   intended product identity. Alias creation is not a delivery test.
 
-Before distributing installers:
+## Before distributing installers
 
 - Choose and verify supported OS/architectures and signing/notarization.
 - Build from the final sanitized source in a fresh isolated environment. Do not reuse

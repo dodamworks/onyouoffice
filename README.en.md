@@ -18,12 +18,14 @@ shared AI panels, projects and Knowledge Vault, and separate installation and
 storage namespaces. The [comparison record](docs/dodam/UPSTREAM-INTEGRATION.md)
 distinguishes inherited functionality from our changes.
 
-## Distribution status
+## Source and installers
 
-This is a development version being prepared for public distribution. Official
-installers and an update feed are not available yet. Releases of the upstream
-projects are not Onyou installers. Build configurations exist for Windows,
-macOS and Linux; supported release targets will be announced after installation
+This is a development version that you can build and run from source. See
+[Run from source](#run-from-source) for prerequisites and commands.
+
+Official installers and an update feed are not available yet. Build configurations
+exist for Windows, macOS and Linux. Release targets, architectures and installation
+instructions will be announced separately in this repository after installation
 verification.
 
 ## AI connections and cost
@@ -54,8 +56,7 @@ npm run build:all
 npm run dev
 ```
 
-Repository access is required while public preparation remains private. Building
-and mocked-provider tests do not require an AI account. Development runs and
+Building and mocked-provider tests do not require an AI account. Development runs and
 installed builds use separate data folders. The default document directory is
 `onyouoffice`; existing user documents are not moved or renamed automatically.
 
@@ -72,10 +73,9 @@ the document's AI panel.
 
 ## Reports and contributions
 
-Once public repository operation begins, use
-[this repository's Issues](https://github.com/dodamworks/onyouoffice/issues) and
-pull requests for reproducible bugs, documentation, translations and code.
-If you cannot access the repository, contact `support@onyouoffice.com`. Response and
+Use [this repository's Issues](https://github.com/dodamworks/onyouoffice/issues)
+and pull requests for reproducible bugs, documentation, translations and code.
+For other questions, contact `support@onyouoffice.com`. Response and
 resolution times are not guaranteed. Use synthetic examples instead of personal
 documents; never post keys or account details publicly. Report security issues
 [privately](SECURITY.md).
