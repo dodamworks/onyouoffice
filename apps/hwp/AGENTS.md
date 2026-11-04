@@ -1,5 +1,9 @@
 # apps/hwp (`@genoffice/hwp`)
 
+The accepted engine/studio basis is rhwp devel commit `7d06d5c70`, pinned by the
+vendor manifest (decision 0107). Use that manifest's current patch list rather
+than historical patch numbers below. Keep the app's own AI panel and privacy rules.
+
 한글(HWP·HWPX) 편집기다. 편집 화면은 오픈소스 [rhwp](https://github.com/edwardkim/rhwp)의 웹 편집기(rhwp-studio)를 그대로 쓰고, 이 모듈은 그 편집기를 탭 안에 띄우고, 파일을 열고 저장하고, 옆에 AI 창을 붙인다. 조판과 문서 해석은 rhwp에 맡기되, 편집기에 없는 편집 동작은 이 모듈의 플러그인에서 채운다.
 
 ## 맡은 범위
