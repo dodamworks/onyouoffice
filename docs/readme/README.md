@@ -26,3 +26,14 @@ Report wording corrections through the repository's normal pull-request process.
 
 Structure reference: [GitHub's README guidance](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes).
 There is no mandatory universal GitHub README template.
+
+## Header and badges
+
+The English homepage uses the existing product icon and the product name alone.
+Keep language choices in an expandable section. Stars and CI badges must point to
+this repository, and the Apache badge links to the actual project license.
+
+Product Hunt and Trendshift embeds require the actual product/repository entry and
+its issued identifier. Add those only when available and use award/rank wording
+only when it is true. Do not borrow another product's badge, claim GitHub Trending
+placement, or show a download badge before an installer release exists.

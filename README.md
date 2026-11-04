@@ -1,15 +1,37 @@
 <!-- Modified by Onyou Office on 2026-11-04. -->
 
-# Onyou Office
+<p align="center">
+  <img src="apps/shell/build/brand/app-icon.svg" alt="Onyou Office" width="88" height="88">
+</p>
 
-**An AI agent office, built for you.**
+<h1 align="center">Onyou Office</h1>
 
-Open a document, describe what you want to change, and keep working in the same
-window. Onyou Office brings document editors and AI agents together on your desktop.
-Use AI to draft, revise and work with your documents, or edit them yourself.
-The app is free and open source; AI is optional.
+<p align="center"><strong>An AI agent office, built for you.</strong></p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+</p>
+
+Start with a document. Ask AI for a first draft, a clearer paragraph or an answer
+from your files. Keep reading and editing in the same workspace.
+
+Onyou Office is a free, open-source desktop office with AI agents alongside your
+editors. Connect the AI service you choose, or work without AI.
+
+<p align="center">
+  <a href="#get-started">Build from source</a> ·
+  <a href="https://github.com/dodamworks/onyouoffice/issues">Report a bug</a> ·
+  <a href="CONTRIBUTING.md">Contribute</a>
+</p>
+
+<details>
+<summary>Read in your language · 21 languages</summary>
 
 **English** · [العربية](docs/readme/i18n/ar.md) · [Čeština](docs/readme/i18n/cs.md) · [Deutsch](docs/readme/i18n/de.md) · [Español](docs/readme/i18n/es.md) · [Français](docs/readme/i18n/fr.md) · [עברית](docs/readme/i18n/he.md) · [हिन्दी](docs/readme/i18n/hi.md) · [Bahasa Indonesia](docs/readme/i18n/id.md) · [Italiano](docs/readme/i18n/it.md) · [日本語](docs/readme/i18n/ja.md) · [한국어](docs/readme/i18n/ko.md) · [Bahasa Melayu](docs/readme/i18n/ms.md) · [Nederlands](docs/readme/i18n/nl.md) · [Polski](docs/readme/i18n/pl.md) · [Português](docs/readme/i18n/pt.md) · [Русский](docs/readme/i18n/ru.md) · [ไทย](docs/readme/i18n/th.md) · [Tiếng Việt](docs/readme/i18n/vi.md) · [简体中文](docs/readme/i18n/zh.md) · [繁體中文](docs/readme/i18n/zh-TW.md) <!-- lang-switcher -->
+
+</details>
 
 ## One workspace for your documents
 
@@ -22,9 +44,13 @@ The app is free and open source; AI is optional.
 - **Make it yours:** 21 interface languages, light and dark themes, and adjustable
   AI chat text size.
 
-Onyou Office refines onboarding, Home, shared AI panels, projects and Knowledge Vault,
-with its own branding and installation/data paths. Document engines and much of the
-editor functionality are inherited from the upstream projects credited below.
+### From a first draft to a finished file
+
+1. **Open or create.** Bring an existing file into a tab or start a new document.
+2. **Ask for what you need.** Draft, revise or ask about selected documents through
+   the AI assistant and Knowledge Vault.
+3. **Review and keep working.** Edit the result in the document, then save or export
+   using the tools available for that format.
 
 ## Get started
 
@@ -80,8 +106,8 @@ For other questions: **support@onyouoffice.com**.
 
 Onyou Office is an independent fork of [IeumOffice](https://github.com/pblsketch/openoffice),
 itself based on [GenOffice](https://github.com/genspark-ai/genoffice).
-We preserve their development history and credit their authors, rhwp and other
-open-source contributors. These projects supply the document-engine foundation;
+We credit their authors, rhwp and other open-source contributors and record the
+accepted upstream revision. These projects supply the document-engine foundation;
 Onyou Office does not claim to have authored all inherited functionality.
 See [upstream integration](docs/dodam/UPSTREAM-INTEGRATION.md) and
 [source history](docs/readme/SOURCE-HISTORY.md) for the accepted baseline and our changes.

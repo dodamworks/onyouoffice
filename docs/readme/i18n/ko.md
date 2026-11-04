@@ -1,6 +1,6 @@
 <!-- Modified by Onyou Office on 2026-11-04. -->
 
-# 온유오피스 / Onyou Office
+# Onyou Office
 
 **AI 에이전트와 함께하는 나만의 오피스.**
 
