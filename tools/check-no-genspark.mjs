@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Modified by Onyou Office: retain exact source credits in localized product READMEs.
 /**
  * Keep the removed vendor out of the tree: `npm run check:no-genspark`
  *
@@ -81,6 +82,11 @@ const ALLOW = [
     path: /^README(?:\.en)?\.md$/,
     span: /github\.com\/genspark-ai\/genoffice/g,
     reason: 'the link to the original project this product is based on',
+  },
+  {
+    path: /^docs\/readme\/i18n\/(?:ar|cs|de|es|fr|he|hi|id|it|ja|ko|ms|nl|pl|pt|ru|th|vi|zh|zh-TW)\.md$/,
+    span: /https:\/\/github\.com\/genspark-ai\/genoffice(?=[)#\s]|$)/g,
+    reason: 'the same exact original-source credit in the 20 localized product introductions',
   },
   {
     path: 'docs/dodam/UPSTREAM-INTEGRATION.md',
