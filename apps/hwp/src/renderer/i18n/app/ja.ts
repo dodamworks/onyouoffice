@@ -57,6 +57,9 @@ export const ja = {
   aiEmptyBody:
     '内容について質問したり、表現を整えたり、フォームフィールドへの入力を頼んだりできます。変更箇所はここに表示され、まとめて元に戻せます。',
   aiComposerPlaceholder: 'この文書について質問するか、直したい箇所を伝えてください…',
+  aiToolbarSummary: '要約',
+  aiToolbarPolish: '推敲',
+  aiToolbarPolishPrompt: '文書全体を推敲し、より明確で読みやすい文章にしてください',
   aiStarterSummarize: '文書を要約',
   aiStarterSummarizePrompt: 'この文書の要点を簡潔に要約してください。',
   aiStarterProofread: '誤字とスペースを修正',
@@ -213,7 +216,7 @@ export const ja = {
   previewMargins: '余白を表示',
   previewEditPage: 'このページを編集',
   previewEditFailed: 'このページに移動できませんでした。',
-  checkTitle: '文書チェック',
+  checkTitle: '文書の書式チェック',
   checkRunning: '文書を読み込んでいます…',
   checkFailed: '文書を読み込めませんでした。',
   checkEmpty: '指摘はありません。',

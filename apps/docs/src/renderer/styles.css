@@ -7792,11 +7792,18 @@ body.docs-crop-active
   line-height: 1.5;
 }
 
-.ai-chat-empty-note {
-  margin-top: 10px;
-  color: var(--color-text-tertiary);
+.ai-send-note {
+  margin: 0 4px 8px;
+  color: var(--color-text-secondary);
   font-size: var(--text-caption);
   line-height: 1.5;
+  text-align: center;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+html:lang(ko) .ai-send-note {
+  word-break: keep-all;
 }
 
 /* clickable starter prompts in the empty state — suggestion chips:

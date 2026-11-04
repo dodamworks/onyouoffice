@@ -1,4 +1,8 @@
+<!-- Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build. -->
+
 # Cài đặt GenOffice
+
+> Đây là bản phát triển nội bộ của Onyou Office. Dịch vụ tải xuống, cập nhật và hỗ trợ chưa được cấu hình. Hướng dẫn và liên kết bên dưới mô tả dự án gốc để tham khảo.
 
 Mọi phiên bản đều được công bố trên [trang phát hành (Releases)](https://github.com/pblsketch/openoffice/releases/latest) của dự án trên GitHub. Phiên bản này được phát hành cho Windows.
 

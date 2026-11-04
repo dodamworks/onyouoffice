@@ -15,7 +15,7 @@ export const de = {
   renameHint: 'Der Ordner behält seinen Namen.',
   openInExplorer: 'Im Datei-Explorer öffnen',
   openInFinder: 'Im Finder zeigen',
-  trustUse: 'Anweisungen und Erinnerungen gehen an die KI',
+  trustUse: 'Anweisungen und Erinnerungen werden bei KI-Anfragen verwendet',
   trustWithout: 'ohne Anweisungen in Verwendung',
   trustWithoutDesc:
     'Anweisungen, Erinnerungen und Chats von anderen PCs werden nicht an die KI gesendet, und es werden keine Erinnerungen gesammelt.',
@@ -29,8 +29,10 @@ export const de = {
   tabMemory: 'Erinnerungen',
   tabFiles: 'Dateien',
   tabChats: 'Chats',
-  instructionsDesc:
-    'Arbeitsregeln, denen die KI in diesem Projekt folgt. Sie gehen mit jeder Anfrage aus einem KI-Bereich mit, in dem dieses Projekt gewählt ist.',
+  instructionsDesc: 'Legen Sie fest, welche Regeln die KI in diesem Projekt befolgen soll.',
+  instructionsLength: '{count} / {limit} Zeichen',
+  instructionsTooLong:
+    'Die bisherigen Anweisungen bleiben erhalten. Kürzen Sie sie vor dem Speichern.',
   instructionsPlaceholder: 'Zum Beispiel: Berichte förmlich schreiben, Daten als 30.10.2026.',
   save: 'Speichern',
   saved: 'Gespeichert.',
@@ -39,14 +41,12 @@ export const de = {
   readAgentsFiles: 'AGENTS.md und CLAUDE.md oben im Ordner ebenfalls als Anweisungen lesen',
   withoutNotSent:
     'Dieses Projekt wird ohne Anweisungen verwendet, daher wird dies vorerst nicht an die KI gesendet.',
-  memoryDesc:
-    'Notizen, die die KI beim Chatten festgehalten hat. Löschen Sie, was falsch oder nicht mehr nötig ist.',
-  memoryEnabled: 'Erinnerungen sammeln',
-  memoryEnabledDesc:
-    'Ausgeschaltet schreibt die KI nichts Neues. Vorhandene Erinnerungen werden weiter gelesen.',
+  memoryDesc: 'Notizen der KI aus Gesprächen. Ab 8.000 Zeichen empfiehlt sich eine Bereinigung.',
+  memoryEnabled: 'Neue Erinnerungen automatisch speichern',
+  memoryEnabledDesc: 'Vorhandene Erinnerungen werden auch bei ausgeschalteter Option verwendet.',
   memoryLength: '{count} Einträge · {chars} Zeichen',
-  memoryEmpty: 'Noch keine Erinnerungen.',
-  memoryEditAll: 'Alles bearbeiten',
+  memoryEmpty: 'Erinnerungen aus Ihren Gesprächen erscheinen hier.',
+  memoryEditAll: 'Erinnerungen bearbeiten',
   memoryEditLabel: 'Alle Erinnerungen',
   memoryConflict: 'Es gibt Kopien aus Synchronisierungskonflikten: {names}',
   consolidating: 'Wird aufgeräumt…',
@@ -64,9 +64,8 @@ export const de = {
   consolidateUndone: 'Auf den Stand vor dem Aufräumen zurückgesetzt.',
   undoFailed: 'Rückgängig machen nicht möglich.',
   removeMemoryAria: 'Diese Erinnerung löschen: {text}',
-  filesDesc:
-    'Dateien, die die KI in diesem Projekt sehen kann. Versteckte Dateien und der Ordner .ieumoffice sind ausgenommen.',
-  filesEmpty: 'Es gibt keine Dateien, die die KI sehen kann.',
+  filesDesc: 'Projektdateien, auf die die KI zugreifen kann.',
+  filesEmpty: 'Fügen Sie dem Projektordner Dokumente hinzu, um sie hier zu sehen.',
   filesLoadFailed: 'Die Dateiliste konnte nicht gelesen werden.',
   filesCount: '{count} Dateien',
   loadMore: 'Mehr anzeigen',
@@ -76,13 +75,11 @@ export const de = {
     'Diese Datei liegt nur in der Cloud. Will die KI sie lesen, werden Sie vor dem Herunterladen gefragt.',
   hideFromAi: 'Vor der KI verbergen',
   hideFromAiAria: 'Vor der KI verbergen: {name}',
-  ignoredTitle: 'Vor der KI verborgene Dateien',
-  ignoredDesc:
-    'Diese Liste erscheint nur auf diesem Bildschirm. Machen Sie es rückgängig, damit die KI eine Datei wieder sieht.',
+  ignoredTitle: 'Von der KI ausgeschlossene Dateien',
+  ignoredDesc: 'Stellen Sie eine Datei wieder her, damit die KI sie erneut nutzen kann.',
   ignoredEmpty: 'Keine.',
   restoreAria: 'Rückgängig: {name}',
-  chatsDesc:
-    'Chats in diesem Projekt. Klicken Sie, um einen im KI-Bereich des zuletzt genutzten Dokuments fortzusetzen.',
+  chatsDesc: 'KI-Gespräche in diesem Projekt werden hier gespeichert.',
   actionFailed: 'Das hat nicht geklappt. Bitte versuchen Sie es erneut.',
   loadFailed: 'Das Projekt konnte nicht gelesen werden.',
   addExistingFolder: 'Vorhandenen Ordner verwenden',

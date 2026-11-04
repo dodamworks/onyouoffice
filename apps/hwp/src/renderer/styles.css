@@ -799,3 +799,29 @@ body {
     opacity: 0.9;
   }
 }
+
+/* Host AI shortcuts sit beside the existing check and memo controls. */
+.hwp-topbar {
+  flex-wrap: wrap;
+  padding-block: 4px;
+}
+
+.hwp-ai-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-inline-end: 10px;
+  border-inline-end: 1px solid var(--border);
+}
+
+.hwp-ai-actions .hwp-topbar-button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hwp-ai-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

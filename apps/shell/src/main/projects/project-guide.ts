@@ -1,3 +1,4 @@
+import { PROJECT_INSTRUCTIONS_MAX_CHARS } from '../../shared/project-instructions'
 import { randomBytes } from 'node:crypto'
 import { lstat, rmdir, stat } from 'node:fs/promises'
 import { basename, isAbsolute, join } from 'node:path'
@@ -981,6 +982,11 @@ export class ProjectGuide {
   }
 
   async saveInstructions(id: ProjectId, text: string): Promise<ProjectWriteResult> {
+    if (text.length > PROJECT_INSTRUCTIONS_MAX_CHARS) {
+      throw new RangeError(
+        `Project instructions exceed ${PROJECT_INSTRUCTIONS_MAX_CHARS} characters`,
+      )
+    }
     const result = await this.writeWithIdentity(id, (data) =>
       data.write(PROJECT_FOLDER_NAMES.instructionsFile, text),
     )

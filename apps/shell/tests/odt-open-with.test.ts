@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join, resolve } from 'node:path'
@@ -43,13 +44,13 @@ function instructions(name: string): string[] {
     .filter((line) => line !== '' && !line.startsWith(';'))
 }
 
-const PROGID = 'IeumOffice.OpenDocumentText'
+const PROGID = 'OnyouOffice.OpenDocumentText'
 const UPSTREAM_PROGIDS = ['Word Document', 'Excel Workbook', 'PowerPoint Presentation']
 
 describe('the ODT "Open with" registration', () => {
   it('uses a ProgId of this product that the upstream app never registers', () => {
     expect(nsh).toContain(`!define GENOFFICE_ODT_PROGID "${PROGID}"`)
-    expect(PROGID).toMatch(/^IeumOffice\.[A-Za-z][A-Za-z0-9]*$/)
+    expect(PROGID).toMatch(/^OnyouOffice\.[A-Za-z][A-Za-z0-9]*$/)
     // Windows limits a ProgId to 39 characters
     expect(PROGID.length).toBeLessThanOrEqual(39)
     expect(UPSTREAM_PROGIDS).not.toContain(PROGID)

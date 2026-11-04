@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import type { ParsedArgs } from './args'
 import { branded } from './names'
 import type { CommandResult, Warning } from './result'
@@ -51,7 +52,7 @@ export class CommandRegistry {
 }
 
 export function commandHelp(def: CommandDef): string {
-  const lines = [`Usage: ieumoffice ${def.usage}`, '', def.summary]
+  const lines = [`Usage: onyouoffice ${def.usage}`, '', def.summary]
   if (def.options?.length) {
     lines.push('', 'Options:')
     const width = Math.max(...def.options.map((o) => optionLabel(o).length))

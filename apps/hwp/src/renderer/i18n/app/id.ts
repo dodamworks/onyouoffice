@@ -57,6 +57,9 @@ export const id = {
   aiEmptyBody:
     'Tanyakan isi dokumen, minta kalimat dirapikan, atau minta bidang formulir diisi. Setiap perubahan dicantumkan di sini dan dapat dibatalkan sekaligus.',
   aiComposerPlaceholder: 'Tanyakan tentang dokumen ini atau sebutkan yang perlu diubah…',
+  aiToolbarSummary: 'Ringkas',
+  aiToolbarPolish: 'Perbaiki tulisan',
+  aiToolbarPolishPrompt: 'Poles seluruh dokumen agar tulisan lebih jelas dan mengalir',
   aiStarterSummarize: 'Ringkas dokumen',
   aiStarterSummarizePrompt: 'Ringkas dokumen ini secara singkat, hanya poin-poin utamanya.',
   aiStarterProofread: 'Perbaiki ejaan dan spasi',
@@ -215,7 +218,7 @@ export const id = {
   previewMargins: 'Tampilkan margin',
   previewEditPage: 'Edit halaman ini',
   previewEditFailed: 'Tidak dapat membuka halaman ini.',
-  checkTitle: 'Pemeriksaan dokumen',
+  checkTitle: 'Periksa format dokumen',
   checkRunning: 'Membaca dokumen…',
   checkFailed: 'Dokumen tidak dapat dibaca.',
   checkEmpty: 'Tidak ada yang perlu diperbaiki.',

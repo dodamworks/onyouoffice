@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync } from 'node:fs'
 import type { AgentSkill, AgentToolDef } from '@genoffice/agent-core'
 import type {
@@ -33,7 +34,7 @@ type HwpDocument = InstanceType<Engine['HwpDocument']>
 
 /** Tools of the in-app AI that need the app's window, the network or a model: not ops here. */
 const NOT_HEADLESS: Record<string, string> = {
-  read_url: 'reads a web page; use `ieumoffice read-url`',
+  read_url: 'reads a web page; use `onyouoffice read-url`',
   image_search: 'searches the web for pictures',
   generate_image: 'asks an image model',
   insert_image: 'pictures come from the chat or the web in the app',
@@ -396,9 +397,9 @@ export async function applyHwpOps(
           suggestion:
             failure.reason === 'unknown_op'
               ? failure.did_you_mean
-                ? `did you mean ${failure.did_you_mean}? \`ieumoffice guide hwp\` lists the ops`
-                : 'run `ieumoffice guide hwp` for the ops'
-              : 'fix that op (read the document with `ieumoffice hwp read`) and resend the whole batch',
+                ? `did you mean ${failure.did_you_mean}? \`onyouoffice guide hwp\` lists the ops`
+                : 'run `onyouoffice guide hwp` for the ops'
+              : 'fix that op (read the document with `onyouoffice hwp read`) and resend the whole batch',
         },
       )
     }

@@ -58,6 +58,10 @@ export const fr = {
   aiEmptyBody:
     'Posez une question sur le texte, faites reformuler un passage ou remplir les champs de formulaire. Chaque modification est listée ici et peut être annulée d’un coup.',
   aiComposerPlaceholder: 'Posez une question sur ce document ou indiquez ce qu’il faut modifier…',
+  aiToolbarSummary: 'Résumer',
+  aiToolbarPolish: 'Améliorer',
+  aiToolbarPolishPrompt:
+    "Améliorez l'ensemble du document pour rendre le texte plus clair et plus fluide",
   aiStarterSummarize: 'Résumer',
   aiStarterSummarizePrompt: 'Résume brièvement ce document, en ne gardant que l’essentiel.',
   aiStarterProofread: 'Corriger l’orthographe et les espaces',
@@ -221,7 +225,7 @@ export const fr = {
   previewMargins: 'Afficher les marges',
   previewEditPage: 'Modifier cette page',
   previewEditFailed: "Impossible d'aller à cette page.",
-  checkTitle: 'Vérification du document',
+  checkTitle: 'Vérification du format du document',
   checkRunning: 'Lecture du document…',
   checkFailed: 'Impossible de lire le document.',
   checkEmpty: 'Rien à signaler.',

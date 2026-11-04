@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * The skill copy an agent session gets (spec 6.1): only enabled skills and the
  * project's, which one keeps a shared name and what the others are called,
@@ -101,7 +102,7 @@ describe('the bundle', () => {
   it('takes only what it is given: the enabled skills and the project’s, from both project folders', async () => {
     const home = temp()
     const project = join(home, 'Project')
-    skillFolder(join(home, '.ieumoffice', 'skills'), 'mine')
+    skillFolder(join(home, '.onyouoffice', 'skills'), 'mine')
     skillFolder(join(home, '.claude', 'skills'), 'claude-off')
     skillFolder(join(home, '.claude', 'skills'), 'claude-on')
     skillFolder(join(home, '.agents', 'skills'), 'codex-off')

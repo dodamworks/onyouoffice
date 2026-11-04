@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * Where the person's skills are read from, and the list of them. The Codex
  * home (`~/.codex`, where Codex keeps its sign-in) is never read: a source or
@@ -43,7 +44,7 @@ export async function isInsideCodexHome(path: string, homeDir: string): Promise<
 
 /** The app's own skills folder, the only one the app writes to */
 export function appSkillsDirOf(homeDir: string): string {
-  return join(homeDir, '.ieumoffice', 'skills')
+  return join(homeDir, '.onyouoffice', 'skills')
 }
 
 /**

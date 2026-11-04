@@ -1,3 +1,5 @@
+// Modified by Dodam on 2026-11-02 for the localized product image label.
+import { productName } from '@genoffice/i18n'
 import type {
   UpdateNoteBlock,
   UpdateNoteRun,
@@ -9,6 +11,7 @@ import type {
 const api = (window as unknown as { aiOfficeUpdate: UpdateWindowApi }).aiOfficeUpdate
 
 const el = (id: string): HTMLElement => document.getElementById(id) as HTMLElement
+const appIcon = el('app-icon') as HTMLImageElement
 const headline = el('headline')
 const verCurrent = el('ver-current')
 const verNew = el('ver-new')
@@ -94,6 +97,7 @@ function render(state: UpdateUiState): void {
   const s = state.strings
 
   document.documentElement.lang = state.lang
+  appIcon.alt = productName(state.lang)
   document.title = s.title
   headline.textContent = s.headline
   verCurrent.textContent = `v${state.currentVersion}`

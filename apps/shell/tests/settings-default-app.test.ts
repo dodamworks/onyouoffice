@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * @vitest-environment jsdom
  */
@@ -94,7 +95,7 @@ describe('Settings default-app row', () => {
 
     await click(button)
     expect(set).toHaveBeenCalledTimes(1)
-    expect(row()?.textContent).toContain('IeumOffice is already the default.')
+    expect(row()?.textContent).toContain('Onyou Office is already the default.')
     expect(row()!.querySelector<HTMLButtonElement>('button')!.disabled).toBe(true)
   })
 
@@ -103,7 +104,7 @@ describe('Settings default-app row', () => {
       getDefaultAppStatus: async () => ({ state: 'other', others: [], manualOnly: false }),
     })
     const field = row()!
-    expect(field.textContent).toContain('Open .docx, .xlsx and .pptx files in IeumOffice')
+    expect(field.textContent).toContain('Open .docx, .xlsx and .pptx files in Onyou Office')
     expect(field.querySelector<HTMLButtonElement>('button')!.disabled).toBe(false)
   })
 

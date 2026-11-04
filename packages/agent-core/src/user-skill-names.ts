@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * Skill names never read or shown from any source, compared without case
  * (spec 3.6): the upstream program's skill (this app reads nothing the
@@ -9,4 +10,8 @@
  * loads this source as it is at run time, and the package root cannot be
  * loaded that way.
  */
-export const RESERVED_USER_SKILL_NAMES: ReadonlySet<string> = new Set(['genoffice', 'ieumoffice'])
+export const RESERVED_USER_SKILL_NAMES: ReadonlySet<string> = new Set([
+  'genoffice',
+  'ieumoffice',
+  'onyouoffice',
+])

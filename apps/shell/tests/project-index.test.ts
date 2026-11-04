@@ -1,5 +1,8 @@
 import {
   mkdirSync,
+  linkSync,
+  unlinkSync,
+  symlinkSync,
   mkdtempSync,
   realpathSync,
   rmSync,
@@ -24,6 +27,7 @@ import {
 } from '../src/main/projects/project-files'
 import {
   createProjectNameOnly,
+  createKnowledgeVisibilityFilter,
   createRerankIgnoreFilter,
   mergeIndexRoots,
   projectFolderRoots,
@@ -341,5 +345,48 @@ describe('files `ignore` keeps from the AI (project screen)', () => {
       'notes.secret.md',
     ])
     expect((await listVisibleFiles(visibility)).map((f) => f.relPath)).toEqual(['open.md'])
+  })
+})
+
+describe('registered Knowledge Vault project visibility', () => {
+  it('rejects recent-file bypasses of every project visibility rule and rereads ignores', async () => {
+    const kept = put(join(project, 'open.md'), 'visible')
+    const outside = put(join(homeRoot, 'outside.md'), 'visible')
+    const excluded = [
+      'node_modules/secret.md',
+      '.hidden/secret.md',
+      '.ieumoffice/memory.md',
+      '~$locked.docx',
+      'private/secret.md',
+      'assets/private.md',
+    ].map((rel) => put(join(project, rel), 'not for AI'))
+    put(join(project, 'assets', '.genoffice-assets.json'), '{}')
+    await guide.addIgnore(projectId, 'private/')
+    const filter = createKnowledgeVisibilityFilter({ guide })
+    expect(await filter([kept, ...excluded, outside])).toEqual([kept, outside])
+    await guide.addIgnore(projectId, 'open.md')
+    expect(await filter([kept, outside])).toEqual([outside])
+  })
+
+  it('rejects hard links and symlinks and checks again after a file is replaced', async () => {
+    const outside = put(join(homeRoot, 'outside.md'), 'outside-only content')
+    const ordinary = put(join(project, 'ordinary.md'), 'safe')
+    const hard = join(project, 'hard.md')
+    const symbolic = join(project, 'linked-directory', 'outside.md')
+    linkSync(outside, hard)
+    symlinkSync(homeRoot, join(project, 'linked-directory'), 'junction')
+    const filter = createKnowledgeVisibilityFilter({ guide })
+    expect(await filter([ordinary, hard, symbolic])).toEqual([ordinary])
+    unlinkSync(ordinary)
+    linkSync(outside, ordinary)
+    expect(await filter([ordinary, hard, symbolic])).toEqual([])
+  })
+
+  it('fails closed for a project whose visibility cannot be loaded', async () => {
+    const outside = join(homeRoot, 'outside.md')
+    const filter = createKnowledgeVisibilityFilter({
+      guide: { listProjects: () => guide.listProjects(), aiVisibility: async () => null },
+    })
+    expect(await filter([join(project, 'open.md'), outside])).toEqual([outside])
   })
 })

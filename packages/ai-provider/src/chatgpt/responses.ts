@@ -148,7 +148,8 @@ async function modelFor(
     if (!MODEL_NAME.test(chosen)) throw new Error(`Invalid ChatGPT model name: ${chosen}`)
     return chosen
   }
-  const models = await readChatGptModels(accessToken, deps.fetch ?? aiFetch, signal)
+  const connection = deps.connection !== undefined ? deps.connection : chatGptConnection()
+  const models = await readChatGptModels(accessToken, deps.fetch ?? aiFetch, signal, connection)
   const first = models[0]?.id
   if (!first) throw new Error('ChatGPT listed no model this plan can use')
   return first
@@ -373,13 +374,17 @@ export async function readChatGptModels(
   accessToken: string,
   fetchImpl: FetchLike = aiFetch,
   signal?: AbortSignal,
+  connection: ChatGptConnection | null = null,
 ): Promise<AiSubscriptionModel[]> {
   const timeout = AbortSignal.timeout(MODEL_LIST_TIMEOUT_MS)
   const response = await fetchImpl(CHATGPT_MODELS_URL, {
     headers: { Authorization: `Bearer ${accessToken}` },
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   })
-  if (!response.ok) throw new Error(`ChatGPT model list failed with HTTP ${response.status}`)
+  if (!response.ok) {
+    const body = (await response.json().catch(() => undefined)) as unknown
+    throw await chatGptFailure(response.status, body, connection)
+  }
   return chatGptModelsOf(await response.json())
 }
 
@@ -391,7 +396,7 @@ export async function listChatGptModels(
   const connection = deps.connection !== undefined ? deps.connection : chatGptConnection()
   if (!connection) return []
   const accessToken = await connection.accessToken(signal)
-  return readChatGptModels(accessToken, deps.fetch ?? aiFetch, signal)
+  return readChatGptModels(accessToken, deps.fetch ?? aiFetch, signal, connection)
 }
 
 // the status service reads the list through the registry, like the CLI bridges' lists

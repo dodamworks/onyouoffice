@@ -7,7 +7,7 @@ Domů je startovní stránka GenOffice: navigační panel vlevo, seznamy soubor�
 - **Nedávné**: soubory, které jste nedávno otevřeli. Každý řádek nese svůj čas — dnes, včera nebo datum.
 - **Oblíbené**: soubory, které jste si označili hvězdičkou. Přejděte na řádek souboru a klikněte na hvězdičku, abyste jej přidali nebo odebrali. **Přesunout do skupiny** v nabídce ⋯ třídí soubory s hvězdičkou do pojmenovaných skupin; zobrazení S hvězdičkou se podle nich filtruje.
 - **Uživatelská příručka**: otevře tuto příručku.
-- **Ask AI**: panel znalostní báze — ptejte se a dostávejte odpovědi s citacemi z vašich souborů s hvězdičkou (viz níže).
+- **Znalostní úložiště**: Výchozím zdrojem jsou dokumenty registrované v aplikaci: nedávné a oblíbené soubory, přidané složky a projekty. Neprohledává se celý počítač.
 - **Projekty**: složky (projekty), se kterými může AI pracovat. Vytvořte projekt nebo použijte existující složku a otevřete ho, abyste spravovali jeho pokyny, paměť, soubory a konverzace. Viz [Projekty](help://projects).
 - **Složky**: adresáře, které do postranního panelu přidáte tlačítkem **Přidat složku…** nebo do něj přetáhnete ze správce souborů. Každý se stane kořenem, který můžete otevřít, vytvořit v něm podsložky, přejmenovat a odebrat; ten, který se stane nedostupným, se zobrazí jako nedostupný a lze ho ze seznamu sundat. **Nová složka** vytvoří další.
 - **Řádek dole**: ukazuje, zda je AI připojena — **Připojit AI**, nebo název připojeného předplatného — a otevírá Nastavení.
@@ -56,11 +56,9 @@ Co která karta dělá:
 
 > Tip: Soubor ▸ Nový v pruhu nabídek vytvoří stejné typy dokumentů (⌘N/Ctrl+N ve výchozím stavu vytvoří textový dokument); přetažení souboru do okna ho otevře.
 
-## Zeptejte se své znalostní báze
+## Znalostní úložiště
 
-- Nejdřív dejte souborům hvězdičku (jakýkoli typ, který aplikace čte); hlavička panelu počítá korpus a prázdná báze vás vyzve, něco si označit.
-- Odpovědi citují zdrojové soubory; kliknutí na citaci otevře soubor v jeho editoru.
-- Vyžaduje připojenou AI; viz [Připojení předplatného](help://subscription). Konverzace žije jen v paměti — zavření aplikace ji ukončí.
-- Vyberte pod vstupním polem projekt a prohledávat a číst se budou i soubory z této složky; konverzace se uloží do ní, takže v ní můžete pokračovat v jiném editoru. Bez projektu žije konverzace jen v paměti, jak je popsáno výše.
-- Hledání běží na lokálním indexu souborů jako na Domově; zmizelé soubory z korpusu tiše vypadnou.
-- Skupiny organizují jen seznam S hvězdičkou — znalostní báze vždy zahrnuje všechny soubory s hvězdičkou.
+- Výchozím zdrojem jsou dokumenty registrované v aplikaci: nedávné a oblíbené soubory, přidané složky a projekty. Neprohledává se celý počítač.
+- Nad vstupním polem vyberte registrované dokumenty, projekt, konkrétní dokumenty nebo oblíbené soubory. Změna zdroje zahájí nový chat a zruší otázky čekající na připojení.
+- Připojte AI v Nastavení → AI. Názvy souborů a relevantní obsah vybraného zdroje mohou být odeslány poskytovateli. Skryté a vyloučené soubory projektu zůstávají vyloučené. Odpovědi uvádějí zdroje.
+- Chaty projektu se ukládají do složky projektu. Ostatní jsou jen v paměti a po zavření aplikace zmizí.

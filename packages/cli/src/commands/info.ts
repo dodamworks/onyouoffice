@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { statSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -139,7 +140,7 @@ async function describePptx(path: string): Promise<Description> {
 
 async function describeWorkbook(path: string): Promise<Description> {
   if (['xls', 'xlsb', 'ods'].includes(extension(path))) {
-    const directory = await mkdtemp(join(tmpdir(), 'ieumoffice-workbook-info-'))
+    const directory = await mkdtemp(join(tmpdir(), 'onyouoffice-workbook-info-'))
     try {
       const converted = join(directory, 'workbook.xlsx')
       await convertLegacyWorkbook(path, converted)

@@ -223,10 +223,10 @@ describe('AI panel without a connection', () => {
     const scrolled = watchScrollIntoView()
     const main = fakeMain({ settings: ready(), statuses: statusMap('signed-out', 'not-installed') })
     await mountPanel(main)
-    const prompt = host.querySelector('.ai-sub-prompt')
-    expect(prompt).not.toBeNull()
+    const prompt = host.querySelector('.ai-sub-connect-status')
+    expect(prompt).toBeNull()
     // which AI the user has comes first; each answer leads to its own card
-    expect(prompt!.querySelectorAll('.ai-sub-guide-path')).toHaveLength(3)
+    expect(host.querySelectorAll('.ai-sub-guide-path')).toHaveLength(0)
     expect(scrolled).toEqual([])
 
     await sendMessage('make it blue')
@@ -235,7 +235,7 @@ describe('AI panel without a connection', () => {
     expect(composer().value).toBe('make it blue')
     expect(host.querySelector('.ai-msg-error')).toBeNull()
     // the refused send points at the prompt
-    expect(scrolled).toContain(host.querySelector('.ai-sub-prompt'))
+    expect(scrolled).toContain(host.querySelector('.ai-sub-connect-status'))
   })
 
   it('does not send the refused request once a subscription connects', async () => {
@@ -248,49 +248,38 @@ describe('AI panel without a connection', () => {
     // minutes may have passed at the sign-in page: the run must be asked for again
     expect(main.requests).toHaveLength(0)
     expect(composer().value).toBe('make it blue')
-    expect(host.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(host.querySelector('.ai-sub-connect-status')).toBeNull()
   })
 
-  it('wires the card actions to the subscription bridge', async () => {
+  it('routes connection setup through the footer and retains the draft', async () => {
     const main = fakeMain({ settings: ready(), statuses: statusMap('signed-out', 'not-installed') })
     await mountPanel(main)
-    const card = (provider: string) =>
-      host.querySelector(`.ai-sub-card[data-provider="${provider}"]`)!
-    const pick = (selector: string) =>
-      act(() => host.querySelector<HTMLButtonElement>(selector)!.click())
-    pick('[data-path="claude-code"]')
-    act(() =>
-      card('claude-code').querySelector<HTMLButtonElement>('[data-action="login"]')!.click(),
-    )
-    await settle()
-    expect(main.subscription.login).toHaveBeenCalledWith('claude-code')
-    pick('[data-action="guide-back"]')
-    // the Codex program is a way within the one ChatGPT answer
-    pick('[data-path="chatgpt"]')
-    pick('[data-action="guide-alternate"]')
-    act(() => card('codex').querySelector<HTMLButtonElement>('[data-action="install"]')!.click())
-    await settle()
-    expect(main.subscription.install).toHaveBeenCalledWith('codex')
+    await sendMessage('make it blue')
+    await act(async () => host.querySelector<HTMLButtonElement>('.ai-model-chip')!.click())
+    expect(window.htmlApi.openAiModelSettings).toHaveBeenCalledOnce()
+    expect(main.requests).toHaveLength(0)
+    expect(composer().value).toBe('make it blue')
+    expect(host.querySelector('.ai-sub-guide, .ai-sub-card')).toBeNull()
   })
 
   it('holds a send made while the statuses are still being checked, and starts it once a provider can run', async () => {
     const main = fakeMain({ settings: ready(), statuses: statusMap('checking', 'checking') })
     await mountPanel(main)
     // nobody is waiting on the check yet: no prompt flashes up
-    expect(host.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(host.querySelector('.ai-sub-connect-status')).toBeNull()
 
     await sendMessage('make it blue')
     // held: not sent, not dropped; the cards show the check the request waits for
     expect(main.requests).toHaveLength(0)
     expect(composer().value).toBe('make it blue')
-    expect(host.querySelector('.ai-sub-prompt')).not.toBeNull()
+    expect(host.querySelector('.ai-sub-connect-status')).toBeNull()
     expect(host.querySelector('.ai-msg-error')).toBeNull()
 
     act(() => main.setStatuses(statusMap('signed-out', 'ready')))
     await settle()
     expect(main.requests).toHaveLength(1)
     expect(composer().value).toBe('')
-    expect(host.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(host.querySelector('.ai-sub-connect-status')).toBeNull()
   })
 
   it('a send held during the status check falls to the connect prompt when the answer is "not connected"', async () => {
@@ -302,7 +291,7 @@ describe('AI panel without a connection', () => {
     act(() => main.setStatuses(statusMap('signed-out', 'not-installed')))
     await settle()
     expect(main.requests).toHaveLength(0)
-    const prompt = host.querySelector('.ai-sub-prompt')
+    const prompt = host.querySelector('.ai-sub-connect-status')
     expect(prompt).not.toBeNull()
     expect(scrolled).toContain(prompt)
     expect(composer().value).toBe('make it blue')
@@ -338,7 +327,7 @@ describe('AI panel on a first subscription use', () => {
     })
     await mountPanel(main)
     expect(host.querySelector('.ai-sub-first')).not.toBeNull()
-    expect(host.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(host.querySelector('.ai-sub-connect-status')).toBeNull()
     // Codex keeps a diagnostic log the app cannot read or prevent: the notice says so here too
     expect(host.querySelector('.ai-sub-first')!.textContent).toContain(
       aiSubscriptionText(LANG, 'noticeCodexHistory'),

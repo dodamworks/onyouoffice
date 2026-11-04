@@ -43,6 +43,9 @@ describe('FileIndexer wedged-worker recovery', () => {
     indexer = indexerWithShortTimeout()
     const started = Date.now()
     await indexer.scan()
+    // Names are usable as a document scope while the poisoned body is still being extracted.
+    expect(indexer.scannedPaths()).toContain(poisonPath())
+    expect(indexer.scannedPaths()).toContain(notesPath())
     await vi.waitFor(
       () => {
         expect(store.listAll().get(poisonPath())?.status).toBe('error')

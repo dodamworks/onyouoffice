@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { randomBytes } from 'node:crypto'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -79,7 +80,7 @@ export async function runJson(argv: string[], ctx: McpContext): Promise<Outcome>
         command: argv[0] ?? null,
         code: 3,
         error: 'conversion_failed',
-        message: `ieumoffice printed no JSON: ${text.slice(0, 200)}`,
+        message: `onyouoffice printed no JSON: ${text.slice(0, 200)}`,
       },
     }
   }

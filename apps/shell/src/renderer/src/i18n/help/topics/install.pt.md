@@ -1,4 +1,8 @@
+<!-- Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build. -->
+
 # Instalar o GenOffice
+
+> Esta é uma versão interna de desenvolvimento do Onyou Office. Os serviços de download, atualização e suporte não estão configurados. As instruções e os links abaixo descrevem o projeto original para referência.
 
 Todas as versões são publicadas na [página de lançamentos](https://github.com/pblsketch/openoffice/releases/latest) do projeto no GitHub. Esta versão é lançada para Windows.
 

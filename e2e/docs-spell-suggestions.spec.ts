@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-11-03: measure native markers without scrolling the editor.
 /**
  * Right-clicking a misspelled word in the document body lists Chromium's
  * suggestions at the top of the Docs context menu, and picking one replaces
@@ -18,14 +19,25 @@ const POLL = { timeout: 15_000, intervals: [250, 500, 1000] }
  * the threshold is looser than a pure red check.
  */
 async function redUnder(page: Page, rect: { x: number; y: number; w: number; h: number }) {
-  const doc = page.locator('.doc-page')
-  const box = (await doc.boundingBox())!
-  const png = PNG.sync.read(await doc.screenshot())
-  const scale = png.width / box.width
-  const x0 = Math.max(0, Math.round((rect.x - box.x) * scale))
-  const x1 = Math.min(png.width, Math.round((rect.x + rect.w - box.x) * scale))
-  const y0 = Math.max(0, Math.round((rect.y - box.y) * scale))
-  const y1 = Math.min(png.height, Math.round((rect.y + rect.h + 6 - box.y) * scale))
+  // Element screenshots scroll the tall document into view. In a native
+  // WebContentsView that can move the word after its viewport rect was read,
+  // so a later poll samples blank pixels instead of the underline. Capture
+  // the existing viewport without changing scroll or focus.
+  const viewport = await page.evaluate(() => ({ width: innerWidth, height: innerHeight }))
+  if (
+    rect.x < 0 ||
+    rect.y < 0 ||
+    rect.x + rect.w > viewport.width ||
+    rect.y + rect.h > viewport.height
+  ) {
+    throw new Error('The spelling sample must be visible in the editor viewport')
+  }
+  const png = PNG.sync.read(await page.screenshot())
+  const scale = png.width / viewport.width
+  const x0 = Math.max(0, Math.round(rect.x * scale))
+  const x1 = Math.min(png.width, Math.round((rect.x + rect.w) * scale))
+  const y0 = Math.max(0, Math.round(rect.y * scale))
+  const y1 = Math.min(png.height, Math.round((rect.y + rect.h + 6) * scale))
   let n = 0
   for (let y = y0; y < y1; y++) {
     for (let x = x0; x < x1; x++) {
@@ -65,23 +77,24 @@ const center = (r: { x: number; y: number; w: number; h: number }) => ({
   y: r.y + r.h / 2,
 })
 
-// the native spellchecker is outside the app's control
-test.describe.configure({ retries: 1 })
-
 test('context menu offers spelling suggestions and applies one', async () => {
   test.setTimeout(120_000)
   const launched = await launchShell({ onboardingSeen: true, videoDir: 'spell-suggestions' })
   const { app, page } = launched
   try {
-    await page.locator('.quick-card').first().click()
+    await page.locator('.quick-card[data-format="docx"]').click()
     const editor = await waitForPageWithUrl(app, '://docs/')
     const docPage = editor.locator('.doc-page[contenteditable="true"][spellcheck="true"]')
     await docPage.waitFor()
 
     // native menus are invisible to the DOM: count Menu.popup calls in the main process
-    await app.evaluate(({ Menu }) => {
-      const g = globalThis as unknown as { __popups: number }
+    await app.evaluate(({ Menu, ipcMain }) => {
+      const g = globalThis as unknown as { __popups: number; __spellRefreshDone: boolean }
       g.__popups = 0
+      g.__spellRefreshDone = false
+      ipcMain.on('docs:spell-diag', (_event, line: unknown) => {
+        if (line === 'kick done landed=true') g.__spellRefreshDone = true
+      })
       const proto = Menu.prototype as unknown as { popup: (...a: unknown[]) => unknown }
       const orig = proto.popup
       proto.popup = function (...args: unknown[]) {
@@ -168,6 +181,9 @@ test('context menu offers spelling suggestions and applies one', async () => {
         await editor.waitForTimeout(800)
       }
     }
+    await app.evaluate(() => {
+      ;(globalThis as unknown as { __spellRefreshDone: boolean }).__spellRefreshDone = false
+    })
     await addToDict.click()
     await editor.mouse.click(blank.x, blank.y)
     await expect
@@ -176,8 +192,32 @@ test('context menu offers spelling suggestions and applies one', async () => {
         message: 'squiggle gone after Add to Dictionary',
       })
       .toBe(0)
+    // A painted marker can precede the dictionary refresh's DOM-observer and
+    // selection cleanup. Wait for the existing completion signal before
+    // starting another native edit; a fixed sleep races on slower runners.
+    await expect
+      .poll(
+        () =>
+          app.evaluate(
+            () => (globalThis as unknown as { __spellRefreshDone: boolean }).__spellRefreshDone,
+          ),
+        POLL,
+      )
+      .toBe(true)
+    await editor.evaluate(
+      () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+    )
     // the other misspelling keeps its marker: the dictionary changed, not the checker
     expect(await redUnder(editor, targetRect!)).toBeGreaterThan(0)
+
+    // The dictionary refresh is asynchronous: establish that the other typo
+    // is marked before testing that replacement preserves its marker.
+    await expect
+      .poll(async () => redUnder(editor, (await wordRect(editor, 'lazyy'))!), {
+        ...POLL,
+        message: 'lazyy is marked before the replacement',
+      })
+      .toBeGreaterThan(0)
 
     // "jumsp" was typed too and never re-rendered, so its marker is still there
     await editor.mouse.click(target.x, target.y, { button: 'right' })

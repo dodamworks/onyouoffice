@@ -32,6 +32,7 @@ import {
   openAskScope,
   storedToolNotes,
   toolRecordOf,
+  toolNoteLabel,
 } from '../src/renderer/src/kb-ask-project'
 import { kbAskProjectText } from '../src/renderer/src/kb-ask-project-strings'
 import { LocaleProvider } from '../src/renderer/src/locale'
@@ -297,7 +298,10 @@ const settle = async (rounds = 10): Promise<void> => {
 }
 
 async function renderPanel(
-  extra: { openChatRequest?: { projectId: string; chatId: string; seq: number } } = {},
+  extra: {
+    openChatRequest?: { projectId: string; chatId: string; seq: number }
+    connection?: SubscriptionConnection
+  } = {},
 ): Promise<void> {
   await act(async () => {
     root.render(
@@ -355,14 +359,14 @@ const texts = (): string[] =>
   Array.from(host.querySelectorAll('.kb-ask-msg')).map((m) => m.textContent ?? '')
 
 async function chooseInPicker(selector: string): Promise<void> {
-  await click(host.querySelector('.ai-input-below .ai-project-chip'))
-  await click(host.querySelector(`.ai-input-below ${selector}`))
+  await click(host.querySelector('.kb-document-scope .ai-project-chip'))
+  await click(host.querySelector(`.kb-document-scope ${selector}`))
 }
 
 describe('the home ask without a project', () => {
-  it('shows the project picker under the composer, at "No project"', async () => {
+  it('shows the project picker above the composer, at "No project"', async () => {
     await renderPanel()
-    const chip = host.querySelector('.ai-input-below .ai-project-chip')
+    const chip = host.querySelector('.kb-document-scope .ai-project-chip')
     expect(chip).not.toBeNull()
     expect(chip!.textContent).toContain(projectPanelText('en', 'noProject'))
     expect(host.querySelector('.ai-project-chat-menu')).toBeNull()
@@ -383,7 +387,7 @@ describe('the home ask without a project', () => {
   it('behaves as before when the window has no project folder bridge', async () => {
     delete window.projectFolderApi
     await renderPanel()
-    expect(host.querySelector('.ai-input-below')).toBeNull()
+    expect(host.querySelector('.kb-document-scope .ai-project-chip')).toBeNull()
     await ask('What about pets?')
     expect(aiStream).toHaveBeenCalledTimes(1)
   })
@@ -399,7 +403,7 @@ describe('the home ask with a project', () => {
     await renderPanel()
     expect(bridge.getSelection).toHaveBeenCalled()
     expect(bridge.newChat).toHaveBeenCalledWith({ projectId: 'p1' })
-    expect(host.querySelector('.ai-input-below .ai-project-chip')!.textContent).toContain(
+    expect(host.querySelector('.kb-document-scope .ai-project-chip')!.textContent).toContain(
       PROJECT.name,
     )
     expect(host.querySelector('.kb-ask-headbar .ai-project-chat-menu')).not.toBeNull()
@@ -586,6 +590,41 @@ describe('the home ask with a project', () => {
 })
 
 describe('choosing in the picker', () => {
+  it('does not carry a connection-held question into another project chat', async () => {
+    await renderPanel({
+      connection: {
+        ...connection,
+        statuses: {
+          ...READY,
+          'claude-code': { ...READY['claude-code'], state: 'checking' },
+          codex: { ...READY.codex, state: 'checking' },
+        },
+      },
+    })
+    await ask('A question for the previous document source')
+    expect(aiStream).not.toHaveBeenCalled()
+    let finishChat!: (value: { chatId: string }) => void
+    bridge.newChat.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishChat = resolve
+        }),
+    )
+    await chooseInPicker('.ai-project-row-project')
+    await renderPanel()
+    await act(async () => {
+      await settle()
+    })
+    expect(aiStream).not.toHaveBeenCalled()
+    expect(kbOpenScope).not.toHaveBeenCalled()
+    await act(async () => {
+      finishChat({ chatId: 'delayed-chat' })
+      await settle()
+    })
+    await ask('A new explicit question for this project')
+    expect(aiStream).toHaveBeenCalledOnce()
+  })
+
   it('a project starts its chat; "No project" brings the in-memory chat back', async () => {
     await renderPanel()
     await ask('What about pets?')
@@ -633,6 +672,25 @@ describe('a chat the project screen handed over', () => {
 })
 
 describe('kb-ask-project helpers', () => {
+  it('settles restored generic records while preserving project outcome summaries', () => {
+    const active = { search: 'Searching', read: 'Reading', create: 'Creating' }
+    const history = { search: 'Document search', read: 'File reading', create: 'Document creation' }
+    const notes = storedToolNotes(
+      [
+        { name: 'search_knowledge_base', summary: 'x' },
+        { name: 'read_knowledge_file', summary: 'x' },
+        { name: 'project_search', summary: 'Project search failed' },
+      ],
+      active,
+    )
+    expect(notes.map((note) => toolNoteLabel(note, false, active, history))).toEqual([
+      history.search,
+      history.read,
+      'Project search failed',
+    ])
+    expect(toolNoteLabel(notes[0]!, true, active, history)).toBe(active.search)
+  })
+
   it('opens the knowledge scope as before without a project, and with the project otherwise', async () => {
     const api = { kbOpenScope: vi.fn(async () => 's') }
     expect(await openAskScope(api, null, null)).toBeUndefined()
@@ -691,18 +749,18 @@ describe('kb-ask-project helpers', () => {
 describe('the home ask names the chosen project (first-use fixes)', () => {
   const placeholder = () => host.querySelector<HTMLTextAreaElement>('textarea')!.placeholder
 
-  it('says the project in the head, the first line and the input hint', async () => {
+  it('keeps the vault heading and names the project in its selector and input hint', async () => {
     selection = { projectId: 'p1', initialChatId: null }
     await renderPanel()
     const head = host.querySelector('.kb-ask-headbar')!.textContent!
-    expect(head).toContain(kbAskProjectText('en', 'askProjectTitle', { name: PROJECT.name }))
+    expect(host.querySelector('.kb-vault-welcome h2')!.textContent).toBe(strings.en.askTitle)
+    expect(host.querySelector('.kb-document-scope')!.textContent).toContain(PROJECT.name)
     expect(head).not.toContain('Ask your knowledge base')
     expect(placeholder()).toBe(
       kbAskProjectText('en', 'askProjectStarsPlaceholder', { name: PROJECT.name }),
     )
-    expect(host.querySelector('.kb-ask-hint')!.textContent).toBe(
-      kbAskProjectText('en', 'askProjectIntro', { name: PROJECT.name }),
-    )
+    expect(host.querySelectorAll('.kb-ask-msg')).toHaveLength(0)
+    expect(host.querySelector('.kb-vault-welcome p')!.textContent).toBe(strings.en.askIntro)
   })
 
   it('leaves the star count out with a project and nothing starred', async () => {
@@ -715,12 +773,13 @@ describe('the home ask names the chosen project (first-use fixes)', () => {
     )
   })
 
-  it('without a project, points to the picker from the empty-stars guide and keeps its words', async () => {
+  it('without a project, shows one vault description and keeps the picker available', async () => {
     starred = []
     await renderPanel()
-    expect(host.querySelector('.kb-ask-hero')!.textContent).toContain(
-      kbAskProjectText('en', 'askHeroProjectHint'),
-    )
+    expect(host.querySelector('.kb-ask-hero')).toBeNull()
+    expect(host.querySelectorAll('.kb-ask-msg')).toHaveLength(0)
+    expect(host.querySelector('.kb-vault-welcome p')!.textContent).toBe(strings.en.askIntro)
+    expect(host.querySelector('.kb-document-scope .ai-project-chip')).not.toBeNull()
     expect(placeholder()).toBe(strings.en.askPlaceholder)
   })
 

@@ -48,3 +48,18 @@ _scratch-*
 # Local planning and agent state (never committed)
 .dryforge
 .omc
+
+# Private analysis, conversation notes, isolated profiles and machine account routing.
+/.local/
+/.codex/
+
+# Maintainer-only instructions and historic operational notes stay on this machine.
+/AGENTS.local.md
+/CLAUDE.local.md
+/INTERNAL.md
+/.agents/product-marketing.md
+/docs/dodam/VALIDATION-SUMMARY.json
+
+# Optional downloaded authoring helpers; project-owned skills remain versioned.
+/.agents/skills/crafting-effective-readmes/
+/.agents/skills/commit-work/

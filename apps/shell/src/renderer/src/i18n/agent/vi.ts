@@ -3,8 +3,7 @@ import type { zh } from './zh'
 export const vi = {
   windowTitle: 'Tác tử',
   homeCardSub: 'Làm việc trong thư mục với Claude Code hoặc Codex',
-  intro:
-    'Tác tử chạy Claude Code hoặc Codex của bạn trong thư mục bạn chọn. Nó có thể đọc các tệp trong đó, tạo tệp mới, dùng các kỹ năng của bạn, chạy tập lệnh và sửa các tài liệu đang mở trong GenOffice.',
+  intro: 'Tạo và chỉnh sửa tệp cùng AI trong thư mục bạn chọn.',
   folderLabel: 'Thư mục dự án',
   folderPick: 'Chọn thư mục…',
   folderNone: 'Chưa chọn thư mục',

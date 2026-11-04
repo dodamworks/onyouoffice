@@ -50,7 +50,9 @@ describe('ODT in the shell lists', () => {
   it('shows .odt in the folder tree, the open dialog and the open card', () => {
     expect(isSupportedTreeFile('Letter.ODT')).toBe(true)
     expect(literal(main, 'OPEN_DIALOG_EXTENSIONS')).toContain("'odt'")
-    expect(literal(home, 'OPEN_LOCAL_EXTENSIONS')).toContain('.odt')
+    expect(literal(home, 'OPEN_LOCAL_FORMATS')).toContain("'odt'")
+    expect(literal(home, 'OPEN_LOCAL_EXTENSIONS')).toContain('OPEN_LOCAL_FORMATS.flatMap')
+    expect(literal(home, 'OPEN_LOCAL_EXTENSIONS')).toContain('`.${ext}`')
     // the Word tile, since the Word tab opens it
     expect(literal(home, 'FILE_ICONS')).toContain('odt: iconDocx')
   })

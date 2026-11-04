@@ -98,13 +98,13 @@ export const cs = {
   pickerNotConnected: 'Připojit AI',
   guideQuestion: 'Jakou AI už používáte?',
   guidePathClaudeTitle: 'Mám placené předplatné Claude',
-  guidePathClaudeBody: 'Je potřeba tarif Pro nebo Max. Bezplatný účet Claude se připojit nedá.',
+  guidePathClaudeBody: 'Vyžaduje tarif Pro nebo Max a připojovací program v počítači.',
   guidePathCodexTitle: 'Používám ChatGPT',
   guidePathCodexBody:
     'Přihlaste se účtem ChatGPT do programu Codex společnosti OpenAI. Bezplatný tarif umožňuje jen malé využití.',
   guidePathFreeTitle: 'Zatím žádnou',
   guidePathFreeBody:
-    'Bezplatnou AI připojíte zhruba za minutu. Dokud ji používáte zdarma, může společnost odeslaný obsah využít ke zlepšení své AI.',
+    'Připojte bezplatnou AI přes OpenRouter nebo Gemini. Poskytovatelé mohou odeslaný obsah použít ke zlepšení své AI.',
   guideBack: 'Zvolit jiný způsob',
   guideBadgeReady: 'Připojeno',
   guideBadgeInstalled: 'Nainstalováno',
@@ -144,8 +144,7 @@ export const cs = {
   actionCopyInfo: 'Kopírovat informace pro pomoc',
   copyInfoDone: 'Zkopírováno',
   actionConnectHelp: 'Zobrazit každý krok na obrazovce (stránka v korejštině)',
-  guidePathChatGptBody:
-    'Přihlaste se účtem ChatGPT a používejte svůj tarif. Nic není třeba instalovat. Bezplatný tarif umožňuje jen malé využití.',
+  guidePathChatGptBody: 'Přihlaste se v prohlížeči. Platí limity vašeho tarifu.',
   guideUseCodex: 'Už na tomto počítači používáte program Codex? Připojit přes Codex',
   guideUseDirect: 'Připojit přímo v aplikaci, bez programu Codex',
   chatgptLoginNote:

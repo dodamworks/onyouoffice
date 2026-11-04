@@ -1,5 +1,6 @@
+// Modified by Dodam on 2026-10-31: install the bundled product skill without an upstream distribution dependency.
 import { MCP_SERVER_NAME, mcpLaunch, SKILL_NAME, type McpLaunch } from '@genoffice/cli/mcp-launch'
-import { PRODUCT_REPO_SLUG } from '@genoffice/i18n'
+import { PRODUCT_COMMAND } from '@genoffice/i18n'
 import { useCallback, useEffect, useState } from 'react'
 import type { TFunc } from './locale'
 import { McpServerSection } from './McpServerSection'
@@ -32,7 +33,7 @@ interface Pending {
   agentId?: AgentId
 }
 
-export const NPX_INSTALL_COMMAND = `npx skills add ${PRODUCT_REPO_SLUG}`
+export const NPX_INSTALL_COMMAND = `${PRODUCT_COMMAND} skill install all`
 
 /** some detected assistant holds an older copy of the skill than the bundled one */
 export const skillUpdateDue = (s: IntegrationsStatus): boolean =>
@@ -339,7 +340,7 @@ export function IntegrationsPane({
           <div className="set-intg-option">
             <span className="set-intg-option-letter">C</span>
             <div className="set-field-stack">
-              <div className="set-field-label">{t('intgOtherNpxTitle')}</div>
+              <div className="set-field-label">{t('intgCliTitle')}</div>
               <div className="set-field-desc">{t('intgOtherNpxDesc')}</div>
               <div className="set-intg-code">
                 <code>{NPX_INSTALL_COMMAND}</code>

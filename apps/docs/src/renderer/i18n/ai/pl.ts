@@ -68,8 +68,7 @@ export const pl = {
   aiEmptyTitle: 'Pozwól AI pomóc Ci pisać i edytować',
   aiEmptyBody1: 'Wydaj polecenie lub po prostu zadaj pytanie;',
   aiEmptyBody2: 'przy zaznaczonym tekście polecenia przepisania dotyczą zaznaczenia.',
-  aiNoHidingNote:
-    'W tym edytorze nie można ukryć fragmentów dokumentu przed AI: to, czego dotyczy prośba, jest wysyłane bez zmian.',
+  aiNoHidingNote: 'Podczas korzystania z AI treść dokumentu jest wysyłana do usługi AI.',
   aiStarterWeeklyReport: 'Napisz tygodniowy raport z projektu',
   aiStarterLaunchPost: 'Napisz ogłoszenie o premierze produktu',
   aiStarterEventOutline: 'Przygotuj konspekt planu wydarzenia',

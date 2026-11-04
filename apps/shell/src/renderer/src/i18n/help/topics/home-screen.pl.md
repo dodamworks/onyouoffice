@@ -7,7 +7,7 @@ Strona główna to punkt wyjścia GenOffice: pasek nawigacyjny po lewej, listy p
 - **Ostatnie**: pliki, które ostatnio otwierałeś. Każdy wiersz ma na sobie czas — dzisiaj, wczoraj albo datę.
 - **Ulubione**: pliki oznaczone gwiazdką. Najedź na wiersz pliku i kliknij gwiazdkę, aby dodać lub usunąć plik. **Przenieś do grupy** w menu ⋯ porządkuje pliki z gwiazdką w nazwane grupy; widok Oznaczone filtruje po nich.
 - **Podręcznik użytkownika**: otwiera ten podręcznik.
-- **Ask AI**: panel bazy wiedzy — zadawaj pytania i otrzymuj odpowiedzi z cytatami z plików oznaczonych gwiazdką (patrz niżej).
+- **Magazyn wiedzy**: Domyślnym źródłem są dokumenty zarejestrowane w aplikacji: ostatnie i ulubione pliki, dodane foldery oraz projekty. Nie przeszukuje to całego komputera.
 - **Projekty**: foldery (projekty), z którymi może pracować AI. Utwórz projekt lub użyj istniejącego folderu i otwórz go, aby zarządzać jego instrukcjami, pamięcią, plikami i rozmowami. Zobacz [Projekty](help://projects).
 - **Foldery**: katalogi dodane do paska bocznego przyciskiem **Dodaj folder…** albo przeciągnięte tam z menedżera plików. Każdy staje się katalogiem głównym, który można otworzyć, utworzyć w nim podfoldery, zmienić jego nazwę i usunąć; ten, który przestanie być dostępny, jest oznaczany jako niedostępny i można go zdjąć z listy. **Nowy folder** tworzy kolejny.
 - **Wiersz na dole**: pokazuje, czy AI jest połączone — **Połącz AI** albo nazwę połączonej subskrypcji — i otwiera Ustawienia.
@@ -56,11 +56,9 @@ Co robi każda karta:
 
 > Wskazówka: Plik ▸ Nowy na pasku menu tworzy te same typy dokumentów (⌘N/Ctrl+N domyślnie tworzy dokument tekstowy); przeciągnięcie pliku do okna otwiera go.
 
-## Zapytaj swoją bazę wiedzy
+## Magazyn wiedzy
 
-- Najpierw oznacz pliki gwiazdką (każdy typ, który aplikacja czyta); nagłówek panelu liczy korpus, a pusta baza podpowiada, by coś oznaczyć.
-- Odpowiedzi cytują pliki źródłowe; kliknięcie cytatu otwiera plik w jego edytorze.
-- Wymaga połączonego AI; zobacz [Połączenie z subskrypcją](help://subscription). Rozmowa żyje tylko w pamięci — zamknięcie aplikacji ją kończy.
-- Wybierz projekt pod polem wpisywania, a pliki z tego folderu też będą przeszukiwane i czytane, rozmowa zaś zostanie zapisana w folderze, więc możesz ją kontynuować w innym edytorze. Bez projektu rozmowa żyje tylko w pamięci, jak opisano wyżej.
-- Wyszukiwanie działa na lokalnym indeksie plików, jak na stronie głównej; zniknięte pliki po cichu wypadają z korpusu.
-- Grupy porządkują tylko listę Oznaczone — baza wiedzy zawsze obejmuje wszystkie pliki z gwiazdką.
+- Domyślnym źródłem są dokumenty zarejestrowane w aplikacji: ostatnie i ulubione pliki, dodane foldery oraz projekty. Nie przeszukuje to całego komputera.
+- Nad polem wpisywania wybierz zarejestrowane dokumenty, projekt, konkretne dokumenty lub ulubione. Zmiana źródła rozpoczyna nową rozmowę i anuluje pytania oczekujące na połączenie.
+- Połącz AI w Ustawienia → AI. Nazwy i istotna treść wybranego źródła mogą trafić do dostawcy AI. Ukryte i wykluczone pliki projektu pozostają wykluczone. Odpowiedzi wskazują źródła.
+- Rozmowy projektu są zapisywane w jego folderze. Pozostałe są tylko w pamięci i znikają po zamknięciu aplikacji.

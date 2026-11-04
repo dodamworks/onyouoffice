@@ -1,9 +1,10 @@
+// Modified by Onyou Office on 2026-11-04: avoid absolute build paths in raw-text module labels.
 // Bundles the CLI into one CommonJS file so the packaged app can run it with
 // ELECTRON_RUN_AS_NODE (no node_modules ship with the app). Runtime assets
 // (pdfium wasm, xlsx sidecar, OCR helper) are located by src/resources.ts.
 import { build } from 'esbuild'
 import { readFile } from 'node:fs/promises'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -45,11 +46,16 @@ const rawText = {
   name: 'raw-text',
   setup(b) {
     b.onResolve({ filter: /\?raw$/ }, (args) => ({
-      path: resolve(args.resolveDir, args.path.replace(/\?raw$/, '')),
+      // Custom namespaces retain their module paths in the shipped bundle.
+      // Use a stable relative name rather than exposing the build machine's path.
+      path: relative(here, resolve(args.resolveDir, args.path.replace(/\?raw$/, ''))).replaceAll(
+        '\\',
+        '/',
+      ),
       namespace: 'raw-text',
     }))
     b.onLoad({ filter: /.*/, namespace: 'raw-text' }, async (args) => ({
-      contents: await readFile(args.path, 'utf8'),
+      contents: await readFile(resolve(here, args.path), 'utf8'),
       loader: 'text',
     }))
   },

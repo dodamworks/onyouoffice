@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { randomUUID } from 'node:crypto'
 import { existsSync, rmSync, statSync } from 'node:fs'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
@@ -136,6 +137,7 @@ export function agentProtectedPaths(homeDir: string, userData: string): string[]
     join(homeDir, '.codex'),
     join(homeDir, '.genoffice'),
     join(homeDir, '.ieumoffice'),
+    join(homeDir, '.onyouoffice'),
     userData,
   ]
 }

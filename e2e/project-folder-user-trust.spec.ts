@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-11-01: exercise the independent product project folder.
 import { existsSync } from 'node:fs'
 import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
@@ -28,9 +29,14 @@ const SUSPICIOUS =
 
 async function send(page: Page, text: string): Promise<void> {
   const box = page.locator('.ai-composer textarea, .kb-ask textarea').first()
+  const sendButton = page
+    .locator('.ai-composer .ai-send-btn:not(.ai-stop-btn), .kb-ask .ai-send-btn:not(.ai-stop-btn)')
+    .first()
+  // This flow sends consecutive turns, rather than clicking Stop on a reply still streaming.
+  await sendButton.waitFor({ state: 'visible' })
   await box.click()
   await box.fill(text)
-  await page.locator('.ai-composer .ai-send-btn, .kb-ask .ai-send-btn').first().click()
+  await sendButton.click()
 }
 
 async function waitStreams(app: Parameters<typeof recorded>[0], count: number): Promise<string[]> {
@@ -54,8 +60,8 @@ test.describe('project folder, someone else’s folder and mistakes', () => {
     const docs = await scratch(run, '문서')
     // a folder "a colleague" handed over, with instructions written outside this app
     const received = await scratch(run, '받은 폴더', '학년 협의회')
-    await mkdir(join(received, '.ieumoffice'), { recursive: true })
-    await writeFile(join(received, '.ieumoffice', 'instructions.md'), SUSPICIOUS)
+    await mkdir(join(received, '.onyouoffice'), { recursive: true })
+    await writeFile(join(received, '.onyouoffice', 'instructions.md'), SUSPICIOUS)
     await writeFile(join(received, '협의록.md'), '# 협의록\n\n- 체험학습 장소 정함\n')
 
     const launched = await launchShell({
@@ -103,7 +109,7 @@ test.describe('project folder, someone else’s folder and mistakes', () => {
         const trust = page.locator('.projects-trust')
         await queueBoxAnswers(app, [0])
         await trust.getByRole('button', { name: '지침도 사용', exact: true }).click()
-        await expect(page.getByText('상태: 지침과 기억을 AI에게 보내는 중')).toBeVisible()
+        await expect(page.locator('.projects-trust')).toHaveCount(0)
         await shot(page, 't04-project-screen-use')
         await page.locator('.tab-bar .tab-item:not(.tab-home)', { hasText: '협의록' }).click()
         const before = (await recorded(app)).streams.length
@@ -114,7 +120,7 @@ test.describe('project folder, someone else’s folder and mistakes', () => {
 
       await test.step('8d. 앱 밖에서 지침을 고치면 "지침이 바뀌었습니다 [보기]"가 한 번', async () => {
         await writeFile(
-          join(received, '.ieumoffice', 'instructions.md'),
+          join(received, '.onyouoffice', 'instructions.md'),
           SUSPICIOUS + '날짜는 2026. 10. 30. 꼴로 적는다.\n',
         )
         const before = (await recorded(app)).streams.length
@@ -141,9 +147,9 @@ test.describe('project folder, someone else’s folder and mistakes', () => {
 
       await test.step('8e. 받은 폴더를 [지침까지 사용]으로 바로 추가', async () => {
         const second = await scratch(run, '받은 폴더', '동아리')
-        await mkdir(join(second, '.ieumoffice'), { recursive: true })
+        await mkdir(join(second, '.onyouoffice'), { recursive: true })
         await writeFile(
-          join(second, '.ieumoffice', 'memory.md'),
+          join(second, '.onyouoffice', 'memory.md'),
           '- 동아리 회비는 2만 원 (2026-09-01)\n',
         )
         await page.locator('.tab-bar .tab-home').click()
@@ -156,17 +162,17 @@ test.describe('project folder, someone else’s folder and mistakes', () => {
         const box = (await recorded(app)).boxes[before]!
         expect(String(box.detail)).toContain('동아리 회비')
         await expect(page.locator('.projects-name-field input')).toHaveValue('동아리')
-        await expect(page.getByText('상태: 지침과 기억을 AI에게 보내는 중')).toBeVisible()
+        await expect(page.locator('.projects-trust')).toHaveCount(0)
         await shot(page, 't07-second-use')
       })
 
       await test.step('8f. 등록하지 않은 프로젝트 폴더 안의 문서를 열면 [사용] 안내', async () => {
         const other = await scratch(run, '받은 폴더', '미등록 프로젝트')
-        await mkdir(join(other, '.ieumoffice'), { recursive: true })
-        await writeFile(join(other, '.ieumoffice', 'instructions.md'), '표는 쓰지 않는다.\n')
+        await mkdir(join(other, '.onyouoffice'), { recursive: true })
+        await writeFile(join(other, '.onyouoffice', 'instructions.md'), '표는 쓰지 않는다.\n')
         // made with this app on a colleague's PC: it carries its own project.json
         await writeFile(
-          join(other, '.ieumoffice', 'project.json'),
+          join(other, '.onyouoffice', 'project.json'),
           JSON.stringify({
             version: 1,
             id: 'Colleague0Project01',
@@ -238,7 +244,7 @@ test.describe('project folder, someone else’s folder and mistakes', () => {
         expect(text2).toContain('사용자 폴더 전체는 프로젝트로 쓸 수 없습니다')
         // nothing was registered: the list is still empty
         expect(text2).toContain('아직 프로젝트가 없습니다')
-        expect(existsSync(join(homedir(), '.ieumoffice', 'project.json'))).toBe(false)
+        expect(existsSync(join(homedir(), '.onyouoffice', 'project.json'))).toBe(false)
       })
 
       await test.step('10. 빈 이름과 겹치는 이름', async () => {
@@ -294,7 +300,8 @@ test.describe('project folder, someone else’s folder and mistakes', () => {
       })
 
       await test.step('9. 홈 AI 질문에서 프로젝트를 고르고 AI가 새 문서를 만든다', async () => {
-        await page.locator('.nav-item', { hasText: 'AI 질문' }).first().click()
+        await page.locator('.nav-item', { hasText: '지식 창고' }).first().click()
+        await page.locator('.kb-document-scope select').selectOption('project')
         await page.locator('.ai-project-chip').first().click()
         await shot(page, 'm08-ask-picker-with-projects')
         await page
@@ -302,10 +309,8 @@ test.describe('project folder, someone else’s folder and mistakes', () => {
           .first()
           .click()
         await expect(page.locator('.ai-project-chip').first()).toContainText('2학기 운영 보고서')
-        // the ask names the project instead of the starred files
-        await expect(page.locator('.kb-ask-headbar')).toContainText(
-          '프로젝트 ‘2학기 운영 보고서’에 질문',
-        )
+        // An empty vault shows its title in the centered welcome; the picker identifies the project.
+        await expect(page.locator('.kb-vault-welcome h2')).toHaveText('지식 창고')
         await expect(page.locator('.kb-ask-headbar')).not.toContainText('즐겨찾기 0개')
         await queueTurns(app, [
           {

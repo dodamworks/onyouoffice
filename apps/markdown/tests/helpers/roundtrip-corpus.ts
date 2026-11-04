@@ -1,14 +1,19 @@
+// Modified by Dodam on 2026-10-31: validate the current working tree including unstaged renames.
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { useRoundTripEditor } from './roundtrip-editor'
 
 // Exercise the actual loading path and validate the resulting editor schema.
 const root = resolve(import.meta.dirname, '../../../..')
-const corpus = execFileSync('git', ['ls-files', '-z', '*.md'], { cwd: root, encoding: 'utf8' })
+const corpus = execFileSync(
+  'git',
+  ['ls-files', '--cached', '--others', '--exclude-standard', '-z', '*.md'],
+  { cwd: root, encoding: 'utf8' },
+)
   .split('\0')
-  .filter(Boolean)
+  .filter((path) => path && existsSync(resolve(root, path)))
 
 /**
  * One slice of the tracked Markdown corpus. The corpus is split over several

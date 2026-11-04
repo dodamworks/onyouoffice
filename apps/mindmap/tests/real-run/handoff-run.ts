@@ -222,7 +222,7 @@ async function main(): Promise<void> {
     // ── 1. nothing connected: the tab opens, the request waits in its panel ──
     const blocked = await make(app, home, [notes, list])
     await blocked.locator('.ai-dock[data-ai-open="true"]').waitFor({ timeout: 20_000 })
-    await blocked.locator('.ai-sub-prompt').waitFor({ timeout: 20_000 })
+    await blocked.locator('.ai-sub-connect-status').waitFor({ timeout: 20_000 })
     await settle(blocked)
     let state = await mainState(app)
     check(state.queued === 0 && state.taken === 1, 'the new tab took the request (queue empty)')

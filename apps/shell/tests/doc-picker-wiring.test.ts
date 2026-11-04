@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -39,10 +40,10 @@ describe('doc-picker strings', () => {
   it('writes the product name as the GenOffice token, localized at output', () => {
     for (const lang of LANGS) {
       const dict = docPickerStrings[lang] as Record<string, string>
-      for (const value of Object.values(dict)) expect(value, lang).not.toMatch(/IeumOffice/)
+      for (const value of Object.values(dict)) expect(value, lang).not.toMatch(/Onyou Office/)
     }
-    expect(docPickerText('ko', 'docPickTitle')).toContain('이음오피스')
-    expect(docPickerText('en', 'docPickTitle')).toContain('IeumOffice')
+    expect(docPickerText('ko', 'docPickTitle')).toContain('온유오피스')
+    expect(docPickerText('en', 'docPickTitle')).toContain('Onyou Office')
   })
 })
 

@@ -3,6 +3,7 @@ import type { ProjectId } from '@genoffice/project-store'
 import { readProjectsSettings } from '../app-settings'
 import { resolveCloudOnly as detectCloudOnly } from './cloud-files'
 import { isInsideFolder, relativeInside } from './paths'
+import { realPlainFileIn } from './folder-files'
 import type { CloudOnlyResolver } from './project-files'
 import type { ProjectGuide } from './project-guide'
 
@@ -106,5 +107,45 @@ export function createRerankIgnoreFilter(options: {
           return rel !== null && rule.matcher.ignores(rel)
         }),
     )
+  }
+}
+
+/** Complete project visibility for the registered Knowledge Vault corpus, read fresh per call. */
+export function createKnowledgeVisibilityFilter(options: {
+  guide: Pick<ProjectGuide, 'listProjects' | 'aiVisibility'>
+  platform?: NodeJS.Platform
+}): (paths: readonly string[]) => Promise<string[]> {
+  const platform = options.platform ?? process.platform
+  return async (paths) => {
+    const projects = await options.guide.listProjects()
+    const holding = projects.filter((project) =>
+      paths.some((path) => isInsideFolder(path, project.path, platform)),
+    )
+    const rules = await Promise.all(
+      holding.map(async (project) => ({
+        root: project.path,
+        visibility: await options.guide.aiVisibility(project.id as ProjectId),
+      })),
+    )
+    const allowed: string[] = []
+    for (const path of paths) {
+      let visible = true
+      for (const { root, visibility } of rules) {
+        const rel = relativeInside(root, path, platform)
+        if (rel === null) continue
+        if (!visibility || !visibility.isVisible(rel)) {
+          visible = false
+          break
+        }
+        // The same plain-file and canonical-name boundary as ProjectTools.readIn.
+        const found = await realPlainFileIn(root, rel.split('/'), platform)
+        if (!found || !visibility.isVisible(found.segments.join('/'))) {
+          visible = false
+          break
+        }
+      }
+      if (visible) allowed.push(path)
+    }
+    return allowed
   }
 }

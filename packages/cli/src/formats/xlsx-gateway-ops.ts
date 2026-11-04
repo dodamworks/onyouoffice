@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { isAbsolute, resolve } from 'node:path'
@@ -248,7 +249,7 @@ export async function buildGatewayPayloads(input: GatewayBuildInput): Promise<Ga
       { failures: [classifyOpError(index, op, message)] },
       {
         reason: 'op_rejected',
-        suggestion: 'fix the op against `ieumoffice guide sheets`, then resend the whole batch',
+        suggestion: 'fix the op against `onyouoffice guide sheets`, then resend the whole batch',
       },
     )
   }
@@ -485,7 +486,7 @@ export async function buildGatewayPayloads(input: GatewayBuildInput): Promise<Ga
           reject(
             i,
             op.op,
-            'chartPath must be a chart part of the file (xl/charts/chartN.xml); `ieumoffice info` lists them',
+            'chartPath must be a chart part of the file (xl/charts/chartN.xml); `onyouoffice info` lists them',
           )
         }
         if (op.seriesData !== undefined) {

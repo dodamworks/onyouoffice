@@ -7,7 +7,7 @@ Trang chủ là trang khởi đầu của GenOffice: thanh điều hướng bên
 - **Gần đây**: các tập tin bạn đã mở gần đây. Mỗi hàng đều đóng dấu thời điểm — hôm nay, hôm qua hoặc ngày.
 - **Đã gắn sao**: các tập tin bạn đã gắn sao. Rê chuột lên một hàng tập tin rồi nhấp vào ngôi sao để thêm hoặc bỏ. **Chuyển vào nhóm** trong menu ⋯ xếp các tệp đánh sao vào nhóm có tên; xem Đánh sao lọc theo chúng.
 - **Hướng dẫn sử dụng**: mở sổ tay này.
-- **Ask AI**: bảng cơ sở tri thức — hỏi và nhận câu trả lời trích dẫn từ các tệp đánh sao của bạn (xem dưới).
+- **Kho kiến thức**: Nguồn mặc định là tài liệu đã đăng ký trong ứng dụng: tệp gần đây và yêu thích, thư mục đã thêm và dự án. Không tìm kiếm toàn bộ máy tính.
 - **Dự án**: các thư mục (dự án) mà AI có thể làm việc cùng. Tạo dự án hoặc dùng thư mục có sẵn, rồi mở một dự án để quản lý chỉ dẫn, ghi nhớ, tệp và cuộc trò chuyện của nó. Xem [Dự án](help://projects).
 - **Thư mục**: các thư mục bạn thêm vào thanh bên bằng **Thêm thư mục…**, hoặc kéo vào đó từ trình quản lý tập tin. Mỗi thư mục trở thành một gốc mà bạn có thể mở, tạo thư mục con bên trong, đổi tên và gỡ bỏ; thư mục nào mất kết nối sẽ hiển thị là không khả dụng và có thể gỡ khỏi danh sách. **Thư mục mới** tạo thêm một thư mục nữa.
 - **Hàng dưới cùng**: cho biết AI đã được kết nối hay chưa — **Kết nối AI**, hoặc tên của gói đăng ký đã kết nối — và mở Cài đặt.
@@ -56,11 +56,9 @@ Từng thẻ dùng để làm gì:
 
 > Gợi ý: File ▸ Mới trên dải menu tạo ra cùng những loại tài liệu đó (⌘N/Ctrl+N mặc định tạo tài liệu văn bản); kéo một tập tin vào cửa sổ nghĩa là mở nó.
 
-## Hỏi cơ sở tri thức của bạn
+## Kho kiến thức
 
-- Đánh sao tệp trước (loại nào ứng dụng đọc được đều được); đầu bảng đếm kho, và kho rỗng sẽ mời bạn đi đánh sao thứ gì đó.
-- Câu trả lời trích dẫn tệp nguồn; bấm vào trích dẫn để mở tệp trong trình soạn của nó.
-- Cần có một AI đã kết nối; xem [Kết nối gói đăng ký](help://subscription). Hội thoại chỉ sống trong bộ nhớ — đóng ứng dụng là hết.
-- Chọn một dự án dưới ô nhập thì các tệp trong thư mục đó cũng được tìm và đọc, và cuộc trò chuyện được lưu trong thư mục đó để bạn tiếp tục ở trình soạn thảo khác. Khi không chọn dự án, hội thoại chỉ sống trong bộ nhớ như nói ở trên.
-- Tìm kiếm chạy trên chỉ mục tệp cục bộ, như tìm kiếm của Trang chủ; tệp đã biến mất tự rời khỏi kho.
-- Nhóm chỉ để sắp danh sách Đánh sao — cơ sở tri thức luôn bao mọi tệp được đánh sao.
+- Nguồn mặc định là tài liệu đã đăng ký trong ứng dụng: tệp gần đây và yêu thích, thư mục đã thêm và dự án. Không tìm kiếm toàn bộ máy tính.
+- Phía trên ô nhập, chọn tài liệu đã đăng ký, dự án, tài liệu cụ thể hoặc mục yêu thích. Đổi nguồn sẽ bắt đầu cuộc trò chuyện mới và hủy câu hỏi đang chờ kết nối.
+- Kết nối AI trong Cài đặt → AI. Tên tệp và nội dung liên quan từ nguồn đã chọn có thể được gửi đến nhà cung cấp AI. Tệp dự án bị ẩn hoặc loại trừ vẫn không được đưa vào. Câu trả lời có trích dẫn nguồn.
+- Trò chuyện dự án được lưu trong thư mục dự án. Các cuộc trò chuyện khác chỉ ở trong bộ nhớ và kết thúc khi đóng ứng dụng.

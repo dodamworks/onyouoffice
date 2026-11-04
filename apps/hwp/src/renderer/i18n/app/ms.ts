@@ -57,6 +57,9 @@ export const ms = {
   aiEmptyBody:
     'Tanya tentang kandungan, minta ayat diperkemas, atau minta medan borang diisi. Setiap perubahan disenaraikan di sini dan boleh dibuat asal sekali gus.',
   aiComposerPlaceholder: 'Tanya tentang dokumen ini atau nyatakan apa yang perlu diubah…',
+  aiToolbarSummary: 'Ringkaskan',
+  aiToolbarPolish: 'Perkemas',
+  aiToolbarPolishPrompt: 'Gilap keseluruhan dokumen supaya penulisan lebih jelas dan lancar',
   aiStarterSummarize: 'Ringkaskan dokumen',
   aiStarterSummarizePrompt: 'Ringkaskan dokumen ini secara ringkas, isi utama sahaja.',
   aiStarterProofread: 'Betulkan ejaan dan jarak',
@@ -215,7 +218,7 @@ export const ms = {
   previewMargins: 'Tunjuk jidar',
   previewEditPage: 'Edit halaman ini',
   previewEditFailed: 'Tidak dapat pergi ke halaman ini.',
-  checkTitle: 'Semakan dokumen',
+  checkTitle: 'Semak format dokumen',
   checkRunning: 'Membaca dokumen…',
   checkFailed: 'Dokumen tidak dapat dibaca.',
   checkEmpty: 'Tiada perkara untuk dibaiki.',

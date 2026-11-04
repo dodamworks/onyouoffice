@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -51,12 +52,12 @@ describe('document commands instantiate no WebAssembly', () => {
   it('answers --version without loading a parser', async () => {
     const result = await cli(['--version'])
     expect(result.code).toBe(0)
-    expect(result.out.join('\n')).toContain('ieumoffice')
+    expect(result.out.join('\n')).toContain('onyouoffice')
     expect(calls).toEqual([])
   })
 
   it('creates and reads a Word document without loading a parser', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'ieumoffice-no-wasm-'))
+    const dir = mkdtempSync(join(tmpdir(), 'onyouoffice-no-wasm-'))
     const md = join(dir, 'note.md')
     writeFileSync(md, '# Hello\n\n- one\n- two\n')
     const docx = join(dir, 'note.docx')

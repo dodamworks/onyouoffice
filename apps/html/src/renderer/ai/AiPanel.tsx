@@ -1,6 +1,7 @@
 import {
   aiPanelWidthAtPointer,
   AiPanelSideButton,
+  AiPanelFontSizeButtons,
   AiModelPicker,
   type AiModelPickerBridge,
   AiBlockedNotice,
@@ -154,24 +155,6 @@ import {
 } from './edit-queue'
 import { buildProjection } from './redact'
 import { useGenerateHandoff } from './generate-handoff'
-
-/** [chip label, composer prefill]: blank page → design something new; page with content → rework it */
-const GENERATE_STARTERS = [
-  ['aiStarterLanding', 'aiStarterLandingPrompt'],
-  ['aiStarterReport', 'aiStarterReportPrompt'],
-  ['aiStarterPoster', 'aiStarterPosterPrompt'],
-  ['aiStarterWorkspace', 'aiStarterWorkspacePrompt'],
-] as const
-const WRITE_STARTERS = [
-  ['aiStarterArticle', 'aiStarterArticlePrompt'],
-  ['aiStarterAnnouncement', 'aiStarterAnnouncementPrompt'],
-  ['aiStarterGuide', 'aiStarterGuidePrompt'],
-] as const
-const EDIT_STARTERS = [
-  ['aiStarterExtractBrief', 'aiStarterExtractBriefPrompt'],
-  ['aiStarterRecolor', 'aiStarterRecolorPrompt'],
-  ['aiStarterUnify', 'aiStarterUnifyPrompt'],
-] as const
 
 /** clipboard bitmap MIME → attachment extension (matches ATTACHMENT_IMAGE_EXTS) */
 const PASTE_MIME_EXT: Record<string, string> = {
@@ -2106,10 +2089,16 @@ export function AiPanel({
         aria-label={aiSubscriptionText(lang, 'aiAssistant')}
       />
       <header className="ai-panel-header">
-        <span className="ai-panel-title">
-          <AiMark size={22} />
-          {aiSubscriptionText(lang, 'aiAssistant')}
-        </span>
+        <div className="ai-panel-heading">
+          <span className="ai-panel-title">
+            <AiMark size={22} />
+            {aiSubscriptionText(lang, 'aiAssistant')}
+          </span>
+          <AiPanelFontSizeButtons
+            lang={lang}
+            onChange={(patch) => window.htmlApi.setAiPanelPrefs(patch)}
+          />
+        </div>
         <div className="ai-panel-header-actions">
           {projectChatMenu}
           <AiPanelSideButton
@@ -2138,47 +2127,6 @@ export function AiPanel({
       </header>
 
       <div className="ai-chat" ref={chatRef} onScroll={onChatScroll}>
-        {chat.length === 0 && (
-          <div className="ai-chat-empty">
-            <div className="ai-chat-empty-title">
-              {t(
-                docEmpty
-                  ? intent === 'write'
-                    ? 'aiEmptyWriteTitle'
-                    : 'aiEmptyTitle'
-                  : 'aiEmptyDocTitle',
-              )}
-            </div>
-            <div className="ai-chat-empty-body">
-              {t(
-                docEmpty
-                  ? intent === 'write'
-                    ? 'aiEmptyWriteBody'
-                    : 'aiEmptyBody'
-                  : 'aiEmptyDocBody',
-              )}
-            </div>
-            <div className="ai-starter-list">
-              {(docEmpty
-                ? intent === 'write'
-                  ? WRITE_STARTERS
-                  : GENERATE_STARTERS
-                : EDIT_STARTERS
-              ).map(([label, promptKey]) => (
-                <button
-                  key={label}
-                  className="ai-starter"
-                  onClick={() => {
-                    setPrompt(t(promptKey))
-                    inputRef.current?.focus()
-                  }}
-                >
-                  {t(label)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
         {chat.map((entry, i) => {
           if (entry.role === 'user') {
             const own = receipts.filter((r) => r.afterIdx === i)
@@ -2426,6 +2374,7 @@ export function AiPanel({
         <div className="ai-composer">
           {sendGate.connectChoice ? (
             <AiConnectPrompt
+              settingsOnly
               choice={sendGate.connectChoice}
               statuses={subscription.statuses}
               lang={lang}
@@ -2573,6 +2522,7 @@ export function AiPanel({
           footerStart={
             <>
               <AiModelPicker
+                connectInSettings
                 bridge={MODEL_BRIDGE}
                 lang={lang}
                 subscriptionStatuses={subscription.statuses}

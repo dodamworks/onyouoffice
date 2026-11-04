@@ -99,13 +99,13 @@ export const hi = {
   pickerNotConnected: 'AI कनेक्ट करें',
   guideQuestion: 'आप पहले से कौन-सा AI उपयोग करते हैं?',
   guidePathClaudeTitle: 'मेरे पास Claude की पेड सदस्यता है',
-  guidePathClaudeBody: 'Pro या Max प्लान ज़रूरी है। मुफ़्त Claude खाते से कनेक्ट नहीं होता।',
+  guidePathClaudeBody: 'Pro या Max प्लान और आपके कंप्यूटर पर कनेक्शन प्रोग्राम ज़रूरी है।',
   guidePathCodexTitle: 'मेरे पास ChatGPT है',
   guidePathCodexBody:
     'अपने ChatGPT खाते से OpenAI के Codex प्रोग्राम में साइन इन करके इसका उपयोग करें। मुफ़्त प्लान में बहुत कम उपयोग मिलता है।',
   guidePathFreeTitle: 'अभी कोई नहीं',
   guidePathFreeBody:
-    'लगभग एक मिनट में मुफ़्त AI कनेक्ट करें। मुफ़्त में उपयोग करते समय आप जो भेजते हैं, उसका उपयोग उस कंपनी के AI को बेहतर बनाने में हो सकता है।',
+    'OpenRouter या Gemini से मुफ़्त AI जोड़ें। प्रदाता आपके भेजे गएकंटेंट का उपयोग अपने AI को बेहतर बनाने के लिए कर सकते हैं।',
   guideBack: 'दूसरा तरीका चुनें',
   guideBadgeReady: 'कनेक्ट है',
   guideBadgeInstalled: 'इंस्टॉल है',
@@ -145,8 +145,7 @@ export const hi = {
   actionCopyInfo: 'मदद के लिए जानकारी कॉपी करें',
   copyInfoDone: 'कॉपी हो गया',
   actionConnectHelp: 'हर चरण स्क्रीन पर देखें (कोरियाई भाषा का पेज)',
-  guidePathChatGptBody:
-    'अपने ChatGPT खाते से साइन इन करें और अपने प्लान का उपयोग करें। कुछ भी इंस्टॉल नहीं करना है। मुफ़्त प्लान में बहुत कम उपयोग मिलता है।',
+  guidePathChatGptBody: 'ब्राउज़र में साइन इन करें। आपके प्लान की उपयोग सीमाएँ लागू होंगी।',
   guideUseCodex: 'क्या आप इस PC पर पहले से Codex प्रोग्राम का उपयोग करते हैं? Codex से कनेक्ट करें',
   guideUseDirect: 'Codex के बिना, सीधे ऐप में कनेक्ट करें',
   chatgptLoginNote:

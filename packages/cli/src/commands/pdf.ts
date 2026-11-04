@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, mkdirSync, statSync } from 'node:fs'
 import { basename, isAbsolute, resolve } from 'node:path'
 import { treeToStructuredText } from '../../../pdf-structure/src'
@@ -126,7 +127,7 @@ export const pdfCommand: CommandDef = {
         { verbs: [...VERBS] },
         {
           reason: verb === undefined ? 'missing_argument' : 'invalid_argument',
-          suggestion: 'run `ieumoffice help pdf`',
+          suggestion: 'run `onyouoffice help pdf`',
         },
       )
     }
@@ -139,7 +140,7 @@ export const pdfCommand: CommandDef = {
         EXIT.usage,
         `pdf ${v} does not take ${extra.map((f) => `--${f}`).join(', ')}`,
         { options: VERB_OPTIONS[v].map((o) => `--${o}`) },
-        { reason: 'unknown_option', suggestion: 'run `ieumoffice help pdf`' },
+        { reason: 'unknown_option', suggestion: 'run `onyouoffice help pdf`' },
       )
     }
     const path = pdfInput(file, ctx)

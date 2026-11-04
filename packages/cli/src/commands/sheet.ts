@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync } from 'node:fs'
 import { basename } from 'node:path'
 import { flagBool, flagString } from '../args'
@@ -70,7 +71,7 @@ export const sheetCommand: CommandDef = {
       name: 'ops',
       value: 'file',
       description:
-        'apply: JSON array of workbook DSL ops (the in-app propose_operations vocabulary; `ieumoffice guide sheets`); "-" reads stdin',
+        'apply: JSON array of workbook DSL ops (the in-app propose_operations vocabulary; `onyouoffice guide sheets`); "-" reads stdin',
     },
     { name: 'dry-run', description: 'apply --ops: validate and print the plan without writing' },
     ...BATCH_OPTIONS,
@@ -97,7 +98,7 @@ export const sheetCommand: CommandDef = {
           undefined,
           {
             reason: verb === undefined ? 'missing_argument' : 'invalid_argument',
-            suggestion: 'run `ieumoffice help sheet`',
+            suggestion: 'run `onyouoffice help sheet`',
           },
         )
     }

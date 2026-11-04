@@ -1,3 +1,5 @@
+import { readNickname, writeNickname } from './nickname'
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { execSync, spawn } from 'node:child_process'
 import {
   existsSync,
@@ -11,7 +13,7 @@ import {
 } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import { release } from 'node:os'
-import { basename, dirname, extname, join, resolve } from 'node:path'
+import { basename, dirname, extname, join, resolve, relative } from 'node:path'
 import {
   BrowserWindow,
   Menu,
@@ -66,10 +68,20 @@ import menuEpubIcon2x from './assets/menu-epub@2x.png?asset'
 import menuHomeIcon1x from './assets/menu-home.png?asset'
 import menuHomeIcon2x from './assets/menu-home@2x.png?asset'
 import { createI18n, isLang, normalizeLang, setUiLang, type Lang } from '@genoffice/i18n'
-import { DEV_USER_DATA_DIR_NAME, PRODUCT_CONTACT_EMAIL, productName } from '@genoffice/i18n'
+import {
+  DEV_USER_DATA_DIR_NAME,
+  PRODUCT_NAME,
+  getUiLang,
+  PRODUCT_CONTACT_EMAIL,
+  productName,
+  PRODUCT_WEBSITE,
+  PRODUCT_FEEDBACK_URL,
+  productServiceUnavailable,
+} from '@genoffice/i18n'
 import {
   DEFAULT_SAVE_DIR_KEY,
   defaultSaveDirFallback,
+  legacyDefaultSaveDirs,
   DROP_OPEN_CHANNEL,
   GITHUB_REPO_URL,
   appMenuLabels,
@@ -474,9 +486,12 @@ import {
 } from './projects/project-files'
 import { NewDocumentPlacer, type NewDocumentOpener } from './projects/new-documents'
 import { ProjectGuide } from './projects/project-guide'
+import { isAiVisiblePath } from './projects/visibility'
+import { compileIgnore, ignoreFoldsCase } from './projects/ignore'
 import {
   createProjectNameOnly,
   createRerankIgnoreFilter,
+  createKnowledgeVisibilityFilter,
   mergeIndexRoots,
   projectFolderRoots,
 } from './projects/project-index'
@@ -4345,7 +4360,17 @@ let tabManager: TabManager | null = null
  */
 /** folders the user added to the home tree beside the default save folder */
 function extraFolderRoots(): string[] {
-  return readExtraRoots(readAppSettings(APP_SETTINGS_PATH()), defaultSaveDir())
+  const settings = readAppSettings(APP_SETTINGS_PATH())
+  const currentDefault = defaultSaveDir()
+  const extras = readExtraRoots(settings, currentDefault)
+  if (settings.defaultDocumentsLayout === 'lowercase-v1') return extras
+  // Register old folders once: they remain reachable and can still be removed from the tree.
+  const preserved = [...new Set([...extras, ...legacyDefaultSaveDirs(app)])].filter(
+    (root) => root !== currentDefault,
+  )
+  writeAppSetting(APP_SETTINGS_PATH(), FOLDER_ROOTS_KEY, preserved)
+  writeAppSetting(APP_SETTINGS_PATH(), 'defaultDocumentsLayout', 'lowercase-v1')
+  return preserved
 }
 
 function folderRootPaths(): string[] {
@@ -4570,6 +4595,15 @@ function ensureFolderWatchers(): void {
  * copied or opened; the app sends nothing itself.
  */
 async function openFeedbackSurvey(): Promise<void> {
+  if (!PRODUCT_FEEDBACK_URL) {
+    await dialog.showMessageBox({
+      type: 'info',
+      title: productName(getUiLang()),
+      message: productServiceUnavailable(getUiLang()),
+      buttons: ['OK'],
+    })
+    return
+  }
   const lang = currentLang()
   const detail = feedbackDetails(lang, {
     version: app.getVersion(),
@@ -5931,7 +5965,57 @@ function registerHomeIpc(): void {
   // A home ask with a project chosen (spec 5.5) also reads that project folder:
   // the scope then covers the project plus the starred part (all, or one group).
   const kbRunScopes = new KbRunScopes()
+  const registeredKnowledgePaths = async (refresh = false): Promise<string[]> => {
+    const indexer = ensureFileIndexer()
+    if (refresh && indexer) {
+      if (indexer.progress().scanning) {
+        const deadline = Date.now() + 30_000
+        while (indexer.progress().scanning) {
+          if (Date.now() > deadline) throw new Error('document index is still scanning')
+          await new Promise((resolve) => setTimeout(resolve, 50))
+        }
+      } else await indexer.scan()
+    }
+    const tracked = new Set([...readRecentFiles(), ...readStarredFiles(), ...projectFilePaths()])
+    const roots = [...folderRootPaths(), ...projectFolderRoots(APP_SETTINGS_PATH())]
+    const noIgnore = compileIgnore('', { caseInsensitive: ignoreFoldsCase(process.platform) })
+    const candidates = (indexer?.scannedPaths() ?? []).filter((path) => {
+      const root = roots.find((root) => isInsideRoot(root, path))
+      if (!root && !tracked.has(path)) return false
+      return isAiVisiblePath(
+        root ?? dirname(path),
+        root ? relative(root, path) : basename(path),
+        noIgnore,
+      )
+    })
+    const visible = await createKnowledgeVisibilityFilter({ guide: projectFolderServices().guide })(
+      candidates,
+    )
+    if (!refresh) return visible
+    const cloud = await resolveCloudOnly(visible)
+    return visible.filter((path) => cloud.get(path) !== true)
+  }
+  ipcMain.handle('kb:catalog', async () => listKnowledgeFiles(await registeredKnowledgePaths(true)))
+
   ipcMain.handle('kb:open-scope', async (event, raw: unknown): Promise<string> => {
+    if (raw && typeof raw === 'object' && 'source' in raw) {
+      const req = raw as { source?: unknown; paths?: unknown; projectId?: unknown }
+      if (req.source === 'registered' || req.source === 'selected') {
+        const available = await registeredKnowledgePaths(true)
+        return kbRunScopes.openRegistered(
+          event.sender.id,
+          req.source === 'registered' ? null : req.paths,
+          available,
+        )
+      }
+      if (
+        req.source !== 'project' ||
+        typeof req.projectId !== 'string' ||
+        !(await projectFolderServices().tools.isAvailable(req.projectId))
+      )
+        throw new Error(PROJECT_UNAVAILABLE)
+      return kbRunScopes.openProject(event.sender.id, req.projectId, 'none')
+    }
     const { group, projectId } = parseKbOpenScope(raw)
     if (projectId === null) return kbRunScopes.open(event.sender.id, group, readStarredGroupMap())
     if (!(await projectFolderServices().tools.isAvailable(projectId))) {
@@ -5944,11 +6028,13 @@ function registerHomeIpc(): void {
     kbRunScopes.close(event.sender.id, scope),
   )
 
-  ipcMain.handle('kb:list', (event, raw: unknown): unknown => {
+  ipcMain.handle('kb:list', async (event, raw: unknown): Promise<unknown> => {
     const starred = kbRunScopes.narrow(
       event.sender.id,
       raw,
-      readStarredFiles(),
+      kbRunScopes.usesRegistered(event.sender.id, raw)
+        ? await registeredKnowledgePaths()
+        : readStarredFiles(),
       readStarredGroupMap,
     )
     return listKnowledgeFiles(starred)
@@ -5964,7 +6050,11 @@ function registerHomeIpc(): void {
     ensureFileIndexer()?.refreshIfStale(60_000)
     // a file saved since its last scan is still indexed as it was before the
     // save, so only the files the index holds as they are on disk are quoted
-    const starred = store.pathsIndexedAsOnDisk(readStarredFiles())
+    const starred = store.pathsIndexedAsOnDisk(
+      kbRunScopes.usesRegistered(event.sender.id, raw)
+        ? await registeredKnowledgePaths()
+        : readStarredFiles(),
+    )
     // a group-scoped ask searches its group only: a further filter on the set above, never a wider one
     const inScope = kbRunScopes.narrow(event.sender.id, raw, starred, readStarredGroupMap)
     // a scope that also holds a project searches that folder's AI-visible files too
@@ -6003,7 +6093,10 @@ function registerHomeIpc(): void {
     const projectId = kbRunScopes.projectOf(owner, raw)
     // a starred file reads as before when the scope allows it (a group-scoped ask reads its group only)
     const starredAllowed =
-      readStarredFiles().includes(path) &&
+      (kbRunScopes.usesRegistered(owner, raw)
+        ? (await registeredKnowledgePaths()).includes(path) &&
+          (await resolveCloudOnly([path])).get(path) !== true
+        : readStarredFiles().includes(path)) &&
       kbRunScopes.narrow(owner, raw, [path], readStarredGroupMap).includes(path)
     // anything else is read only as a file of the run's project: visibility,
     // unsaved changes, size and the "not on this PC" question all apply there
@@ -6362,6 +6455,16 @@ function registerHomeIpc(): void {
     writeAppSetting(APP_SETTINGS_PATH(), 'documentTheme', theme)
     // the native theme is untouched — only the editors' canvas/paper follows this
     for (const wc of webContents.getAllWebContents()) wc.send('app:document-theme-changed', theme)
+  })
+
+  ipcMain.handle(HOME_CHANNELS.getNickname, (): string => readNickname(APP_SETTINGS_PATH()))
+  ipcMain.handle(HOME_CHANNELS.setNickname, (_event, raw: unknown): string => {
+    const value = writeNickname(APP_SETTINGS_PATH(), raw)
+    // Persist first; this display-only preference never enters document or AI state.
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) win.webContents.send(HOME_CHANNELS.nicknameChanged, value)
+    }
+    return value
   })
 
   // comment / tracked-change author (Word: Options → General → User name);
@@ -6723,6 +6826,10 @@ function registerHomeIpc(): void {
 
   // the website's connect help: a fixed address, the renderer only names the path
   ipcMain.handle(SHELL_SUBSCRIPTION_CHANNELS.openConnectHelp, (_event, path: unknown) => {
+    if (!PRODUCT_WEBSITE) {
+      tabManager?.openHelpTab('subscription')
+      return
+    }
     const url = safeExternalUrl(subscriptionConnectHelpUrl(path))
     if (!url) return
     shell.openExternal(url).catch(() => {
@@ -8874,8 +8981,8 @@ registerIntegrationsIpc({
     ? join(process.resourcesPath, 'cli')
     : join(APPS_ROOT, '..', 'packages', 'cli', 'bin'),
   skillPath: app.isPackaged
-    ? join(process.resourcesPath, 'cli', 'skills', 'ieumoffice', 'SKILL.md')
-    : join(APPS_ROOT, '..', 'skills', 'ieumoffice', 'SKILL.md'),
+    ? join(process.resourcesPath, 'cli', 'skills', 'onyouoffice', 'SKILL.md')
+    : join(APPS_ROOT, '..', 'skills', 'onyouoffice', 'SKILL.md'),
   cliPackageJson: app.isPackaged
     ? join(process.resourcesPath, 'cli', 'package.json')
     : join(APPS_ROOT, '..', 'packages', 'cli', 'package.json'),
@@ -9499,7 +9606,7 @@ app.whenReady().then(async () => {
         withProject ? enabled : enabled.filter((skill) => skill.source !== 'project'),
         // not under userData: that folder is protected from sessions, and the
         // copied skills' scripts must be readable to run
-        join(process.env.LOCALAPPDATA ?? tmpdir(), 'IeumOffice', 'agent-skills'),
+        join(process.env.LOCALAPPDATA ?? tmpdir(), PRODUCT_NAME, 'agent-skills'),
       )
     },
     projectSkills: {

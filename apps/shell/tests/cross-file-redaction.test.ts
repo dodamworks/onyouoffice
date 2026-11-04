@@ -360,7 +360,9 @@ describe('shell wiring (src/main/index.ts needs a running Electron, so the text 
     expect(handler).toContain('searchSavedKnowledgeWithProject(')
     expect(handler).not.toContain('searchKnowledgeBase(')
     // and only over the files the index holds as they are on disk
-    expect(handler).toContain('store.pathsIndexedAsOnDisk(readStarredFiles())')
+    expect(handler).toMatch(/store\.pathsIndexedAsOnDisk\(\s*kbRunScopes\.usesRegistered/)
+    expect(handler).toContain('? await registeredKnowledgePaths()')
+    expect(handler).toContain(': readStarredFiles(),')
   })
 
   it('hands the reranker only the files the index holds as they are on disk', () => {

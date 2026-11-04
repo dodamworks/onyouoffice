@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import JSZip from 'jszip'
@@ -22,7 +23,7 @@ describe('genoffice create/slides (pptx ops)', () => {
         target: { slide: 0 },
         kind: 'textbox',
         offset: { x: INCH, y: INCH, cx: 8 * INCH, cy: INCH },
-        paragraphs: [{ runs: [{ text: 'Hello ieumoffice', bold: true, fontSize: 32 }] }],
+        paragraphs: [{ runs: [{ text: 'Hello onyouoffice', bold: true, fontSize: 32 }] }],
       },
       { op: 'addBlankSlide', target: { slide: 0 } },
       {
@@ -39,7 +40,7 @@ describe('genoffice create/slides (pptx ops)', () => {
     expect(created.code).toBe(0)
     expect(created.json().detail).toMatchObject({ applied: true, ops: 4 })
     const zip = await JSZip.loadAsync(readFileSync(out))
-    expect(await zip.file('ppt/slides/slide1.xml')!.async('string')).toContain('Hello ieumoffice')
+    expect(await zip.file('ppt/slides/slide1.xml')!.async('string')).toContain('Hello onyouoffice')
     expect(zip.file('ppt/slides/slide2.xml')).not.toBeNull()
 
     const read = await run(['slides', 'read', out, '--json'])
@@ -48,7 +49,7 @@ describe('genoffice create/slides (pptx ops)', () => {
     expect(deck.slides).toBe(2)
     expect(deck.pages[0].id).toMatch(/^s_/)
     const styled = deck.pages[0].elements.find(
-      (e: { text?: string }) => e.text === 'Hello ieumoffice',
+      (e: { text?: string }) => e.text === 'Hello onyouoffice',
     )
     expect(styled.effective).toMatchObject({ fontSizePt: 32, bold: true, italic: false })
     expect(styled.effective.src.fontSize).toBe('run')
@@ -56,7 +57,7 @@ describe('genoffice create/slides (pptx ops)', () => {
     expect(styled.effective.src.italic).not.toBe('run')
     expect(typeof styled.effective.src.fontFamily).toBe('string')
     const textbox = deck.pages[0].elements.find(
-      (e: { text?: string }) => e.text === 'Hello ieumoffice',
+      (e: { text?: string }) => e.text === 'Hello onyouoffice',
     )
     expect(textbox.id).toMatch(/^e_/)
     expect(textbox.box).toEqual({ x: INCH, y: INCH, cx: 8 * INCH, cy: INCH })
@@ -67,7 +68,7 @@ describe('genoffice create/slides (pptx ops)', () => {
       {
         op: 'setText',
         target: { slide: 0, el: textbox.id },
-        paragraphs: [{ runs: [{ text: 'Edited by ieumoffice' }] }],
+        paragraphs: [{ runs: [{ text: 'Edited by onyouoffice' }] }],
       },
     ])
     const applied = await run(['slides', 'apply', out, '--ops', edit, '--json'])
@@ -75,7 +76,7 @@ describe('genoffice create/slides (pptx ops)', () => {
     expect(applied.json().detail.records[0]).toMatchObject({ op: 'setText', slide: 's_1' })
     const after = await run(['slides', 'read', out, '--slide', '0', '--json'])
     expect(after.json().detail.pages).toHaveLength(1)
-    expect(after.json().detail.pages[0].elements[0].text).toBe('Edited by ieumoffice')
+    expect(after.json().detail.pages[0].elements[0].text).toBe('Edited by onyouoffice')
   })
 
   it('read --full keeps whole text, every table row and the speaker notes', async () => {

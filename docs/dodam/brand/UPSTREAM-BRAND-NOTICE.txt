@@ -1,0 +1,19 @@
+Excerpt preserved from the existing IeumOffice NOTICE. Applies to inherited source artwork, including the speech-bubble outline; the new B composition is documented separately in SOURCE-NOTICES.md.
+
+IeumOffice brand artwork
+The IeumOffice app icon, logo lockup and AI button mark are original
+compositions for this project: the sources in apps/shell/build/brand, the icon
+and logo files tools/gen-brand-assets.mjs derives from them, and
+packages/ui/src/AiMark.tsx. Their geometry is adapted from the Lucide icon set
+(https://lucide.dev), icons `circle`, `square`, `link` and `message-square`.
+
+Lucide is distributed under the ISC License, Copyright (c) Lucide Icons and
+Contributors. The `circle`, `square` and `link` icons are derived from the
+Feather project and are distributed under the MIT License, Copyright (c)
+2013-present Cole Bemis. Both licenses permit use, modification and
+redistribution provided their copyright and permission notices are kept; the
+full texts are at https://github.com/lucide-icons/lucide/blob/main/LICENSE.
+
+The wordmark in the logo lockup is set in Roboto Bold 2.137, Copyright 2011
+Google Inc., licensed under the Apache License, Version 2.0, and converted to
+outlines.

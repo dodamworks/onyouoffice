@@ -1,4 +1,8 @@
+<!-- Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build. -->
+
 # 安裝 GenOffice
+
+> 這是 Onyou Office 內部開發版本。產品下載、更新與支援服務尚未設定。以下安裝、發佈說明及連結僅供參考，描述的是上游專案。
 
 每個版本都發布在專案 GitHub 的 [Releases 頁面](https://github.com/pblsketch/openoffice/releases/latest)上。這個版本是針對 Windows 發布的。
 

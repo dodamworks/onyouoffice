@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * GitHub addresses and the only connections skills make: reading which commit
  * a branch points at, and downloading that commit's zip archive. Requests go
@@ -6,6 +7,7 @@
  * are followed by hand so every hop is checked against the same hosts. Nothing
  * here connects unless a caller asks; `fetch` is passed in.
  */
+import { PRODUCT_NAME } from '@genoffice/i18n'
 import { USER_SKILL_NAME } from './constants'
 import { SkillImportError, isAbortError } from './errors'
 
@@ -204,7 +206,7 @@ export async function githubSkillGet(
         method: 'GET',
         redirect: 'manual',
         credentials: 'omit',
-        headers: { Accept: accept, 'User-Agent': 'IeumOffice' },
+        headers: { Accept: accept, 'User-Agent': PRODUCT_NAME },
         ...(options.signal ? { signal: options.signal } : {}),
       })
     } catch (error) {

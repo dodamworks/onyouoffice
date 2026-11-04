@@ -59,6 +59,10 @@ export const de = {
     'Stellen Sie Fragen zum Text, lassen Sie Formulierungen glätten oder Formularfelder ausfüllen. Jede Änderung wird hier aufgelistet und lässt sich in einem Schritt zurücknehmen.',
   aiComposerPlaceholder:
     'Fragen Sie etwas zu diesem Dokument oder sagen Sie, was geändert werden soll…',
+  aiToolbarSummary: 'Zusammenfassen',
+  aiToolbarPolish: 'Überarbeiten',
+  aiToolbarPolishPrompt:
+    'Überarbeite das gesamte Dokument, damit der Text klarer und flüssiger wird',
   aiStarterSummarize: 'Zusammenfassen',
   aiStarterSummarizePrompt: 'Fasse dieses Dokument kurz zusammen, nur die Kernpunkte.',
   aiStarterProofread: 'Rechtschreibung und Leerzeichen korrigieren',
@@ -222,7 +226,7 @@ export const de = {
   previewMargins: 'Ränder anzeigen',
   previewEditPage: 'Diese Seite bearbeiten',
   previewEditFailed: 'Diese Seite konnte nicht geöffnet werden.',
-  checkTitle: 'Dokumentprüfung',
+  checkTitle: 'Dokumentformat prüfen',
   checkRunning: 'Das Dokument wird gelesen…',
   checkFailed: 'Das Dokument konnte nicht gelesen werden.',
   checkEmpty: 'Nichts zu beanstanden.',

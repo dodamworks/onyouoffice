@@ -22,6 +22,7 @@ import {
 } from '../../src/shared/agent-api'
 import {
   agentPermissionChoices,
+  initialAgentProvider,
   agentSessionAllowLabel,
   agentWebPermissionLabel,
   codexNetworkWarningShown,
@@ -209,5 +210,30 @@ describe('the window', () => {
       expect(Object.keys(dict).sort()).toEqual([...keys].sort())
       for (const key of keys) expect(dict[key]!.trim()).not.toBe('')
     }
+  })
+})
+
+describe('the agent start screen provider', () => {
+  it('selects the ready subscription when the preferred program is unavailable', () => {
+    expect(
+      initialAgentProvider('claude-code', { 'claude-code': 'unavailable', codex: 'ready' }),
+    ).toBe('codex')
+  })
+  it('keeps a usable choice and waits for connection checks', () => {
+    expect(initialAgentProvider('codex', { 'claude-code': 'ready', codex: 'ready' })).toBe('codex')
+    expect(initialAgentProvider('claude-code', { 'claude-code': 'checking', codex: 'ready' })).toBe(
+      'claude-code',
+    )
+  })
+  it('does not automatically choose a metered connection', () => {
+    expect(
+      initialAgentProvider('claude-code', {
+        'claude-code': 'unavailable',
+        codex: 'metered-accepted',
+      }),
+    ).toBe('claude-code')
+    expect(
+      initialAgentProvider('claude-code', { 'claude-code': 'metered-accepted', codex: 'ready' }),
+    ).toBe('claude-code')
   })
 })

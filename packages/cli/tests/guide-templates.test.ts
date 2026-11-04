@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -176,13 +177,14 @@ describe('guide slides templates over MCP', () => {
   it('serves the list and every template as resources', async () => {
     const { resources } = await client.listResources()
     const uris = resources.map((r) => r.uri)
-    expect(uris).toContain('ieumoffice://guide/slides/templates')
-    for (const t of templates) expect(uris).toContain(`ieumoffice://guide/slides/templates/${t.id}`)
+    expect(uris).toContain('onyouoffice://guide/slides/templates')
+    for (const t of templates)
+      expect(uris).toContain(`onyouoffice://guide/slides/templates/${t.id}`)
     const t = templates[2]!
-    const read = await client.readResource({ uri: `ieumoffice://guide/slides/templates/${t.id}` })
+    const read = await client.readResource({ uri: `onyouoffice://guide/slides/templates/${t.id}` })
     const body = (read.contents[0] as { text: string }).text
     expect(body.startsWith(t.styleSheet)).toBe(true)
-    const listed = await client.readResource({ uri: 'ieumoffice://guide/slides/templates' })
+    const listed = await client.readResource({ uri: 'onyouoffice://guide/slides/templates' })
     expect((listed.contents[0] as { text: string }).text).toContain(`${t.id} `)
   })
 })

@@ -228,6 +228,20 @@ describe('check-no-genspark', () => {
     expect(reportedLines(r.stderr, 'docs/guide.md')).toEqual([2, 3, 5, 7])
   })
 
+  it('preserves the exact fork-lineage source link without allowing service URLs or lookalikes', () => {
+    const file = 'docs/dodam/UPSTREAM-INTEGRATION.md'
+    commit({
+      [file]: [
+        '[Original source](https://github.com/genspark-ai/genoffice)',
+        'https://www.genspark.ai/pricing',
+        'https://github.com/genspark-ai/genoffice-evil',
+      ].join('\n'),
+    })
+    const result = check()
+    expect(result.code).toBe(1)
+    expect(reportedLines(result.stderr, file)).toEqual([2, 3])
+  })
+
   it('allows the namespace written into documents only on its own line', () => {
     commit({
       'packages/agent-core/src/redact-range.ts': [

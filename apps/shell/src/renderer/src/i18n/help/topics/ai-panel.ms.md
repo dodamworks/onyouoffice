@@ -4,7 +4,7 @@ Setiap editor boleh memanggil panel AI. Pilih sesuatu, berikan arahan, dan lihat
 
 ## Membuka dan menggunakannya
 
-- Panel ini memerlukan AI yang disambungkan. Jika tiada AI disambungkan, panel memaparkan kad sambungan dan bukannya ralat; lihat [Sambungan langganan](help://subscription).
+- Sambungkan AI melalui Tetapan → AI. [AI](help://subscription)
 - Akses kepada panel ini ialah melalui **butang AI** pada reben setiap editor, **Tanya AI** dalam menu konteks, atau Tanya AI pada bar anotasi.
 - Terangkan tugas itu dalam bahasa biasa, kemudian tekan Enter.
 - Balasan dipaparkan secara berperingkat. Apabila AI memerlukan alatan, ia akan menggunakan alatan itu dan meneruskan sehingga selesai.
@@ -24,7 +24,7 @@ Setiap editor boleh memanggil panel AI. Pilih sesuatu, berikan arahan, dan lihat
 - **Slides**: menjana keseluruhan persembahan, menyelaras susun atur, dan menulis semula teks.
 - **PDF**: menjawab soalan dan meringkas berdasarkan teks atau halaman yang dipilih.
 - **Markdown dan HTML**: menulis semula, melanjutkan, dan menterjemah.
-- **Laman Utama ▸ Ask AI** menjawab daripada fail anda yang berbintang dan memetiknya — panel pangkalan pengetahuan ada bahagiannya sendiri dalam bab Laman Utama, dan panel AI Docs membawa kemahiran yang sama.
+- **Gudang pengetahuan**: Sumber lalai ialah dokumen yang didaftarkan dalam aplikasi: fail terkini dan kegemaran, folder yang ditambah serta projek. Carian tidak meliputi seluruh komputer. Di atas ruang input, pilih dokumen berdaftar, projek, dokumen tertentu atau kegemaran. Menukar sumber memulakan perbualan baharu dan membatalkan soalan yang menunggu sambungan. [Home](help://home-screen)
 
 ## Melampirkan dokumen yang dibuka
 

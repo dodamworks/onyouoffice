@@ -88,6 +88,8 @@ const REVEAL_COMMAND = 'ext:ieum-reveal'
  * command as its detail: the app hears it and saves or prints the way Ctrl+S and Ctrl+P do.
  */
 export const FILE_COMMAND_EVENT = 'ieum:file-command'
+/** Open the host's document-format check from the editor Tools menu. */
+export const DOCUMENT_CHECK_EVENT = 'ieum:document-check'
 /**
  * The event this plugin fires on the editor's window when the document's unsaved state
  * changes, with the new state (true: unsaved changes) as its detail.
@@ -3529,6 +3531,7 @@ export const agentPlugin = {
   },
 
   activate(host) {
+    let documentCheckMenuInstalled = false
     // The app's dialog skin (studio-plugin/dialog-theme.mjs). It is installed
     // when the plugin comes up, not when the AI panel opens: a settings dialog
     // can be opened on a document the panel never touched.
@@ -6272,6 +6275,32 @@ export const agentPlugin = {
           }
         } catch {
           // an editor without a File menu
+          return { ok: false }
+        }
+        return { ok: true }
+      }),
+
+      /** Expose the host's optional format check under the editor's existing Tools menu. */
+      installDocumentCheckMenu: guarded((label) => {
+        if (typeof label !== 'string' || !label.trim()) {
+          throw fail('BAD_ARGUMENT', 'label must be a non-empty string')
+        }
+        if (!host.automation.registerCommand || !host.automation.addMenuItem) return { ok: false }
+        if (documentCheckMenuInstalled) return { ok: true }
+        const id = 'ext:ieum-document-check'
+        try {
+          host.automation.registerCommand({
+            id,
+            label,
+            execute: () => globalThis.dispatchEvent?.(new CustomEvent(DOCUMENT_CHECK_EVENT)),
+          })
+        } catch {
+          // registered by an earlier call
+        }
+        try {
+          host.automation.addMenuItem({ menuId: 'tool', commandId: id, position: 'bottom' })
+          documentCheckMenuInstalled = true
+        } catch {
           return { ok: false }
         }
         return { ok: true }

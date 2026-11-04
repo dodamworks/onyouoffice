@@ -15,7 +15,7 @@ export const fr = {
   renameHint: 'Le dossier garde son nom.',
   openInExplorer: 'Ouvrir dans l’Explorateur de fichiers',
   openInFinder: 'Afficher dans le Finder',
-  trustUse: 'consignes et mémoire envoyées à l’IA',
+  trustUse: 'les instructions et la mémoire sont utilisées lors des requêtes IA',
   trustWithout: 'utilisé sans consignes',
   trustWithoutDesc:
     'Les consignes, la mémoire et les conversations d’autres PC ne sont pas envoyées à l’IA, et aucune mémoire n’est conservée.',
@@ -28,8 +28,10 @@ export const fr = {
   tabMemory: 'Mémoire',
   tabFiles: 'Fichiers',
   tabChats: 'Conversations',
-  instructionsDesc:
-    'Les règles de travail que l’IA suit dans ce projet. Elles accompagnent chaque demande d’un panneau IA où ce projet est choisi.',
+  instructionsDesc: 'Écrivez les règles que l’IA doit suivre dans ce projet.',
+  instructionsLength: '{count} / {limit} caractères',
+  instructionsTooLong:
+    'Vos instructions existantes sont conservées. Raccourcissez-les avant de les enregistrer.',
   instructionsPlaceholder:
     'Par exemple : rédiger les rapports sur un ton formel et écrire les dates sous la forme 30 oct. 2026.',
   save: 'Enregistrer',
@@ -40,13 +42,12 @@ export const fr = {
   withoutNotSent:
     'Ce projet est utilisé sans consignes : rien de ceci n’est envoyé à l’IA pour l’instant.',
   memoryDesc:
-    'Les notes que l’IA a prises pendant les conversations. Supprimez ce qui est faux ou inutile.',
-  memoryEnabled: 'Conserver la mémoire',
-  memoryEnabledDesc:
-    'Désactivé, l’IA n’écrit plus rien de nouveau. La mémoire existante reste lue.',
+    'Notes conservées par l’IA pendant les conversations. Un tri est conseillé au-delà de 8 000 caractères.',
+  memoryEnabled: 'Enregistrer automatiquement les nouveaux souvenirs',
+  memoryEnabledDesc: 'Les souvenirs existants restent utilisés si cette option est désactivée.',
   memoryLength: '{count} entrées · {chars} caractères',
-  memoryEmpty: 'Aucune mémoire pour l’instant.',
-  memoryEditAll: 'Tout modifier',
+  memoryEmpty: 'Les souvenirs de vos conversations apparaîtront ici.',
+  memoryEditAll: 'Modifier la mémoire',
   memoryEditLabel: 'Toute la mémoire',
   memoryConflict: 'Il existe des copies en conflit de synchronisation : {names}',
   consolidating: 'Mise en ordre…',
@@ -64,9 +65,8 @@ export const fr = {
   consolidateUndone: 'Retour à l’état d’avant la mise en ordre.',
   undoFailed: 'Impossible d’annuler.',
   removeMemoryAria: 'Supprimer cette mémoire : {text}',
-  filesDesc:
-    'Les fichiers que l’IA peut voir dans ce projet. Les fichiers cachés et le dossier .ieumoffice sont exclus.',
-  filesEmpty: 'Aucun fichier visible par l’IA.',
+  filesDesc: 'Fichiers du projet que l’IA peut consulter.',
+  filesEmpty: 'Ajoutez des documents au dossier du projet pour les voir ici.',
   filesLoadFailed: 'Impossible de lire la liste des fichiers.',
   filesCount: '{count} fichiers',
   loadMore: 'Afficher plus',
@@ -76,13 +76,11 @@ export const fr = {
     'Ce fichier est uniquement dans le cloud. Si l’IA veut le lire, on vous demande d’abord de le télécharger.',
   hideFromAi: 'Masquer à l’IA',
   hideFromAiAria: 'Masquer à l’IA : {name}',
-  ignoredTitle: 'Fichiers masqués à l’IA',
-  ignoredDesc:
-    'Cette liste ne s’affiche que sur cet écran. Annulez pour que l’IA voie à nouveau un fichier.',
+  ignoredTitle: 'Fichiers exclus de l’IA',
+  ignoredDesc: 'Restaurez un fichier pour que l’IA puisse le consulter à nouveau.',
   ignoredEmpty: 'Aucun.',
   restoreAria: 'Annuler : {name}',
-  chatsDesc:
-    'Les conversations de ce projet. Cliquez pour en reprendre une dans le panneau IA du dernier document qui l’a utilisée.',
+  chatsDesc: 'Les conversations avec l’IA de ce projet sont enregistrées ici.',
   actionFailed: 'Cela n’a pas fonctionné. Veuillez réessayer.',
   loadFailed: 'Impossible de lire le projet.',
   addExistingFolder: 'Utiliser un dossier existant',

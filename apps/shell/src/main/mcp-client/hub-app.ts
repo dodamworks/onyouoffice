@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 import { app, ipcMain, net, safeStorage, shell, webContents, type BrowserWindow } from 'electron'
-import { PRODUCT_NAME, type Lang } from '@genoffice/i18n'
+import { PRODUCT_COMMAND, PRODUCT_NAME, type Lang } from '@genoffice/i18n'
 import { safeExternalUrl } from '@genoffice/electron-utils'
 import { MCP_SERVERS_CHANNELS } from '../../shared/mcp-servers-api'
 import { createMcpHub, redirectSafeFetch, type McpHub } from './hub'
@@ -20,7 +20,7 @@ import { createMcpServersStore, mcpServersFilePath } from './store'
  */
 
 /** Under the app's temp folder: the empty working folders of "my PC" servers (5.3) */
-const LOCAL_WORK_DIR_NAME = 'ieumoffice-mcp'
+const LOCAL_WORK_DIR_NAME = `${PRODUCT_COMMAND}-mcp`
 
 export interface McpHubAppDeps {
   lang: () => Lang

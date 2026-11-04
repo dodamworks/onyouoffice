@@ -87,12 +87,11 @@ export const zhTW = {
   pickerNotConnected: '連結 AI',
   guideQuestion: '你現在在用哪種 AI？',
   guidePathClaudeTitle: '我有 Claude 付費訂閱',
-  guidePathClaudeBody: '需要 Pro 或 Max 方案。免費的 Claude 帳戶無法連線。',
+  guidePathClaudeBody: '需要 Pro 或 Max 訂閱及電腦上的連線程式。',
   guidePathCodexTitle: '我在用 ChatGPT',
   guidePathCodexBody: '用你的 ChatGPT 帳戶登入 OpenAI 的 Codex 程式來使用。免費方案可用量很少。',
   guidePathFreeTitle: '兩者都還沒有',
-  guidePathFreeBody:
-    '大約一分鐘就能連結免費 AI。免費使用期間，你傳送的內容可能會被該公司用來改進其 AI。',
+  guidePathFreeBody: '透過 OpenRouter 或 Gemini 連線免費 AI。供應商可能會使用傳送的內容改善其 AI。',
   guideBack: '選擇其他方式',
   guideBadgeReady: '已連線',
   guideBadgeInstalled: '已安裝',
@@ -127,8 +126,7 @@ export const zhTW = {
   actionCopyInfo: '複製求助資訊',
   copyInfoDone: '已複製',
   actionConnectHelp: '查看每一步的畫面示範（韓語頁面）',
-  guidePathChatGptBody:
-    '用你的 ChatGPT 帳戶登入，即可在方案範圍內使用。不需要安裝程式。免費方案可用量很少。',
+  guidePathChatGptBody: '在瀏覽器中登入，使用量受方案限制。',
   guideUseCodex: '這台電腦上已在使用 Codex 程式？透過 Codex 連線',
   guideUseDirect: '不用 Codex，直接在應用程式中連線',
   chatgptLoginNote:

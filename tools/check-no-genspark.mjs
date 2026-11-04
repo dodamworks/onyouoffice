@@ -83,6 +83,11 @@ const ALLOW = [
     reason: 'the link to the original project this product is based on',
   },
   {
+    path: 'docs/dodam/UPSTREAM-INTEGRATION.md',
+    span: /https:\/\/github\.com\/genspark-ai\/genoffice(?=[)#\s]|$)/g,
+    reason: 'the exact original-source link in the documented fork lineage',
+  },
+  {
     path: /^README(?:\.en)?\.md$/,
     section: /^## (?:License and acknowledgement|라이선스와 출처)$/,
     reason: 'the acknowledgement and trademark paragraphs',

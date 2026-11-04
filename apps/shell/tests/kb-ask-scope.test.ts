@@ -240,14 +240,16 @@ describe('shell wiring (src/main/index.ts needs a running Electron, so the text 
     const handler = between("ipcMain.handle('kb:list'", "ipcMain.handle('kb:search'")
     const flat = handler.replace(/\s+/g, ' ')
     expect(flat).toContain(
-      'const starred = kbRunScopes.narrow( event.sender.id, raw, readStarredFiles(), readStarredGroupMap, )',
+      'const starred = kbRunScopes.narrow( event.sender.id, raw, kbRunScopes.usesRegistered(event.sender.id, raw) ? await registeredKnowledgePaths() : readStarredFiles(), readStarredGroupMap, )',
     )
     expect(flat).toContain('return listKnowledgeFiles(starred)')
   })
 
   it('narrows the search after the unsaved and on-disk filters, never instead of them', () => {
     const handler = between("ipcMain.handle('kb:search'", "ipcMain.handle('kb:read'")
-    expect(handler).toContain('store.pathsIndexedAsOnDisk(readStarredFiles())')
+    expect(handler.replace(/\s+/g, ' ')).toContain(
+      'store.pathsIndexedAsOnDisk( kbRunScopes.usesRegistered(event.sender.id, raw) ? await registeredKnowledgePaths() : readStarredFiles(), )',
+    )
     expect(handler).toContain(
       'kbRunScopes.narrow(event.sender.id, raw, starred, readStarredGroupMap)',
     )
@@ -270,7 +272,7 @@ describe('shell wiring (src/main/index.ts needs a running Electron, so the text 
     const handler = between("ipcMain.handle('kb:read'", 'HOME_CHANNELS.rerankSearch')
     const flat = handler.replace(/\s+/g, ' ')
     const projectOf = flat.indexOf('const projectId = kbRunScopes.projectOf(owner, raw)')
-    const starredCheck = flat.indexOf('readStarredFiles().includes(path) &&')
+    const starredCheck = flat.indexOf('readStarredFiles().includes(path)')
     const scopeCheck = flat.indexOf(
       'kbRunScopes.narrow(owner, raw, [path], readStarredGroupMap).includes(path)',
     )
@@ -291,5 +293,41 @@ describe('shell wiring (src/main/index.ts needs a running Electron, so the text 
     expect(handler).toContain(
       'kbRunScopes.openProject(event.sender.id, projectId, starred, readStarredGroupMap())',
     )
+  })
+})
+
+describe('registered-document run scopes', () => {
+  it('keeps a selection separate from other registered files and projects', () => {
+    const scopes = new KbRunScopes()
+    const scope = scopes.openRegistered(HOME, ['/a.docx'], ['/a.docx', '/b.docx'])
+    expect(scopes.narrow(HOME, { scope }, ['/a.docx', '/b.docx'], () => new Map())).toEqual([
+      '/a.docx',
+    ])
+    expect(scopes.projectOf(HOME, { scope })).toBeNull()
+    expect(scopes.usesRegistered(HOME, { scope })).toBe(true)
+    expect(() => scopes.narrow(OTHER_WINDOW, { scope }, ['/a.docx'], () => new Map())).toThrow(
+      KB_SCOPE_UNKNOWN,
+    )
+    scopes.close(HOME, scope)
+    expect(() => scopes.narrow(HOME, { scope }, ['/a.docx'], () => new Map())).toThrow(
+      KB_SCOPE_UNKNOWN,
+    )
+  })
+
+  it('holds the all-documents snapshot and never widens an empty selection', () => {
+    const scopes = new KbRunScopes()
+    const all = scopes.openRegistered(HOME, null, ['/a.docx'])
+    expect(scopes.narrow(HOME, { scope: all }, ['/a.docx', '/new.docx'], () => new Map())).toEqual([
+      '/a.docx',
+    ])
+    const empty = scopes.openRegistered(HOME, [], ['/a.docx'])
+    expect(scopes.narrow(HOME, { scope: empty }, ['/a.docx'], () => new Map())).toEqual([])
+  })
+
+  it('rejects forged, malformed and partly unauthorized selections', () => {
+    const scopes = new KbRunScopes()
+    for (const selection of [undefined, '/a.docx', [42], ['/a.docx', '/outside.docx']]) {
+      expect(() => scopes.openRegistered(HOME, selection, ['/a.docx'])).toThrow()
+    }
   })
 })

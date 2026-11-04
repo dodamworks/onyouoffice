@@ -3,8 +3,7 @@ import type { zh } from './zh'
 export const ja = {
   windowTitle: 'エージェント',
   homeCardSub: 'フォルダーで Claude Code や Codex を使って作業',
-  intro:
-    'エージェントは、選んだフォルダーで Claude Code または Codex を実行します。フォルダー内のファイルを読み、新しいファイルを作り、スキルを使い、スクリプトを実行し、GenOffice で開いている文書を編集できます。',
+  intro: '選んだフォルダーで AI とファイルを作成・編集します。',
   folderLabel: 'プロジェクトフォルダー',
   folderPick: 'フォルダーを選ぶ…',
   folderNone: 'フォルダーが選ばれていません',

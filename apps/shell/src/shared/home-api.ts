@@ -231,6 +231,8 @@ export interface HomeApi {
   // ---- knowledge-base ask panel: the reader's starred corpus, askable ----
   /** the starred corpus as the AI's knowledge base (`scope`: only the run's group, see kbOpenScope) */
   kbList(scope?: string): Promise<KbFileInfo[]>
+  /** Metadata for local registered documents that may be selected for a question. */
+  kbCatalog(): Promise<KbFileInfo[]>
   /** full-text search over the corpus (`scope`: only the run's group) */
   kbSearch(query: { q: string; limit?: number }, scope?: string): Promise<KbSearchHit[]>
   /** one page of a corpus file's parsed text (path must be in kbList; with `scope`, in the run's group) */
@@ -239,7 +241,12 @@ export interface HomeApi {
    *  Rejects when the group has no starred files (the run must not widen to all).
    *  With a project chosen in the home ask: `{ group, projectId }`, the project folder
    *  plus the starred part (null: every starred file) */
-  kbOpenScope(group: string | { group?: string | null; projectId: string }): Promise<string>
+  kbOpenScope(
+    group:
+      | string
+      | { group?: string | null; projectId: string }
+      | { source: 'registered' | 'selected' | 'project'; paths?: string[]; projectId?: string },
+  ): Promise<string>
   /** the narrowed run is over */
   kbCloseScope(scope: string): Promise<void>
   /** write the AI's markdown as a new .md / .docx in the save folder; resolves to its path */
@@ -364,6 +371,10 @@ export interface HomeApi {
   clearMcpLogs(): Promise<void>
   /** reveal the MCP log file in the file manager (created empty when missing) */
   openMcpLogFile(): Promise<void>
+  /** Optional Home-only nickname, stored on this PC; empty means unnamed greeting. */
+  getNickname(): Promise<string>
+  setNickname(value: string): Promise<string>
+  onNicknameChanged(handler: (value: string) => void): () => void
   /** name on comments and tracked changes; `value` is the stored override ('' = use `fallback`, the OS account) */
   getAuthorName(): Promise<AuthorNameSetting>
   /** persist; broadcasts 'app:author-name-changed' (the effective name) to all web contents */
@@ -372,6 +383,7 @@ export interface HomeApi {
   getAiPanelPrefs(): Promise<AiPanelPrefs>
   /** merge + persist; broadcasts 'app:ai-panel-prefs-changed' to all web contents */
   setAiPanelPrefs(patch: Partial<AiPanelPrefs>): Promise<AiPanelPrefs>
+  onAiPanelPrefsChanged(handler: (prefs: AiPanelPrefs) => void): () => void
   /** effective default save folder for new/untitled files (configured in userData/app-settings.json, falls back to <Documents>/GenOffice) */
   getDefaultSaveDir(): Promise<string>
   /** directory picker to change the default save folder; resolves to the new folder, or null when canceled or the pick was unusable */
@@ -601,6 +613,9 @@ export const HOME_CHANNELS = {
   getMcpLogs: 'home:get-mcp-logs',
   clearMcpLogs: 'home:clear-mcp-logs',
   openMcpLogFile: 'home:open-mcp-log-file',
+  getNickname: 'home:get-nickname',
+  setNickname: 'home:set-nickname',
+  nicknameChanged: 'home:nickname-changed',
   getAuthorName: 'home:get-author-name',
   setAuthorName: 'home:set-author-name',
   getAiPanelPrefs: 'home:get-ai-panel-prefs',

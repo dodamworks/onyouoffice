@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 import { flagBool, flagString } from '../args'
@@ -138,7 +139,9 @@ export const renderCommand: CommandDef = {
     const detail: Record<string, unknown> = {
       files: [...files, ...crops].map((f) => ({ ...f, page: f.page + 1 })),
       formats: RENDERABLE,
-      via: path.toLowerCase().endsWith('.pdf') ? 'pdfium' : 'ieumoffice --headless-export + pdfium',
+      via: path.toLowerCase().endsWith('.pdf')
+        ? 'pdfium'
+        : 'onyouoffice --headless-export + pdfium',
     }
     if (gridOptions) {
       const sheet = contactSheet(
@@ -239,7 +242,7 @@ function locate(
         reason: 'target_not_found',
         suggestion: guess
           ? `did you mean ${guess}?`
-          : 'run `ieumoffice slides read <file>` for the ids',
+          : 'run `onyouoffice slides read <file>` for the ids',
       },
     )
   }

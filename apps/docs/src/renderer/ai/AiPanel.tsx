@@ -6,6 +6,7 @@ import {
   AiInputTruncatedNotice,
   AiMark,
   AiPanelSideButton,
+  AiPanelFontSizeButtons,
   AiModelPicker,
   AiToolsUnsupportedNotice,
   type AiModelPickerBridge,
@@ -117,7 +118,7 @@ import {
   type RunErrorCause,
 } from './run-state'
 import { useSubscriptionConnection } from './subscription-client'
-import { useI18n, t as tModule, aiLangDirective, type StringKey } from '../i18n/locale'
+import { useI18n, t as tModule, aiLangDirective } from '../i18n/locale'
 import { createFileNav, Markdown } from '@genoffice/ui'
 import {
   AiComposer,
@@ -293,21 +294,6 @@ function storedEntryOf(m: StoredEntry): ChatEntry {
 
 /** longest selection excerpt echoed on a user bubble */
 const SCOPE_TEXT_MAX = 200
-
-/** clickable starter prompts for the empty state (fill the input, do not send) —
- * blank documents get generation starters, documents with content get edit starters */
-const DRAFT_STARTER_PROMPTS: StringKey[] = [
-  'aiStarterWeeklyReport',
-  'aiStarterLaunchPost',
-  'aiStarterEventOutline',
-]
-const EDIT_STARTER_PROMPTS: StringKey[] = [
-  'aiStarterSummarize',
-  'aiStarterPolishAll',
-  'aiStarterContinue',
-  'aiStarterFillTemplate',
-  'aiStarterMindMap',
-]
 
 /** resizable panel width: persisted, clamped so neither pane collapses */
 const PANEL_WIDTH_KEY = 'docs-ai-panel-width'
@@ -524,7 +510,6 @@ export function AiPanel({
   editor,
   blocks,
   settings,
-  docEmpty,
   numIdFallback,
   preset,
   open = true,
@@ -1857,10 +1842,16 @@ export function AiPanel({
         aria-label={aiSubscriptionText(lang, 'aiAssistant')}
       />
       <div className="ai-panel-header">
-        <span className="ai-panel-title">
-          <AiMark size={22} />
-          {aiSubscriptionText(lang, 'aiAssistant')}
-        </span>
+        <div className="ai-panel-heading">
+          <span className="ai-panel-title">
+            <AiMark size={22} />
+            {aiSubscriptionText(lang, 'aiAssistant')}
+          </span>
+          <AiPanelFontSizeButtons
+            lang={lang}
+            onChange={(patch) => window.desktop.setAiPanelPrefs(patch)}
+          />
+        </div>
         {project.chatMenu}
         <div className="ai-panel-header-actions">
           <AiPanelSideButton
@@ -1920,34 +1911,6 @@ export function AiPanel({
             ))}
             <div className="ai-history-sep">{t('aiHistorySep')}</div>
           </>
-        )}
-        {chat.length === 0 && historicChat.length === 0 && (
-          <div className="ai-chat-empty">
-            <div className="ai-chat-empty-title">
-              {t(docEmpty ? 'aiEmptyDraftTitle' : 'aiEmptyTitle')}
-            </div>
-            <div className="ai-chat-empty-body">
-              {t(docEmpty ? 'aiEmptyDraftBody1' : 'aiEmptyBody1')}
-              <br />
-              {t(docEmpty ? 'aiEmptyDraftBody2' : 'aiEmptyBody2')}
-            </div>
-            {/* the other editors honour "hide from AI"; this one sends the text as written (docs/security.md) */}
-            <div className="ai-chat-empty-note">{t('aiNoHidingNote')}</div>
-            <div className="ai-starter-list">
-              {(docEmpty ? DRAFT_STARTER_PROMPTS : EDIT_STARTER_PROMPTS).map((p) => (
-                <button
-                  key={p}
-                  className="ai-starter"
-                  onClick={() => {
-                    setInput(t(p))
-                    inputRef.current?.focus()
-                  }}
-                >
-                  {t(p)}
-                </button>
-              ))}
-            </div>
-          </div>
         )}
         {chat.map((entry, i) => {
           if (
@@ -2124,6 +2087,7 @@ export function AiPanel({
       <div className="ai-composer">
         {sendGate.connectChoice && (
           <AiConnectPrompt
+            settingsOnly
             choice={sendGate.connectChoice}
             statuses={subscription.statuses}
             lang={lang}
@@ -2191,6 +2155,9 @@ export function AiPanel({
         {/* Above the input card, not inside its footer: the reset time is long and
             would otherwise squeeze the attach/send buttons in a narrow panel. */}
         <AiSubscriptionUsageLine usage={subscriptionUsage} lang={lang} />
+        {chat.length === 0 && historicChat.length === 0 && (
+          <p className="ai-send-note">{t('aiNoHidingNote')}</p>
+        )}
         <AiComposer
           queueStrip={
             <AiQueueStrip
@@ -2332,6 +2299,7 @@ export function AiPanel({
           footerStart={
             <>
               <AiModelPicker
+                connectInSettings
                 bridge={MODEL_BRIDGE}
                 lang={lang}
                 subscriptionStatuses={subscription.statuses}

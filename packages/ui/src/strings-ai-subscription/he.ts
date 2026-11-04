@@ -93,13 +93,13 @@ export const he = {
   pickerNotConnected: 'חיבור בינה מלאכותית',
   guideQuestion: 'באיזו בינה מלאכותית אתם כבר משתמשים?',
   guidePathClaudeTitle: 'יש לי מינוי Claude בתשלום',
-  guidePathClaudeBody: 'נדרשת תוכנית Pro או Max. אי אפשר להתחבר עם חשבון Claude חינמי.',
+  guidePathClaudeBody: 'נדרשים מינוי Pro או Max ותוכנית חיבור במחשב.',
   guidePathCodexTitle: 'יש לי ChatGPT',
   guidePathCodexBody:
     'נכנסים לתוכנת Codex של OpenAI עם חשבון ChatGPT. בתוכנית החינמית אפשר להשתמש רק מעט.',
   guidePathFreeTitle: 'עדיין אין לי',
   guidePathFreeBody:
-    'אפשר לחבר בינה מלאכותית בחינם תוך כדקה. בזמן השימוש בחינם, התוכן שתשלחו עשוי לשמש לשיפור הבינה המלאכותית של אותה חברה.',
+    'חברו AI חינמי דרך OpenRouter או Gemini. הספקים עשויים להשתמש בתוכן שתשלחו כדי לשפר את ה-AI שלהם.',
   guideBack: 'בחירת דרך אחרת',
   guideBadgeReady: 'מחובר',
   guideBadgeInstalled: 'מותקן',
@@ -137,8 +137,7 @@ export const he = {
   actionCopyInfo: 'העתקת פרטים לקבלת עזרה',
   copyInfoDone: 'הועתק',
   actionConnectHelp: 'צפו בכל שלב על המסך (דף בקוריאנית)',
-  guidePathChatGptBody:
-    'היכנסו עם חשבון ChatGPT והשתמשו בתוכנית שלכם. אין צורך להתקין דבר. בתוכנית החינמית אפשר להשתמש רק מעט.',
+  guidePathChatGptBody: 'היכנסו בדפדפן. חלות מגבלות השימוש של התוכנית שלכם.',
   guideUseCodex: 'כבר משתמשים בתוכנת Codex במחשב הזה? התחברות דרך Codex',
   guideUseDirect: 'התחברות ישירה באפליקציה, בלי Codex',
   chatgptLoginNote:

@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { copyFileSync, existsSync } from 'node:fs'
 import { basename } from 'node:path'
 import { flagBool } from '../args'
@@ -35,7 +36,7 @@ export const hwpCommand: CommandDef = {
       name: 'ops',
       value: 'file',
       description:
-        'apply: JSON array of ops, each { "op": "<name>", ...fields } (replace_text, insert_paragraphs, insert_table, fill_cells, format_text, fill_field, insert_note ...); "-" reads stdin. See `ieumoffice guide hwp`.',
+        'apply: JSON array of ops, each { "op": "<name>", ...fields } (replace_text, insert_paragraphs, insert_table, fill_cells, format_text, fill_field, insert_note ...); "-" reads stdin. See `onyouoffice guide hwp`.',
     },
     {
       name: 'dry-run',
@@ -64,7 +65,7 @@ export const hwpCommand: CommandDef = {
       undefined,
       {
         reason: verb === undefined ? 'missing_argument' : 'invalid_argument',
-        suggestion: 'run `ieumoffice help hwp`',
+        suggestion: 'run `onyouoffice help hwp`',
       },
     )
   },
@@ -171,7 +172,7 @@ export function hwpOpsOf(args: Args, ctx: CommandContext): unknown[] {
   if (!ops?.length) {
     throw new CliError(EXIT.usage, `${source}: expected a non-empty array of ops`, undefined, {
       reason: 'invalid_argument',
-      suggestion: 'run `ieumoffice guide hwp` for the ops',
+      suggestion: 'run `onyouoffice guide hwp` for the ops',
     })
   }
   return ops
@@ -216,7 +217,7 @@ export async function runHwpBatch(
       EXIT.usage,
       `no ops were applied: op ${first.index} (${first.op}) rejected: ${first.error}`,
       { failures, batch: counts },
-      { reason: first.reason, suggestion: 'run `ieumoffice guide hwp` for the ops' },
+      { reason: first.reason, suggestion: 'run `onyouoffice guide hwp` for the ops' },
     )
   }
   if (flagBool(args, 'dry-run')) {

@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -34,7 +35,7 @@ const INSTALL = 'install-here'
 let root: string
 
 function chatFile(name: string, lines: object[]): void {
-  const dir = join(root, '.ieumoffice', 'chats')
+  const dir = join(root, '.onyouoffice', 'chats')
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, name), lines.map((line) => `${JSON.stringify(line)}\n`).join(''))
 }

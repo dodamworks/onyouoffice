@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { homedir } from 'node:os'
@@ -124,7 +125,7 @@ export function ocrHelperPath(): string | null {
   return candidates.find((p) => existsSync(p)) ?? null
 }
 
-/** skills/ieumoffice/SKILL.md as shipped beside this bundle (Resources/cli/skills) or in the checkout. */
+/** skills/onyouoffice/SKILL.md as shipped beside this bundle (Resources/cli/skills) or in the checkout. */
 export function bundledSkillPath(): string | null {
   const packaged = packagedResourcesDir()
   const candidates = [
@@ -135,7 +136,7 @@ export function bundledSkillPath(): string | null {
 }
 
 /** Linux names the binary from electron-builder's `linux.executableName`; it sits in the product's own /opt folder. */
-const LINUX_APP_BINARY = 'ieumoffice'
+const LINUX_APP_BINARY = 'onyouoffice'
 
 export interface AppLaunch {
   command: string

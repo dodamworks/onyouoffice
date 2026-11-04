@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * Where a person's skills are read from and how one skill folder is judged:
  * sources, identifiers, names left out, unreadable reasons, scripts, templates,
@@ -73,7 +74,7 @@ function fakeHome(): { home: string; builtin: string } {
   const home = temp()
   const builtin = join(home, 'app-resources', 'builtin-skills')
   skill(builtin, 'meeting-minutes')
-  skill(join(home, '.ieumoffice', 'skills'), 'mine')
+  skill(join(home, '.onyouoffice', 'skills'), 'mine')
   skill(join(home, '.claude', 'skills'), 'claude-one')
   skill(join(home, '.agents', 'skills'), 'agents-one')
   skill(join(home, '.codex', 'skills'), 'codex-home-one')
@@ -111,7 +112,7 @@ describe('identifiers', () => {
 describe('sources', () => {
   it('skips hidden folders such as an install that is still staging', async () => {
     const home = temp()
-    const app = join(home, '.ieumoffice', 'skills')
+    const app = join(home, '.onyouoffice', 'skills')
     skill(app, '.ieum-staging-abc123', { name: 'half-copied' })
     skill(app, 'kept')
     const skills = await readUserSkillsFrom([{ source: 'app', dir: app }], { homeDir: home })
@@ -123,7 +124,7 @@ describe('sources', () => {
     const sources = await userSkillSources({ homeDir: home, builtinDir: builtin, projectRoot: 'P' })
     expect(sources).toEqual([
       { source: 'builtin', dir: builtin },
-      { source: 'app', dir: join(home, '.ieumoffice', 'skills') },
+      { source: 'app', dir: join(home, '.onyouoffice', 'skills') },
       { source: 'user', dir: join(home, '.claude', 'skills') },
       {
         source: 'plugin',
@@ -225,7 +226,7 @@ describe('the list', () => {
     skill(claude, 'IeumOffice')
     skill(claude, 'other-folder', { name: 'GenOffice' })
     skill(claude, 'kept')
-    skill(join(home, '.ieumoffice', 'skills'), 'ieumoffice')
+    skill(join(home, '.onyouoffice', 'skills'), 'ieumoffice')
     const skills = await listUserSkills({ homeDir: home })
     expect(ids(skills)).toEqual(['user:kept'])
   })
@@ -285,7 +286,7 @@ describe('the list', () => {
 
   it('lists the same name from different sources side by side', async () => {
     const { home, builtin } = fakeHome()
-    skill(join(home, '.ieumoffice', 'skills'), 'meeting-minutes')
+    skill(join(home, '.onyouoffice', 'skills'), 'meeting-minutes')
     const skills = await listUserSkills({ homeDir: home, builtinDir: builtin })
     expect(ids(skills).filter((id) => id.endsWith(':meeting-minutes'))).toEqual([
       'builtin:meeting-minutes',
@@ -321,10 +322,10 @@ describe('the list', () => {
         },
       ]),
     )
-    skill(join(home, '.ieumoffice', 'skills'), 'from-github', {
+    skill(join(home, '.onyouoffice', 'skills'), 'from-github', {
       files: { '.ieum-source.json': '{"kind":"github"}' },
     })
-    skill(join(home, '.ieumoffice', 'skills'), 'local')
+    skill(join(home, '.onyouoffice', 'skills'), 'local')
     const skills = await listUserSkills({ homeDir: home, builtinDir: builtin })
     const by = (id: string) => skills.find((entry) => entry.id === id)
     expect(by('builtin:find-skills')?.agentOnly).toBe(true)

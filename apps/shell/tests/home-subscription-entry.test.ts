@@ -145,6 +145,89 @@ const entry = (): HTMLButtonElement => host.querySelector<HTMLButtonElement>('.a
 const entryText = (selector: string): string | null =>
   entry().querySelector(selector)?.textContent ?? null
 
+describe('home quick actions', () => {
+  it('opens format help independently of the file picker and dismisses it with Escape', async () => {
+    await renderHome(statuses({ state: 'not-installed' }, { state: 'not-installed' }))
+    const browse = vi.fn(async () => undefined)
+    window.aiOffice.browse = browse
+    expect(host.querySelectorAll('.quick-card')).toHaveLength(10)
+    expect(host.querySelector('.ai-chip')).toBeNull()
+    expect(
+      Array.from(host.querySelectorAll('.quick-card .quick-title')).map((el) => el.textContent),
+    ).toEqual([
+      'Open file',
+      'Document',
+      'Spreadsheet',
+      'Presentation',
+      'HWP',
+      'PDF',
+      'PDF tools',
+      'Markdown',
+      'HTML',
+      'Mind Map',
+    ])
+    const info = host.querySelector<HTMLButtonElement>('.quick-info')!
+    expect(info.getAttribute('aria-expanded')).toBe('false')
+    await act(async () => info.click())
+    expect(browse).not.toHaveBeenCalled()
+    expect(info.getAttribute('aria-expanded')).toBe('true')
+    const advertised = Array.from(host.querySelectorAll('.supported-formats dd span')).map(
+      (el) => el.textContent,
+    )
+    expect(advertised).toEqual([
+      '.docx',
+      '.doc',
+      '.odt',
+      '.xlsx',
+      '.xlsm',
+      '.xls',
+      '.csv',
+      '.tsv',
+      '.pptx',
+      '.ppt',
+      '.pdf',
+      '.md',
+      '.markdown',
+      '.txt',
+      '.json',
+      '.html',
+      '.htm',
+      '.xmind',
+      '.hwp',
+      '.hwpx',
+      '.epub',
+    ])
+    await act(async () =>
+      info.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })),
+    )
+    expect(host.querySelector('#home-supported-formats')).toBeNull()
+    await act(async () =>
+      host.querySelector<HTMLButtonElement>('.quick-open > .quick-card')!.click(),
+    )
+    expect(browse).toHaveBeenCalledOnce()
+  })
+})
+
+describe('home nickname', () => {
+  it('reads the saved name, updates live and removes it when cleared', async () => {
+    let changed!: (value: string) => void
+    window.aiOffice.getNickname = async () => 'Sam'
+    window.aiOffice.onNicknameChanged = (handler) => {
+      changed = handler
+      return () => {}
+    }
+    await renderHome(statuses({ state: 'not-installed' }, { state: 'not-installed' }))
+    const greeting = () => host.querySelector('.hero-title')!.textContent!
+    expect(greeting()).toContain('Sam')
+    act(() => changed('Mina'))
+    expect(greeting()).toContain('Mina')
+    expect(greeting()).not.toContain('Sam')
+    act(() => changed(''))
+    expect(greeting()).not.toContain('Mina')
+    expect(greeting()).not.toContain(',')
+  })
+})
+
 describe('home settings entry', () => {
   it('names the connected subscription and its state', async () => {
     await renderHome(statuses({ state: 'ready', planName: 'max' }, { state: 'signed-out' }))
@@ -231,7 +314,7 @@ describe('first-connection notice on the home screen', () => {
   it('comes up when the ask panel is opened', async () => {
     await renderHome(ready, { noticeDue: true })
     const ask = Array.from(host.querySelectorAll<HTMLElement>('.sidebar-nav .nav-item')).find(
-      (item) => item.textContent?.includes('Ask'),
+      (item) => item.textContent?.includes('Knowledge Vault'),
     )
     await click(ask)
     expect(host.querySelector('.first-notice')).not.toBeNull()
@@ -269,8 +352,8 @@ describe('ask panel without a connection', () => {
       host.querySelectorAll<HTMLElement>('.kb-ask .ai-sub-prompt .ai-sub-guide-path'),
     ).map((el) => [el.dataset.path, el.querySelector('.ai-sub-guide-badge')?.textContent ?? null])
     expect(badges).toEqual([
-      ['claude-code', null],
       ['chatgpt', null],
+      ['claude-code', null],
       ['free', null],
     ])
     // the Codex program is a way within the one ChatGPT answer

@@ -1,4 +1,8 @@
+<!-- Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build. -->
+
 # Pemasangan GenOffice
+
+> Ini ialah binaan pembangunan dalaman Onyou Office. Perkhidmatan muat turun, kemas kini dan sokongan belum dikonfigurasi. Arahan dan pautan di bawah menerangkan projek asal sebagai rujukan.
 
 Setiap versi diterbitkan pada [halaman Keluaran](https://github.com/pblsketch/openoffice/releases/latest) projek ini di GitHub. Versi ini dikeluarkan untuk Windows.
 

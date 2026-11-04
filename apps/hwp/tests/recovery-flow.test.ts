@@ -254,6 +254,20 @@ describe('a recovery copy', () => {
 })
 
 describe('the AI panel’s edits', () => {
+  it('keeps menu registration from restarting the recovery idle window', async () => {
+    const { copier, advance } = setup()
+    const bridge = withChangeNotes(
+      { installDocumentCheckMenu: vi.fn(async () => ({ ok: true })) },
+      () => copier.noteChange(),
+    )
+    copier.noteInput()
+    for (let elapsed = 0; elapsed < intervalMs; elapsed += 1_000) {
+      advance(1_000)
+      await bridge.installDocumentCheckMenu()
+    }
+    expect(await copier.tick()).toBe('written')
+  })
+
   it('count as changes; its reads do not', async () => {
     const onChange = vi.fn()
     const bridge = withChangeNotes(

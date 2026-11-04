@@ -1,6 +1,7 @@
 import {
   aiPanelWidthAtPointer,
   AiPanelSideButton,
+  AiPanelFontSizeButtons,
   AiModelPicker,
   type AiModelPickerBridge,
   DriveAttachButton,
@@ -746,10 +747,16 @@ export function AiChatPanel({
         aria-label={aiSubscriptionText(lang, 'aiAssistant')}
       />
       <header className="ai-panel-header">
-        <span className="ai-panel-title">
-          <AiMark size={22} />
-          {aiSubscriptionText(lang, 'aiAssistant')}
-        </span>
+        <div className="ai-panel-heading">
+          <span className="ai-panel-title">
+            <AiMark size={22} />
+            {aiSubscriptionText(lang, 'aiAssistant')}
+          </span>
+          <AiPanelFontSizeButtons
+            lang={lang}
+            onChange={(patch) => window.desktopApi.setAiPanelPrefs(patch)}
+          />
+        </div>
         {project?.chatMenu}
         <div className="ai-panel-header-actions">
           <AiPanelSideButton
@@ -811,16 +818,6 @@ export function AiChatPanel({
             ))}
             <div className="ai-history-sep">{t('aiHistorySep')}</div>
           </>
-        )}
-        {chat.length === 0 && historicChat.length === 0 && !subscription.connectChoice && (
-          <div className="ai-chat-empty">
-            <div className="ai-chat-empty-title">
-              {t(hasContent ? 'aiEmptyTitle' : 'aiEmptyBuildTitle')}
-            </div>
-            <div className="ai-chat-empty-body">
-              {t(hasContent ? 'aiEmptyBodyLine1' : 'aiEmptyBuildBody')}
-            </div>
-          </div>
         )}
         {chat.map((entry, index) => (
           <div
@@ -965,6 +962,7 @@ export function AiChatPanel({
         {/* no provider can run: how to connect, in place of an error */}
         {subscription.connectChoice && (
           <AiConnectPrompt
+            settingsOnly
             choice={subscription.connectChoice}
             statuses={subscription.statuses}
             lang={lang}
@@ -1132,6 +1130,7 @@ export function AiChatPanel({
           footerStart={
             <>
               <AiModelPicker
+                connectInSettings
                 bridge={MODEL_BRIDGE}
                 lang={lang}
                 subscriptionStatuses={subscription.statuses}

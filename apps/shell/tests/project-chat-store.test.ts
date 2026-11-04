@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import {
   existsSync,
   mkdirSync,
@@ -46,8 +47,8 @@ function makeGuide(): ProjectGuide {
   return new ProjectGuide({
     settingsPath,
     homeDir: folder('home'),
-    userData: folder('appdata', 'IeumOffice'),
-    defaultParentDir: () => folder('documents', 'IeumOffice'),
+    userData: folder('appdata', 'Onyou Office'),
+    defaultParentDir: () => folder('documents', 'Onyou Office'),
     env: {},
     language: () => 'en',
     now: () => new Date(clock),
@@ -86,7 +87,7 @@ async function addProject(
 }
 
 function chatsDir(root: string): string {
-  return join(root, '.ieumoffice', 'chats')
+  return join(root, '.onyouoffice', 'chats')
 }
 
 function infoOf(root: string, chatId: string): ProjectChatInfo {
@@ -151,7 +152,7 @@ function args(
 
 beforeEach(() => {
   base = realpathSync.native(mkdtempSync(join(tmpdir(), 'project-chats-')))
-  settingsPath = join(folder('appdata', 'IeumOffice'), 'app-settings.json')
+  settingsPath = join(folder('appdata', 'Onyou Office'), 'app-settings.json')
   trashDir = folder('trash')
   clock = Date.UTC(2026, 9, 29, 12, 0, 0)
   guide = makeGuide()
@@ -171,7 +172,7 @@ describe('new chat ids', () => {
     const b = await store.newChat(id)
     expect(a.chatId).toMatch(/^[A-Za-z0-9_-]+$/)
     expect(a.chatId).not.toBe(b.chatId)
-    expect(existsSync(join(root, '.ieumoffice'))).toBe(false)
+    expect(existsSync(join(root, '.onyouoffice'))).toBe(false)
   })
 
   it('skips an id whose files already exist', async () => {
@@ -193,7 +194,7 @@ describe('appending', () => {
     const ref = { projectId: id, ...(await store.newChat(id)) }
     const first = await store.append(args(ref, 'user', 'hello'), home)
     expect(first.status).toBe('pending')
-    expect(existsSync(join(root, '.ieumoffice'))).toBe(false)
+    expect(existsSync(join(root, '.onyouoffice'))).toBe(false)
     expect(await store.listChats(id)).toEqual([])
 
     const reply = await store.append(args(ref, 'assistant', 'hi'), home)
@@ -215,7 +216,7 @@ describe('appending', () => {
       documents: [],
     })
     // The first write also gives the folder its identity
-    expect(existsSync(join(root, '.ieumoffice', 'project.json'))).toBe(true)
+    expect(existsSync(join(root, '.onyouoffice', 'project.json'))).toBe(true)
   })
 
   it('materializes the buffer early at 200 opening messages', async () => {
@@ -666,8 +667,8 @@ describe('rename and delete', () => {
 describe('unwritable folders (spec 5.7)', () => {
   it('surfaces unwritable, keeps the messages, and writes them after a retry', async () => {
     const { id, root } = await addProject('p')
-    // `.ieumoffice` as a plain file: every write into it fails
-    writeFileSync(join(root, '.ieumoffice'), 'blocker')
+    // `.onyouoffice` as a plain file: every write into it fails
+    writeFileSync(join(root, '.onyouoffice'), 'blocker')
     const store = makeStore()
     const ref = { projectId: id, ...(await store.newChat(id)) }
     expect((await store.append(args(ref, 'user', 'q'), home)).status).toBe('pending')
@@ -675,7 +676,7 @@ describe('unwritable folders (spec 5.7)', () => {
     expect(guide.isUnwritable(id)).toBe(true)
     expect(await store.append(args(ref, 'user', 'q2'), home)).toEqual({ status: 'unwritable' })
 
-    rmSync(join(root, '.ieumoffice'))
+    rmSync(join(root, '.onyouoffice'))
     expect(await guide.retryUnwritable(id)).toEqual({ status: 'ok' })
     const after = await store.append(args(ref, 'assistant', 'r2'), home)
     expect(after.status).toBe('saved')
@@ -710,7 +711,7 @@ describe('append events', () => {
 
   it('emits nothing when the write fails', async () => {
     const { id, root } = await addProject('p')
-    writeFileSync(join(root, '.ieumoffice'), 'blocker')
+    writeFileSync(join(root, '.onyouoffice'), 'blocker')
     const store = makeStore()
     const listener = vi.fn()
     store.onAppended(listener)

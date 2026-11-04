@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { basename, extname, join, resolve } from 'node:path'
 import {
@@ -164,7 +165,7 @@ export function stageContext(
   if (outlineFile) out.outline = { file: outlineFile, outline: readOutline(outlineFile) }
   else {
     out.notes.push(
-      'no outline.json beside the page files or one folder up: the staged flow writes deck/outline.json first and checks every page against it (ieumoffice guide slides design)',
+      'no outline.json beside the page files or one folder up: the staged flow writes deck/outline.json first and checks every page against it (onyouoffice guide slides design)',
     )
   }
   if (found.style) {

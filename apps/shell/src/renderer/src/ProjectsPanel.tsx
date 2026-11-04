@@ -1,3 +1,4 @@
+import { PROJECT_INSTRUCTIONS_MAX_CHARS } from '../../shared/project-instructions'
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react'
 import { createIpcTransport, type AgentTransport } from '@genoffice/agent-core'
@@ -786,6 +787,7 @@ function ProjectDetailView(props: DetailProps) {
 
   const saveInstructions = async (overwrite = false) => {
     const text = instructionsDraft
+    if (text.length > PROJECT_INSTRUCTIONS_MAX_CHARS) return
     try {
       if (!overwrite && !(await unchangedSince('instructions', instructionsBaseRef.current))) {
         return
@@ -1033,7 +1035,7 @@ function ProjectDetailView(props: DetailProps) {
             {s('saveName')}
           </button>
         </div>
-        <p className="projects-hint">{s('renameHint')}</p>
+        {nameDraft !== project.name && <p className="projects-hint">{s('renameHint')}</p>}
         <div className="projects-path-row">
           <span className="projects-path" title={project.path}>
             {project.path}
@@ -1048,23 +1050,18 @@ function ProjectDetailView(props: DetailProps) {
             </button>
           )}
         </div>
-        <div className="projects-trust" data-trust={trust}>
-          <span className="projects-trust-state" role="status">
-            {s('trustStatus', {
-              state:
-                trust === 'use'
-                  ? s('trustUse')
-                  : trust === 'without'
-                    ? s('trustWithout')
-                    : s('trustUnconfirmed'),
-            })}
-          </span>
-          {trust !== 'use' && (
+        {trust !== 'use' && (
+          <div className="projects-trust" data-trust={trust}>
+            <span className="projects-trust-state" role="status">
+              {s('trustStatus', {
+                state: trust === 'without' ? s('trustWithout') : s('trustUnconfirmed'),
+              })}
+            </span>
             <button type="button" className="projects-small" onClick={() => void chooseUseTrust()}>
               {s('trustUseButton')}
             </button>
-          )}
-        </div>
+          </div>
+        )}
         {trust === 'without' && <p className="projects-hint">{s('trustWithoutDesc')}</p>}
         {project.missing && (
           <NoteLine lang={lang} note={{ from: 'screen', key: 'missingNote', tone: 'warning' }}>
@@ -1123,19 +1120,36 @@ function ProjectDetailView(props: DetailProps) {
             <textarea
               className="projects-textarea"
               aria-label={s('tabInstructions')}
+              maxLength={PROJECT_INSTRUCTIONS_MAX_CHARS}
+              aria-describedby="project-instructions-count"
+              aria-invalid={instructionsDraft.length > PROJECT_INSTRUCTIONS_MAX_CHARS || undefined}
               value={instructionsDraft}
-              placeholder={s('instructionsPlaceholder')}
               onChange={(event) => {
                 setInstructionsDraft(event.target.value)
                 setInstructionsNote(null)
               }}
             />
+            <p
+              id="project-instructions-count"
+              className="projects-instructions-count projects-hint"
+            >
+              {s('instructionsLength', {
+                count: instructionsDraft.length.toLocaleString(lang),
+                limit: PROJECT_INSTRUCTIONS_MAX_CHARS.toLocaleString(lang),
+              })}
+            </p>
+            {instructionsDraft.length > PROJECT_INSTRUCTIONS_MAX_CHARS && (
+              <p className="projects-hint">{s('instructionsTooLong')}</p>
+            )}
             {conflictLine('instructions')}
             <div className="projects-buttons">
               <button
                 type="button"
                 className="projects-primary"
-                disabled={instructionsDraft === detail.instructions}
+                disabled={
+                  instructionsDraft === detail.instructions ||
+                  instructionsDraft.length > PROJECT_INSTRUCTIONS_MAX_CHARS
+                }
                 onClick={() => void saveInstructions()}
               >
                 {s('save')}
@@ -1183,12 +1197,14 @@ function ProjectDetailView(props: DetailProps) {
             </label>
             <p className="projects-hint">{s('memoryEnabledDesc')}</p>
             {trust === 'without' && <p className="projects-hint">{s('withoutNotSent')}</p>}
-            <p className="projects-length">
-              {s('memoryLength', {
-                count: detail.memoryEntries.length,
-                chars: detail.memoryChars,
-              })}
-            </p>
+            {detail.memoryEntries.length > 0 && (
+              <p className="projects-length">
+                {s('memoryLength', {
+                  count: detail.memoryEntries.length,
+                  chars: detail.memoryChars,
+                })}
+              </p>
+            )}
             {detail.memoryConflictCopies.length > 0 && (
               <NoteLine
                 lang={lang}
@@ -1236,16 +1252,18 @@ function ProjectDetailView(props: DetailProps) {
                   >
                     {s('memoryEditAll')}
                   </button>
-                  <button
-                    type="button"
-                    className="projects-ghost"
-                    disabled={
-                      consolidation?.kind === 'running' || detail.memoryEntries.length === 0
-                    }
-                    onClick={() => void consolidate()}
-                  >
-                    {p('consolidate')}
-                  </button>
+                  {detail.memoryEntries.length > 0 && (
+                    <button
+                      type="button"
+                      className="projects-ghost"
+                      disabled={
+                        consolidation?.kind === 'running' || detail.memoryEntries.length === 0
+                      }
+                      onClick={() => void consolidate()}
+                    >
+                      {p('consolidate')}
+                    </button>
+                  )}
                 </div>
               </>
             ) : (
@@ -1331,7 +1349,9 @@ function ProjectDetailView(props: DetailProps) {
                 note={{ from: 'screen', key: 'filesLoadFailed', tone: 'warning' }}
               />
             )}
-            {files && <p className="projects-length">{s('filesCount', { count: files.total })}</p>}
+            {files && files.total > 0 && (
+              <p className="projects-length">{s('filesCount', { count: files.total })}</p>
+            )}
             {files && files.list.length === 0 && !filesFailed && (
               <p className="projects-empty">{s('filesEmpty')}</p>
             )}
@@ -1382,40 +1402,39 @@ function ProjectDetailView(props: DetailProps) {
                 </button>
               </div>
             )}
-            <h3 className="projects-sub-title">{s('ignoredTitle')}</h3>
-            <p className="projects-hint">{s('ignoredDesc')}</p>
-            {ignored && ignored.length === 0 && (
-              <p className="projects-empty">{s('ignoredEmpty')}</p>
-            )}
             {ignored && ignored.length > 0 && (
-              <ul className="projects-list projects-ignored-list">
-                {ignored.map((file) => (
-                  <li key={file.relPath} className="projects-row" data-rel-path={file.relPath}>
-                    <span className="projects-file-name" title={file.relPath}>
-                      {file.relPath}
-                    </span>
-                    <span className="projects-file-meta">
-                      {file.ext ? file.ext.toUpperCase() : s('noExt')}
-                    </span>
-                    <span className="projects-file-meta">{formatSize(file.sizeBytes)}</span>
-                    {file.cloudOnly && (
-                      <span className="projects-mark" title={s('notOnPcTitle')}>
-                        {s('notOnPc')}
+              <>
+                <h3 className="projects-sub-title">{s('ignoredTitle')}</h3>
+                <p className="projects-hint">{s('ignoredDesc')}</p>
+                <ul className="projects-list projects-ignored-list">
+                  {ignored.map((file) => (
+                    <li key={file.relPath} className="projects-row" data-rel-path={file.relPath}>
+                      <span className="projects-file-name" title={file.relPath}>
+                        {file.relPath}
                       </span>
-                    )}
-                    <div className="projects-row-actions">
-                      <button
-                        type="button"
-                        className="projects-small"
-                        aria-label={s('restoreAria', { name: file.relPath })}
-                        onClick={() => void restoreToAi(file.relPath)}
-                      >
-                        {p('undo')}
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                      <span className="projects-file-meta">
+                        {file.ext ? file.ext.toUpperCase() : s('noExt')}
+                      </span>
+                      <span className="projects-file-meta">{formatSize(file.sizeBytes)}</span>
+                      {file.cloudOnly && (
+                        <span className="projects-mark" title={s('notOnPcTitle')}>
+                          {s('notOnPc')}
+                        </span>
+                      )}
+                      <div className="projects-row-actions">
+                        <button
+                          type="button"
+                          className="projects-small"
+                          aria-label={s('restoreAria', { name: file.relPath })}
+                          onClick={() => void restoreToAi(file.relPath)}
+                        >
+                          {p('undo')}
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </>
         )}

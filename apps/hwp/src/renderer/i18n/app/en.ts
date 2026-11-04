@@ -56,6 +56,9 @@ export const en = {
   aiEmptyBody:
     'Ask about the text, have wording polished, or have form fields filled in. Every change is listed here and can be taken back in one go.',
   aiComposerPlaceholder: 'Ask about this document or say what to change…',
+  aiToolbarSummary: 'Summarize',
+  aiToolbarPolish: 'Polish',
+  aiToolbarPolishPrompt: 'Polish the whole document to make the writing clearer and more fluent',
   aiStarterSummarize: 'Summarize',
   aiStarterSummarizePrompt: 'Summarize this document briefly, key points only.',
   aiStarterProofread: 'Fix spelling and spacing',
@@ -212,7 +215,7 @@ export const en = {
   previewMargins: 'Show margins',
   previewEditPage: 'Edit this page',
   previewEditFailed: 'Could not go to this page.',
-  checkTitle: 'Document check',
+  checkTitle: 'Document format check',
   checkRunning: 'Reading the document…',
   checkFailed: 'Could not read the document.',
   checkEmpty: 'Nothing to fix.',

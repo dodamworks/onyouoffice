@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31: assert independent product display names and default paths.
 // @vitest-environment node
 /**
  * A skill template's copy in a new HWP tab (spec 5.7): the view reads the copy
@@ -152,7 +153,7 @@ describe('an untitled copy in an HWP tab', () => {
     await call<Promise<BeginSaveResult>>(HWP_CHANNELS.beginSave, plain, 'save')
     const options = showSaveDialog.mock.calls.at(-1)!.at(-1) as { defaultPath: string }
     expect(options.defaultPath).toBe(
-      join(tmpdir(), 'hwp-test-documents', 'IeumOffice', 'Family letter.hwpx'),
+      join(tmpdir(), 'hwp-test-documents', 'onyouoffice', 'Family letter.hwpx'),
     )
   })
 

@@ -97,13 +97,13 @@ export const en = {
   pickerNotConnected: 'Connect AI',
   guideQuestion: 'Which AI do you already use?',
   guidePathClaudeTitle: 'I pay for Claude',
-  guidePathClaudeBody: 'Needs a Pro or Max plan. A free Claude account cannot connect.',
+  guidePathClaudeBody: 'Requires a Pro or Max plan and a connection program on your PC.',
   guidePathCodexTitle: 'I use ChatGPT',
   guidePathCodexBody:
     "Sign in to OpenAI's Codex program with your ChatGPT account. The free plan allows only a little use.",
   guidePathFreeTitle: 'Neither yet',
   guidePathFreeBody:
-    "Connect a free AI in about a minute. While you use it for free, what you send may be used to improve that company's AI.",
+    'Connect to free AI through OpenRouter or Gemini. Providers may use what you send to improve their AI.',
   guideBack: 'Choose another way',
   guideBadgeReady: 'Connected',
   guideBadgeInstalled: 'Installed',
@@ -143,8 +143,7 @@ export const en = {
   actionCopyInfo: 'Copy details for help',
   copyInfoDone: 'Copied',
   actionConnectHelp: 'See each step on screen (page in Korean)',
-  guidePathChatGptBody:
-    'Sign in with your ChatGPT account and use your plan. Nothing to install. The free plan allows only a little use.',
+  guidePathChatGptBody: 'Sign in in your browser. Your plan’s usage limits apply.',
   guideUseCodex: 'Already use the Codex program on this PC? Connect with Codex',
   guideUseDirect: 'Connect directly in the app, without Codex',
   chatgptLoginNote:

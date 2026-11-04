@@ -57,6 +57,9 @@ export const nl = {
   aiEmptyBody:
     'Stel een vraag over de tekst, laat formuleringen verbeteren of formuliervelden invullen. Elke wijziging staat hier en ze kunnen in één keer ongedaan worden gemaakt.',
   aiComposerPlaceholder: 'Stel een vraag over dit document of zeg wat er moet veranderen…',
+  aiToolbarSummary: 'Samenvatten',
+  aiToolbarPolish: 'Verbeteren',
+  aiToolbarPolishPrompt: 'Polijst het hele document zodat de tekst duidelijker en vloeiender wordt',
   aiStarterSummarize: 'Samenvatten',
   aiStarterSummarizePrompt: 'Vat dit document kort samen, alleen de hoofdpunten.',
   aiStarterProofread: 'Spelling en spaties corrigeren',
@@ -220,7 +223,7 @@ export const nl = {
   previewMargins: 'Marges tonen',
   previewEditPage: 'Deze pagina bewerken',
   previewEditFailed: 'Kon deze pagina niet openen.',
-  checkTitle: 'Documentcontrole',
+  checkTitle: 'Documentopmaak controleren',
   checkRunning: 'Het document wordt gelezen…',
   checkFailed: 'Het document kon niet worden gelezen.',
   checkEmpty: 'Niets om aan te merken.',

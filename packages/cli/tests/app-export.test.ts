@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { EventEmitter } from 'node:events'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -138,7 +139,7 @@ describe('exportViaApp', () => {
     ).rejects.toMatchObject({
       code: 4,
       reason: 'app_crashed',
-      message: 'IeumOffice crashed (SIGSEGV) while exporting /tmp/a.docx: boom',
+      message: 'Onyou Office crashed (SIGSEGV) while exporting /tmp/a.docx: boom',
     })
   })
 

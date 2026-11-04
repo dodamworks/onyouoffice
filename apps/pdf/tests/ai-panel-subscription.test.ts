@@ -219,8 +219,6 @@ async function typeAndEnter(panel: HTMLElement, text: string) {
   await settle()
 }
 
-/** the "Summarize" quick action of the empty panel: a one-click request */
-const quickAction = (panel: HTMLElement) => panel.querySelector('.ai-quick-btn')
 const composerText = (panel: HTMLElement) =>
   (panel.querySelector('.ai-composer textarea') as HTMLTextAreaElement).value
 
@@ -228,19 +226,19 @@ describe('AI panel: not connected', () => {
   it('shows the connect prompt instead of sending, and keeps the request in the composer', async () => {
     const scrolled = watchScrollIntoView()
     const panel = await renderPanel({ statuses: statusesOf('signed-out', 'not-installed') })
-    // the way to connect is on screen before anything is asked, without drawing attention
-    expect(panel.querySelector('.ai-sub-prompt')).not.toBeNull()
+    // The footer owns connection setup; the conversation starts without it.
+    expect(panel.querySelector('.ai-sub-connect-status')).toBeNull()
     expect(scrolled).toEqual([])
 
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
 
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
     expect(panel.querySelector('.ai-msg')).toBeNull()
     expect(composerText(panel)).toBe(strings.en.aiQuickSummaryPrompt)
-    const prompt = panel.querySelector('.ai-sub-prompt')
+    const prompt = panel.querySelector('.ai-sub-connect-status')
     expect(prompt?.getAttribute('data-reason')).toBe('no-subscription')
     // which AI the user has comes first; each answer leads to its own card
-    expect(prompt?.querySelectorAll('.ai-sub-guide-path')).toHaveLength(3)
+    expect(prompt?.querySelectorAll('.ai-sub-guide-path')).toHaveLength(0)
     // the refused send points at it
     expect(scrolled).toContain(prompt)
   })
@@ -250,7 +248,7 @@ describe('AI panel: not connected', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('signed-out', 'signed-out'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     await act(async () => bridge.setStatuses(statusesOf('ready', 'signed-out')))
     await settle()
     // minutes may have passed at the sign-in page: the run must be asked for again
@@ -258,21 +256,15 @@ describe('AI panel: not connected', () => {
     expect(composerText(panel)).toBe(strings.en.aiQuickSummaryPrompt)
   })
 
-  it('wires the connect cards to the subscription bridge', async () => {
+  it('opens settings from the footer without embedding subscription setup', async () => {
     const panel = await renderPanel({ statuses: statusesOf('signed-out', 'not-installed') })
-    await click(quickAction(panel))
-
-    await click(panel.querySelector('[data-path="claude-code"]'))
-    await click(panel.querySelector('[data-provider="claude-code"] [data-action="login"]'))
-    expect(bridge.subscription.login).toHaveBeenCalledWith('claude-code')
-    await click(panel.querySelector('[data-action="guide-back"]'))
-    // the Codex program is a way within the one ChatGPT answer
-    await click(panel.querySelector('[data-path="chatgpt"]'))
-    await click(panel.querySelector('[data-action="guide-alternate"]'))
-    await click(panel.querySelector('[data-provider="codex"] [data-action="install"]'))
-    expect(bridge.subscription.install).toHaveBeenCalledWith('codex')
-    await click(panel.querySelector('[data-provider="codex"] [data-action="install-help"]'))
-    expect(bridge.subscription.openInstallHelp).toHaveBeenCalledWith('codex')
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
+    await click(panel.querySelector('.ai-model-chip'))
+    expect(bridge.api.openAiModelSettings).toHaveBeenCalledOnce()
+    expect(panel.querySelector('.ai-sub-guide, .ai-sub-card')).toBeNull()
+    expect(bridge.subscription.login).not.toHaveBeenCalled()
+    expect(bridge.subscription.install).not.toHaveBeenCalled()
+    expect(composerText(panel)).toBe(strings.en.aiQuickSummaryPrompt)
   })
 
   it('drops the prompt once a subscription connects, and then sends', async () => {
@@ -280,12 +272,12 @@ describe('AI panel: not connected', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('signed-out', 'signed-out'),
     })
-    await click(quickAction(panel))
-    expect(panel.querySelector('.ai-sub-prompt')).not.toBeNull()
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
+    expect(panel.querySelector('.ai-sub-connect-status')).not.toBeNull()
 
     await act(async () => bridge.setStatuses(statusesOf('ready', 'signed-out')))
     await settle()
-    expect(panel.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(panel.querySelector('.ai-sub-connect-status')).toBeNull()
 
     await click(panel.querySelector('.ai-send-btn'))
     expect(bridge.state.starts).toHaveLength(1)
@@ -303,9 +295,9 @@ describe('AI panel: not connected', () => {
       },
       statuses: statusesOf('signed-out', 'signed-out'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
-    expect(panel.querySelector('.ai-sub-prompt')).not.toBeNull()
+    expect(panel.querySelector('.ai-sub-connect-status')).not.toBeNull()
   })
 
   it('points a selected key provider that is not filled in to Settings', async () => {
@@ -313,9 +305,9 @@ describe('AI panel: not connected', () => {
       settings: { provider: 'openai' },
       statuses: statusesOf('ready', 'ready'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
-    await click(panel.querySelector('.ai-sub-prompt [data-action="open-settings"]'))
+    await click(panel.querySelector('.ai-model-chip'))
     expect(bridge.api.openAiModelSettings).toHaveBeenCalled()
   })
 })
@@ -327,9 +319,9 @@ describe('AI panel: a send while the connection is still being checked', () => {
       statuses: statusesOf('checking', 'checking'),
     })
     // nobody is waiting on the check yet: no prompt flashes up
-    expect(panel.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(panel.querySelector('.ai-sub-connect-status')).toBeNull()
 
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
     expect(composerText(panel)).toBe(strings.en.aiQuickSummaryPrompt)
     expect(panel.querySelector('.ai-msg-error')).toBeNull()
@@ -350,12 +342,12 @@ describe('AI panel: a send while the connection is still being checked', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('checking', 'checking'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
 
     await act(async () => bridge.setStatuses(statusesOf('signed-out', 'not-installed')))
     await settle()
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
-    const prompt = panel.querySelector('.ai-sub-prompt')
+    const prompt = panel.querySelector('.ai-sub-connect-status')
     expect(prompt).not.toBeNull()
     expect(scrolled).toContain(prompt)
     expect(composerText(panel)).toBe(strings.en.aiQuickSummaryPrompt)
@@ -367,7 +359,7 @@ describe('AI panel: a send while the connection is still being checked', () => {
 
   it('moves behind the first-connection notice when the answer is a first-time subscription', async () => {
     const panel = await renderPanel({ statuses: statusesOf('checking', 'checking') })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     await act(async () => bridge.setStatuses(statusesOf('ready', 'signed-out')))
     await settle()
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
@@ -381,7 +373,7 @@ describe('AI panel: a send while the connection is still being checked', () => {
 describe('AI panel: first-connection notice', () => {
   it('holds the first subscription request until the notice is acknowledged', async () => {
     const panel = await renderPanel({ statuses: statusesOf('ready', 'signed-out') })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
 
     expect(bridge.api.aiStream).not.toHaveBeenCalled()
     const notice = panel.querySelector('.ai-sub-first')
@@ -403,7 +395,7 @@ describe('AI panel: first-connection notice', () => {
   it('sends nothing and keeps the text when the notice goes away without an acknowledgement', async () => {
     const base = normalizeAiSettings({})
     const panel = await renderPanel({ statuses: statusesOf('ready', 'signed-out') })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     expect(panel.querySelector('.ai-sub-first')).not.toBeNull()
 
     // the user picks a filled-in key provider instead of answering the notice
@@ -428,7 +420,7 @@ describe('AI panel: first-connection notice', () => {
   it('writes the acknowledgement onto the settings stored now, not onto the panel copy', async () => {
     const base = normalizeAiSettings({})
     const panel = await renderPanel({ statuses: statusesOf('ready', 'signed-out') })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     // the settings page stored a key after this panel read its copy (no change event reached it)
     bridge.state.settings = {
       ...base,
@@ -452,7 +444,7 @@ describe('AI panel: first-connection notice', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('ready', 'signed-out'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     expect(panel.querySelector('.ai-sub-first')).toBeNull()
     expect(bridge.state.starts).toHaveLength(1)
     await act(async () => bridge.push({ type: 'done' }))
@@ -465,7 +457,7 @@ describe('AI panel: blocked run', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('ready', codex),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     expect(bridge.state.starts).toHaveLength(1)
     const resetsAt = Date.now() + 2 * 60 * 60 * 1000
     await act(async () =>
@@ -530,7 +522,7 @@ describe('AI panel: blocked run', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('ready', 'ready'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     // typed while the reply runs: it waits in the queue
     await typeAndEnter(panel, 'And then translate it')
     expect(panel.querySelector('.ai-queue-strip')).not.toBeNull()
@@ -556,7 +548,7 @@ describe('AI panel: blocked run', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('ready', 'not-installed'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     // the login expired while the status still said ready
     bridge.state.statuses = statusesOf('signed-out', 'not-installed')
     await act(async () =>
@@ -566,11 +558,9 @@ describe('AI panel: blocked run', () => {
 
     expect(bridge.subscription.recheck).toHaveBeenCalledWith(['claude-code'])
     expect(panel.querySelector('.ai-sub-blocked')?.getAttribute('data-kind')).toBe('signed-out')
-    // the way back in: Claude's path, now on the sign-in step
-    await click(panel.querySelector('.ai-sub-prompt [data-path="claude-code"]'))
-    expect(
-      panel.querySelector('.ai-sub-prompt [data-provider="claude-code"] [data-action="login"]'),
-    ).not.toBeNull()
+    await click(panel.querySelector('.ai-model-chip'))
+    expect(bridge.api.openAiModelSettings).toHaveBeenCalled()
+    expect(panel.querySelector('.ai-sub-guide, .ai-sub-card')).toBeNull()
   })
 
   it('keeps the plain error line for a failure that is not about the connection', async () => {
@@ -578,7 +568,7 @@ describe('AI panel: blocked run', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('ready', 'ready'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     await act(async () => bridge.push({ type: 'error', error: 'raw', errorCode: 'network' }))
     await settle()
     expect(panel.querySelector('.ai-sub-blocked')).toBeNull()
@@ -592,7 +582,7 @@ describe('AI panel: usage, truncation and image generation', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('ready', 'ready'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     const resetsAt = Date.now() + 60 * 60 * 1000
     await act(async () =>
       bridge.push({
@@ -624,7 +614,7 @@ describe('AI panel: usage, truncation and image generation', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('ready', 'ready'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     expect(panel.querySelector('.ai-sub-truncated')).toBeNull()
     await act(async () => bridge.push({ type: 'input-truncated' }))
     expect(panel.querySelector('.ai-sub-truncated')).not.toBeNull()
@@ -640,7 +630,7 @@ describe('AI panel: usage, truncation and image generation', () => {
       settings: { subscriptionNoticeSeen: true, pdfSendNoticeSeen: 1 },
       statuses: statusesOf('ready', 'ready'),
     })
-    await click(quickAction(panel))
+    await typeAndEnter(panel, strings.en.aiQuickSummaryPrompt)
     const names = (start: StreamStart) => start.tools.map((tool) => tool.name)
     expect(names(bridge.state.starts[0]!)).not.toContain('generate_image')
     expect(names(bridge.state.starts[0]!)).toContain('image_search')
@@ -658,7 +648,7 @@ describe('AI panel: usage, truncation and image generation', () => {
   })
 })
 
-/** after a first exchange the quick actions are gone: type a request and return the send button */
+/** Type another request after the first exchange and return the send button */
 function typedRequest(panel: HTMLElement, text: string): Element {
   const textarea = panel.querySelector('.ai-composer textarea') as HTMLTextAreaElement
   const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!

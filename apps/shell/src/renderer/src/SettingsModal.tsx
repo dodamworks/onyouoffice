@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { RELEASE_IS_BETA } from '../../shared/release-stage'
 import type { ReactNode } from 'react'
@@ -13,7 +14,13 @@ import {
   clampAiCustomFontSize,
 } from '@genoffice/ui'
 import type { AiFontSize, AiPanelPrefs, AiPanelSide, AiPanelStart } from '@genoffice/ui'
-import { PRODUCT_CONTACT_EMAIL, PRODUCT_REPO_SLUG } from '@genoffice/i18n'
+import {
+  PRODUCT_CONTACT_EMAIL,
+  PRODUCT_REPO_SLUG,
+  PRODUCT_UPDATES_CONFIGURED,
+  PRODUCT_FEEDBACK_URL,
+  productServiceUnavailable,
+} from '@genoffice/i18n'
 import type { Lang } from '@genoffice/i18n'
 import type {
   AuthorNameSetting,
@@ -23,6 +30,7 @@ import type {
   HwpDefaultFormat,
 } from '../../shared/home-api'
 import { AUTHOR_NAME_MAX } from '../../shared/home-api'
+import { NICKNAME_MAX, normalizeNickname } from '../../shared/nickname'
 import type { UpdateUiState } from '../../shared/update-api'
 import {
   DEFAULT_MAX_OUTPUT_TOKENS,
@@ -55,7 +63,7 @@ import type { StringKey, TFunc } from './locale'
 import type { AiCatalogEntry, DocTheme, UiTheme } from '../../shared/home-api'
 import { ProviderLogo } from './provider-logos'
 import { IntegrationsPane, skillUpdateDue } from './IntegrationsPane'
-import { AiSection, SubscriptionSummary } from './SettingsAiSection'
+import { AiSection } from './SettingsAiSection'
 import { QuickLookField } from './SettingsQuickLook'
 import { ResultStoreField } from './SettingsResultStore'
 import { useSubscriptionConnection } from './subscription-client'
@@ -205,7 +213,6 @@ type SectionEntry = { id: SectionId } & (
 )
 
 const SECTIONS: readonly SectionEntry[] = [
-  { id: 'account', labelKey: 'setSecAccount' },
   // one AI entry: 'aiMedia' stays a valid target and opens it on the Advanced media area
   { id: 'aiModel', labelKey: 'setSecAi' },
   { id: 'skills', label: (lang) => skillsText(lang, 'navLabel') },
@@ -1655,7 +1662,7 @@ export function SettingsModal({
   target,
 }: SettingsModalProps) {
   const { lang, setLang, t } = useI18n()
-  const [section, setSection] = useState<SectionId>(target?.section ?? 'account')
+  const [section, setSection] = useState<SectionId>(target?.section ?? 'aiModel')
   useEffect(() => {
     if (target) setSection(target.section)
   }, [target])
@@ -1669,6 +1676,9 @@ export function SettingsModal({
   const [defaultAppBusy, setDefaultAppBusy] = useState(false)
   const [defaultAppFailed, setDefaultAppFailed] = useState(false)
   const [aiPrefs, setAiPrefs] = useState<AiPanelPrefs>(DEFAULT_AI_PANEL_PREFS)
+  const [nickname, setNickname] = useState('')
+  const [nicknameFailed, setNicknameFailed] = useState(false)
+  const nicknameRevision = useRef(0)
   const [authorName, setAuthorName] = useState<AuthorNameSetting>({ value: '', fallback: '' })
   const [channel, setChannel] = useState<'stable' | 'beta'>('stable')
   const [appVersion, setAppVersion] = useState('')
@@ -1703,6 +1713,12 @@ export function SettingsModal({
     void window.aiOffice.getAiPanelPrefs?.().then((prefs) => {
       if (alive) setAiPrefs(prefs)
     })
+    void window.aiOffice
+      .getNickname?.()
+      .then((value) => {
+        if (alive && nicknameRevision.current === 0) setNickname(normalizeNickname(value))
+      })
+      .catch(() => {})
     void window.aiOffice.getAuthorName?.().then((v) => {
       if (alive) setAuthorName(v)
     })
@@ -1727,6 +1743,11 @@ export function SettingsModal({
     return () => {
       alive = false
     }
+  }, [])
+
+  useEffect(() => {
+    const off = window.aiOffice.onAiPanelPrefsChanged?.(setAiPrefs)
+    return () => off?.()
   }, [])
 
   // live update state: the About row offers the update as soon as one is known
@@ -1758,6 +1779,19 @@ export function SettingsModal({
   const updateAiPrefs = (patch: Partial<AiPanelPrefs>) => {
     setAiPrefs((prev) => ({ ...prev, ...patch }))
     void window.aiOffice.setAiPanelPrefs(patch).then(setAiPrefs)
+  }
+
+  const commitNickname = () => {
+    const revision = nicknameRevision.current
+    setNicknameFailed(false)
+    void window.aiOffice
+      .setNickname(normalizeNickname(nickname))
+      .then((value) => {
+        if (nicknameRevision.current === revision) setNickname(normalizeNickname(value))
+      })
+      .catch(() => {
+        if (nicknameRevision.current === revision) setNicknameFailed(true)
+      })
   }
 
   const commitAuthorName = () => {
@@ -1794,7 +1828,7 @@ export function SettingsModal({
   }
 
   // the media area is part of the AI section: a target naming it lights the AI entry
-  const navSection: SectionId = section === 'aiMedia' ? 'aiModel' : section
+  const navSection: SectionId = section === 'aiMedia' || section === 'account' ? 'aiModel' : section
 
   const defaultAppDesc = (() => {
     if (!defaultApp) return ''
@@ -1844,14 +1878,6 @@ export function SettingsModal({
             ))}
           </nav>
           <div className="set-pane">
-            {section === 'account' && (
-              <SubscriptionSummary
-                t={t}
-                lang={lang}
-                connection={connection}
-                onManage={() => setSection('aiModel')}
-              />
-            )}
             {navSection === 'aiModel' && (
               <AiSection
                 t={t}
@@ -1994,6 +2020,44 @@ export function SettingsModal({
                       label: t(opt.labelKey),
                     }))}
                     onPick={(start) => updateAiPrefs(aiPanelStartPatch(start))}
+                  />
+                </div>
+                <div className="set-field">
+                  <div className="set-field-text">
+                    <div className="set-field-stack">
+                      <label className="set-field-label" htmlFor="set-nickname">
+                        {t('nicknameLabel')}
+                      </label>
+                      <div className="set-field-desc" id="set-nickname-desc">
+                        {t('nicknameDesc')}
+                      </div>
+                      {nicknameFailed && (
+                        <div className="set-field-desc" role="alert">
+                          {t('nicknameSaveFailed')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <input
+                    id="set-nickname"
+                    className="set-input"
+                    type="text"
+                    value={nickname}
+                    placeholder={t('nicknamePlaceholder')}
+                    aria-describedby="set-nickname-desc"
+                    maxLength={NICKNAME_MAX}
+                    spellCheck={false}
+                    autoComplete="off"
+                    onChange={(event) => {
+                      nicknameRevision.current += 1
+                      setNickname(event.target.value)
+                      setNicknameFailed(false)
+                    }}
+                    onBlur={commitNickname}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' && !event.nativeEvent.isComposing)
+                        event.currentTarget.blur()
+                    }}
                   />
                 </div>
                 <div className="set-field">
@@ -2147,6 +2211,7 @@ export function SettingsModal({
                     className="set-dd"
                     value={channel}
                     ariaLabel={t('updateChannel')}
+                    disabled={!PRODUCT_UPDATES_CONFIGURED}
                     options={CHANNEL_OPTIONS.map((opt) => ({
                       value: opt.value,
                       label: t(opt.labelKey),
@@ -2162,13 +2227,18 @@ export function SettingsModal({
                   <div className="set-field-text">
                     <div className="set-field-stack">
                       <div className="set-field-label">{t('setAutoUpdateCheck')}</div>
-                      <div className="set-field-desc">{t('setAutoUpdateCheckDesc')}</div>
+                      <div className="set-field-desc">
+                        {PRODUCT_UPDATES_CONFIGURED
+                          ? t('setAutoUpdateCheckDesc')
+                          : productServiceUnavailable(lang)}
+                      </div>
                     </div>
                   </div>
                   <button
                     className="set-switch"
                     role="switch"
-                    aria-checked={autoUpdateCheckOn}
+                    disabled={!PRODUCT_UPDATES_CONFIGURED}
+                    aria-checked={PRODUCT_UPDATES_CONFIGURED && autoUpdateCheckOn}
                     aria-label={t('setAutoUpdateCheck')}
                     onClick={() => {
                       const next = !autoUpdateCheckOn
@@ -2192,13 +2262,18 @@ export function SettingsModal({
                 <div className="set-field">
                   <div className="set-field-text">
                     <label className="set-field-label">{t('setFeedback')}</label>
-                    <div className="set-field-desc">{t('setFeedbackDesc')}</div>
+                    <div className="set-field-desc">
+                      {PRODUCT_FEEDBACK_URL
+                        ? t('setFeedbackDesc')
+                        : productServiceUnavailable(lang)}
+                    </div>
                   </div>
                   <button
                     className="set-btn"
+                    disabled={!PRODUCT_FEEDBACK_URL}
                     onClick={() => void window.aiOffice.openFeedbackSurvey?.()}
                   >
-                    {t('feedbackOpen')}
+                    {PRODUCT_FEEDBACK_URL ? t('feedbackOpen') : t('setFeedback')}
                   </button>
                 </div>
                 <div className="set-field">
@@ -2213,7 +2288,7 @@ export function SettingsModal({
                     {t('setLicensesOpen')}
                   </button>
                 </div>
-                <div className="set-field">
+                <div className="set-field set-about-contact">
                   <div className="set-field-text">
                     <label className="set-field-label">{t('setRightsContact')}</label>
                     <div className="set-field-desc">{t('setRightsContactDesc')}</div>
@@ -2226,7 +2301,7 @@ export function SettingsModal({
                     {t('setRightsContactSend')}
                   </button>
                 </div>
-                <div className="set-field">
+                <div className="set-field set-about-notices">
                   <div className="set-field-text">
                     <div className="set-field-desc">{t('setBasedOn')}</div>
                     <div className="set-field-desc">{t('setHwpNotice')}</div>

@@ -12,6 +12,7 @@ import type { AiSubscriptionState, SubscriptionStatusMap } from '@genoffice/ai-p
 import { AI_SUBSCRIPTION_STRINGS } from '@genoffice/ui'
 import { editorExtensions } from '../src/renderer/editor/extensions'
 import { AiPanel } from '../src/renderer/ai/AiPanel'
+import { t } from '../src/renderer/i18n/locale'
 import {
   AI_PROVIDERS,
   type AiProviderId,
@@ -258,7 +259,7 @@ describe('AI panel: failed runs', () => {
     const { container } = harness
     expect(container.querySelector('.ai-msg-error')?.textContent).toContain('HTTP 429')
     expect(container.querySelector('.ai-sub-blocked')).toBeNull()
-    expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
   })
 
   it('shows the connect cards instead of sending when nothing is connected', async () => {
@@ -270,8 +271,8 @@ describe('AI panel: failed runs', () => {
         emit({ type: 'error', error: 'No AI is connected.', errorCode: 'not-connected' }),
     })
     const { container } = harness
-    // the way to connect is on screen before anything is asked, without drawing attention
-    expect(container.querySelector('.ai-sub-prompt')).not.toBeNull()
+    // The footer owns connection setup; the conversation starts without it.
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
     expect(scrolled).toEqual([])
 
     await harness.send('summarize this')
@@ -281,10 +282,10 @@ describe('AI panel: failed runs', () => {
     expect(container.querySelector('.ai-msg-error')).toBeNull()
     expect(harness.composerText()).toBe('summarize this')
     // which AI the user has comes first; each answer leads to its own card
-    expect(container.querySelector('.ai-sub-guide-question')).not.toBeNull()
-    expect(container.querySelectorAll('.ai-sub-guide-path')).toHaveLength(3)
+    expect(container.querySelector('.ai-sub-guide-question')).toBeNull()
+    expect(container.querySelectorAll('.ai-sub-guide-path')).toHaveLength(0)
     // the refused send points at the prompt
-    expect(scrolled).toContain(container.querySelector('.ai-sub-prompt'))
+    expect(scrolled).toContain(container.querySelector('.ai-sub-connect-status'))
   })
 
   it('does not send the refused request once a subscription connects', async () => {
@@ -298,7 +299,7 @@ describe('AI panel: failed runs', () => {
     // minutes may have passed at the sign-in page: the run must be asked for again
     expect(harness.requests).toHaveLength(0)
     expect(harness.composerText()).toBe('summarize this')
-    expect(harness.container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(harness.container.querySelector('.ai-sub-connect-status')).toBeNull()
   })
 
   it('shows only the card of a selected subscription that cannot run', async () => {
@@ -311,8 +312,10 @@ describe('AI panel: failed runs', () => {
     // a selection is never replaced by the other subscription, even a ready one
     expect(harness.requests).toHaveLength(0)
     const cards = harness.container.querySelectorAll('.ai-sub-card')
-    expect(cards).toHaveLength(1)
-    expect(cards[0]?.getAttribute('data-provider')).toBe('codex')
+    expect(cards).toHaveLength(0)
+    expect(harness.container.querySelector('.ai-sub-connect-status')?.textContent).toContain(
+      'Codex',
+    )
   })
 
   it('tells the reason and looks again when the main process refuses a run after all', async () => {
@@ -361,7 +364,7 @@ describe('AI panel: failed runs', () => {
     const { container } = harness
     expect(container.querySelector('.ai-msg-error')).toBeNull()
     // connected: the reason and the button, no connect cards
-    expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
     const button = container.querySelector<HTMLButtonElement>(
       '.ai-sub-blocked [data-action="continue-with"]',
     )
@@ -468,20 +471,20 @@ describe('AI panel: a send while the connection is still being checked', () => {
     })
     const { container } = harness
     // nobody is waiting on the check yet: no prompt flashes up
-    expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
 
     await harness.send('summarize this')
     // held: not sent, not dropped; the cards show the check the request waits for
     expect(harness.requests).toHaveLength(0)
     expect(harness.composerText()).toBe('summarize this')
-    expect(container.querySelector('.ai-sub-prompt')).not.toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
     expect(container.querySelector('.ai-msg-error')).toBeNull()
 
     await harness.setStatuses(statuses('signed-out', 'ready'))
     expect(harness.requests).toHaveLength(1)
     expect(harness.composerText()).toBe('')
     expect(container.textContent).toContain('hello')
-    expect(container.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).toBeNull()
   })
 
   it('falls to the connect prompt when the answer is "not connected", and sends nothing later', async () => {
@@ -495,7 +498,7 @@ describe('AI panel: a send while the connection is still being checked', () => {
 
     await harness.setStatuses(statuses('signed-out', 'not-installed'))
     expect(harness.requests).toHaveLength(0)
-    const prompt = harness.container.querySelector('.ai-sub-prompt')
+    const prompt = harness.container.querySelector('.ai-sub-connect-status')
     expect(prompt).not.toBeNull()
     expect(scrolled).toContain(prompt)
     expect(harness.composerText()).toBe('summarize this')
@@ -657,5 +660,34 @@ describe('AI panel: usage and cut input', () => {
     await harness.send('summarize this')
     expect(harness.container.querySelector('.ai-subscription-usage')).toBeNull()
     expect(harness.container.querySelector('.ai-sub-truncated')).toBeNull()
+  })
+})
+
+describe('AI send notice', () => {
+  it('sits immediately above the composer without examples and disappears after Enter starts a chat', async () => {
+    harness = await mountPanel({
+      settings: settingsWith('gemini'),
+      answer: (_request, emit) => emit({ type: 'done' }),
+    })
+    const { container } = harness
+    const note = container.querySelector('.ai-send-note')!
+    expect(note.textContent).toBe(t('aiNoHidingNote'))
+    expect(note.nextElementSibling?.classList.contains('ai-input-box')).toBe(true)
+    expect(container.querySelector('.ai-starter-list')).toBeNull()
+    await harness.typeAndEnter('Summarize this document')
+    expect(harness.requests).toHaveLength(1)
+    expect(container.querySelector('.ai-send-note')).toBeNull()
+  })
+
+  it('keeps the notice and draft when a disconnected send cannot start a chat', async () => {
+    harness = await mountPanel({
+      settings: settingsWith('auto'),
+      subscription: statuses('signed-out', 'not-installed'),
+      answer: (_request, emit) => emit({ type: 'done' }),
+    })
+    await harness.typeAndEnter('Summarize this document')
+    expect(harness.requests).toHaveLength(0)
+    expect(harness.composerText()).toBe('Summarize this document')
+    expect(harness.container.querySelector('.ai-send-note')).not.toBeNull()
   })
 })

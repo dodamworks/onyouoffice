@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { spawnSync } from 'node:child_process'
 import {
   accessSync,
@@ -16,10 +17,10 @@ import { CLI_BUNDLE_FILE, CLI_COMMAND } from './names'
 export { CLI_COMMAND, HOME_DIR_NAME, launcherFileName } from './names'
 
 /**
- * Making `ieumoffice` reachable from a terminal. The launcher ships inside the app
- * (Resources/cli/ieumoffice, or ieumoffice.cmd on Windows); nothing at install time puts
+ * Making `onyouoffice` reachable from a terminal. The launcher ships inside the app
+ * (Resources/cli/onyouoffice, or onyouoffice.cmd on Windows); nothing at install time puts
  * it on PATH for the dmg, so the app tries this on every launch until it
- * succeeds and `ieumoffice install-cli` repeats it on demand. Best effort
+ * succeeds and `onyouoffice install-cli` repeats it on demand. Best effort
  * everywhere: no prompts, no elevation, never an error on the app's startup
  * path. `inspectCliLink` reports the same states without writing anything.
  */
@@ -52,7 +53,7 @@ export interface InstallOutcome {
  * inherit, so it is the target even when it does not exist yet: a missing
  * directory is reported as unwritable (creating it needs root), not skipped.
  * When it is not writable the user's own bin dir takes the link, so a
- * non-admin install still gets an `ieumoffice` command.
+ * non-admin install still gets an `onyouoffice` command.
  *
  * The Homebrew prefix is never a candidate (genoffice#1914): `/opt/homebrew/bin` on
  * Apple Silicon, `/usr/local/bin` on an Intel Mac with a classic install,
@@ -64,7 +65,7 @@ export interface InstallOutcome {
  * without Homebrew keeps `/usr/local/bin`.
  *
  * A user who wants it there anyway still can: `ln -sf "$(dirname "$(which
- * ieumoffice)")/ieumoffice" "$(brew --prefix)/bin/ieumoffice"`. What is removed
+ * onyouoffice)")/onyouoffice" "$(brew --prefix)/bin/onyouoffice"`. What is removed
  * is the uninvited write, not the possibility.
  */
 export function defaultCandidateDirs(
@@ -130,7 +131,7 @@ export function installCliLink(opts: InstallOptions): InstallOutcome {
       return withPathHint({ status: 'present', location: link }, dir, userDirs, env)
     }
     if (state === 'file' || state === 'foreign') {
-      // somebody else's ieumoffice (a file, or npm's symlink): never clobber it
+      // somebody else's onyouoffice (a file, or npm's symlink): never clobber it
       occupied = link
       continue
     }
@@ -207,9 +208,9 @@ function linkState(
 
 /**
  * A link is ours when it resolves to the launcher we are installing, or to an
- * `ieumoffice` launcher shipped by another copy of the app (an earlier version,
+ * `onyouoffice` launcher shipped by another copy of the app (an earlier version,
  * a second install dir): one that has our CLI bundle or the Windows twin beside
- * it. A path that merely ends in `/cli/ieumoffice` belongs to whoever put it there,
+ * it. A path that merely ends in `/cli/onyouoffice` belongs to whoever put it there,
  * and the upstream app's `genoffice` launcher is never ours.
  */
 export function isOurLauncher(target: string, launcher: string): boolean {

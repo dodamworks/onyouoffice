@@ -268,7 +268,7 @@ describe('a new map tab takes the handed-over request', () => {
     expect(composer().value).toBe('Make a mind map from these notes')
     expect(chips()).toEqual(['plan.docx', 'old.xmind'])
     // the connect prompt says what to do
-    expect(container.querySelector('.ai-sub-prompt')).not.toBeNull()
+    expect(container.querySelector('.ai-sub-connect-status')).not.toBeNull()
   })
 
   it('after connecting in that tab, nothing starts by itself; the user’s own send counts as the start', async () => {

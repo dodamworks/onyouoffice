@@ -348,6 +348,8 @@ export interface McpWindowState {
   allowInChat(exposedName: string): void
   /** keep-inside of a server; true for a name not (or no longer) listed */
   keepsInside(server: string): boolean
+  /** Monotonic identity of the current conversation, including restored chats. */
+  readonly conversationVersion: number
   /** clear what was chosen for the conversation; call on a new or restored chat */
   newConversation(): void
   /** the loop's history, read to notice that a conversation started over */
@@ -385,6 +387,7 @@ export function createMcpWindowState(
   let internetOn = outbound === null
   let servers: readonly McpServerView[] = []
   let offInChat: ReadonlySet<string> = new Set()
+  let conversationVersion = 0
   let allowed = new Set<string>()
   let usable: ReadonlySet<string> | null = null
   let messages: (() => readonly AgentMessage[]) | null = null
@@ -398,6 +401,7 @@ export function createMcpWindowState(
     for (const listener of [...listeners]) listener()
   }
   const clear = () => {
+    conversationVersion++
     offInChat = new Set()
     allowed = new Set()
   }
@@ -466,6 +470,9 @@ export function createMcpWindowState(
       notify()
     },
     keepsInside: (server) => servers.find((s) => s.name === server)?.keepResultsInside ?? true,
+    get conversationVersion() {
+      return conversationVersion
+    },
     newConversation: () => {
       sawContent = false
       clear()

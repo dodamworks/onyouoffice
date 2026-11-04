@@ -1,9 +1,10 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { run, tempDir } from './helpers'
 
-describe('ieumoffice docs read: table text', () => {
+describe('onyouoffice docs read: table text', () => {
   it('keeps cells and rows apart in the text of a table block', async () => {
     const dir = tempDir()
     const md = join(dir, 'quote.md')

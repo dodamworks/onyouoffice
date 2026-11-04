@@ -96,13 +96,13 @@ export const th = {
   pickerNotConnected: 'เชื่อมต่อ AI',
   guideQuestion: 'ตอนนี้คุณใช้ AI ตัวไหนอยู่',
   guidePathClaudeTitle: 'ฉันสมัครสมาชิก Claude แบบชำระเงิน',
-  guidePathClaudeBody: 'ต้องใช้แพ็กเกจ Pro หรือ Max บัญชี Claude แบบฟรีเชื่อมต่อไม่ได้',
+  guidePathClaudeBody: 'ต้องมีแผน Pro หรือ Max และโปรแกรมเชื่อมต่อบนคอมพิวเตอร์',
   guidePathCodexTitle: 'ฉันใช้ ChatGPT',
   guidePathCodexBody:
     'เข้าสู่ระบบโปรแกรม Codex ของ OpenAI ด้วยบัญชี ChatGPT ของคุณ แพ็กเกจฟรีใช้งานได้เพียงเล็กน้อย',
   guidePathFreeTitle: 'ยังไม่มีทั้งสองอย่าง',
   guidePathFreeBody:
-    'เชื่อมต่อ AI ฟรีได้ในเวลาประมาณหนึ่งนาที ระหว่างที่ใช้ฟรี เนื้อหาที่คุณส่งอาจถูกนำไปใช้ปรับปรุง AI ของบริษัทนั้น',
+    'เชื่อมต่อ AI ฟรีผ่าน OpenRouter หรือ Gemini ผู้ให้บริการอาจใช้เนื้อหาที่ส่งเพื่อปรับปรุง AI',
   guideBack: 'เลือกวิธีอื่น',
   guideBadgeReady: 'เชื่อมต่อแล้ว',
   guideBadgeInstalled: 'ติดตั้งแล้ว',
@@ -142,8 +142,7 @@ export const th = {
   actionCopyInfo: 'คัดลอกข้อมูลเพื่อขอความช่วยเหลือ',
   copyInfoDone: 'คัดลอกแล้ว',
   actionConnectHelp: 'ดูแต่ละขั้นตอนบนหน้าจอ (หน้าภาษาเกาหลี)',
-  guidePathChatGptBody:
-    'เข้าสู่ระบบด้วยบัญชี ChatGPT แล้วใช้งานตามแพ็กเกจของคุณ ไม่ต้องติดตั้งอะไร แพ็กเกจฟรีใช้งานได้เพียงเล็กน้อย',
+  guidePathChatGptBody: 'เข้าสู่ระบบในเบราว์เซอร์ โดยมีขีดจำกัดการใช้งานตามแผน',
   guideUseCodex: 'ใช้โปรแกรม Codex ในคอมพิวเตอร์เครื่องนี้อยู่แล้วใช่ไหม เชื่อมต่อผ่าน Codex',
   guideUseDirect: 'เชื่อมต่อในแอปโดยตรง ไม่ต้องใช้ Codex',
   chatgptLoginNote:

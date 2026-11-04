@@ -192,6 +192,7 @@ describe('ask panel without a connection', () => {
     const connection = connectionOf(statuses('not-installed', 'signed-out'))
     await renderPanel({ connection })
     expect(host.querySelector('.ai-sub-prompt')).toBeNull()
+    expect(host.querySelector('.kb-vault-footer .kb-ask-login')).not.toBeNull()
 
     await type(QUESTION)
     await send()
@@ -460,4 +461,111 @@ describe('ask panel with a local model', () => {
     expect(request.tools.length).toBeGreaterThan(0)
     expect(request.system).not.toContain(TOOLS_UNAVAILABLE_NOTE)
   })
+})
+
+it('defaults to registered documents and sends an explicit document selection as a held scope', async () => {
+  const files = [
+    { path: '/kb/a.docx', folder: 'kb', name: 'a.docx', ext: 'docx', sizeBytes: 10 },
+    { path: '/kb/b.docx', folder: 'kb', name: 'b.docx', ext: 'docx', sizeBytes: 10 },
+  ]
+  window.aiOffice.kbCatalog = vi.fn(async () => files)
+  window.aiOffice.kbOpenScope = vi.fn(async () => 'selected-run')
+  window.aiOffice.kbCloseScope = vi.fn(async () => undefined)
+  await renderPanel({ connection: connectionOf(statuses('ready', 'signed-out')) })
+  const select = host.querySelector<HTMLSelectElement>('.kb-document-scope select')!
+  expect(select.value).toBe('registered')
+  expect(host.querySelector('.kb-vault-welcome h2')!.textContent).toBe('Knowledge Vault')
+  expect(host.querySelectorAll('.kb-ask-msg')).toHaveLength(0)
+  expect(host.querySelectorAll('.kb-vault-welcome')).toHaveLength(1)
+  expect(select.compareDocumentPosition(composer()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(
+    composer().compareDocumentPosition(host.querySelector('.kb-vault-footer')!) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy()
+
+  await act(async () => {
+    select.value = 'selected'
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+  await click(host.querySelectorAll('.kb-document-choices input')[1])
+  await type(QUESTION)
+  await send()
+  expect(window.aiOffice.kbOpenScope).toHaveBeenCalledWith({
+    source: 'selected',
+    paths: ['/kb/b.docx'],
+  })
+  expect(window.aiOffice.kbList).toBeDefined()
+  expect(aiStream).toHaveBeenCalledOnce()
+  await answer({ type: 'delta', text: 'OLD_SCOPE_PRIVATE_SENTENCE' })
+  await answer({ type: 'done' })
+  await act(async () => {
+    select.value = 'registered'
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+  expect(host.querySelectorAll('.kb-ask-msg')).toHaveLength(0)
+  await type('A new question')
+  await send()
+  expect(window.aiOffice.kbOpenScope).toHaveBeenLastCalledWith({ source: 'registered' })
+  expect(JSON.stringify(aiStream.mock.calls.at(-1)![0].messages)).not.toContain(
+    'OLD_SCOPE_PRIVATE_SENTENCE',
+  )
+})
+
+it.each(['done', 'error', 'stop'] as const)(
+  'settles generic activity labels when the answer ends with %s',
+  async (ending) => {
+    await renderPanel({ connection: connectionOf(statuses('ready', 'signed-out')) })
+    await type(QUESTION)
+    await send()
+    await answer({
+      type: 'tool-call',
+      toolCall: { id: 'search-1', name: 'search_knowledge_base', input: { query: 'pets' } },
+    })
+    await answer({ type: 'done' })
+    const badges = () => host.querySelector('.kb-ask-tools')!.textContent!
+    expect(badges()).toContain(strings.en.askToolSearch)
+    if (ending === 'stop') await click(host.querySelector('.ai-stop-btn'))
+    else if (ending === 'error') await answer({ type: 'error', error: 'Network unavailable' })
+    else {
+      await answer({ type: 'delta', text: 'The lease permits pets.' })
+      await answer({ type: 'done' })
+    }
+    expect(badges()).toContain(strings.en.askToolSearchHistory)
+    expect(badges()).not.toContain(strings.en.askToolSearch)
+    expect(badges()).not.toContain('…')
+  },
+)
+
+it('cancels a held question when its selected document source changes', async () => {
+  const files = [{ path: '/kb/a.docx', folder: 'kb', name: 'a.docx', ext: 'docx', sizeBytes: 10 }]
+  window.aiOffice.kbCatalog = vi.fn(async () => files)
+  window.aiOffice.kbOpenScope = vi.fn(async () => 'scope')
+  window.aiOffice.kbCloseScope = vi.fn(async () => undefined)
+  await renderPanel({ connection: connectionOf(statuses('checking', 'checking')) })
+  const select = host.querySelector<HTMLSelectElement>('.kb-document-scope select')!
+  const choose = async (source: string) => {
+    await act(async () => {
+      select.value = source
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+  }
+  await choose('selected')
+  await click(host.querySelector('.kb-document-choices input'))
+  await type(QUESTION)
+  await send()
+  expect(aiStream).not.toHaveBeenCalled()
+  await choose('registered')
+  await renderPanel({ connection: connectionOf(statuses('ready', 'signed-out')) })
+  await act(async () => {
+    for (let i = 0; i < 5; i++) await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+  expect(aiStream).not.toHaveBeenCalled()
+  expect(window.aiOffice.kbOpenScope).not.toHaveBeenCalled()
+  expect(composer().value).toBe(QUESTION)
+  await send()
+  expect(window.aiOffice.kbOpenScope).toHaveBeenLastCalledWith({ source: 'registered' })
+  expect(aiStream).toHaveBeenCalledOnce()
 })

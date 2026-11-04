@@ -103,14 +103,13 @@ export const nl = {
   pickerNotConnected: 'AI koppelen',
   guideQuestion: 'Welke AI gebruik je al?',
   guidePathClaudeTitle: 'Ik heb een betaald Claude-abonnement',
-  guidePathClaudeBody:
-    'Je hebt een Pro- of Max-abonnement nodig. Met een gratis Claude-account lukt verbinden niet.',
+  guidePathClaudeBody: 'Vereist een Pro- of Max-abonnement en een verbindingsprogramma op je pc.',
   guidePathCodexTitle: 'Ik gebruik ChatGPT',
   guidePathCodexBody:
     'Meld je met je ChatGPT-account aan bij het Codex-programma van OpenAI. Met het gratis abonnement kun je maar weinig gebruiken.',
   guidePathFreeTitle: 'Nog geen van beide',
   guidePathFreeBody:
-    'Koppel in ongeveer een minuut een gratis AI. Zolang je die gratis gebruikt, kan wat je verstuurt worden gebruikt om de AI van dat bedrijf te verbeteren.',
+    'Verbind gratis AI via OpenRouter of Gemini. Aanbieders kunnen je berichten gebruiken om hun AI te verbeteren.',
   guideBack: 'Een andere manier kiezen',
   guideBadgeReady: 'Verbonden',
   guideBadgeInstalled: 'Geïnstalleerd',
@@ -150,8 +149,7 @@ export const nl = {
   actionCopyInfo: 'Gegevens kopiëren voor hulp',
   copyInfoDone: 'Gekopieerd',
   actionConnectHelp: 'Bekijk elke stap op het scherm (pagina in het Koreaans)',
-  guidePathChatGptBody:
-    'Meld je aan met je ChatGPT-account en gebruik je abonnement. Je hoeft niets te installeren. Met het gratis abonnement kun je maar weinig gebruiken.',
+  guidePathChatGptBody: 'Log in via de browser. De gebruikslimieten van je abonnement gelden.',
   guideUseCodex: 'Gebruik je het Codex-programma al op deze pc? Verbinden via Codex',
   guideUseDirect: 'Rechtstreeks in de app verbinden, zonder Codex',
   chatgptLoginNote:

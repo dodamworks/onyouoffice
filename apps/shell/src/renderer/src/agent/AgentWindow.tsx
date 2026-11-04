@@ -51,6 +51,7 @@ import {
   agentUserMcpTool,
   agentWebPermissionLabel,
   codexNetworkWarningShown,
+  initialAgentProvider,
 } from './agent-web'
 import {
   EMPTY_AGENT_LOG,
@@ -194,6 +195,7 @@ export function AgentWindow() {
   /** the one-time notice of spec 6.5: due as the main process says, until closed */
   const [noticeDue, setNoticeDue] = useState<boolean | null>(null)
   const [noticeClosed, setNoticeClosed] = useState(false)
+  const providerChosen = useRef(false)
 
   useEffect(() => {
     void api.getInit().then((value) => {
@@ -270,6 +272,12 @@ export function AgentWindow() {
 
   // the connection check may still be running when the window opens; ask again until it settles
   const checking = init ? Object.values(init.connections).includes('checking') : false
+  useEffect(() => {
+    if (!init || !prefs || checking || providerChosen.current) return
+    providerChosen.current = true
+    const provider = initialAgentProvider(prefs.provider, init.connections)
+    if (provider !== prefs.provider) setPrefs({ ...prefs, provider })
+  }, [init, prefs, checking])
   useEffect(() => {
     if (!checking) return
     const timer = setInterval(() => {
@@ -664,7 +672,7 @@ export function AgentWindow() {
       <div className="agent-head">
         <h1 className="agent-title">{t('windowTitle')}</h1>
       </div>
-      <div className="agent-body">
+      <div className="agent-body agent-setup">
         {notice}
         <p className="agent-intro">{t('intro')}</p>
 
@@ -745,7 +753,10 @@ export function AgentWindow() {
             const note = CONNECTION_NOTE[init.connections[provider]]
             const blocked = init.connections[provider] === 'blocked'
             const choose = (): void => {
-              if (!blocked) updatePrefs({ provider })
+              if (!blocked) {
+                providerChosen.current = true
+                updatePrefs({ provider })
+              }
             }
             return (
               <div
@@ -761,9 +772,13 @@ export function AgentWindow() {
               >
                 <div className="agent-choice-text">
                   <span>{t(PROVIDER_LABEL[provider])}</span>
-                  <span className="agent-choice-note">
-                    {provider === 'codex' ? tw('providerCodexNoteWeb') : t(PROVIDER_NOTE[provider])}
-                  </span>
+                  {prefs.provider === provider && (
+                    <span className="agent-choice-note">
+                      {provider === 'codex'
+                        ? tw('providerCodexNoteWeb')
+                        : t(PROVIDER_NOTE[provider])}
+                    </span>
+                  )}
                   {note ? <span className="agent-choice-note">{t(note)}</span> : null}
                 </div>
               </div>
@@ -786,7 +801,9 @@ export function AgentWindow() {
             >
               <div className="agent-choice-text">
                 <span>{t(MODE_LABEL[mode][0])}</span>
-                <span className="agent-choice-note">{t(MODE_LABEL[mode][1])}</span>
+                {prefs.mode === mode && (
+                  <span className="agent-choice-note">{t(MODE_LABEL[mode][1])}</span>
+                )}
               </div>
             </div>
           ))}

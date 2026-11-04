@@ -49,8 +49,10 @@ test.describe('#1589 the AI panel start setting', () => {
 
     const restarted = await launchShell({ userDataDir, videoDir: 'ai-panel-1589-new-doc' })
     try {
-      await expect(restarted.page.locator('.quick-card').first()).toContainText('AI Docs')
-      await restarted.page.locator('.quick-card').first().click()
+      await expect(restarted.page.locator('.quick-card[data-format="docx"]')).toContainText(
+        'Document',
+      )
+      await restarted.page.locator('.quick-card[data-format="docx"]').click()
       const editor = await waitForPageWithUrl(restarted.app, '://docs/')
       await expect(editor.locator('.ProseMirror').first()).toBeVisible({ timeout: 30_000 })
       expect(await aiPanelState(editor)).toBe('collapsed')
@@ -68,8 +70,10 @@ test.describe('#1589 the AI panel start setting', () => {
     test.setTimeout(300_000)
     const launched = await launchShell({ onboardingSeen: true, videoDir: 'ai-panel-1589-on-new' })
     try {
-      await expect(launched.page.locator('.quick-card').first()).toContainText('AI Docs')
-      await launched.page.locator('.quick-card').first().click()
+      await expect(launched.page.locator('.quick-card[data-format="docx"]')).toContainText(
+        'Document',
+      )
+      await launched.page.locator('.quick-card[data-format="docx"]').click()
       const editor = await waitForPageWithUrl(launched.app, '://docs/')
       await expect(editor.locator('.ProseMirror').first()).toBeVisible({ timeout: 30_000 })
       expect(await aiPanelState(editor)).toBe('expanded')
@@ -94,8 +98,10 @@ test.describe('#1589 the AI panel start setting', () => {
 
     const restarted = await launchShell({ userDataDir, videoDir: 'ai-panel-1951-new-doc' })
     try {
-      await expect(restarted.page.locator('.quick-card').first()).toContainText('AI Docs')
-      await restarted.page.locator('.quick-card').first().click()
+      await expect(restarted.page.locator('.quick-card[data-format="docx"]')).toContainText(
+        'Document',
+      )
+      await restarted.page.locator('.quick-card[data-format="docx"]').click()
       const editor = await waitForPageWithUrl(restarted.app, '://docs/')
       await expect(editor.locator('.ProseMirror').first()).toBeVisible({ timeout: 30_000 })
       await expect(editor.locator('.ai-dock')).toHaveClass(/ai-dock-off/)

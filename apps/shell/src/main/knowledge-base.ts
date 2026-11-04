@@ -225,6 +225,7 @@ export type KbStarredReach = 'all' | 'none' | { group: string }
 
 interface HeldScope {
   owner: number
+  registeredPaths?: ReadonlySet<string>
   starred: KbStarredReach
   /** a project folder the run may also read (spec 5.5); the project tools re-check it on every call */
   projectId: ProjectId | null
@@ -263,6 +264,24 @@ export class KbRunScopes {
     const reach: KbStarredReach =
       typeof starred === 'object' ? { group: checkedGroup(starred.group, groupOf) } : starred
     return this.hold({ owner, starred: reach, projectId })
+  }
+
+  /** A snapshot of explicitly chosen registered files; unknown paths fail closed. */
+  openRegistered(owner: number, selection: unknown, available: readonly string[]): string {
+    const allowed = new Set(available)
+    if (
+      selection !== null &&
+      (!Array.isArray(selection) ||
+        selection.some((path) => typeof path !== 'string' || !allowed.has(path)))
+    ) {
+      throw new Error(KB_NOT_IN_BASE)
+    }
+    const paths = selection === null ? available : (selection as string[])
+    return this.hold({ owner, starred: 'none', projectId: null, registeredPaths: new Set(paths) })
+  }
+
+  usesRegistered(owner: number, raw: unknown): boolean {
+    return this.heldFor(owner, raw)?.registeredPaths !== undefined
   }
 
   private hold(held: HeldScope): string {
@@ -305,6 +324,7 @@ export class KbRunScopes {
     groupOf: () => ReadonlyMap<string, string>,
   ): string[] {
     const held = this.heldFor(owner, raw)
+    if (held?.registeredPaths) return paths.filter((path) => held.registeredPaths!.has(path))
     if (held === undefined || held.starred === 'all') return [...paths]
     if (held.starred === 'none') return []
     const group = held.starred.group

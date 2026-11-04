@@ -1,4 +1,5 @@
-import { createI18n, defineStrings, type Lang } from '@genoffice/i18n'
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+import { createI18n, defineStrings, PRODUCT_FEEDBACK_URL, type Lang } from '@genoffice/i18n'
 
 /**
  * The published feedback survey (Google Forms, owned by the repository owner).
@@ -6,8 +7,7 @@ import { createI18n, defineStrings, type Lang } from '@genoffice/i18n'
  * itself sends nothing. Changing the form's questions does not change this
  * address, so the link stays valid as the survey is edited.
  */
-export const FEEDBACK_SURVEY_URL =
-  'https://docs.google.com/forms/d/e/1FAIpQLSfD_dlKfi_ZkcjBJFTH3S2nldTIoW0cMI9d_yDaEe6DwKY47A/viewform'
+export const FEEDBACK_SURVEY_URL = PRODUCT_FEEDBACK_URL
 
 const zh = {
   menuLabel: '发送反馈',

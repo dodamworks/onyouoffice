@@ -4,7 +4,7 @@ Setiap editor bisa memunculkan panel AI: pilih sesuatu, beri instruksi, dan liha
 
 ## Membuka dan menggunakannya
 
-- Panel ini memerlukan AI yang terhubung. Jika belum ada, panel menampilkan kartu koneksi, bukan pesan galat; lihat [Koneksi langganan](help://subscription).
+- Hubungkan AI di Pengaturan → AI. [AI](help://subscription)
 - Titik masuknya: **tombol AI** di pita setiap editor, **Tanya AI** di menu konteks, atau Tanya AI pada bilah anotasi.
 - Jelaskan tugas dengan bahasa sehari-hari (tulis ulang ini / jadikan kolom ini persentase / tata ulang halaman ini...) lalu tekan Enter.
 - Balasan dirender **secara bertahap**; ketika AI membutuhkan alat (membaca dokumen, mengeditnya), AI menjalankannya dan melanjutkan sampai selesai.
@@ -24,7 +24,7 @@ Setiap editor bisa memunculkan panel AI: pilih sesuatu, beri instruksi, dan liha
 - **Slides**: pembuatan seluruh dek, penyesuaian tata letak, penulisan ulang naskah.
 - **PDF**: tanya jawab dan ringkasan berdasarkan teks atau halaman yang dipilih.
 - **Markdown / HTML**: menulis ulang, mengembangkan, menerjemahkan.
-- **Beranda ▸ Ask AI** menjawab dari berkas berbintang Anda dan mengutipnya — panel basis pengetahuan punya bagiannya sendiri di bab Beranda, dan panel AI Docs membawa keterampilan yang sama.
+- **Gudang pengetahuan**: Sumber bawaan adalah dokumen yang terdaftar di aplikasi: berkas terbaru dan favorit, folder yang ditambahkan, serta proyek. Pencarian tidak mencakup seluruh komputer. Di atas kolom input, pilih dokumen terdaftar, proyek, dokumen tertentu, atau favorit. Mengubah sumber memulai percakapan baru dan membatalkan pertanyaan yang menunggu koneksi. [Home](help://home-screen)
 
 ## Melampirkan dokumen yang terbuka
 

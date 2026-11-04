@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-04: cover system-provided Japanese font aliases.
 import { existsSync, readdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -62,7 +63,9 @@ describe.runIf(mac)(
     const m = createSystemFontMetrics()
 
     it('Japanese font requests resolve to matching system faces', () => {
-      const yuSans = office ? /^(Yu Gothic|游ゴシック)/ : /^Hiragino Sans$/
+      // macOS can provide the real YuGothic face without Office's private DFonts.
+      // Accept its canonical family spelling while still requiring a Japanese sans face.
+      const yuSans = office ? /^(Yu ?Gothic|游ゴシック)/ : /^(Yu ?Gothic|Hiragino Sans)$/
       expect(m.displayFamily!(style('游ゴシック'))).toMatch(yuSans)
       expect(m.displayFamily!(style('Yu Gothic'))).toMatch(yuSans)
       expect(m.displayFamily!(style('メイリオ'))).toMatch(

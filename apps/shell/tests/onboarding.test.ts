@@ -37,6 +37,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount())
   host.remove()
+  vi.unstubAllGlobals()
 })
 
 function statuses(claude: AiSubscriptionState, codex: AiSubscriptionState): SubscriptionStatusMap {
@@ -138,11 +139,27 @@ describe('Onboarding', () => {
   it('describes the product plainly on the welcome step', () => {
     renderOnboarding()
     const step = host.querySelector<HTMLElement>('.onb-slide[data-step="welcome"]')!
-    expect(step.querySelector('.onb-subtitle')!.textContent).toBe(strings.en.onbWelcomeSubtitle)
+    expect(step.querySelector('.onb-subtitle')).toBeNull()
     expect(step.querySelector('.onb-body')!.textContent).toBe(strings.en.onbWelcomeBody)
     // no superlative of its own
-    expect(step.textContent).not.toMatch(/\b(first|best|leading|most|only)\b|AI-native/i)
-    expect(strings.en.onbWelcomeSubtitle).toBe('An open-source office suite')
+    expect(
+      `${step.querySelector('h2')!.textContent} ${step.querySelector('.onb-body')!.textContent}`,
+    ).not.toMatch(/\b(first|best|leading|most|only)\b|AI-native/i)
+  })
+
+  it('keeps help collapsed and leaves Enter on its native disclosure control', async () => {
+    renderOnboarding()
+    await click('.onb-next')
+    const details = host.querySelector<HTMLDetailsElement>('.ai-sub-guide-disclosure')!
+    const summary = details.querySelector<HTMLElement>('summary')!
+    expect(details.open).toBe(false)
+    expect(summary.textContent).toBe(strings.en.onbConnectHelp)
+    summary.focus()
+    act(() => {
+      summary.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    })
+    expect(activeStep()).toBe('connect')
+    expect(host.querySelector('[data-action="copy-info"]')).not.toBeNull()
   })
 
   it('can be completed without connecting a subscription', async () => {
@@ -199,7 +216,7 @@ describe('Onboarding', () => {
       Array.from(step.querySelectorAll<HTMLElement>('.ai-sub-guide-path')).map(
         (el) => el.dataset.path,
       ),
-    ).toEqual(['claude-code', 'chatgpt', 'free'])
+    ).toEqual(['chatgpt', 'claude-code', 'free'])
     expect(cards()).toEqual([])
     // the ChatGPT answer connects directly: the line about Codex belongs to the Codex way alone
     expect(step.querySelector('.ai-sub-codex')).toBeNull()
@@ -333,24 +350,86 @@ describe('welcome copy', () => {
   it('exists in every UI language, as a translation', () => {
     expect(LANGS).toHaveLength(21)
     for (const lang of LANGS) {
-      const { onbWelcomeSubtitle, onbWelcomeBody } = strings[lang]
-      expect(onbWelcomeSubtitle.trim(), lang).not.toBe('')
+      const { onbTitle1, onbWelcomeBody } = strings[lang]
+      expect(onbTitle1.trim(), lang).not.toBe('')
       expect(onbWelcomeBody.trim(), lang).not.toBe('')
       if (lang === 'en') continue
-      expect(onbWelcomeSubtitle, lang).not.toBe(strings.en.onbWelcomeSubtitle)
+      expect(onbTitle1, lang).not.toBe(strings.en.onbTitle1)
       expect(onbWelcomeBody, lang).not.toBe(strings.en.onbWelcomeBody)
     }
     expect(new Set(LANGS.map((lang) => strings[lang].onbWelcomeBody)).size).toBe(LANGS.length)
   })
 
-  it.each(LANGS)('names every document kind and both subscriptions in %s', (lang) => {
-    const body = strings[lang].onbWelcomeBody
-    for (const name of ['Word', 'Excel', 'PowerPoint', 'PDF', 'Markdown', 'HTML']) {
-      expect(body, name).toContain(name)
-    }
-    expect(body).toContain('Claude')
-    expect(body).toContain('ChatGPT')
-    // the product is named by the title above, and no vendor of the suite is named at all
-    expect(`${strings[lang].onbWelcomeSubtitle} ${body}`).not.toMatch(/genoffice/i)
+  it.each(LANGS)(
+    'keeps the welcome focused instead of listing formats and providers in %s',
+    (lang) => {
+      const body = strings[lang].onbWelcomeBody
+      expect(body).not.toMatch(/Word|Excel|PowerPoint|PDF|Markdown|HTML|Claude|ChatGPT/i)
+      // The title carries the product name; the body introduces working with documents.
+      expect(body).not.toMatch(/genoffice/i)
+    },
+  )
+})
+
+async function typeNickname(value: string): Promise<void> {
+  const input = host.querySelector<HTMLInputElement>('#onb-nickname')!
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value)
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+}
+
+describe('optional onboarding nickname', () => {
+  it('continues with a blank field without writing a nickname', async () => {
+    const save = vi.fn(async (value: string) => value)
+    vi.stubGlobal('aiOffice', { getNickname: async () => '', setNickname: save })
+    renderOnboarding()
+    await click('.onb-next')
+    expect(activeStep()).toBe('connect')
+    expect(save).not.toHaveBeenCalled()
+  })
+
+  it('saves on Next and keeps text navigation inside the field', async () => {
+    const save = vi.fn(async (value: string) => value)
+    vi.stubGlobal('aiOffice', { getNickname: async () => '', setNickname: save })
+    renderOnboarding()
+    await typeNickname('  Mina  ')
+    act(() =>
+      host
+        .querySelector('#onb-nickname')!
+        .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })),
+    )
+    expect(activeStep()).toBe('welcome')
+    await click('.onb-next')
+    expect(save).toHaveBeenCalledWith('Mina')
+    expect(activeStep()).toBe('connect')
+  })
+
+  it('skips without saving an unfinished name', async () => {
+    const save = vi.fn(async (value: string) => value)
+    const onDone = vi.fn(async () => true)
+    vi.stubGlobal('aiOffice', { getNickname: async () => '', setNickname: save })
+    renderOnboarding({ onDone })
+    await typeNickname('draft')
+    await click('.onb-skip')
+    expect(save).not.toHaveBeenCalled()
+    expect(onDone).toHaveBeenCalledOnce()
+  })
+
+  it('shows a write failure and still permits skipping', async () => {
+    vi.stubGlobal('aiOffice', {
+      getNickname: async () => '',
+      setNickname: vi.fn(async () => {
+        throw Error('disk full')
+      }),
+    })
+    const onDone = vi.fn(async () => true)
+    renderOnboarding({ onDone })
+    await typeNickname('Mina')
+    await click('.onb-next')
+    expect(activeStep()).toBe('welcome')
+    expect(host.querySelector('[role="alert"]')!.textContent).toBe(strings.en.nicknameSaveFailed)
+    await click('.onb-skip')
+    expect(onDone).toHaveBeenCalledOnce()
   })
 })

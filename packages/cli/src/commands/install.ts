@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { dirname, join } from 'node:path'
 import { CLI_COMMAND, installCliLink, launcherFileName } from '../install'
 import type { CommandDef } from '../registry'
@@ -15,11 +16,11 @@ export function launcherPath(): string | null {
 export const installCommand: CommandDef = {
   name: 'install-cli',
   summary:
-    'Put ieumoffice on the PATH (symlink into /usr/local/bin or ~/.local/bin, or the user PATH on Windows).',
+    'Put onyouoffice on the PATH (symlink into /usr/local/bin or ~/.local/bin, or the user PATH on Windows).',
   usage: 'install-cli',
   async run() {
     const launcher = launcherPath()
-    if (!launcher) throw new CliError(EXIT.app, 'cannot locate the ieumoffice launcher')
+    if (!launcher) throw new CliError(EXIT.app, 'cannot locate the onyouoffice launcher')
     const r = installCliLink({ launcher })
     const detail = {
       status: r.status,
@@ -29,8 +30,8 @@ export const installCommand: CommandDef = {
     }
     const onPath = (verb: string) =>
       r.pathHint
-        ? `ieumoffice is ${verb} linked at ${r.location}, but ${dirname(r.location ?? '')} is not on your PATH; add it with: ${r.pathHint}`
-        : `ieumoffice is ${verb} on the PATH (${r.location})`
+        ? `onyouoffice is ${verb} linked at ${r.location}, but ${dirname(r.location ?? '')} is not on your PATH; add it with: ${r.pathHint}`
+        : `onyouoffice is ${verb} on the PATH (${r.location})`
     switch (r.status) {
       case 'linked':
         return { summary: onPath('now'), detail }

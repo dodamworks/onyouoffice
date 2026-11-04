@@ -100,6 +100,9 @@ export async function launchShell(options: LaunchOptions): Promise<LaunchedApp> 
   // and they never leak into the argv the app parses for documents to open.
   const args: string[] = []
   if (process.platform === 'linux') args.push('--no-sandbox', '--disable-gpu')
+  // Isolate Chromium before the app's main script applies GENOFFICE_USER_DATA.
+  // In particular, concurrent macOS Electron instances must not share startup state.
+  args.push(`--user-data-dir=${userDataDir}`)
   args.push(SHELL_DIR)
   if (options.openFile) args.push(options.openFile)
   if (options.openFiles) args.push(...options.openFiles)

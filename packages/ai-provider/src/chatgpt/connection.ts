@@ -174,7 +174,12 @@ export function createChatGptConnection(deps: ChatGptConnectionDeps): ChatGptCon
     },
 
     async signIn(options) {
-      const record = await deps.store.read()
+      // Persist the host before opening the browser, including a failed first attempt.
+      const record = await serial(async () => {
+        const current = await deps.store.read()
+        await deps.store.write(current)
+        return current
+      })
       const { verifier, challenge } = chatGptPkcePair()
       const { state, nonce } = chatGptAttemptValues()
       const callback = await waitForChatGptCallback({
@@ -189,12 +194,20 @@ export function createChatGptConnection(deps: ChatGptConnectionDeps): ChatGptCon
             agentName: deps.agentName,
           }),
         state,
+        clientId: record.clientId,
         openBrowser: options.openBrowser,
         pages: options.pages,
         signal: options.signal,
         timeoutMs: options.timeoutMs,
       })
       if (!callback.ok) return callback
+      // Registration survives a transient token-exchange failure; no session is active yet.
+      if (!record.clientId) {
+        await serial(async () => {
+          const current = await deps.store.read()
+          await deps.store.write({ ...current, clientId: callback.clientId })
+        })
+      }
       const exchanged = await exchangeChatGptCode(
         { code: callback.code, clientId: callback.clientId, verifier, port: callback.port },
         deps.fetch,
@@ -216,7 +229,9 @@ export function createChatGptConnection(deps: ChatGptConnectionDeps): ChatGptCon
       } catch {
         return { ok: false, reason: options.signal?.aborted ? 'cancelled' : 'network' }
       }
-      if (!identity) return { ok: false, reason: 'denied' }
+      if (!identity || (record.subject && identity.subject !== record.subject)) {
+        return { ok: false, reason: 'denied' }
+      }
       // signed in, but the use of the ChatGPT plan was not allowed: nothing to run on
       if (!tokens.scopes.includes(CHATGPT_PLAN_SCOPE)) return { ok: false, reason: 'no-plan' }
       await serial(async () => {

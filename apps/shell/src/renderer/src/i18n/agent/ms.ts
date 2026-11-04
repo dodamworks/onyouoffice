@@ -3,8 +3,7 @@ import type { zh } from './zh'
 export const ms = {
   windowTitle: 'Ejen',
   homeCardSub: 'Bekerja dalam folder dengan Claude Code atau Codex',
-  intro:
-    'Ejen menjalankan Claude Code atau Codex anda dalam folder yang anda pilih. Ejen boleh membaca fail di dalamnya, mencipta fail baharu, menggunakan kemahiran anda, menjalankan skrip dan mengubah dokumen yang dibuka dalam GenOffice.',
+  intro: 'Cipta dan sunting fail bersama AI dalam folder pilihan anda.',
   folderLabel: 'Folder projek',
   folderPick: 'Pilih folder…',
   folderNone: 'Tiada folder dipilih',

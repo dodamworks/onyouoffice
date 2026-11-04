@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { describe, expect, it, vi } from 'vitest'
 import {
   OFFICE_TYPES,
@@ -128,7 +129,7 @@ describe('createDefaultAppService', () => {
       if (args[0] === 'query')
         return args[2].includes('spreadsheetml')
           ? 'wps-office-et.desktop\n'
-          : 'ieumoffice.desktop\n'
+          : 'onyouoffice.desktop\n'
       return ''
     })
     const svc = createDefaultAppService({
@@ -150,7 +151,7 @@ describe('createDefaultAppService', () => {
     expect(calls.find((c) => c[1] === 'default')).toEqual([
       'xdg-mime',
       'default',
-      'ieumoffice.desktop',
+      'onyouoffice.desktop',
       ...OFFICE_TYPES.map((t) => t.mime),
     ])
   })
@@ -162,10 +163,10 @@ describe('createDefaultAppService', () => {
         if (key.includes('.pptx')) throw new Error('no user choice')
         return key.includes('.docx')
           ? '    ProgId    REG_SZ    Word.Document.12\r\n'
-          : '    ProgId    REG_SZ    IeumOffice.ExcelWorkbook\r\n'
+          : '    ProgId    REG_SZ    OnyouOffice.ExcelWorkbook\r\n'
       }
       if (key === 'HKCR\\.pptx')
-        return '    (Default)    REG_SZ    IeumOffice.PowerPointPresentation\r\n'
+        return '    (Default)    REG_SZ    OnyouOffice.PowerPointPresentation\r\n'
       if (key === 'HKCR\\Word.Document.12')
         return '    (Default)    REG_SZ    Microsoft Word Document\r\n'
       throw new Error('missing')

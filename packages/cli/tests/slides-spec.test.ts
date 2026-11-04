@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import JSZip from 'jszip'
@@ -740,6 +741,6 @@ describe('genoffice guide slides design|spec', () => {
     expect(spec.stdout).toContain('1280 × 720')
     expect(spec.stdout).toContain('"type": "image"')
     const catalog = await run(['guide', 'slides'])
-    expect(catalog.stdout).toContain('ieumoffice guide slides design')
+    expect(catalog.stdout).toContain('onyouoffice guide slides design')
   })
 })

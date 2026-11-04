@@ -336,6 +336,10 @@
   margin: 0 0 10px;
 }
 
+.projects-name-row + .projects-path-row {
+  margin-top: 10px;
+}
+
 .projects-trust {
   display: flex;
   align-items: center;
@@ -494,4 +498,19 @@
   color: var(--text);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+/* Separate the introduction and project-name field from their action rows. */
+.projects-head + .projects-desc {
+  margin-bottom: 20px;
+}
+
+.projects-create > .projects-buttons {
+  margin-block-start: 12px;
+}
+
+.projects-instructions-count {
+  margin-top: -4px;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
 }

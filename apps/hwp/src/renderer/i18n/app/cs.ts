@@ -57,6 +57,9 @@ export const cs = {
   aiEmptyBody:
     'Zeptejte se na obsah, nechte vylepšit formulace nebo vyplnit pole formuláře. Každá změna je zde uvedena a všechny lze vrátit najednou.',
   aiComposerPlaceholder: 'Zeptejte se na tento dokument nebo napište, co změnit…',
+  aiToolbarSummary: 'Shrnout',
+  aiToolbarPolish: 'Upravit text',
+  aiToolbarPolishPrompt: 'Vylepšete celý dokument tak, aby byl text jasnější a plynulejší',
   aiStarterSummarize: 'Shrnout dokument',
   aiStarterSummarizePrompt: 'Stručně shrň tento dokument, jen hlavní body.',
   aiStarterProofread: 'Opravit pravopis a mezery',
@@ -214,7 +217,7 @@ export const cs = {
   previewMargins: 'Zobrazit okraje',
   previewEditPage: 'Upravit tuto stránku',
   previewEditFailed: 'Na tuto stránku nelze přejít.',
-  checkTitle: 'Kontrola dokumentu',
+  checkTitle: 'Kontrola formátu dokumentu',
   checkRunning: 'Načítání dokumentu…',
   checkFailed: 'Dokument se nepodařilo načíst.',
   checkEmpty: 'Není co opravit.',

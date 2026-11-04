@@ -5,7 +5,7 @@ import { mkdtemp, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { launchShell, closeAndSaveVideo, waitForPageWithUrl, screenshotPath } from './helpers'
-import { PRODUCT_NAME } from '../packages/i18n/src/product'
+import { DEFAULT_DOCUMENTS_DIR_NAME } from '../packages/i18n/src/product'
 
 /**
  * Regression for "new spreadsheet cannot be saved" (feedback 2368785), updated
@@ -20,19 +20,19 @@ test.describe('sheets: new blank workbook', () => {
     const launched = await launchShell({ onboardingSeen: true, videoDir: 'sheets-new-blank' })
     try {
       const { app, page } = launched
-      // keep the auto-created workbook out of the real ~/Documents/<product name>
+      // keep the auto-created workbook out of the real the scratch Documents/default folder
       await app.evaluate(({ app: electronApp }, dir) => {
         electronApp.setPath('documents', dir)
       }, scratch)
-      const saveDir = join(scratch, PRODUCT_NAME)
+      const saveDir = join(scratch, DEFAULT_DOCUMENTS_DIR_NAME)
       const workbook = join(saveDir, 'quick-create.xlsx')
       // the workbook has no file yet, so Save answers the Save As picker
       await app.evaluate(({ dialog }, target) => {
         dialog.showSaveDialog = async () => ({ canceled: false, filePath: target })
       }, workbook)
 
-      await expect(page.locator('.quick-card').nth(1)).toContainText('AI Sheets')
-      await page.locator('.quick-card').nth(1).click()
+      await expect(page.locator('.quick-card[data-format="xlsx"]')).toContainText('Spreadsheet')
+      await page.locator('.quick-card[data-format="xlsx"]').click()
 
       const sheets = await waitForPageWithUrl(app, '://sheets/')
       await sheets.waitForFunction(() => document.body.textContent?.includes('Sheet1'), null, {

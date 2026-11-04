@@ -290,12 +290,29 @@ async function typeInDocs(docs: Page, text: string): Promise<void> {
 }
 
 async function typeInHwp(hwp: Page, text: string): Promise<void> {
+  await hwp.locator('.hwp-app[data-phase="ready"]').waitFor({ timeout: 60_000 })
   const studio = hwp.frameLocator('.hwp-editor-host iframe')
   const canvas = studio.locator('#scroll-content canvas').first()
   await canvas.waitFor({ timeout: 60_000 })
   // the first body line of an A4 page at the studio's starting zoom
   await canvas.click({ position: { x: 160, y: 140 } })
   await hwp.keyboard.type(text, { delay: 20 })
+  // A canvas can exist before the document has loaded; verify the edit, not only the keystrokes.
+  await expect
+    .poll(() =>
+      studio.locator('body').evaluate(async (_body, marker) => {
+        const editor = (
+          window as unknown as {
+            rhwpStudio: {
+              plugins: { invoke(id: string, method: string, args: unknown[]): Promise<unknown> }
+            }
+          }
+        ).rhwpStudio
+        const value = await editor.plugins.invoke('ieum-agent', 'readText', [])
+        return String(value).includes(marker)
+      }, text),
+    )
+    .toBe(true)
 }
 
 // ---- fixtures ----
@@ -370,7 +387,7 @@ test.describe('crash recovery', () => {
       const shell = await shellPageOf(app)
 
       // an untitled document: the Home card's new Markdown tab
-      await shell.locator('.quick-card', { hasText: 'AI Markdown' }).click()
+      await shell.locator('.quick-card', { hasText: 'Markdown' }).click()
       const untitled = await waitForPageWithUrl(app, '://markdown/')
       await editMarkdown(untitled, UNTITLED_MARK)
       const untitledTab = (await documentTabs(shell)).find((tab) => tab.kind === 'markdown')
@@ -714,7 +731,7 @@ test.describe('crash recovery', () => {
     try {
       const { app } = first
       const shell = await shellPageOf(app)
-      await shell.locator('.quick-card', { hasText: 'AI HTML' }).click()
+      await shell.locator('.quick-card', { hasText: 'HTML' }).click()
       const html = await waitForPageWithUrl(app, '://html/')
       await expect(html.locator('.ribbon-body')).toBeVisible()
       await html.locator('.rb-view', { hasText: /Source/ }).click()
@@ -725,7 +742,7 @@ test.describe('crash recovery', () => {
       await expect(source).toContainText(HTML_MARK)
 
       await shell.locator('.tab-bar .tab-home').click()
-      await shell.locator('.quick-card', { hasText: 'AI Markdown' }).click()
+      await shell.locator('.quick-card', { hasText: 'Markdown' }).click()
       const md = await waitForPageWithUrl(app, '://markdown/')
       await editMarkdown(md, MD_MARK)
 

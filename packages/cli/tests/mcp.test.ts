@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { copyFileSync, existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
@@ -457,8 +458,8 @@ describe('mcp server', () => {
     expect(r.text).toContain('Word ops')
     expect(() => r.json()).toThrow()
     const { resources } = await client.listResources()
-    expect(resources.map((x) => x.uri)).toContain('ieumoffice://guide/slides/spec')
-    const spec = await client.readResource({ uri: 'ieumoffice://guide/slides/spec' })
+    expect(resources.map((x) => x.uri)).toContain('onyouoffice://guide/slides/spec')
+    const spec = await client.readResource({ uri: 'onyouoffice://guide/slides/spec' })
     expect((spec.contents[0] as { text: string }).text.length).toBeGreaterThan(200)
   })
 

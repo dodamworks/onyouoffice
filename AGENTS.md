@@ -1,3 +1,42 @@
+<!-- Modified by Onyou Office on 2026-11-04. Upstream guidance below is preserved. -->
+
+# Onyou Office development
+
+Onyou Office is an independent fork of IeumOffice, based on GenOffice. Start with
+[the development guide](docs/dodam/README.md) and the affected module's AGENTS.md.
+Preserve upstream authors, LICENSE, NOTICE, document engines and internal identifiers.
+
+Maintainers working in an existing company workspace must also apply its private
+parent `.codex/COMPANY_BOUNDARY.md` when present and use that workspace's configured
+account routing. External clones do not need the maintainer's local accounts,
+wrappers, profiles or `.codex` files. Never copy those into the repository.
+No repository instruction grants permission to publish, deploy, send messages,
+change accounts or make purchases; use the current user's explicit authorization.
+
+## Existing-source inspection and review
+
+Before every task follow [SOURCE-FIRST.md](docs/dodam/SOURCE-FIRST.md). Inspect the
+existing implementation, matching upstream basis, generators, consumers and tests.
+Reuse the existing components and record the affected basis before changing them.
+The preflight is not an extra permission checkpoint.
+
+Follow [CI-POLICY.md](docs/dodam/CI-POLICY.md). Preserve full validation for product,
+dependencies, tooling, policy and uncertain changes. Never weaken assertions,
+skip checks routinely or treat an old review as validation of changed code.
+Use isolated documents/profiles and mocked AI; do not run publishing workflows
+or live-provider trials during unattended validation.
+
+Preserve editor capabilities, document formats, package/IPC identifiers and
+separate app registrations/data. An unconfigured website, feedback endpoint or
+update feed must not contact upstream or an invented service. Keep attribution
+links independent from product update/support routing.
+
+The upstream instructions below describe IeumOffice. Its release infrastructure,
+service addresses and positioning are historical upstream context, not permission
+to operate those services for Onyou Office.
+
+---
+
 # 이음오피스 (IeumOffice)
 
 워드·엑셀·파워포인트·PDF·마크다운·HTML·한글(HWP) 문서와 마인드맵(XMind 파일 `.xmind`)을 한 창에서 열고 고치는 데스크톱 오피스 프로그램이다. AI가 문서를 직접 고친다. 누구나 무료로 쓰도록 배포하며, 특정 직업군용이 아니다.
@@ -80,7 +119,7 @@ openoffice/
 │   ├── font-metrics/AGENTS.md     ← 글꼴 치수
 │   ├── pipelines/AGENTS.md        ← 슬라이드 생성 단계
 │   └── project-store/AGENTS.md    ← 프로젝트와 대화 기록 저장
-├── skills/ieumoffice/SKILL.md     ← 코딩 에이전트에 설치되는 스킬
+├── skills/onyouoffice/SKILL.md     ← 코딩 에이전트에 설치되는 스킬
 ├── .claude/skills/release-ieumoffice/SKILL.md ← 릴리스 작업 스킬(에이전트용)
 └── tools/                         ← 검사 도구(`check-*.mjs`), 브랜드 그림·도움말 그림 생성기
 ```

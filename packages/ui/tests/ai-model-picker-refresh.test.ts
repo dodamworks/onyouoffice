@@ -84,4 +84,51 @@ describe('AiModelPicker model refresh', () => {
     act(() => chip.click())
     expect(host.querySelector('.ai-model-pop')).not.toBeNull()
   })
+  it('opens AI settings directly from a disconnected composer', async () => {
+    const openModelSettings = vi.fn(async () => undefined)
+    await act(async () =>
+      root.render(
+        createElement(AiModelPicker, {
+          bridge: {
+            ...bridge,
+            getSettings: async () => ({ ...defaultAiSettings(), provider: 'auto' }),
+            openModelSettings,
+          },
+          lang: 'en',
+          subscriptionStatuses: {},
+          connectInSettings: true,
+        }),
+      ),
+    )
+    const chip = host.querySelector<HTMLButtonElement>('.ai-model-chip')!
+    expect(chip.textContent).toContain('Connect AI')
+    act(() => chip.click())
+    expect(openModelSettings).toHaveBeenCalledOnce()
+    expect(host.querySelector('.ai-model-pop')).toBeNull()
+    expect(chip.getAttribute('aria-haspopup')).toBe('dialog')
+  })
+
+  it('keeps model selection available for a connected composer', async () => {
+    const openModelSettings = vi.fn(async () => undefined)
+    await act(async () =>
+      root.render(
+        createElement(AiModelPicker, {
+          bridge: {
+            ...bridge,
+            getSettings: async () => ({ ...defaultAiSettings(), provider: 'auto' }),
+            openModelSettings,
+          },
+          lang: 'en',
+          subscriptionStatuses: {
+            'claude-code': { provider: 'claude-code', state: 'signed-out', meteredAccepted: false },
+            codex: { provider: 'codex', state: 'ready', meteredAccepted: false },
+          },
+          connectInSettings: true,
+        }),
+      ),
+    )
+    act(() => host.querySelector<HTMLButtonElement>('.ai-model-chip')!.click())
+    expect(openModelSettings).not.toHaveBeenCalled()
+    expect(host.querySelector('.ai-model-pop')).not.toBeNull()
+  })
 })

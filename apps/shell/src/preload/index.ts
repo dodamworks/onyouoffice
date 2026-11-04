@@ -45,6 +45,7 @@ import type {
   HwpDefaultFormat,
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
+import { normalizeNickname } from '../shared/nickname'
 import { RECOVERY_LIST_CHANNELS } from '../shared/recovery-list-api'
 import type {
   RecoveryListApi,
@@ -208,6 +209,9 @@ const homeApi: HomeApi = {
   },
   // knowledge-base ask panel (handlers live in the shell main, same process
   // that owns the index and the shared ai:stream registration)
+  async kbCatalog() {
+    return ipcRenderer.invoke('kb:catalog')
+  },
   async kbList(scope) {
     return scope === undefined
       ? ipcRenderer.invoke('kb:list')
@@ -498,6 +502,18 @@ const homeApi: HomeApi = {
   async openMcpLogFile() {
     await ipcRenderer.invoke(HOME_CHANNELS.openMcpLogFile)
   },
+  async getNickname() {
+    return normalizeNickname(await ipcRenderer.invoke(HOME_CHANNELS.getNickname))
+  },
+  async setNickname(value) {
+    if (typeof value !== 'string') throw new Error('Invalid nickname.')
+    return normalizeNickname(await ipcRenderer.invoke(HOME_CHANNELS.setNickname, value))
+  },
+  onNicknameChanged(handler) {
+    const listener = (_event: IpcRendererEvent, value: unknown) => handler(normalizeNickname(value))
+    ipcRenderer.on(HOME_CHANNELS.nicknameChanged, listener)
+    return () => ipcRenderer.removeListener(HOME_CHANNELS.nicknameChanged, listener)
+  },
   async getAuthorName() {
     return normalizeAuthorNameSetting(await ipcRenderer.invoke(HOME_CHANNELS.getAuthorName))
   },
@@ -509,6 +525,12 @@ const homeApi: HomeApi = {
   },
   async setAiPanelPrefs(patch) {
     return normalizeAiPanelPrefs(await ipcRenderer.invoke(HOME_CHANNELS.setAiPanelPrefs, patch))
+  },
+  onAiPanelPrefsChanged(handler) {
+    const listener = (_event: IpcRendererEvent, value: unknown) =>
+      handler(normalizeAiPanelPrefs(value))
+    ipcRenderer.on('app:ai-panel-prefs-changed', listener)
+    return () => ipcRenderer.removeListener('app:ai-panel-prefs-changed', listener)
   },
   async getDefaultSaveDir() {
     const result: unknown = await ipcRenderer.invoke(HOME_CHANNELS.getDefaultSaveDir)

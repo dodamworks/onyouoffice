@@ -91,6 +91,21 @@ export interface AskToolLabels {
   create: string
 }
 
+/** Settled turns show neutral activity history, including stopped or failed attempts. */
+export function toolNoteLabel(
+  note: ToolNote,
+  streaming: boolean,
+  active: AskToolLabels,
+  history: AskToolLabels,
+): string {
+  const kind = note.kind
+  if (!streaming && (kind === 'search' || kind === 'read' || kind === 'create')) {
+    // Project summaries have their own outcome; only replace generic progress labels.
+    if (note.label === active[kind]) return history[kind]
+  }
+  return note.label
+}
+
 /** the badge of a knowledge, document or other tool as it starts */
 export function startedToolNote(name: string, labels: AskToolLabels): ToolNote {
   if (name === 'search_knowledge_base') return { label: labels.search, kind: 'search' }

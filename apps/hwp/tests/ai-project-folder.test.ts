@@ -124,10 +124,15 @@ async function mount(folder: FakeProjectFolder) {
   return projectApi
 }
 
-/** a starter fills the input; the send button sends it */
-async function sendStarter(): Promise<void> {
+/** Type a request and send it through the normal composer */
+async function sendRequest(): Promise<void> {
   await act(async () => {
-    container.querySelector<HTMLButtonElement>('.ai-starter')!.click()
+    const box = container.querySelector<HTMLTextAreaElement>('.ai-composer textarea')!
+    Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(
+      box,
+      'Summarize this document.',
+    )
+    box.dispatchEvent(new Event('input', { bubbles: true }))
   })
   await act(async () => {
     container.querySelector<HTMLButtonElement>('.ai-send-btn:not(.ai-stop-btn)')!.click()
@@ -143,13 +148,14 @@ describe('hwp AI panel: project folder', () => {
     const folder = fakeProjectFolder('p1')
     await mount(folder)
     expect(container.querySelector('.ai-input-below .ai-project-chip')).not.toBeNull()
+    expect(container.querySelector('.ai-starter-list')).toBeNull()
     expect(container.querySelector('.ai-panel-header .ai-project-chat-button')).not.toBeNull()
   })
 
   it('reads the project context before the run and sends the project skill with it', async () => {
     const folder = fakeProjectFolder('p1')
     const projectApi = await mount(folder)
-    await sendStarter()
+    await sendRequest()
 
     expect(model.calls.indexOf('readContext')).toBeGreaterThanOrEqual(0)
     expect(model.calls.indexOf('readContext')).toBeLessThan(model.calls.indexOf('stream'))
@@ -173,8 +179,9 @@ describe('hwp AI panel: project folder', () => {
     const folder = fakeProjectFolder(null)
     const projectApi = await mount(folder)
     expect(container.querySelector('.ai-input-below .ai-project-chip')).not.toBeNull()
+    expect(container.querySelector('.ai-starter-list')).toBeNull()
     expect(container.querySelector('.ai-project-chat-button')).toBeNull()
-    await sendStarter()
+    await sendRequest()
 
     expect(folder.appended).toEqual([])
     expect(projectApi.appendChat).toHaveBeenCalledTimes(2)
@@ -189,7 +196,7 @@ describe('hwp AI panel: project folder', () => {
   it('"new chat" starts a new project chat when a project is chosen', async () => {
     const folder = fakeProjectFolder('p1')
     await mount(folder)
-    await sendStarter()
+    await sendRequest()
     expect(folder.newChats).toEqual(['c1'])
 
     await act(async () => newChatButton()!.click())
@@ -201,7 +208,7 @@ describe('hwp AI panel: project folder', () => {
   it('"new chat" without a project clears the chat as before', async () => {
     const folder = fakeProjectFolder(null)
     await mount(folder)
-    await sendStarter()
+    await sendRequest()
     expect(container.querySelectorAll('.ai-msg').length).toBeGreaterThan(0)
 
     act(() => newChatButton()!.click())

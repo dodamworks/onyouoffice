@@ -7,7 +7,7 @@ Home is GenOffice's start page: a navigation sidebar on the left, file lists and
 - **Recent**: files you opened recently. Each row is stamped with when — today, yesterday, or the date.
 - **Starred**: files you starred. Hover a file row and click the star to add or remove it. The ⋯ menu's **Move to group** sorts starred files into named groups; the Starred view filters by them.
 - **User Guide**: opens this manual.
-- **Ask AI**: the knowledge-base panel — ask questions and get answers cited from your starred files (see below).
+- **Knowledge Vault**: The default source is all documents registered in the app: recent and starred files, added folders and projects. It does not search your entire computer.
 - **Projects**: the folders (projects) the AI can work with. Create a project or use an existing folder, and open one to manage its instructions, memory, files and chats. See [Projects](help://projects).
 - **Folders**: directories you add to the sidebar with **Add folder…**, or drag in from the file manager. Each becomes a root you can open, create subfolders in, rename and remove; one that goes offline shows as unavailable and can be taken off the list. **New folder** makes another one.
 - **The row at the bottom**: shows whether AI is connected — **Connect AI**, or the name of the connected subscription — and opens Settings.
@@ -56,11 +56,9 @@ What each card does:
 
 > Tip: File ▸ New in the menu bar creates the same document types (⌘N/Ctrl+N defaults to a text document); dragging a file into the window opens it.
 
-## Ask your knowledge base
+## Knowledge Vault
 
-- Star files first (any type the app reads); the panel header counts the corpus, and an empty knowledge base tells you to go star something.
-- Answers cite the files they came from; click a citation to open the file in its editor.
-- Needs a connected AI; see [Subscription connection](help://subscription). The conversation lives in memory only — closing the app ends it.
-- Pick a project below the input and the folder's files are searched and read as well, and the chat is kept in that folder so you can carry on in another editor. Without a project, the chat lives in memory only, as above.
-- Search runs on the local file index, like Home search; files that have disappeared quietly drop out of the corpus.
-- Groups organise the Starred list only — the knowledge base always spans every starred file.
+- The default source is all documents registered in the app: recent and starred files, added folders and projects. It does not search your entire computer.
+- Above the input, choose registered documents, a project, specific documents or starred files. Changing the source starts a new chat and cancels any waiting question.
+- Connect AI in Settings → AI. Names and relevant content from the chosen source may be sent to that provider. Hidden and excluded project files remain excluded. Answers cite their sources.
+- Project chats are saved in the project folder. Other chats remain in memory and end when the app closes.

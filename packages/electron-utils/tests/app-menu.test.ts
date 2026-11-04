@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const electronMock = vi.hoisted(() => ({
@@ -267,17 +268,17 @@ describe('checkUpdatesMenuItem / manual update check wiring', () => {
   it('About dialog copy button still copies name + version', async () => {
     electronMock.showMessageBox.mockResolvedValue({ response: 1 })
     await (aboutMenuItem(en) as { click: () => Promise<void> }).click()
-    expect(electronMock.writeText).toHaveBeenCalledWith('IeumOffice 1.2.3')
+    expect(electronMock.writeText).toHaveBeenCalledWith('Onyou Office 1.2.3')
   })
 
   it('names the product in the About entry of every language', () => {
-    expect(en.about).toBe('About IeumOffice')
-    expect(appMenuLabels('ko').about).toBe('이음오피스 정보')
-    expect(appMenuLabels('ja').about).toBe('IeumOffice について')
+    expect(en.about).toBe('About Onyou Office')
+    expect(appMenuLabels('ko').about).toBe('온유오피스 정보')
+    expect(appMenuLabels('ja').about).toBe('Onyou Office について')
     for (const lang of [...LANGS, 'vi']) {
       const about = appMenuLabels(lang).about
       expect(about, lang).not.toContain('GenOffice')
-      expect(about, lang).toContain(lang === 'ko' ? '이음오피스' : 'IeumOffice')
+      expect(about, lang).toContain(lang === 'ko' ? '온유오피스' : 'Onyou Office')
     }
   })
 
@@ -288,14 +289,14 @@ describe('checkUpdatesMenuItem / manual update check wiring', () => {
       setUiLang('en')
       await about.click()
       expect(electronMock.showMessageBox.mock.calls.at(-1)![0]).toMatchObject({
-        title: 'IeumOffice',
-        message: 'IeumOffice',
+        title: 'Onyou Office',
+        message: 'Onyou Office',
       })
       setUiLang('ko')
       await about.click()
       expect(electronMock.showMessageBox.mock.calls.at(-1)![0]).toMatchObject({
-        title: '이음오피스',
-        message: '이음오피스',
+        title: '온유오피스',
+        message: '온유오피스',
       })
     } finally {
       setUiLang('zh')

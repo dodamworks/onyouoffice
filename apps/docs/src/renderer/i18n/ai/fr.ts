@@ -70,8 +70,7 @@ export const fr = {
   aiEmptyBody1: 'Donnez une instruction ou posez simplement une question ;',
   aiEmptyBody2:
     "avec du texte sélectionné, les commandes de réécriture s'appliquent à la sélection.",
-  aiNoHidingNote:
-    'Cet éditeur ne permet pas de masquer des parties du document à l’IA : ce que couvre la demande est envoyé tel quel.',
+  aiNoHidingNote: 'Utiliser l’IA envoie le contenu du document au service d’IA.',
   aiStarterWeeklyReport: 'Rédiger un rapport hebdomadaire de projet',
   aiStarterLaunchPost: 'Rédiger une annonce de lancement de produit',
   aiStarterEventOutline: "Établir le plan d'un événement",

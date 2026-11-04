@@ -1,3 +1,6 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+import type { Lang } from './index'
+
 /**
  * Product identity: the ONE place the user-visible product name, the names
  * derived from it, and the public repository are defined.
@@ -24,11 +27,14 @@ export const UPSTREAM_NAME_LITERAL = `{{${UPSTREAM_PRODUCT_NAME}}}`
  * productName, the userData folder, the default save folder), which must stay
  * the same whatever the UI language is.
  */
-export const PRODUCT_NAME = 'IeumOffice'
+export const PRODUCT_NAME = 'Onyou Office'
+
+/** Default document/project directory; independent of the display and app-data names. */
+export const DEFAULT_DOCUMENTS_DIR_NAME = 'onyouoffice'
 
 /** Languages that show a localized product name instead of PRODUCT_NAME. */
 const LOCALIZED_PRODUCT_NAMES: Readonly<Record<string, string>> = {
-  ko: '이음오피스',
+  ko: '온유오피스',
 }
 
 /** The product name as shown in a UI language (a Lang or a raw locale tag). */
@@ -45,17 +51,23 @@ export const USER_DATA_DIR_NAME = PRODUCT_NAME
 /** userData folder name of an unpacked (development) run, kept apart from the installed app's. */
 export const DEV_USER_DATA_DIR_NAME = `${PRODUCT_NAME}-Dev`
 
-/** The product's public GitHub repository: issues, releases and update checks all point here. */
+/** Upstream source coordinates for attribution only; never an Onyou update feed. */
 export const PRODUCT_REPO_OWNER = 'pblsketch'
 export const PRODUCT_REPO_NAME = 'openoffice'
 /** `owner/repo`; the URLs built from it live in @genoffice/electron-utils (github-menu.ts) */
 export const PRODUCT_REPO_SLUG = `${PRODUCT_REPO_OWNER}/${PRODUCT_REPO_NAME}`
 
 /** The product's website: downloads, release notes and the step-by-step help pages. */
-export const PRODUCT_WEBSITE = 'https://ieumoffice.com'
+export const PRODUCT_WEBSITE = ''
+
+/** Domain ownership is not an operating website or update distribution. */
+export const PRODUCT_DOMAIN = 'onyouoffice.com'
+export const PRODUCT_COMMAND = 'onyouoffice'
+export const PRODUCT_UPDATES_CONFIGURED = false
+export const PRODUCT_FEEDBACK_URL = ''
 
 /** Where rights holders and users reach the maintainer about trademarks, copyright and licensing. */
-export const PRODUCT_CONTACT_EMAIL = 'pblsketch@gmail.com'
+export const PRODUCT_CONTACT_EMAIL = 'support@onyouoffice.com'
 
 const NAME_TOKEN = new RegExp(`\\{\\{${UPSTREAM_PRODUCT_NAME}\\}\\}|${UPSTREAM_PRODUCT_NAME}`, 'g')
 
@@ -76,6 +88,11 @@ function insideFileName(before: string, after: string): boolean {
  * name. Text that does not mention the name is returned as is.
  */
 export function brandText(text: string, lang: string | null | undefined): string {
+  // Static templates only: parameters (including user paths) are inserted later.
+  // Do not rewrite upstream URLs, attribution or internal package identifiers.
+  text = text
+    .replace(/(?<![A-Za-z0-9_./-])ieumoffice(?=$|[\s`])/g, PRODUCT_COMMAND)
+    .replace(/(?<![A-Za-z0-9_])\.ieumoffice(?=[/\\`]|$)/g, '.onyouoffice')
   if (!text.includes(UPSTREAM_PRODUCT_NAME)) return text
   const localized = productName(lang)
   return text.replace(NAME_TOKEN, (match: string, offset: number) => {
@@ -85,4 +102,37 @@ export function brandText(text: string, lang: string | null | undefined): string
     if (insideIdentifier(before, after)) return match
     return insideFileName(before, after) ? PRODUCT_NAME : localized
   })
+}
+
+/** Local-build endpoints are deliberately unset, rather than routed to upstream. */
+const UNCONFIGURED_SERVICE: Readonly<Record<string, string>> = {
+  zh: '此本地开发版本尚未配置此服务。',
+  en: 'This service is not configured for this local development build.',
+  vi: 'Dịch vụ này chưa được cấu hình cho bản phát triển cục bộ này.',
+  ja: 'このローカル開発版では、このサービスはまだ設定されていません。',
+  ko: '이 로컬 개발 버전에는 아직 이 서비스의 연결 주소가 설정되지 않았습니다.',
+  fr: 'Ce service n’est pas configuré pour cette version de développement locale.',
+  de: 'Dieser Dienst ist für diese lokale Entwicklungsversion nicht eingerichtet.',
+  es: 'Este servicio no está configurado para esta versión de desarrollo local.',
+  it: 'Questo servizio non è configurato per questa versione di sviluppo locale.',
+  pt: 'Este serviço não está configurado para esta versão de desenvolvimento local.',
+  ru: 'Этот сервис не настроен для этой локальной версии для разработки.',
+  ar: 'لم يتم إعداد هذه الخدمة لإصدار التطوير المحلي هذا.',
+  hi: 'इस स्थानीय विकास संस्करण के लिए यह सेवा कॉन्फ़िगर नहीं की गई है।',
+  th: 'ยังไม่ได้กำหนดค่าบริการนี้สำหรับรุ่นพัฒนาในเครื่องนี้',
+  id: 'Layanan ini belum dikonfigurasi untuk versi pengembangan lokal ini.',
+  pl: 'Ta usługa nie jest skonfigurowana dla tej lokalnej wersji rozwojowej.',
+  nl: 'Deze dienst is niet ingesteld voor deze lokale ontwikkelversie.',
+  cs: 'Tato služba není pro tuto místní vývojovou verzi nakonfigurována.',
+  ms: 'Perkhidmatan ini belum dikonfigurasi untuk binaan pembangunan setempat ini.',
+  'zh-TW': '此本機開發版本尚未設定此服務。',
+  he: 'השירות הזה לא הוגדר עבור גרסת הפיתוח המקומית הזו.',
+} satisfies Record<Lang, string>
+
+export function productServiceUnavailable(lang: string): string {
+  return (
+    UNCONFIGURED_SERVICE[lang] ??
+    UNCONFIGURED_SERVICE[lang.split(/[-_]/)[0]!] ??
+    UNCONFIGURED_SERVICE.en!
+  )
 }

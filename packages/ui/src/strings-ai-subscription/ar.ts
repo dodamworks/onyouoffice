@@ -94,13 +94,13 @@ export const ar = {
   pickerNotConnected: 'ربط الذكاء الاصطناعي',
   guideQuestion: 'ما الذكاء الاصطناعي الذي تستخدمه بالفعل؟',
   guidePathClaudeTitle: 'لديّ اشتراك مدفوع في Claude',
-  guidePathClaudeBody: 'يلزم وجود خطة Pro أو Max. لا يمكن الاتصال بحساب Claude مجاني.',
+  guidePathClaudeBody: 'يلزم اشتراك Pro أو Max وبرنامج اتصال على جهازك.',
   guidePathCodexTitle: 'أستخدم ChatGPT',
   guidePathCodexBody:
     'سجّل الدخول إلى برنامج Codex من OpenAI بحسابك في ChatGPT. الخطة المجانية لا تتيح إلا استخدامًا قليلًا.',
   guidePathFreeTitle: 'لا أملك أيًّا منهما بعد',
   guidePathFreeBody:
-    'اربط ذكاءً اصطناعيًا مجانيًا في نحو دقيقة. أثناء استخدامه مجانًا، قد يُستخدم ما ترسله لتحسين الذكاء الاصطناعي لدى تلك الشركة.',
+    'اتصل بذكاء اصطناعي مجاني عبر OpenRouter أو Gemini. قد يستخدم المزوّدون ما ترسله لتحسين الذكاء الاصطناعي لديهم.',
   guideBack: 'اختيار طريقة أخرى',
   guideBadgeReady: 'متصل',
   guideBadgeInstalled: 'مثبَّت',
@@ -140,8 +140,7 @@ export const ar = {
   actionCopyInfo: 'نسخ المعلومات لطلب المساعدة',
   copyInfoDone: 'تم النسخ',
   actionConnectHelp: 'شاهد كل خطوة على الشاشة (صفحة باللغة الكورية)',
-  guidePathChatGptBody:
-    'سجّل الدخول بحسابك في ChatGPT واستخدم خطتك. لا حاجة إلى تثبيت أي شيء. الخطة المجانية لا تتيح إلا استخدامًا قليلًا.',
+  guidePathChatGptBody: 'سجّل الدخول في المتصفح. تسري حدود استخدام خطتك.',
   guideUseCodex: 'هل تستخدم برنامج Codex على هذا الحاسوب بالفعل؟ اتصل عبر Codex',
   guideUseDirect: 'اتصل مباشرةً من التطبيق، دون Codex',
   chatgptLoginNote:

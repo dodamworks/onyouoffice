@@ -14,7 +14,7 @@ export const pl = {
   renameHint: 'Folder zachowuje swoją nazwę.',
   openInExplorer: 'Otwórz w Eksploratorze plików',
   openInFinder: 'Pokaż w Finderze',
-  trustUse: 'instrukcje i pamięć są wysyłane do AI',
+  trustUse: 'instrukcje i pamięć są używane przy zapytaniach do AI',
   trustWithout: 'używany bez instrukcji',
   trustWithoutDesc:
     'Instrukcje, pamięć i czaty z innych komputerów nie są wysyłane do AI, a pamięć nie jest gromadzona.',
@@ -27,8 +27,9 @@ export const pl = {
   tabMemory: 'Pamięć',
   tabFiles: 'Pliki',
   tabChats: 'Czaty',
-  instructionsDesc:
-    'Zasady pracy, których AI przestrzega w tym projekcie. Dołączane są do każdego żądania z panelu AI, w którym wybrano ten projekt.',
+  instructionsDesc: 'Wpisz zasady, których AI ma przestrzegać w tym projekcie.',
+  instructionsLength: '{count} / {limit} znaków',
+  instructionsTooLong: 'Dotychczasowe instrukcje zostają zachowane. Skróć je przed zapisaniem.',
   instructionsPlaceholder:
     'Na przykład: raporty pisać oficjalnym tonem, a daty w formie 30.10.2026.',
   save: 'Zapisz',
@@ -38,13 +39,13 @@ export const pl = {
   readAgentsFiles: 'Czytaj także AGENTS.md i CLAUDE.md z głównego poziomu folderu jako instrukcje',
   withoutNotSent:
     'Ten projekt jest używany bez instrukcji, więc na razie nie jest to wysyłane do AI.',
-  memoryDesc: 'Notatki, które AI zapisało podczas czatów. Usuń to, co błędne lub już niepotrzebne.',
-  memoryEnabled: 'Gromadź pamięć',
-  memoryEnabledDesc:
-    'Po wyłączeniu AI nie zapisuje nic nowego. Istniejąca pamięć jest nadal czytana.',
+  memoryDesc:
+    'Notatki zapisywane przez AI podczas rozmów. Zalecamy ich uporządkowanie po przekroczeniu 8 000 znaków.',
+  memoryEnabled: 'Automatycznie zapisuj nowe wspomnienia',
+  memoryEnabledDesc: 'Dotychczasowe wspomnienia są używane także po wyłączeniu tej opcji.',
   memoryLength: '{count} wpisów · {chars} znaków',
-  memoryEmpty: 'Nie ma jeszcze pamięci.',
-  memoryEditAll: 'Edytuj wszystko',
+  memoryEmpty: 'Tutaj pojawią się wspomnienia z rozmów.',
+  memoryEditAll: 'Edytuj pamięć',
   memoryEditLabel: 'Cała pamięć',
   memoryConflict: 'Są kopie powstałe w wyniku konfliktu synchronizacji: {names}',
   consolidating: 'Porządkowanie…',
@@ -62,9 +63,8 @@ export const pl = {
   consolidateUndone: 'Przywrócono stan sprzed porządkowania.',
   undoFailed: 'Nie udało się cofnąć.',
   removeMemoryAria: 'Usuń tę pamięć: {text}',
-  filesDesc:
-    'Pliki, które AI widzi w tym projekcie. Pliki ukryte i folder .ieumoffice są pominięte.',
-  filesEmpty: 'Nie ma plików, które AI może zobaczyć.',
+  filesDesc: 'Pliki projektu, z których AI może korzystać.',
+  filesEmpty: 'Dodaj dokumenty do folderu projektu, aby zobaczyć je tutaj.',
   filesLoadFailed: 'Nie udało się odczytać listy plików.',
   filesCount: 'Plików: {count}',
   loadMore: 'Pokaż więcej',
@@ -74,12 +74,11 @@ export const pl = {
     'Ten plik jest tylko w chmurze. Jeśli AI zechce go przeczytać, najpierw zapyta o pobranie.',
   hideFromAi: 'Ukryj przed AI',
   hideFromAiAria: 'Ukryj przed AI: {name}',
-  ignoredTitle: 'Pliki ukryte przed AI',
-  ignoredDesc: 'Ta lista jest widoczna tylko na tym ekranie. Cofnij, aby AI znów widziało plik.',
+  ignoredTitle: 'Pliki wykluczone z AI',
+  ignoredDesc: 'Przywróć plik, aby AI mogło ponownie z niego korzystać.',
   ignoredEmpty: 'Brak.',
   restoreAria: 'Cofnij: {name}',
-  chatsDesc:
-    'Czaty w tym projekcie. Kliknij, aby kontynuować czat w panelu AI dokumentu, w którym był ostatnio używany.',
+  chatsDesc: 'Rozmowy z AI w tym projekcie są tutaj zapisywane.',
   actionFailed: 'Nie udało się. Spróbuj ponownie.',
   loadFailed: 'Nie udało się odczytać projektu.',
   addExistingFolder: 'Użyj istniejącego folderu',

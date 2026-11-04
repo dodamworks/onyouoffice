@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -12,7 +13,7 @@ afterEach(() => {
 })
 
 async function template(outer = 'Company', deep = false) {
-  const dir = mkdtempSync(join(tmpdir(), 'ieumoffice-merge-nested-'))
+  const dir = mkdtempSync(join(tmpdir(), 'onyouoffice-merge-nested-'))
   dirs.push(dir)
   const inside: TableModel = {
     rows: [

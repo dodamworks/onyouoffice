@@ -55,6 +55,9 @@ export const vi = {
   aiEmptyBody:
     'Hỏi về nội dung, nhờ trau chuốt câu chữ hoặc điền các trường biểu mẫu. Mọi thay đổi đều được liệt kê ở đây và có thể hoàn tác cùng lúc.',
   aiComposerPlaceholder: 'Hỏi về tài liệu này hoặc cho biết cần sửa chỗ nào…',
+  aiToolbarSummary: 'Tóm tắt',
+  aiToolbarPolish: 'Trau chuốt',
+  aiToolbarPolishPrompt: 'Trau chuốt toàn bộ tài liệu để văn phong rõ ràng và trôi chảy hơn',
   aiStarterSummarize: 'Tóm tắt tài liệu',
   aiStarterSummarizePrompt: 'Hãy tóm tắt ngắn gọn tài liệu này, chỉ nêu các ý chính.',
   aiStarterProofread: 'Sửa chính tả và khoảng trắng',
@@ -212,7 +215,7 @@ export const vi = {
   previewMargins: 'Hiện lề',
   previewEditPage: 'Sửa trang này',
   previewEditFailed: 'Không thể chuyển đến trang này.',
-  checkTitle: 'Kiểm tra tài liệu',
+  checkTitle: 'Kiểm tra định dạng tài liệu',
   checkRunning: 'Đang đọc tài liệu…',
   checkFailed: 'Không đọc được tài liệu.',
   checkEmpty: 'Không có gì cần sửa.',

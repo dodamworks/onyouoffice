@@ -268,7 +268,7 @@ describe('a new HTML tab that takes a handed-over request', () => {
     await mountPanel(main)
 
     expect(main.requests).toHaveLength(0)
-    expect(host.querySelector('.ai-sub-prompt')).not.toBeNull()
+    expect(host.querySelector('.ai-sub-connect-status')).not.toBeNull()
     expect(composer().value).toBe(REQUEST)
     expect(composerChips()).toEqual(['lesson.txt', 'notes.md'])
     expect(userBubbles()).toHaveLength(0)

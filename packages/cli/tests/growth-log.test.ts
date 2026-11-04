@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { describe, expect, it } from 'vitest'
 import {
   buildSnapshot,
@@ -11,24 +12,24 @@ const RELEASES = [
     tag_name: 'v0.12.1',
     published_at: '2026-10-16T01:12:50Z',
     assets: [
-      { name: 'IeumOffice-Setup-0.12.1.exe', download_count: 61 },
-      { name: 'IeumOffice-0.12.1-arm64.dmg', download_count: 7 },
-      { name: 'IeumOffice-0.12.1-arm64-mac.zip', download_count: 1 },
-      { name: 'IeumOffice-0.12.1.AppImage', download_count: 3 },
-      { name: 'ieumoffice_0.12.1_amd64.deb', download_count: 2 },
-      { name: 'ieumoffice-0.12.1.x86_64.rpm', download_count: 1 },
+      { name: 'Onyou Office-Setup-0.12.1.exe', download_count: 61 },
+      { name: 'Onyou Office-0.12.1-arm64.dmg', download_count: 7 },
+      { name: 'Onyou Office-0.12.1-arm64-mac.zip', download_count: 1 },
+      { name: 'Onyou Office-0.12.1.AppImage', download_count: 3 },
+      { name: 'onyouoffice_0.12.1_amd64.deb', download_count: 2 },
+      { name: 'onyouoffice-0.12.1.x86_64.rpm', download_count: 1 },
       { name: 'latest.yml', download_count: 112 },
       { name: 'latest-mac.yml', download_count: 26 },
       { name: 'latest-linux.yml', download_count: 5 },
-      { name: 'IeumOffice-0.12.1.exe.blockmap', download_count: 5 },
+      { name: 'Onyou Office-0.12.1.exe.blockmap', download_count: 5 },
     ],
   },
   {
     tag_name: 'v0.12.0',
     published_at: '2026-10-14T22:49:05Z',
     assets: [
-      { name: 'IeumOffice-Setup-0.12.0.exe', download_count: 112 },
-      { name: 'IeumOffice-0.12.0-arm64.dmg', download_count: 10 },
+      { name: 'Onyou Office-Setup-0.12.0.exe', download_count: 112 },
+      { name: 'Onyou Office-0.12.0-arm64.dmg', download_count: 10 },
       { name: 'latest.yml', download_count: 128 },
     ],
   },
@@ -51,7 +52,7 @@ describe('buildSnapshot', () => {
   })
 
   it('ignores support files such as .blockmap', () => {
-    expect(snapshot.perAsset.map((a) => a.asset)).not.toContain('IeumOffice-0.12.1.exe.blockmap')
+    expect(snapshot.perAsset.map((a) => a.asset)).not.toContain('Onyou Office-0.12.1.exe.blockmap')
   })
 
   it('sums installer downloads per release', () => {

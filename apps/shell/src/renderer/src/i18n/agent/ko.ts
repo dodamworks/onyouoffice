@@ -3,8 +3,7 @@ import type { zh } from './zh'
 export const ko = {
   windowTitle: '에이전트',
   homeCardSub: '폴더에서 Claude Code·Codex로 일하기',
-  intro:
-    '에이전트는 고른 폴더에서 Claude Code나 Codex를 실행합니다. 폴더 안의 파일을 읽고, 새 파일을 만들고, 스킬을 쓰고, 스크립트를 실행하고, GenOffice에 열린 문서를 고칠 수 있습니다.',
+  intro: '선택한 폴더에서 AI와 함께 파일을 만들고 편집하세요.',
   folderLabel: '프로젝트 폴더',
   folderPick: '폴더 고르기…',
   folderNone: '고른 폴더가 없습니다',

@@ -166,7 +166,9 @@ describe('the book menu', () => {
 
 describe('the home screen', () => {
   it('lists, filters and draws books, and makes no new one', () => {
-    expect(literal(home, 'OPEN_LOCAL_EXTENSIONS')).toContain('.epub')
+    expect(literal(home, 'OPEN_LOCAL_FORMATS')).toContain("'epub'")
+    expect(literal(home, 'OPEN_LOCAL_EXTENSIONS')).toContain('OPEN_LOCAL_FORMATS.flatMap')
+    expect(literal(home, 'OPEN_LOCAL_EXTENSIONS')).toContain('`.${ext}`')
     expect(literal(home, 'FILE_ICONS')).toContain('epub: iconEpub')
     expect(literal(home, 'FILTERS')).toContain("{ key: 'epub', label: 'filterEpub' }")
     expect(home).not.toMatch(/newEpub/)

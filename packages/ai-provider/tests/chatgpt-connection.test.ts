@@ -120,7 +120,11 @@ function signedInTokens(nonce: string, scope = CHATGPT_SCOPES.join(' ')): Respon
   })
 }
 
-afterEach(() => setAiSecretCodec(null))
+const retryDirs: string[] = []
+afterEach(async () => {
+  setAiSecretCodec(null)
+  await Promise.all(retryDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })))
+})
 
 describe('the sign-in page address', () => {
   it('asks for the plan scope on the API resource, with PKCE, state and nonce', () => {
@@ -323,6 +327,121 @@ describe('the connection', { timeout: 20_000 }, () => {
       loginMethod: 'subscription',
       account: 'someone@example.com',
     })
+  })
+
+  it('reuses the pending issued client when a returning callback omits it', async () => {
+    const store = createChatGptConnectionMemoryStore({
+      hostId: 'urn:uuid:00000000-0000-4000-8000-000000000000',
+      clientId: 'oaiapp_1',
+    })
+    let nonce = ''
+    const openai = fakeOpenAi((body) => {
+      expect(body.get('client_id')).toBe('oaiapp_1')
+      return signedInTokens(nonce)
+    })
+    const browser = browserReturning((authorize) => {
+      nonce = authorize.searchParams.get('nonce')!
+      return { code: 'returning-code', state: authorize.searchParams.get('state')! }
+    })
+    const connection = createChatGptConnection({
+      store,
+      agentName: 'x',
+      fetch: openai.fetch,
+      now: () => NOW,
+    })
+    expect(await connection.signIn({ openBrowser: browser.open, pages: PAGES })).toEqual({
+      ok: true,
+    })
+    expect(store.current().clientId).toBe('oaiapp_1')
+  })
+
+  it.each([undefined, CHATGPT_DYNAMIC_CLIENT_ID])(
+    'refuses a new callback without an issued client: %s',
+    async (clientId) => {
+      const store = createChatGptConnectionMemoryStore()
+      const openai = fakeOpenAi(() => json({}, 500))
+      const browser = browserReturning((authorize) => ({
+        code: 'c',
+        state: authorize.searchParams.get('state')!,
+        ...(clientId ? { client_id: clientId } : {}),
+      }))
+      const connection = createChatGptConnection({ store, agentName: 'x', fetch: openai.fetch })
+      expect(await connection.signIn({ openBrowser: browser.open, pages: PAGES })).toEqual({
+        ok: false,
+        reason: 'denied',
+      })
+      expect(openai.calls.filter((call) => call.url === CHATGPT_TOKEN_URL)).toHaveLength(0)
+      expect(store.current().session).toBeUndefined()
+    },
+  )
+
+  it('rejects a returning callback for a different client without replacing its registration', async () => {
+    const store = createChatGptConnectionMemoryStore({
+      hostId: 'urn:uuid:00000000-0000-4000-8000-000000000000',
+      clientId: 'oaiapp_1',
+    })
+    const openai = fakeOpenAi(() => json({}, 500))
+    const browser = browserReturning((authorize) => ({
+      code: 'c',
+      state: authorize.searchParams.get('state')!,
+      client_id: 'oaiapp_other',
+    }))
+    const connection = createChatGptConnection({ store, agentName: 'x', fetch: openai.fetch })
+    expect(await connection.signIn({ openBrowser: browser.open, pages: PAGES })).toEqual({
+      ok: false,
+      reason: 'denied',
+    })
+    expect(store.current().clientId).toBe('oaiapp_1')
+    expect(openai.calls.filter((call) => call.url === CHATGPT_TOKEN_URL)).toHaveLength(0)
+  })
+
+  it('rejects a verified identity belonging to a different saved account', async () => {
+    const store = createChatGptConnectionMemoryStore({
+      hostId: 'urn:uuid:00000000-0000-4000-8000-000000000000',
+      clientId: 'oaiapp_1',
+      subject: 'original-user',
+    })
+    let nonce = ''
+    const browser = browserReturning((authorize) => {
+      nonce = authorize.searchParams.get('nonce')!
+      return { code: 'c', state: authorize.searchParams.get('state')! }
+    })
+    const connection = createChatGptConnection({
+      store,
+      agentName: 'x',
+      fetch: fakeOpenAi(() => signedInTokens(nonce)).fetch,
+      now: () => NOW,
+    })
+    expect(await connection.signIn({ openBrowser: browser.open, pages: PAGES })).toEqual({
+      ok: false,
+      reason: 'denied',
+    })
+    expect(store.current().subject).toBe('original-user')
+    expect(store.current().session).toBeUndefined()
+  })
+
+  it('retains the host and issued client after a token exchange fails', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'chatgpt-retry-'))
+    retryDirs.push(dir)
+    const store = createChatGptConnectionFileStore(dir)
+    let host = ''
+    const browser = browserReturning((authorize) => {
+      host = authorize.searchParams.get('ext_agent_host_id')!
+      return { code: 'c', state: authorize.searchParams.get('state')!, client_id: 'oaiapp_1' }
+    })
+    const connection = createChatGptConnection({
+      store,
+      agentName: 'x',
+      fetch: fakeOpenAi(() => json({}, 503)).fetch,
+    })
+    expect(await connection.signIn({ openBrowser: browser.open, pages: PAGES })).toEqual({
+      ok: false,
+      reason: 'network',
+    })
+    const restored = await createChatGptConnectionFileStore(dir).read()
+    expect(restored.hostId).toBe(host)
+    expect(restored.clientId).toBe('oaiapp_1')
+    expect(restored.session).toBeUndefined()
   })
 
   it('ignores a request to the callback with another state, and stores nothing on a refusal', async () => {

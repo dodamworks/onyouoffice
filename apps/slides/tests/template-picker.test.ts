@@ -489,14 +489,13 @@ describe('in the AI panel', () => {
     await templateSelectionState.remove()
   })
 
-  it('an empty deck shows the gallery expanded on the start screen, guidance and examples kept', async () => {
+  it('an empty deck has no examples and opens the template gallery from the composer', async () => {
     const root = mount(createElement(AiPanel, panelProps({ deckEmpty: true })))
     await flush()
-    const empty = root.querySelector('.ai-chat-empty')!
-    expect(empty.textContent).toContain(str('en', 'aiEmptyGenTitle'))
-    expect(empty.querySelectorAll('.ai-starter').length).toBeGreaterThan(0)
-    expect(empty.querySelector('.ai-tpl-gallery')).not.toBeNull()
-    expect(builtinCards(empty)).toHaveLength(12)
+    expect(root.querySelector('.ai-chat-empty, .ai-starter')).toBeNull()
+    expect(root.querySelector('.ai-tpl-gallery')).toBeNull()
+    await click(chip(root))
+    expect(builtinCards(root)).toHaveLength(12)
     // the selection display sits in the composer, above the input
     const composer = root.querySelector('.ai-composer')!
     expect(chip(composer)!.textContent).toBe(str('en', 'aiTplChipPick'))

@@ -500,6 +500,7 @@ export type AgentFileCommand = 'save' | 'saveAs' | 'pdf' | 'preview' | 'print'
 
 /** The event those items fire on the editor's window; `detail` is the AgentFileCommand. */
 export declare const FILE_COMMAND_EVENT: 'ieum:file-command'
+export declare const DOCUMENT_CHECK_EVENT: 'ieum:document-check'
 
 /** The parts of the editor toolbar's style list (a select element) syncStyleList uses. */
 export interface StyleListElement {
@@ -874,6 +875,7 @@ export interface AgentPluginSurface {
     options?: AgentChangeOptions,
   ): AgentRemoveLinesResult
   deleteTable(table: number, options?: AgentChangeOptions): AgentDeleteTableResult
+  installDocumentCheckMenu(label: string): { ok: boolean }
   installFileMenu(labels: Record<AgentFileCommand, string>): { ok: boolean }
   reveal(place: AgentPlace): { ok: boolean }
   selection(): AgentSelectionResult

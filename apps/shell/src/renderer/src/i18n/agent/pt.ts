@@ -3,8 +3,7 @@ import type { zh } from './zh'
 export const pt = {
   windowTitle: 'Agente',
   homeCardSub: 'Trabalhe em uma pasta com Claude Code ou Codex',
-  intro:
-    'O agente executa o seu Claude Code ou Codex em uma pasta que você escolher. Ele pode ler os arquivos dessa pasta, criar novos, usar suas habilidades, executar scripts e alterar documentos abertos no GenOffice.',
+  intro: 'Crie e edite arquivos com IA na pasta que escolher.',
   folderLabel: 'Pasta do projeto',
   folderPick: 'Escolher uma pasta…',
   folderNone: 'Nenhuma pasta escolhida',

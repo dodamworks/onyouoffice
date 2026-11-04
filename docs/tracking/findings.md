@@ -1,5 +1,17 @@
 # 풀리지 않은 문제
 
+## Onyou ChatGPT 직접 연결: 동의 화면에서 진행되지 않음
+
+- **증상.** OpenAI 동의 화면에서 권한 확인이 끝나지 않거나 시간 초과가 나고, 앱 콜백이 오지 않는 경우가 있다. 제공자 내부 원인은 확정하지 못했다.
+- **앱의 처리.** 모델 조회의 인증 실패는 연결 상태에 반영해 재연결을 안내한다. 일시적인 서버 오류와 인증 무효를 구분한다.
+- **영향.** 직접 ChatGPT 연결은 성공한 경로로 안내하지 않는다. 공식 Codex 프로그램을 통한 지식 창고 질문·후속 대화 확인은 이 경로와 별개다.
+- **남은 일.** 동의 단계부터 실제 요청까지 재현 가능한 확인이 필요하다. 로그인 반복, 대기 시간 증가 또는 검증 우회만으로 해결됐다고 판단하지 않는다. 계정 정보·요청 식별자·로그인 화면 원본은 공개 이슈에 올리지 않는다.
+
+## Onyou CI: HWP document-check checkbox intermittently ignores a click
+
+- The HWP document-check E2E has intermittently observed an unchecked checkbox after a click. A rerun passing is not a product fix.
+- If it recurs, inspect the asynchronous document-location reveal immediately before the click. Preserve the assertion and isolate diagnostics; do not hide it with speculative product changes, retries or larger timeouts.
+
 ## 마인드맵: 파일에 숫자로 적힌 선·글자 서식 값은 서식 지우기로 빠지지 않는다
 
 - **증상.** 결정 0102. 다른 프로그램이 `line-width: 2`처럼 따옴표 없는 숫자로 적은 서식 값은 보기용 자료에 실리지 않아 화면은 기본값을 그린다. 이 토픽에서 서식 지우기를 해도 그 키는 파일에 남는다.

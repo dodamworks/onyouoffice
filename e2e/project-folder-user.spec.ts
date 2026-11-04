@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-11-01: exercise the independent product project folder.
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
@@ -70,7 +71,7 @@ test.describe('project folder, as a first-time user', () => {
         await page.locator('.projects-textarea').fill(INSTRUCTIONS)
         await page.getByRole('button', { name: '저장', exact: true }).click()
         await expect(page.getByText('저장했습니다.')).toBeVisible()
-        expect(await readFile(join(proj, '.ieumoffice', 'instructions.md'), 'utf8')).toContain(
+        expect(await readFile(join(proj, '.onyouoffice', 'instructions.md'), 'utf8')).toContain(
           '개조식',
         )
         await shot(page, 'u01-instructions-saved')
@@ -124,7 +125,7 @@ test.describe('project folder, as a first-time user', () => {
         const lineB = md.locator('.ai-project-event', { hasText: MEMORY_B })
         await lineB.getByRole('button', { name: '지우기' }).click()
         await expect
-          .poll(async () => readFile(join(proj, '.ieumoffice', 'memory.md'), 'utf8'))
+          .poll(async () => readFile(join(proj, '.onyouoffice', 'memory.md'), 'utf8'))
           .not.toContain('맑은 고딕')
         await shot(md, 'u03-md-memory-removed')
         // the home tab

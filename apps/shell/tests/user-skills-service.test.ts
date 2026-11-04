@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import {
   existsSync,
   mkdirSync,
@@ -33,7 +34,7 @@ let settingsPath: string
 let trash: ReturnType<typeof vi.fn>
 let service: UserSkillsService
 
-const appDir = () => join(home, '.ieumoffice', 'skills')
+const appDir = () => join(home, '.onyouoffice', 'skills')
 
 function skill(dir: string, name: string, description: string, extra = '', body = 'Do it.\n') {
   mkdirSync(dir, { recursive: true })

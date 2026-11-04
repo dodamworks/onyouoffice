@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 /** Process exit codes; the JSON error payload carries the same number. */
 export const EXIT = {
   ok: 0,
@@ -149,7 +150,7 @@ export function formatHuman(r: CommandResult): string {
 }
 
 export function formatHumanError(err: CliError): string {
-  const lines = [`ieumoffice: ${err.message}`]
+  const lines = [`onyouoffice: ${err.message}`]
   if (err.suggestion) lines.push(`  hint: ${err.suggestion}`)
   if (err.detail) {
     const { batch, ...rest } = err.detail

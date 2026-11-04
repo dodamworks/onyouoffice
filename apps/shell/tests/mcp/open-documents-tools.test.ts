@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -418,6 +419,6 @@ describe('open_documents tool', () => {
     await startService(undefined)
     const result = await client!.callTool({ name: 'open_documents', arguments: { action: 'list' } })
     expect(result.isError).toBe(true)
-    expect(textOf(result.content)).toContain('IeumOffice is not running')
+    expect(textOf(result.content)).toContain('Onyou Office is not running')
   })
 })

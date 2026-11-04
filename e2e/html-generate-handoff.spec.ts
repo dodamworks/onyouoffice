@@ -183,14 +183,14 @@ test('make → a new HTML tab takes the request: blocked keeps it, a later send 
     await expect
       .poll(() => chipNames(editor, '.ai-attachments'))
       .toEqual(['lesson.txt', 'notes.md'])
-    await expect(editor.locator('.ai-sub-prompt')).toBeVisible()
+    await expect(editor.locator('.ai-sub-connect-status')).toBeVisible()
     expect(await aiRequests(app)).toEqual([])
     expect(await handoffStore(app)).toEqual({ queued: 0, taken: 1, runs: [] })
     await editor.screenshot({ path: shot('handoff-blocked-kept') })
 
     // connecting does not start it by itself
     await setStatuses(app, 'ready', 'not-installed')
-    await expect(editor.locator('.ai-sub-prompt')).toHaveCount(0)
+    await expect(editor.locator('.ai-sub-connect-status')).toHaveCount(0)
     await new Promise((r) => setTimeout(r, 1500))
     expect(await aiRequests(app)).toEqual([])
     await expect(composer).toHaveValue('A one-page handout for a science class')

@@ -66,6 +66,7 @@ export class FileIndexer {
   private scanRequested = false
   private rescanTimer: NodeJS.Timeout | null = null
   private lastScanAt = 0
+  private lastScannedPaths: string[] | null = null
   private stopped = false
 
   constructor(
@@ -75,6 +76,11 @@ export class FileIndexer {
     private readonly requestTimeoutMs = WORKER_REQUEST_TIMEOUT_MS,
     private readonly workerHeapLimitMb = WORKER_HEAP_LIMIT_MB,
   ) {}
+
+  /** Names from the completed walk, available before background text extraction finishes. */
+  scannedPaths(): readonly string[] {
+    return this.lastScannedPaths ?? [...this.store.listAll().keys()]
+  }
 
   progress(): IndexProgress {
     return { indexed: this.store.count(), pending: this.queue.length, scanning: this.scanning }
@@ -114,7 +120,10 @@ export class FileIndexer {
           if (res.truncated) complete = false
         } else walked = false
       }
-      if (walked) await this.diff(seen, complete)
+      if (walked) {
+        await this.diff(seen, complete)
+        this.lastScannedPaths = [...seen.keys()]
+      }
     } finally {
       this.scanning = false
     }

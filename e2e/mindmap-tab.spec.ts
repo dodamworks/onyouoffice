@@ -318,6 +318,7 @@ test.describe('mind map editor in the shell', () => {
       })
       const labels = items.map((item) => item.label)
       expect(labels).toContain('Mind Map')
+      expect(labels).toContain('AI HTML')
       expect(labels.indexOf('Mind Map')).toBe(labels.indexOf('AI HTML') + 1)
       expect(items.find((item) => item.label === 'Mind Map')!.hasIcon).toBe(true)
       expect(labels.join(' ')).not.toMatch(/xmind/i)
@@ -508,8 +509,8 @@ test.describe('mind map editor in the shell', () => {
         },
         join(outside, 'picked.xmind'),
       )
-      // the browse card (the only one with a tip); the PDF tools card comes after it
-      await page.locator('.quick-card[data-tip]').click()
+      // Open File now has a separate supported-formats info control beside it.
+      await page.locator('.quick-open .quick-card').click()
       await expect(tab.locator('.tab-title')).toHaveText('picked.xmind')
       const asked = (
         await app.evaluate(

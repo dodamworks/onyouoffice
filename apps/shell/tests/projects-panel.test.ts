@@ -387,6 +387,7 @@ describe('instructions', () => {
     await openProject('New plan')
     expect(selectedTab()).toBe('Instructions')
     const text = host.querySelector<HTMLTextAreaElement>('.projects-textarea')!
+    expect(text.hasAttribute('placeholder')).toBe(false)
     expect(text.value).toBe('Write formally.')
     await type(text, 'Write formally. Use metric units.')
     await click(buttonNamed('Save'))
@@ -405,6 +406,63 @@ describe('instructions', () => {
   })
 })
 
+describe('instruction length', () => {
+  it('shows the current count and prevents saving an oversized legacy draft', async () => {
+    const { bridge, api } = fakeBridge((id) =>
+      detailOf(item({ id, name: 'New plan' }), { instructions: '한'.repeat(8_001) }),
+    )
+    await render({ bridge: api })
+    await openProject('New plan')
+    const box = host.querySelector<HTMLTextAreaElement>('.projects-textarea')!
+    expect(box.maxLength).toBe(8_000)
+    expect(box.value.length).toBe(8_001)
+    expect(host.textContent).toContain('8,001 / 8,000 characters')
+    expect(buttonNamed('Save').disabled).toBe(true)
+    expect(bridge.saveInstructions).not.toHaveBeenCalled()
+    await type(box, '한'.repeat(8_000))
+    expect(host.textContent).toContain('8,000 / 8,000 characters')
+    expect(buttonNamed('Save').disabled).toBe(false)
+    await click(buttonNamed('Save'))
+    expect(bridge.saveInstructions).toHaveBeenCalledWith({
+      projectId: 'new',
+      text: '한'.repeat(8_000),
+    })
+  })
+})
+
+describe('project empty states', () => {
+  it('keeps empty memory editable without zero counts or an unavailable tidy action', async () => {
+    const { api } = fakeBridge((id) =>
+      detailOf(item({ id, name: 'New plan' }), {
+        memory: '',
+        memoryEntries: [],
+        memoryChars: 0,
+        settings: { memoryEnabled: false, readAgentsFiles: true },
+      }),
+    )
+    await render({ bridge: api })
+    await openProject('New plan')
+    await openTab('Memory')
+    expect(host.querySelector('.projects-length')).toBeNull()
+    expect(host.querySelector('.projects-trust-state')).toBeNull()
+    expect(host.textContent).toContain('Existing memories are still used when this is off.')
+    expect(buttonNamed('Edit memory')).toBeTruthy()
+    expect(buttons().some((b) => b.textContent === 'Tidy up')).toBe(false)
+  })
+
+  it('shows one empty-file hint and omits an empty excluded-files section', async () => {
+    const { api, bridge } = fakeBridge()
+    bridge.listFiles.mockResolvedValue({ files: [], total: 0 })
+    bridge.listIgnoredFiles.mockResolvedValue([])
+    await render({ bridge: api })
+    await openProject('New plan')
+    await openTab('Files')
+    expect(host.querySelector('.projects-length')).toBeNull()
+    expect(host.textContent).toContain('Add documents to the project folder to see them here.')
+    expect(host.textContent).not.toContain('Files excluded from AI')
+  })
+})
+
 describe('memory', () => {
   it('deletes one entry as the person, saves an edit of all, and switches memory off', async () => {
     const { bridge, api } = fakeBridge()
@@ -418,7 +476,7 @@ describe('memory', () => {
       change: { op: 'remove', text: 'Use bullets. (2026-10-02)' },
     })
 
-    await click(buttonNamed('Edit all'))
+    await click(buttonNamed('Edit memory'))
     const all = host.querySelector<HTMLTextAreaElement>('.projects-textarea')!
     await type(all, '- Only this. (2026-10-30)\n')
     await click(buttonNamed('Save'))
@@ -775,7 +833,7 @@ describe('the screen follows the folder (no stale text, no silent overwrite)', (
     await render({ bridge: api })
     await openProject('New plan')
     await openTab('Memory')
-    await click(buttonNamed('Edit all'))
+    await click(buttonNamed('Edit memory'))
     await type(host.querySelector<HTMLTextAreaElement>('.projects-textarea')!, '- mine\n')
     memory = '- a (2026-10-30)\n- b (2026-10-30)\n'
     await click(buttonNamed('Save'))
@@ -819,12 +877,10 @@ describe('the rest of the first-use fixes', () => {
     expect(projectFilePath('/home/me/P/', 'a/../b.md')).toBe('/home/me/P/a/b.md')
   })
 
-  it('says the trust state as a status line', async () => {
+  it('omits the redundant normal status line', async () => {
     const { api } = fakeBridge()
     await render({ bridge: api })
     await openProject('New plan')
-    expect(host.querySelector('.projects-trust-state')?.textContent).toBe(
-      'Status: sending instructions and memory to the AI',
-    )
+    expect(host.querySelector('.projects-trust-state')).toBeNull()
   })
 })

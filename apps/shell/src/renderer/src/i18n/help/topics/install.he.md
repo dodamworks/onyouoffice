@@ -1,4 +1,8 @@
+<!-- Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build. -->
+
 # התקנת GenOffice
+
+> זוהי גרסת פיתוח פנימית של Onyou Office. שירותי הורדה, עדכון ותמיכה אינם מוגדרים. ההוראות והקישורים להלן מתארים את פרויקט המקור לצורך עיון.
 
 כל גרסה מתפרסמת ב[עמוד ההפצות](https://github.com/pblsketch/openoffice/releases/latest) של הפרויקט ב-GitHub. הגרסה הזו מופצת ל-Windows.
 

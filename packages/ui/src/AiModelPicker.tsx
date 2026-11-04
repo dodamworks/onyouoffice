@@ -86,6 +86,7 @@ export function AiModelPicker({
   lang,
   subscriptionStatuses,
   showLabel = false,
+  connectInSettings = false,
   onRefreshSubscriptions,
 }: {
   readonly bridge: AiModelPickerBridge
@@ -94,6 +95,8 @@ export function AiModelPicker({
   readonly subscriptionStatuses?: AiSubscriptionStatuses | undefined
   /** a visible "Model" label before the chip (a confirmation dialog has no composer footer) */
   readonly showLabel?: boolean | undefined
+  /** A disconnected composer opens the existing AI settings directly. */
+  readonly connectInSettings?: boolean | undefined
   /**
    * Ask for a fresh subscription check, so a model released while the app has
    * been open appears in the list. Called when the popover opens, at most once
@@ -147,7 +150,12 @@ export function AiModelPicker({
     g.id === current?.provider && (g.id !== 'custom' || g.endpoint === current?.endpoint)
   const currentUsable = groups.some(sameGroup)
 
+  const connectDirectly = connectInSettings && !currentUsable && !!bridge.openModelSettings
   const toggle = () => {
+    if (connectDirectly) {
+      void bridge.openModelSettings?.()
+      return
+    }
     if (!open) {
       const rect = chipRef.current?.getBoundingClientRect()
       // the composer sits at the panel bottom, a dialog's chip near its top: fit the side with room
@@ -254,8 +262,8 @@ export function AiModelPicker({
         type="button"
         className={`ai-model-chip${open ? ' open' : ''}`}
         onClick={toggle}
-        aria-haspopup="listbox"
-        aria-expanded={open}
+        aria-haspopup={connectDirectly ? 'dialog' : 'listbox'}
+        aria-expanded={connectDirectly ? undefined : open}
         data-tip={chipTip}
         aria-label={`${strings.title}: ${withEffort(fullText)}`}
       >
@@ -277,7 +285,7 @@ export function AiModelPicker({
           />
         </svg>
       </button>
-      {open && (
+      {open && !connectDirectly && (
         <div
           ref={popRef}
           className="ai-model-pop"

@@ -75,3 +75,95 @@ describe('Settings AutoSave default', () => {
     expect(toggle?.getAttribute('aria-checked')).toBe('false')
   })
 })
+
+describe('Settings nickname', () => {
+  it('loads, changes and clears the greeting name independently of document author', async () => {
+    const save = vi.fn(async (value: string) => value)
+    const author = vi.fn()
+    window.aiOffice = {
+      getTheme: async () => 'system',
+      getDefaultSaveDir: async () => '',
+      getNickname: async () => 'Sam',
+      setNickname: save,
+      getAuthorName: async () => ({ value: 'Document Author', source: 'custom' }),
+      setAuthorName: author,
+      getAutoSaveDefault: async () => ({ on: false, updatedAt: 0 }),
+      getUpdateChannel: async () => 'stable',
+      getAppVersion: async () => '1.0.0',
+    } as unknown as HomeApi
+    await act(async () => {
+      root.render(
+        createElement(
+          LocaleProvider,
+          { initial: 'en' },
+          createElement(SettingsModal, { onClose: vi.fn() }),
+        ),
+      )
+    })
+    await click(
+      Array.from(host.querySelectorAll<HTMLButtonElement>('.set-nav-item')).find((el) =>
+        el.textContent?.includes('General'),
+      )!,
+    )
+    const input = host.querySelector<HTMLInputElement>('#set-nickname')!
+    expect(input.value).toBe('Sam')
+    const edit = async (value: string) => {
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(
+          input,
+          value,
+        )
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+      await act(async () => input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })))
+    }
+    await edit('  Mina  ')
+    expect(save).toHaveBeenLastCalledWith('Mina')
+    expect(input.value).toBe('Mina')
+    await edit('')
+    expect(save).toHaveBeenLastCalledWith('')
+    expect(input.value).toBe('')
+    expect(author).not.toHaveBeenCalled()
+    expect(host.querySelector<HTMLInputElement>('#set-author-name')!.value).toBe('Document Author')
+  })
+})
+
+it('updates the open General font setting after a change from an editor', async () => {
+  let changed!: (value: import('@genoffice/ui').AiPanelPrefs) => void
+  window.aiOffice = {
+    getTheme: async () => 'system',
+    getDefaultSaveDir: async () => '',
+    getAutoSaveDefault: async () => ({ on: false, updatedAt: 0 }),
+    getUpdateChannel: async () => 'stable',
+    getAppVersion: async () => '1.0.0',
+    onAiPanelPrefsChanged: (handler: typeof changed) => {
+      changed = handler
+      return () => {}
+    },
+  } as unknown as HomeApi
+  await act(async () =>
+    root.render(
+      createElement(
+        LocaleProvider,
+        { initial: 'en' },
+        createElement(SettingsModal, { onClose: vi.fn() }),
+      ),
+    ),
+  )
+  await click(
+    Array.from(host.querySelectorAll<HTMLButtonElement>('.set-nav-item')).find((el) =>
+      el.textContent?.includes('General'),
+    )!,
+  )
+  await act(async () =>
+    changed({
+      side: 'left',
+      fontSize: 'custom',
+      customFontSize: 20,
+      spellcheck: true,
+      openInNewDocs: true,
+      showAiSidebar: true,
+    }),
+  )
+  expect(host.querySelector<HTMLInputElement>('.set-num-input')?.value).toBe('20')
+})

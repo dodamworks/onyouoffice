@@ -122,7 +122,8 @@ test.describe('ask narrowed to a starred group', () => {
       await stubAi(app)
       // the window asked the real status handlers at launch: start it again on the stubs
       await page.reload()
-      await page.locator('.nav-item', { hasText: 'Ask AI' }).click()
+      await page.locator('.nav-item', { hasText: 'Knowledge Vault' }).click()
+      await page.locator('.kb-document-scope select').selectOption('starred')
 
       // ── 1. the choice: All / the groups that have files, All chosen ──
       const choice = page.locator('.kb-ask-scope')
@@ -211,7 +212,8 @@ test.describe('ask narrowed to a starred group', () => {
 
       // ── 4. not remembered: the panel opens on All again ──
       await page.locator('.nav-item', { hasText: 'Recent' }).click()
-      await page.locator('.nav-item', { hasText: 'Ask AI' }).click()
+      await page.locator('.nav-item', { hasText: 'Knowledge Vault' }).click()
+      await page.locator('.kb-document-scope select').selectOption('starred')
       await expect(
         page.locator('.kb-ask-scope').getByRole('radio', { name: 'All' }),
       ).toHaveAttribute('aria-checked', 'true')

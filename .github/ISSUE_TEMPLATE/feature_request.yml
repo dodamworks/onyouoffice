@@ -14,6 +14,8 @@ body:
         - Markdown (markdown)
         - HTML (html)
         - Mind map (mindmap)
+        - Hangul / HWP (hwp)
+        - EPUB (epub)
         - Shell / home screen
         - AI panel / subscription connection / providers
         - Command line / MCP / agent skill

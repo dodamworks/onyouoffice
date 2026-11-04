@@ -1,3 +1,4 @@
+// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
 import { afterEach, describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { request as httpRequest } from 'node:http'
@@ -64,7 +65,7 @@ describe('MCP server core', () => {
     expect(res.status).toBe(200)
     const body = (await res.json()) as { status: string; server: string }
     expect(body.status).toBe('ok')
-    expect(body.server).toBe('IeumOffice')
+    expect(body.server).toBe('Onyou Office')
   })
 
   it('completes initialize and lists the registered tools', async () => {
