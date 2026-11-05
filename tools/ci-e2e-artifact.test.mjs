@@ -48,6 +48,10 @@ test('runtime completeness and native executable permission are mandatory', () =
     if (process.platform !== 'win32') assert.throws(() => verifyRuntime(root))
     chmodSync(join(root, binary), 0o755)
     assert.doesNotThrow(() => verifyRuntime(root))
+    assert.ok(applications.includes('diagram'))
+    rmSync(join(root, 'apps/diagram/out/renderer/index.html'))
+    assert.throws(() => verifyRuntime(root))
+    write('apps/diagram/out/renderer/index.html')
     rmSync(join(root, 'apps/hwp/out/renderer/index.html'))
     assert.throws(() => verifyRuntime(root))
   } finally {

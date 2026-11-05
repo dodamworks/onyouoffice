@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-05 for the independent product integration.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -223,9 +224,11 @@ describe('the diagram menu', () => {
   })
 
   it('offers a new diagram from the tab strip and the home menu', () => {
-    expect(main).toContain("label: tm('menuNewDiagram'),\n        icon: menuIcons().diagram,")
+    expect(main).toContain(
+      "drawio: { label: 'menuNewDiagram', icon: 'diagram', open: () => newDiagramTab() }",
+    )
     expect(fnSource('buildHomeMenu')).toContain(
-      "{ label: tm('menuNewDiagram'), click: () => newDiagramTab() }",
+      "...newDocumentMenuItems({ section: true, accelerator: 'CmdOrCtrl+N' })",
     )
     expect(main).toContain('diagram: loadMenuIcon(menuDiagramIcon1x, menuDiagramIcon2x)')
   })
@@ -258,8 +261,8 @@ describe('the diagram menu', () => {
 
 describe('the home screen', () => {
   it('lists, filters and draws diagrams', () => {
-    const formats = literal(home, 'OPEN_LOCAL_EXTENSIONS')
-    for (const ext of ['.drawio', '.dio', '.drawio.svg', '.drawio.png', '.vsdx']) {
+    const formats = literal(home, 'OPEN_LOCAL_FORMATS')
+    for (const ext of ["'drawio'", "'dio'", "'drawio.svg'", "'drawio.png'", "'vsdx'"]) {
       expect(formats, ext).toContain(ext)
     }
     const icons = literal(home, 'FILE_ICONS')
@@ -304,7 +307,7 @@ describe('the default-app list', () => {
       ).toMatchObject({
         uti: 'com.jgraph.drawio',
         mime: 'application/vnd.jgraph.mxfile',
-        progId: 'IeumOffice.Diagram',
+        progId: 'OnyouOffice.Diagram',
       })
     }
     expect(OFFICE_TYPES.map((type) => type.ext)).not.toContain('vsdx')

@@ -1,6 +1,7 @@
 {
   "name": "@genoffice/diagram",
-  "productName": "GenOffice Diagram",
+  "productName": "Onyou Office Diagram",
+  "x-onyouoffice-modified": "Modified by Onyou Office on 2026-11-05 for product identity.",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "private": true,

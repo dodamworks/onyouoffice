@@ -160,8 +160,8 @@
   WriteRegStr SHELL_CONTEXT "${GENOFFICE_CAPABILITIES_KEY}\FileAssociations" ".hwpx" "${GENOFFICE_HWPX_PROGID}"
   WriteRegStr SHELL_CONTEXT "${GENOFFICE_CAPABILITIES_KEY}\FileAssociations" ".xmind" "${GENOFFICE_MINDMAP_PROGID}"
   WriteRegStr SHELL_CONTEXT "${GENOFFICE_CAPABILITIES_KEY}\FileAssociations" ".epub" "${GENOFFICE_EPUB_PROGID}"
-  WriteRegStr SHELL_CONTEXT "${GENOFFICE_CAPABILITIES_KEY}\FileAssociations" ".drawio" "IeumOffice.Diagram"
-  WriteRegStr SHELL_CONTEXT "${GENOFFICE_CAPABILITIES_KEY}\FileAssociations" ".dio" "IeumOffice.Diagram"
+  WriteRegStr SHELL_CONTEXT "${GENOFFICE_CAPABILITIES_KEY}\FileAssociations" ".drawio" "OnyouOffice.Diagram"
+  WriteRegStr SHELL_CONTEXT "${GENOFFICE_CAPABILITIES_KEY}\FileAssociations" ".dio" "OnyouOffice.Diagram"
   WriteRegStr SHELL_CONTEXT "${GENOFFICE_CAPABILITIES_KEY}\FileAssociations" ".vsdx" "${GENOFFICE_VSDX_PROGID}"
   WriteRegStr SHELL_CONTEXT "${GENOFFICE_CAPABILITIES_KEY}\FileAssociations" ".odt" "${GENOFFICE_ODT_PROGID}"
 !macroend

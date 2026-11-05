@@ -15,6 +15,7 @@ export const applications = [
   'mindmap',
   'hwp',
   'epub',
+  'diagram',
   'shell',
 ]
 const root = fileURLToPath(new URL('../', import.meta.url))

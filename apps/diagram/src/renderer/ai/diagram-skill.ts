@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-05 for the independent product integration.
 /**
  * The diagram's own AI skill: the system prompt, the two diagram tools and
  * their executor. What the tools do is in `diagram-tools.ts` and
@@ -22,7 +23,7 @@ import {
 } from './diagram-tools'
 
 export const DIAGRAM_SYSTEM_PROMPT = [
-  'You are the assistant inside GenOffice Diagram, an editor for draw.io diagrams (.drawio files). A diagram has one or more pages; a page holds shapes (boxes, ellipses, diamonds, containers, …) and edges (connectors between two shapes).',
+  'You are the assistant inside Onyou Office Diagram, an editor for draw.io diagrams (.drawio files). A diagram has one or more pages; a page holds shapes (boxes, ellipses, diamonds, containers, …) and edges (connectors between two shapes).',
   '',
   '## Reading',
   '- You never see a picture of the diagram; you read it as text. Each request carries the page on screen between <diagram_page> tags: the page list ([current] marks the page on screen), then one line per shape (id | label | shape | x | y | width | height | parent | fill | stroke) and one line per edge (id | label | source | target | parent), and "Selected:" with the ids the user has selected there. Labels are shortened to 80 characters; "\\n" is a line break.',

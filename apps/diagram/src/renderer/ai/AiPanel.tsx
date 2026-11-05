@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-05 for the independent product integration.
 /**
  * The diagram's AI panel: the same parts and rules as the other editors'
  * panels (the send gate, the connect prompt, the first-connection notice, the
@@ -17,6 +18,7 @@ import {
   AiFirstConnectionNotice,
   AiInputTruncatedNotice,
   AiMark,
+  AiPanelFontSizeButtons,
   AiModelPicker,
   AiToolsUnsupportedNotice,
   type AiModelPickerBridge,
@@ -88,14 +90,6 @@ import fileImageIcon from './assets/file-image.png'
 import filePdfIcon from './assets/file-pdf.png'
 import filePptIcon from './assets/file-ppt.png'
 import fileWordIcon from './assets/file-word.png'
-
-/** [chip label, composer prefill] */
-const STARTERS = [
-  ['aiStarterFlowchart', 'aiStarterFlowchartPrompt'],
-  ['aiStarterExplain', 'aiStarterExplainPrompt'],
-  ['aiStarterTidy', 'aiStarterTidyPrompt'],
-  ['aiStarterNext', 'aiStarterNextPrompt'],
-] as const
 
 /** clipboard bitmap MIME → attachment extension (matches ATTACHMENT_IMAGE_EXTS) */
 const PASTE_MIME_EXT: Record<string, string> = {
@@ -1150,10 +1144,16 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
         aria-label={aiSubscriptionText(lang, 'aiAssistant')}
       />
       <header className="ai-panel-header">
-        <span className="ai-panel-title">
-          <AiMark size={22} />
-          {aiSubscriptionText(lang, 'aiAssistant')}
-        </span>
+        <div className="ai-panel-heading">
+          <span className="ai-panel-title">
+            <AiMark size={22} />
+            {aiSubscriptionText(lang, 'aiAssistant')}
+          </span>
+          <AiPanelFontSizeButtons
+            lang={lang}
+            onChange={(patch) => window.diagramApi.setAiPanelPrefs(patch)}
+          />
+        </div>
         <div className="ai-panel-header-actions">
           {chat.length > 0 && (
             <button
@@ -1179,27 +1179,6 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
       </header>
 
       <div className="ai-chat" ref={chatRef} onScroll={onChatScroll}>
-        {chat.length === 0 && (
-          <div className="ai-chat-empty">
-            <div className="ai-chat-empty-title">{t('aiEmptyTitle')}</div>
-            <div className="ai-chat-empty-body">{t('aiEmptyBody')}</div>
-            <div className="ai-starter-list">
-              {STARTERS.map(([label, promptKey]) => (
-                <button
-                  type="button"
-                  key={label}
-                  className="ai-starter"
-                  onClick={() => {
-                    setPrompt(t(promptKey))
-                    inputRef.current?.focus()
-                  }}
-                >
-                  {t(label)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
         {chat.map((entry, i) => {
           if (entry.role === 'user') {
             return (
@@ -1334,6 +1313,7 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
         <div className="ai-composer">
           {sendGate.connectChoice ? (
             <AiConnectPrompt
+              settingsOnly
               choice={sendGate.connectChoice}
               statuses={subscription.statuses}
               lang={lang}

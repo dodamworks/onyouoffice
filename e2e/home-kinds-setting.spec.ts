@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-05 for the independent product integration.
 import { test, expect } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -12,30 +13,31 @@ test.describe('home lists the new-document kinds Settings keeps', () => {
   test('hide and move cards, then launch again', async () => {
     test.setTimeout(300_000)
     const launched = await launchShell({ onboardingSeen: true, videoDir: 'home-kinds' })
-    const cardTitles = () => launched.page.locator('.quick-cards .quick-title').allTextContents()
+    const cardTitles = () =>
+      launched.page.locator('.quick-cards > .quick-card .quick-title').allTextContents()
     try {
       const page = launched.page
-      await expect(page.locator('.quick-card', { hasText: 'AI Sheets' }).first()).toBeVisible()
-      expect((await cardTitles()).slice(0, 3)).toEqual(['AI Docs', 'AI Sheets', 'AI Slides'])
+      await expect(page.locator('.quick-card', { hasText: 'Spreadsheet' }).first()).toBeVisible()
+      expect((await cardTitles()).slice(0, 3)).toEqual(['Document', 'Spreadsheet', 'Presentation'])
 
       await page.getByRole('button', { name: 'Settings', exact: true }).click()
       await page.locator('.set-nav-item').filter({ hasText: 'General' }).click()
       const field = page.getByTestId('home-kinds')
-      await field.getByRole('switch', { name: 'AI Sheets' }).click()
-      await expect(field.getByRole('switch', { name: 'AI Sheets' })).toHaveAttribute(
+      await field.getByRole('switch', { name: 'Spreadsheet' }).click()
+      await expect(field.getByRole('switch', { name: 'Spreadsheet' })).toHaveAttribute(
         'aria-checked',
         'false',
       )
-      // twice: past AI Sheets, then past AI Docs
-      const up = field.getByRole('button', { name: 'Move AI Slides up' })
+      // twice: past Spreadsheet, then past Document
+      const up = field.getByRole('button', { name: 'Move Presentation up' })
       await up.click()
       await expect(field.locator('.set-home-kind').nth(1)).toHaveAttribute('data-kind', 'pptx')
       await up.click()
       await expect(field.locator('.set-home-kind').first()).toHaveAttribute('data-kind', 'pptx')
       await page.locator('.set-close').click()
 
-      await expect(page.locator('.quick-card', { hasText: 'AI Sheets' })).toHaveCount(0)
-      expect((await cardTitles()).slice(0, 2)).toEqual(['AI Slides', 'AI Docs'])
+      await expect(page.locator('.quick-card', { hasText: 'Spreadsheet' })).toHaveCount(0)
+      expect((await cardTitles()).slice(0, 2)).toEqual(['Presentation', 'Document'])
 
       const saved = JSON.parse(
         await readFile(join(launched.userDataDir, 'app-settings.json'), 'utf8'),
@@ -52,11 +54,13 @@ test.describe('home lists the new-document kinds Settings keeps', () => {
     })
     try {
       await expect(
-        again.page.locator('.quick-card', { hasText: 'AI Slides' }).first(),
+        again.page.locator('.quick-card', { hasText: 'Presentation' }).first(),
       ).toBeVisible()
-      await expect(again.page.locator('.quick-card', { hasText: 'AI Sheets' })).toHaveCount(0)
-      const titles = await again.page.locator('.quick-cards .quick-title').allTextContents()
-      expect(titles.slice(0, 2)).toEqual(['AI Slides', 'AI Docs'])
+      await expect(again.page.locator('.quick-card', { hasText: 'Spreadsheet' })).toHaveCount(0)
+      const titles = await again.page
+        .locator('.quick-cards > .quick-card .quick-title')
+        .allTextContents()
+      expect(titles.slice(0, 2)).toEqual(['Presentation', 'Document'])
     } finally {
       await closeAndSaveVideo(again, 'home-kinds-again')
     }

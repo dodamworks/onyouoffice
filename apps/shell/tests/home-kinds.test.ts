@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-05 for the independent product integration.
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -32,10 +33,10 @@ describe('reading the homeKinds setting', () => {
   })
 
   it('puts a kind missing from a saved order beside the kind before it', () => {
-    // a saved order from a version without `hwp`: it lands right after `xmind`
+    // A missing HWP kind lands after Presentation in the product's default order.
     const saved = HOME_KINDS.filter((kind) => kind !== 'hwp').reverse()
     const { order } = normalizeHomeKinds({ order: saved })
-    expect(order[order.indexOf('xmind') + 1]).toBe('hwp')
+    expect(order[order.indexOf('pptx') + 1]).toBe('hwp')
     // with nothing before it in the first order, it goes first
     const { order: noDocx } = normalizeHomeKinds({ order: ['pdf', 'xlsx'] })
     expect(noDocx[0]).toBe('docx')
@@ -54,7 +55,7 @@ describe('the stored value', () => {
     const hidden = setHomeKindHidden(defaultHomeKinds(), 'hwp', true)
     expect(storedHomeKinds(hidden)).toEqual({ hidden: ['hwp'] })
     const moved = moveHomeKind(defaultHomeKinds(), 'pdf', -1)
-    expect(storedHomeKinds(moved).order?.slice(-3)).toEqual(['pdf', 'hwp', 'pdfTools'])
+    expect(storedHomeKinds(moved).order?.slice(3, 6)).toEqual(['pdf', 'hwp', 'pdfTools'])
   })
 
   it('reads back to the same value', () => {
@@ -67,7 +68,7 @@ describe('changing the list', () => {
   it('moves a kind one place and stops at either end', () => {
     const first = defaultHomeKinds()
     expect(moveHomeKind(first, 'docx', -1)).toBe(first)
-    expect(moveHomeKind(first, 'pdfTools', 1)).toBe(first)
+    expect(moveHomeKind(first, 'drawio', 1)).toBe(first)
     expect(moveHomeKind(first, 'xlsx', -1).order.slice(0, 2)).toEqual(['xlsx', 'docx'])
   })
 
@@ -108,7 +109,9 @@ describe('where the setting applies', () => {
   it('draws home cards from the setting', () => {
     const home = src('../src/renderer/src/Home.tsx')
     expect(home).toMatch(/visibleHomeKinds\(homeKinds\)/)
-    expect(home).toMatch(/shownKinds\.map\(/)
-    expect(home).not.toMatch(/NEW_ITEMS/)
+    expect(home).toMatch(/visibleHomeKinds\(homeKinds\)\.flatMap\(/)
+    expect(home).toContain('<SupportedFormatsInfo t={t} />')
+    expect(home).toContain('data-format={item.ext}')
+    expect(home).not.toContain('className="ai-chip"')
   })
 })

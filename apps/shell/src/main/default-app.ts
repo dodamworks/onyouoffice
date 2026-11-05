@@ -54,13 +54,13 @@ export const OFFICE_TYPES: readonly OfficeType[] = [
     ext: 'drawio',
     uti: 'com.jgraph.drawio',
     mime: 'application/vnd.jgraph.mxfile',
-    progId: 'IeumOffice.Diagram',
+    progId: 'OnyouOffice.Diagram',
   },
   {
     ext: 'dio',
     uti: 'com.jgraph.drawio',
     mime: 'application/vnd.jgraph.mxfile',
-    progId: 'IeumOffice.Diagram',
+    progId: 'OnyouOffice.Diagram',
   },
 ]
 

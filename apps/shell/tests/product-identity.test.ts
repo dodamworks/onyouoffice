@@ -248,7 +248,7 @@ describe('coexistence with the upstream app on one machine', () => {
       (candidate: { ext: string }) => candidate.ext === 'vsdx',
     ) as { name: string } | undefined
     expect(entry, '.vsdx is not offered on mac / Linux').toBeTruthy()
-    const progId = `${PRODUCT_NAME}.${entry!.name.replace(/[^A-Za-z0-9]/g, '')}`
+    const progId = `OnyouOffice.${entry!.name.replace(/[^A-Za-z0-9]/g, '')}`
     expect(progId).toMatch(/^OnyouOffice\.[A-Za-z][A-Za-z0-9]*$/)
     expect(progId.length, progId).toBeLessThanOrEqual(39)
     expect(UPSTREAM.progIds).not.toContain(progId)
