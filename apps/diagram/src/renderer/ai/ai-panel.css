@@ -1,3 +1,4 @@
+/* Modified by Onyou Office on 2026-11-05 to honor the shared panel position. */
 /*
  * The AI panel of the diagram editor: the same panel language as the other editors
  * (the rules below are theirs, from the HTML editor), docked at the right of
@@ -44,6 +45,7 @@
 /* ── AI sidebar (aligned with docs/sheets panel language) ── */
 
 .ai-dock {
+  order: -1;
   display: flex;
   flex-shrink: 0;
   min-height: 0;

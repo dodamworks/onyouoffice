@@ -19,6 +19,8 @@ import {
   AiInputTruncatedNotice,
   AiMark,
   AiPanelFontSizeButtons,
+  AiPanelSideButton,
+  aiPanelWidthAtPointer,
   AiModelPicker,
   AiToolsUnsupportedNotice,
   type AiModelPickerBridge,
@@ -1092,7 +1094,7 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
     const onMove = (ev: PointerEvent): void => {
-      const w = clampPanelWidth(window.innerWidth - ev.clientX)
+      const w = clampPanelWidth(aiPanelWidthAtPointer(ev.clientX))
       preferredWidthRef.current = w
       setPanelWidth(w)
     }
@@ -1155,6 +1157,10 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
           />
         </div>
         <div className="ai-panel-header-actions">
+          <AiPanelSideButton
+            lang={lang}
+            onMove={(side) => window.diagramApi.setAiPanelPrefs({ side })}
+          />
           {chat.length > 0 && (
             <button
               type="button"
