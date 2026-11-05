@@ -65,7 +65,7 @@ Vítáme hlášení chyb, návrhy, překlady i kód. Používejte umělé přík
 
 ## Licence a původ
 
-Onyou Office je nezávislý fork IeumOffice, který vychází z GenOffice. Dokumentové enginy a mnoho funkcí pochází z těchto projektů, rhwp a od jejich přispěvatelů. Zachováváme historii a autory a nepřivlastňujeme si všechny převzaté funkce. Zdrojový kód je pod Apache-2.0; komponenty třetích stran zachovávají vlastní podmínky. Ochranné známky jsou samostatné. Netvrdíme, že nás původní projekty či poskytovatelé podporují nebo že jsme s nimi propojeni.
+Onyou Office je nezávislý fork IeumOffice, který vychází z GenOffice. Dokumentové enginy a mnoho funkcí pochází z těchto projektů, rhwp a od jejich přispěvatelů. Zachováváme údaje o původu a autorech a nepřivlastňujeme si všechny převzaté funkce. Zdrojový kód je pod Apache-2.0; komponenty třetích stran zachovávají vlastní podmínky. Ochranné známky jsou samostatné. Netvrdíme, že nás původní projekty či poskytovatelé podporují nebo že jsme s nimi propojeni.
 
 [IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 

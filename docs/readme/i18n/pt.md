@@ -65,7 +65,7 @@ Erros, sugestões, traduções e código são bem-vindos. Use exemplos sintétic
 
 ## Licença e origens
 
-O Onyou Office é um fork independente do IeumOffice, baseado no GenOffice. Os motores e muitas funções vêm desses projetos, do rhwp e dos seus colaboradores. Preservamos o histórico e a autoria, sem reivindicar todas as funções herdadas. O código usa Apache-2.0; componentes de terceiros mantêm as suas condições. Marcas têm direitos separados. Não se afirma afiliação ou apoio dos projetos originais ou fornecedores.
+O Onyou Office é um fork independente do IeumOffice, baseado no GenOffice. Os motores e muitas funções vêm desses projetos, do rhwp e dos seus colaboradores. Preservamos as indicações de origem e autoria, sem reivindicar todas as funções herdadas. O código usa Apache-2.0; componentes de terceiros mantêm as suas condições. Marcas têm direitos separados. Não se afirma afiliação ou apoio dos projetos originais ou fornecedores.
 
 [IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 

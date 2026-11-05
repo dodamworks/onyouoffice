@@ -65,7 +65,7 @@ Laporan pepijat, cadangan, terjemahan dan kod dialu-alukan. Gunakan contoh sinte
 
 ## Lesen dan asal
 
-Onyou Office ialah fork bebas IeumOffice, yang berasaskan GenOffice. Enjin dokumen dan banyak fungsi datang daripada projek tersebut, rhwp dan penyumbang sumber terbuka. Sejarah serta pengarang asal dikekalkan; kami tidak mendakwa semua fungsi warisan sebagai ciptaan sendiri. Kod menggunakan Apache-2.0; komponen pihak ketiga mengekalkan syarat masing-masing. Hak tanda dagangan berasingan. Tiada dakwaan hubungan atau sokongan daripada projek asal atau penyedia.
+Onyou Office ialah fork bebas IeumOffice, yang berasaskan GenOffice. Enjin dokumen dan banyak fungsi datang daripada projek tersebut, rhwp dan penyumbang sumber terbuka. Maklumat sumber serta kredit pengarang asal dikekalkan; kami tidak mendakwa semua fungsi warisan sebagai ciptaan sendiri. Kod menggunakan Apache-2.0; komponen pihak ketiga mengekalkan syarat masing-masing. Hak tanda dagangan berasingan. Tiada dakwaan hubungan atau sokongan daripada projek asal atau penyedia.
 
 [IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 

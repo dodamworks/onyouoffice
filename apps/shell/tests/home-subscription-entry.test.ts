@@ -150,7 +150,7 @@ describe('home quick actions', () => {
     await renderHome(statuses({ state: 'not-installed' }, { state: 'not-installed' }))
     const browse = vi.fn(async () => undefined)
     window.aiOffice.browse = browse
-    expect(host.querySelectorAll('.quick-card')).toHaveLength(10)
+    expect(host.querySelectorAll('.quick-card')).toHaveLength(11)
     expect(host.querySelector('.ai-chip')).toBeNull()
     expect(
       Array.from(host.querySelectorAll('.quick-card .quick-title')).map((el) => el.textContent),
@@ -165,6 +165,7 @@ describe('home quick actions', () => {
       'Markdown',
       'HTML',
       'Mind Map',
+      'Diagram',
     ])
     const info = host.querySelector<HTMLButtonElement>('.quick-info')!
     expect(info.getAttribute('aria-expanded')).toBe('false')
@@ -196,6 +197,11 @@ describe('home quick actions', () => {
       '.hwp',
       '.hwpx',
       '.epub',
+      '.drawio',
+      '.dio',
+      '.drawio.svg',
+      '.drawio.png',
+      '.vsdx',
     ])
     await act(async () =>
       info.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })),

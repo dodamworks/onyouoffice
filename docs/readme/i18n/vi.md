@@ -65,7 +65,7 @@ Hoan nghênh báo lỗi, đề xuất, bản dịch và mã. Dùng ví dụ tổ
 
 ## Giấy phép và nguồn gốc
 
-Onyou Office là nhánh độc lập của IeumOffice, dựa trên GenOffice. Công cụ tài liệu và nhiều chức năng đến từ các dự án này, rhwp và cộng tác viên nguồn mở. Chúng tôi giữ lịch sử, tác giả và không nhận mọi chức năng kế thừa là tự phát triển. Mã dùng Apache-2.0; thành phần bên thứ ba giữ điều khoản riêng. Quyền nhãn hiệu tách biệt. Không tuyên bố liên kết hay được các dự án gốc hoặc nhà cung cấp bảo trợ.
+Onyou Office là nhánh độc lập của IeumOffice, dựa trên GenOffice. Công cụ tài liệu và nhiều chức năng đến từ các dự án này, rhwp và cộng tác viên nguồn mở. Chúng tôi giữ thông tin nguồn gốc, ghi nhận tác giả và không nhận mọi chức năng kế thừa là tự phát triển. Mã dùng Apache-2.0; thành phần bên thứ ba giữ điều khoản riêng. Quyền nhãn hiệu tách biệt. Không tuyên bố liên kết hay được các dự án gốc hoặc nhà cung cấp bảo trợ.
 
 [IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 

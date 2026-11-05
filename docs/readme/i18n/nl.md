@@ -65,7 +65,7 @@ Foutmeldingen, suggesties, vertalingen en code zijn welkom. Gebruik synthetische
 
 ## Licentie en oorsprong
 
-Onyou Office is een onafhankelijke fork van IeumOffice, dat op GenOffice is gebaseerd. Documentengines en veel functies komen uit die projecten, rhwp en hun bijdragers. We behouden de geschiedenis en auteurs en claimen niet alle geërfde functies zelf te hebben gemaakt. De broncode valt onder Apache-2.0; derden behouden hun voorwaarden. Merkrechten staan los hiervan. Er wordt geen verbondenheid of goedkeuring door oorspronkelijke projecten of aanbieders geclaimd.
+Onyou Office is een onafhankelijke fork van IeumOffice, dat op GenOffice is gebaseerd. Documentengines en veel functies komen uit die projecten, rhwp en hun bijdragers. We behouden de bronvermeldingen en auteursvermeldingen en claimen niet alle geërfde functies zelf te hebben gemaakt. De broncode valt onder Apache-2.0; derden behouden hun voorwaarden. Merkrechten staan los hiervan. Er wordt geen verbondenheid of goedkeuring door oorspronkelijke projecten of aanbieders geclaimd.
 
 [IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 

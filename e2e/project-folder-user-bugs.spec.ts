@@ -175,10 +175,13 @@ test.describe('project folder problems a first-time user hit', () => {
       await expect(chip).toBeEnabled()
       const chatButton = html.locator('.ai-project-chat-menu .ai-project-chat-button')
       await chatButton.click()
-      await html
-        .locator('.ai-project-chat-menu .ai-project-list > *', { hasText: '첫 질문' })
-        .first()
-        .click()
+      const savedChat = html
+        .getByRole('listbox')
+        .getByRole('option')
+        .filter({ has: html.getByText('첫 질문', { exact: true }) })
+      await expect(savedChat).toHaveCount(1)
+      // Target the title, away from the row's hover-only rename/delete actions.
+      await savedChat.getByText('첫 질문', { exact: true }).click()
       // the pick took: the header names the chat (a failure here is the pick, not the messages)
       await expect(chatButton).toContainText('첫 질문')
       await expect(html.getByText('첫 답')).toBeVisible()

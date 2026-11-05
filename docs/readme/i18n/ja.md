@@ -65,7 +65,7 @@ AI アカウントなしでも文書を編集できます。AI の契約、API �
 
 ## ライセンスと出典
 
-Onyou Office は IeumOffice の独立したフォークで、その基盤は GenOffice です。文書エンジンや多くの編集機能は、これらのプロジェクト、rhwp、オープンソース貢献者によるものです。元の履歴と著作者を保ち、すべてを独自開発したとは主張しません。ソースは Apache-2.0、第三者の構成要素は個別の条件に従います。商標権は別です。上流プロジェクトや AI・ファイル形式提供元との提携・後援は主張しません。
+Onyou Office は IeumOffice の独立したフォークで、その基盤は GenOffice です。文書エンジンや多くの編集機能は、これらのプロジェクト、rhwp、オープンソース貢献者によるものです。出典と著作者の表示を保ち、すべてを独自開発したとは主張しません。ソースは Apache-2.0、第三者の構成要素は個別の条件に従います。商標権は別です。上流プロジェクトや AI・ファイル形式提供元との提携・後援は主張しません。
 
 [IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 

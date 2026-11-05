@@ -65,7 +65,7 @@ npm run dev
 
 ## 许可证与来源
 
-Onyou Office 是 IeumOffice 的独立分支，IeumOffice 基于 GenOffice。文档引擎及大量编辑功能来自这些项目、rhwp 和开源贡献者。我们保留原始历史与作者，不声称独立开发了所有功能。项目源码采用 Apache-2.0，第三方组件保留各自条款，商标权另行规定。不主张与上游项目或 AI、文件格式提供商有合作或背书关系。
+Onyou Office 是 IeumOffice 的独立分支，IeumOffice 基于 GenOffice。文档引擎及大量编辑功能来自这些项目、rhwp 和开源贡献者。我们保留原始出处与作者署名，不声称独立开发了所有功能。项目源码采用 Apache-2.0，第三方组件保留各自条款，商标权另行规定。不主张与上游项目或 AI、文件格式提供商有合作或背书关系。
 
 [IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 

@@ -5,13 +5,13 @@
 Bug reports, reproducible examples, documentation, translations and code reviews
 are welcome. Onyou Office is an independent fork of
 [IeumOffice](https://github.com/pblsketch/openoffice), which is based on
-[GenOffice](README.en.md#license-and-acknowledgement). Preserve original history,
-authors, copyright notices, [LICENSE](LICENSE) and [NOTICE](NOTICE).
+[GenOffice](README.en.md#license-and-acknowledgement). Preserve source attribution,
+author credits, copyright notices, [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
 Development for this fork belongs in
 [dodamworks/onyouoffice](https://github.com/dodamworks/onyouoffice). Do not send
 Onyou-specific support requests or private documents to upstream maintainers.
-Repository access is still restricted during public preparation.
+The source repository is public; official installer distribution is separate.
 
 ## Start small
 
@@ -130,6 +130,8 @@ own licenses; document provenance rather than claiming the entire tree has one
 uniform license. A later license change cannot revoke licenses already granted,
 and relicensing others' contributions may require their permission.
 
-Contributor credits remain in [CONTRIBUTORS.md](CONTRIBUTORS.md) and Git history.
+Upstream contributor credits remain in [CONTRIBUTORS.md](CONTRIBUTORS.md),
+[NOTICE](NOTICE) and the linked upstream repositories. This repository begins
+with a source snapshot; later contributions appear in its own Git history.
 Follow the [code of conduct](CODE_OF_CONDUCT.md). Community feedback assists the
 maintainers; it does not replace release verification or guarantee a fix.

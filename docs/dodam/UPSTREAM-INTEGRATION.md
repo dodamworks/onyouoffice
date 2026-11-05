@@ -8,25 +8,27 @@ GenOffice → IeumOffice → Onyou Office.
 - [IeumOffice](https://github.com/pblsketch/openoffice): the direct development base.
 - Onyou Office: independent product identity and desktop experience.
 
-The accepted IeumOffice baseline is
+The initial IeumOffice baseline is
 `a2948eecd1e2572aac2f0c43f6c89f081971d4d8`. The release-preparation branch also
 selectively ports the PDF buffer/page-tree fix from
-`88c0ff3f790e62aa95fa68680b1e03253f0464dc`. This is not a merge of the newest
-upstream main. Verify the actual branch before describing either as released.
+`88c0ff3f790e62aa95fa68680b1e03253f0464dc`. The source update below extends that
+basis through selected ports, rather than a wholesale merge of upstream main.
 
 The document engines and most editing functionality come from upstream projects
 and their dependencies. Onyou changes cover branding, installation/data
 namespaces, Home/onboarding, optional nickname, common AI panels, projects,
 Knowledge Vault and validation infrastructure. Preserve those inherited credits.
 
-## Current feature update candidate
+## Integrated source update
 
-The update branch pins IeumOffice `9950706e3ff427198ba91f0f2f89b62a19ddc357`
+The source update pins IeumOffice `9950706e3ff427198ba91f0f2f89b62a19ddc357`
 (2026-11-05 Korea time), 75 commits beyond the baseline. Functional changes are
-ported by feature with original authors and source commit references. Growth
+ported in 41 source changes by feature. Upstream author credits and source
+revision records are preserved; the public main starts from a single source
+snapshot rather than including the upstream Git ancestry. Growth
 snapshots and the original Home card order are not imported.
 
-The candidate includes the offline draw.io/Visio editor, diagram AI/MCP/CLI,
+The update includes the offline draw.io/Visio editor, diagram AI/MCP/CLI,
 configurable Home document kinds, PDF image conversion, translation writing
 rules and the final pinned rhwp development engine with its carried patches.
 Preserve the product's Home order, file-open information popover, optional

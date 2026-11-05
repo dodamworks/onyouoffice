@@ -65,7 +65,7 @@ Laporan bug, saran, terjemahan, dan kode sangat diterima. Gunakan contoh sinteti
 
 ## Lisensi dan asal
 
-Onyou Office adalah fork independen IeumOffice, yang berbasis GenOffice. Mesin dokumen dan banyak fitur berasal dari proyek tersebut, rhwp, dan kontributor sumber terbuka. Riwayat dan penulis asli dipertahankan; kami tidak mengklaim semua fitur warisan sebagai karya sendiri. Kode memakai Apache-2.0; komponen pihak ketiga mempertahankan syarat masing-masing. Hak merek terpisah. Tidak ada klaim afiliasi atau dukungan proyek asal maupun penyedia.
+Onyou Office adalah fork independen IeumOffice, yang berbasis GenOffice. Mesin dokumen dan banyak fitur berasal dari proyek tersebut, rhwp, dan kontributor sumber terbuka. Keterangan sumber dan penulis asli dipertahankan; kami tidak mengklaim semua fitur warisan sebagai karya sendiri. Kode memakai Apache-2.0; komponen pihak ketiga mempertahankan syarat masing-masing. Hak merek terpisah. Tidak ada klaim afiliasi atau dukungan proyek asal maupun penyedia.
 
 [IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 

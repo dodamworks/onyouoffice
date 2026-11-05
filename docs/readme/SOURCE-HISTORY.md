@@ -1,16 +1,21 @@
 # Source history and attribution
 
-Snapshot reviewed on 2026-11-04, before this README revision:
+The public Onyou Office Git history starts with one source snapshot. The initial
+commit imports an existing application and our refinements; it does not mean that
+Onyou Office authored all of that code. Earlier development history is available
+in the linked upstream repositories rather than copied into this main branch.
 
-| Reachable commits | Scope                                                                                                            |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------- |
-| 2,968             | Accepted IeumOffice baseline `a2948eecd1e2572aac2f0c43f6c89f081971d4d8`, including its GenOffice ancestry        |
-| 6                 | Onyou Office initialization, source import, product preparation, two merge commits and publication documentation |
-| 2,974             | Total at `2d71c4267bbca6fb49e3b399ffa47f827df85719`                                                              |
+| Source                                                | Revision and scope                                                                                                                      |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| [GenOffice](https://github.com/genspark-ai/genoffice) | Original office application, inherited through IeumOffice                                                                               |
+| [IeumOffice](https://github.com/pblsketch/openoffice) | Baseline `a2948eecd1e2572aac2f0c43f6c89f081971d4d8`, with 41 selected source changes through `9950706e3ff427198ba91f0f2f89b62a19ddc357` |
+| rhwp                                                  | Pinned engine and carried patches recorded in `vendor/rhwp-core`                                                                        |
+| Onyou Office                                          | Product identity, desktop refinements and integration work described below                                                              |
 
-These are Git history counts, not a count of Onyou-authored features or contributors.
-The upstream commits and authors were retained. Later Onyou commits naturally
-increase the total; do not treat this snapshot as a live counter.
+Upstream copyright, author credits, LICENSE, NOTICE and applicable component
+notices remain in the source. New upstream updates record their source revisions
+and are reviewed against the local product changes. Commit counts are not feature
+counts or a measure of original authorship.
 
 The previous Onyou READMEs were already separate introductions, rather than copies
 of the full IeumOffice README. They removed upstream-specific personal history,

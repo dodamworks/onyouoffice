@@ -117,6 +117,13 @@ ranges, available ids, sheet names, usage lines) come back as fields in
 
 ## Diagrams
 
+```sh
+onyouoffice diagram read file.drawio --json
+onyouoffice diagram apply file.drawio --ops ops.json --out edited.drawio
+onyouoffice create --type drawio --mermaid flow.mmd --out flow.drawio
+onyouoffice convert file.drawio --to svg --out diagram.svg
+```
+
 Use `onyouoffice diagram read file.drawio --json` to inspect pages, shapes and
 edges. Apply operations with `onyouoffice diagram apply file.drawio --ops ops.json`
 or create a diagram with `onyouoffice create --type drawio --mermaid flow.mmd --out flow.drawio`.
