@@ -1,3 +1,4 @@
+# Modified by Onyou Office: use product package paths and the approved Node runtime.
 name: Linux build
 
 # Builds the Linux packages (x64 AppImage, deb and rpm) on a GitHub-hosted
@@ -43,7 +44,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22
+          node-version: '24.22.2'
           cache: npm
           cache-dependency-path: package-lock.json
 
@@ -108,20 +109,21 @@ jobs:
           set -euo pipefail
           dir="apps/shell/release/linux-unpacked"
           for bin in \
-            "$dir/ieumoffice" \
+            "$dir/onyouoffice" \
             "$dir/resources/native/xlsx-sidecar" \
-            "$dir/resources/cli/ieumoffice"; do
+            "$dir/resources/cli/onyouoffice"; do
             test -x "$bin" || { echo "missing or not executable: $bin"; exit 1; }
           done
-          compgen -G "apps/shell/release/IeumOffice-*.AppImage" >/dev/null
-          compgen -G "apps/shell/release/ieumoffice_*_amd64.deb" >/dev/null
-          compgen -G "apps/shell/release/ieumoffice-*.x86_64.rpm" >/dev/null
-          test -f "apps/shell/release/latest-linux.yml"
+          compgen -G "apps/shell/release/Onyou Office-*.AppImage" >/dev/null
+          compgen -G "apps/shell/release/onyouoffice_*_amd64.deb" >/dev/null
+          compgen -G "apps/shell/release/onyouoffice-*.x86_64.rpm" >/dev/null
+          test ! -f "apps/shell/release/latest-linux.yml"
+          node -p "require('./apps/shell/package.json').version" > apps/shell/release/release-version.txt
           # Ubuntu 24.04 renamed part of electron-builder's default deb
           # dependencies in the 64-bit time_t transition, so the control file
           # must carry "plain | t64" alternatives (electron-builder.cjs
           # deb.depends); an rpm/dnf install carries no such renames.
-          depends="$(dpkg-deb -f apps/shell/release/ieumoffice_*_amd64.deb Depends)"
+          depends="$(dpkg-deb -f apps/shell/release/onyouoffice_*_amd64.deb Depends)"
           for name in libgtk-3-0 libnotify4 libxtst6 libatspi2.0-0 libsecret-1-0; do
             grep -Eq "$name[[:space:]]*\|[[:space:]]*$name"t64 <<<"$depends" || {
               echo "deb Depends is missing the t64 alternative for $name: $depends"
@@ -137,7 +139,7 @@ jobs:
         run: |
           set -euo pipefail
           docker run --rm -v "$PWD/apps/shell/release:/pkg:ro" ubuntu:24.04 \
-            bash -c 'set -o pipefail; apt-get update -qq && apt-get -s install /pkg/ieumoffice_*_amd64.deb | tail -n 5'
+            bash -c 'set -o pipefail; apt-get update -qq && apt-get -s install /pkg/onyouoffice_*_amd64.deb | tail -n 5'
 
       # Newer Ubuntu kernels ship an AppArmor policy that blocks unprivileged
       # user namespaces, which kills the Chromium zygote even with --no-sandbox
@@ -154,7 +156,7 @@ jobs:
       - name: Smoke test the packaged app
         run: |
           set -euo pipefail
-          exe="apps/shell/release/linux-unpacked/ieumoffice"
+          exe="apps/shell/release/linux-unpacked/onyouoffice"
           work="$RUNNER_TEMP/smoke"
           mkdir -p "$work"
           printf '# Smoke test\n\nHello from the Linux build.\n' > "$work/note.md"
@@ -202,7 +204,7 @@ jobs:
           node packages/cli/pack-tarball.mjs \
             --from apps/shell/release/linux-unpacked/resources \
             --out apps/shell/release --platform linux --arch x64
-          cat apps/shell/release/ieumoffice-cli_*.tar.gz.sha256
+          cat apps/shell/release/onyouoffice-cli_*.tar.gz.sha256
 
       - name: The standalone archive runs without GTK or the app
         run: |
@@ -210,12 +212,12 @@ jobs:
           docker run --rm \
             -v "$PWD/apps/shell/release:/dist:ro" \
             -v "$RUNNER_TEMP/smoke:/work:ro" \
-            node:22-slim bash -c '
+            node:24.22.2-slim bash -c '
               set -euo pipefail
               ulimit -v 2097152
               mkdir -p /tmp/cli
-              tar -xzf /dist/ieumoffice-cli_*.tar.gz -C /tmp/cli
-              cli=/tmp/cli/ieumoffice-cli/cli/ieumoffice
+              tar -xzf /dist/onyouoffice-cli_*.tar.gz -C /tmp/cli
+              cli=/tmp/cli/onyouoffice-cli/cli/onyouoffice
               "$cli" --version
               printf "# Standalone\n\n- one\n- two\n" > /tmp/note.md
               "$cli" create --type docx --from /tmp/note.md --out /tmp/note.docx --json
@@ -236,7 +238,7 @@ jobs:
       - name: Upload the release files
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ieumoffice-linux-x64
+          name: onyouoffice-linux-x64
           path: |
             apps/shell/release/*.AppImage
             apps/shell/release/*.deb
@@ -244,6 +246,7 @@ jobs:
             apps/shell/release/*cli*.tar.gz
             apps/shell/release/*cli*.tar.gz.sha256
             apps/shell/release/*-linux.yml
+            apps/shell/release/release-version.txt
           if-no-files-found: error
           retention-days: 14
 
@@ -265,11 +268,10 @@ jobs:
       - name: Attach to the release
         run: |
           set -euo pipefail
-          gh run download "$GITHUB_RUN_ID" --name ieumoffice-linux-x64 --dir linux
+          gh run download "$GITHUB_RUN_ID" --name onyouoffice-linux-x64 --dir linux
           [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]] || { echo "not a version tag: $TAG"; exit 1; }
           gh release view "$TAG" >/dev/null || { echo "no release $TAG: publish it first"; exit 1; }
-          feed=$(ls linux/*-linux.yml)
-          built=$(sed -n 's/^version: *//p' $feed | tr -d "'\"")
+          built=$(cat linux/release-version.txt)
           [ "v$built" = "$TAG" ] || { echo "built $built, but the release is $TAG"; exit 1; }
-          gh release upload "$TAG" linux/*.AppImage linux/*.deb linux/*.rpm linux/*cli*.tar.gz linux/*cli*.tar.gz.sha256 $feed --clobber
+          gh release upload "$TAG" linux/*.AppImage linux/*.deb linux/*.rpm linux/*cli*.tar.gz linux/*cli*.tar.gz.sha256 --clobber
           gh release view "$TAG" --json assets --jq '.assets[].name'

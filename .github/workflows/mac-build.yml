@@ -1,3 +1,4 @@
+# Modified by Onyou Office: use product package paths and the approved Node runtime.
 name: macOS build
 
 # Builds the macOS installers, Apple Silicon and Intel, on a GitHub-hosted Mac
@@ -56,7 +57,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22
+          node-version: '24.22.2'
           cache: npm
           cache-dependency-path: package-lock.json
 
@@ -125,14 +126,14 @@ jobs:
           for pair in mac-arm64:arm64 mac:x86_64; do
             dir="${pair%%:*}"
             cpu="${pair##*:}"
-            app="apps/shell/release/$dir/IeumOffice.app"
+            app="apps/shell/release/$dir/Onyou Office.app"
             codesign --verify --deep --strict --verbose=2 "$app"
             # read the whole report first: grep -q quitting early would break the pipe
             signature="$(codesign -dv "$app" 2>&1)"
             echo "$signature"
             grep -q 'Signature=adhoc' <<<"$signature"
             for bin in \
-              "$app/Contents/MacOS/IeumOffice" \
+              "$app/Contents/MacOS/Onyou Office" \
               "$app/Contents/Resources/native/xlsx-sidecar" \
               "$app/Contents/Resources/ocr/vision-ocr"; do
               test -f "$bin" || { echo "missing: $bin"; exit 1; }
@@ -140,7 +141,8 @@ jobs:
             done
           done
           # each dmg names its CPU (config.dmg.artifactName)
-          ls apps/shell/release/IeumOffice-*-arm64.dmg apps/shell/release/IeumOffice-*-x64.dmg
+          ls apps/shell/release/*-arm64.dmg apps/shell/release/*-x64.dmg
+          node -p "require('./apps/shell/package.json').version" > apps/shell/release/release-version.txt
 
       # the Intel app runs on this runner only through Rosetta, which an image
       # may not carry yet
@@ -159,7 +161,7 @@ jobs:
           for pair in mac-arm64:arm64 mac:x86_64; do
             dir="${pair%%:*}"
             cpu="${pair##*:}"
-            exe="apps/shell/release/$dir/IeumOffice.app/Contents/MacOS/IeumOffice"
+            exe="apps/shell/release/$dir/Onyou Office.app/Contents/MacOS/Onyou Office"
             work="$RUNNER_TEMP/smoke-$cpu"
             mkdir -p "$work"
             printf '# Smoke test\n\nHello from the macOS build.\n' > "$work/note.md"
@@ -178,12 +180,13 @@ jobs:
       - name: Upload the release files
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ieumoffice-mac
+          name: onyouoffice-mac
           path: |
             apps/shell/release/*.dmg
             apps/shell/release/*.zip
             apps/shell/release/*.blockmap
             apps/shell/release/*-mac.yml
+            apps/shell/release/release-version.txt
           if-no-files-found: error
           retention-days: 14
 
@@ -205,11 +208,10 @@ jobs:
       - name: Attach to the release
         run: |
           set -euo pipefail
-          gh run download "$GITHUB_RUN_ID" --name ieumoffice-mac --dir mac
+          gh run download "$GITHUB_RUN_ID" --name onyouoffice-mac --dir mac
           [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]] || { echo "not a version tag: $TAG"; exit 1; }
           gh release view "$TAG" >/dev/null || { echo "no release $TAG: publish it first"; exit 1; }
-          feed=$(ls mac/*-mac.yml)
-          built=$(sed -n 's/^version: *//p' $feed | tr -d "'\"")
+          built=$(cat mac/release-version.txt)
           [ "v$built" = "$TAG" ] || { echo "built $built, but the release is $TAG"; exit 1; }
-          gh release upload "$TAG" mac/*.dmg mac/*.zip $feed --clobber
+          gh release upload "$TAG" mac/*.dmg mac/*.zip --clobber
           gh release view "$TAG" --json assets --jq '.assets[].name'
