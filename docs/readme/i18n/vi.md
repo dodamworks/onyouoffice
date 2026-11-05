@@ -25,6 +25,7 @@ Mở tài liệu, mô tả điều muốn thay đổi rồi tiếp tục trong c
 
 ## Mọi tài liệu trong một không gian
 
+- Chỉnh sửa sơ đồ draw.io và nhập tệp Visio (.vsdx) thành sơ đồ mới ngay trên máy tính.
 - Tạo và chỉnh sửa văn bản, bảng tính, bản trình chiếu và Hangul (HWP/HWPX). Cũng hỗ trợ PDF, Markdown, HTML, sơ đồ tư duy và EPUB. Khả năng chỉnh sửa và chuyển đổi tùy định dạng.
 - Yêu cầu trợ lý AI sửa tài liệu, hỏi về tài liệu đã chọn trong Knowledge Vault và tập hợp chỉ dẫn, bộ nhớ, tệp cùng hội thoại theo dự án.
 - 21 ngôn ngữ giao diện, chủ đề sáng/tối và cỡ chữ trò chuyện AI có thể điều chỉnh. Onyou Office cải tiến hướng dẫn ban đầu, trang chủ, bảng AI, dự án và Knowledge Vault, với thương hiệu cùng đường dẫn cài đặt và dữ liệu riêng.

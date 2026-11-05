@@ -25,6 +25,7 @@ Open een document, beschrijf wat je wilt veranderen en werk verder in hetzelfde 
 
 ## Eén plek voor je documenten
 
+- Bewerk draw.io-diagrammen en importeer Visio-bestanden (.vsdx) lokaal als nieuwe diagrammen.
 - Maak en bewerk documenten, spreadsheets, presentaties en Hangul-bestanden (HWP/HWPX). Ook PDF, Markdown, HTML, mindmaps en EPUB worden ondersteund. Bewerkings- en conversiemogelijkheden verschillen per formaat.
 - Vraag de AI-assistent om wijzigingen, stel in Knowledge Vault vragen over gekozen documenten en verzamel instructies, geheugen, bestanden en gesprekken in projecten.
 - 21 interfacetalen, lichte en donkere thema’s en instelbare AI-chattekst. Onyou Office vernieuwt de introductie, startpagina, AI-panelen, projecten en Knowledge Vault, met eigen branding en installatie- en datapaden.

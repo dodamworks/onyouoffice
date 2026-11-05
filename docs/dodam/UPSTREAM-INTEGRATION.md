@@ -19,6 +19,21 @@ and their dependencies. Onyou changes cover branding, installation/data
 namespaces, Home/onboarding, optional nickname, common AI panels, projects,
 Knowledge Vault and validation infrastructure. Preserve those inherited credits.
 
+## Current feature update candidate
+
+The update branch pins IeumOffice `9950706e3ff427198ba91f0f2f89b62a19ddc357`
+(2026-11-05 Korea time), 75 commits beyond the baseline. Functional changes are
+ported by feature with original authors and source commit references. Growth
+snapshots and the original Home card order are not imported.
+
+The candidate includes the offline draw.io/Visio editor, diagram AI/MCP/CLI,
+configurable Home document kinds, PDF image conversion, translation writing
+rules and the final pinned rhwp development engine with its carried patches.
+Preserve the product's Home order, file-open information popover, optional
+nickname, common AI panel presentation and separate app/data registrations.
+Engine/studio source stays pinned; importing a candidate is not an installer
+release or a claim that it has passed validation.
+
 ## Accept changes deliberately
 
 1. Record the currently accepted SHA and pin the candidate upstream revision.

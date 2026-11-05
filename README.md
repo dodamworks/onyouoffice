@@ -36,6 +36,7 @@ editors. Connect the AI service you choose, or work without AI.
 ## One workspace for your documents
 
 - **Write and edit:** documents, spreadsheets, presentations and Hangul (HWP/HWPX).
+- **Draw diagrams:** edit draw.io files and import Visio (.vsdx) locally as new diagrams.
 - **Read and organize:** PDF, Markdown, HTML, mind maps and EPUB, with editing and
   conversion tools that vary by format.
 - **Work with AI:** request document changes in the AI assistant, ask questions

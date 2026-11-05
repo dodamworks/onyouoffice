@@ -25,6 +25,7 @@
 
 ## Ein Arbeitsplatz für deine Dokumente
 
+- Bearbeite draw.io-Diagramme und importiere Visio-Dateien (.vsdx) lokal als neue Diagramme.
 - Erstelle und bearbeite Dokumente, Tabellen, Präsentationen und Hangul-Dateien (HWP/HWPX). Auch PDF, Markdown, HTML, Mindmaps und EPUB werden unterstützt. Bearbeitung und Konvertierung unterscheiden sich je nach Format.
 - Bitte den KI-Assistenten um Änderungen, stelle in Knowledge Vault Fragen zu ausgewählten Dokumenten und sammle Anweisungen, Erinnerungen, Dateien und Gespräche in Projekten.
 - 21 Oberflächensprachen, helle und dunkle Designs und anpassbare KI-Chatschrift. Onyou Office überarbeitet Einstieg, Startseite, KI-Panels, Projekte und Knowledge Vault und nutzt eigene Marken-, Installations- und Datenpfade.

@@ -25,6 +25,7 @@ Abra um documento, descreva as alterações e continue na mesma janela. O Onyou 
 
 ## Documentos num só espaço
 
+- Edite diagramas draw.io e importe arquivos Visio (.vsdx) localmente como novos diagramas.
 - Crie e edite documentos, planilhas, apresentações e arquivos Hangul (HWP/HWPX). Também há suporte a PDF, Markdown, HTML, mapas mentais e EPUB. Os recursos de edição e conversão variam por formato.
 - Peça alterações ao assistente de IA, consulte documentos selecionados no Knowledge Vault e organize instruções, memória, arquivos e conversas em projetos.
 - 21 idiomas de interface, temas claro e escuro e tamanho de texto do chat ajustável. O Onyou Office reformula a introdução, a tela inicial, os painéis de IA, os projetos e o Knowledge Vault, com marca e caminhos de instalação e dados próprios.

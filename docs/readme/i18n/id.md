@@ -25,6 +25,7 @@ Buka dokumen, jelaskan perubahan yang diinginkan, lalu lanjutkan dalam jendela y
 
 ## Satu tempat untuk dokumen Anda
 
+- Edit diagram draw.io dan impor berkas Visio (.vsdx) sebagai diagram baru secara lokal.
 - Buat dan edit dokumen, spreadsheet, presentasi, dan Hangul (HWP/HWPX). PDF, Markdown, HTML, peta pikiran, dan EPUB juga didukung. Kemampuan edit dan konversi berbeda menurut format.
 - Minta perubahan melalui asisten AI, ajukan pertanyaan tentang dokumen terpilih di Knowledge Vault, dan kumpulkan instruksi, memori, berkas, serta percakapan dalam proyek.
 - 21 bahasa antarmuka, tema terang dan gelap, serta ukuran teks chat AI yang dapat diatur. Onyou Office memperbarui pengenalan awal, Beranda, panel AI, proyek, dan Knowledge Vault, dengan merek serta jalur instalasi dan data sendiri.

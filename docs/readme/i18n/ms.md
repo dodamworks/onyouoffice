@@ -25,6 +25,7 @@ Buka dokumen, nyatakan perubahan yang diingini dan teruskan dalam tetingkap yang
 
 ## Dokumen dalam satu ruang kerja
 
+- Sunting rajah draw.io dan import fail Visio (.vsdx) sebagai rajah baharu secara setempat.
 - Cipta dan sunting dokumen, hamparan, persembahan dan Hangul (HWP/HWPX). PDF, Markdown, HTML, peta minda dan EPUB turut disokong. Keupayaan penyuntingan dan penukaran berbeza mengikut format.
 - Minta perubahan melalui pembantu AI, tanya tentang dokumen terpilih dalam Knowledge Vault dan himpunkan arahan, ingatan, fail serta perbualan dalam projek.
 - 21 bahasa antara muka, tema cerah dan gelap serta saiz teks sembang AI boleh laras. Onyou Office memperkemas pengenalan, laman utama, panel AI, projek dan Knowledge Vault, dengan jenama serta laluan pemasangan dan data tersendiri.

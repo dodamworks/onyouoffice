@@ -25,6 +25,7 @@ Otevřete dokument, popište požadované změny a pokračujte ve stejném okně
 
 ## Dokumenty na jednom místě
 
+- Upravujte diagramy draw.io a místně importujte soubory Visio (.vsdx) jako nové diagramy.
 - Vytvářejte a upravujte dokumenty, tabulky, prezentace a soubory Hangul (HWP/HWPX). Podporovány jsou také PDF, Markdown, HTML, myšlenkové mapy a EPUB. Možnosti úprav a převodů závisejí na formátu.
 - Požádejte AI asistenta o úpravy, ptejte se na vybrané dokumenty v Knowledge Vault a uchovávejte pokyny, paměť, soubory a rozhovory v projektech.
 - 21 jazyků rozhraní, světlé i tmavé motivy a nastavitelná velikost textu AI chatu. Onyou Office upravuje úvod, domovskou obrazovku, AI panely, projekty a Knowledge Vault a používá vlastní značku a instalační i datové cesty.
