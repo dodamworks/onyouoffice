@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * The product website's connect help: every click of connecting an AI, shown
  * on a redrawn window. The connect guide links to it; the address is fixed

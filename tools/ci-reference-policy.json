@@ -1,6 +1,7 @@
 {
   "roots": ["docs/"],
   "require_full_ci": [
+    "docs/third-party/LICENSE-UNICODE.txt",
     "docs/dodam/CI-POLICY.md",
     "docs/dodam/codebase/DEVELOPMENT.md",
     "docs/standards.md",

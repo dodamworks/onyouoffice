@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31: validate the current working tree including unstaged renames.
+// Modified by Onyou Office on 2026-10-31: validate the current working tree including unstaged renames.
 import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'

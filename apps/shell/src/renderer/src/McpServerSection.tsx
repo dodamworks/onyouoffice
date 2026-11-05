@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31: use a product-specific external MCP configuration key.
+// Modified by Onyou Office on 2026-10-31: use a product-specific external MCP configuration key.
 import { PRODUCT_COMMAND } from '@genoffice/i18n'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'

@@ -1,4 +1,4 @@
-// Added by Dodam on 2026-11-03: verify a build shared only within one CI run.
+// Added by Onyou Office on 2026-11-03: verify a build shared only within one CI run.
 import { accessSync, constants, readFileSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'

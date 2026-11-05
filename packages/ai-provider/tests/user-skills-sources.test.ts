@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * Where a person's skills are read from and how one skill folder is judged:
  * sources, identifiers, names left out, unreadable reasons, scripts, templates,

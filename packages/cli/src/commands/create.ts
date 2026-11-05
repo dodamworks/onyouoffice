@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { basename, dirname, extname, isAbsolute, join, resolve } from 'node:path'
 import { flagBool, flagString } from '../args'

@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync, statSync } from 'node:fs'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'

@@ -1,4 +1,5 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office: relocate the Unicode source notice; retain its installed name.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * electron-builder configuration (kept out of package.json "build" because it
  * computes values and carries the packaging hooks).
@@ -57,7 +58,7 @@ function assertExtraResourceSources() {
   for (const rel of [
     '../../LICENSE',
     '../../NOTICE',
-    '../../LICENSE-UNICODE.txt',
+    '../../docs/third-party/LICENSE-UNICODE.txt',
     '../../node_modules/electron/dist/LICENSES.chromium.html',
     '../../node_modules/@embedpdf/pdfium/dist/pdfium.wasm',
     '../pdf/node_modules/harfbuzzjs/hb-subset.wasm',
@@ -515,7 +516,7 @@ const config = {
       to: 'NOTICE.txt',
     },
     {
-      from: '../../LICENSE-UNICODE.txt',
+      from: '../../docs/third-party/LICENSE-UNICODE.txt',
       to: 'LICENSE-UNICODE.txt',
     },
     {

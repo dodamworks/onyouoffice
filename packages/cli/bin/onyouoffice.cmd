@@ -1,4 +1,4 @@
-@REM Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+@REM Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 @echo off
 rem onyouoffice launcher for the packaged Windows app: <install>\resources\cli\onyouoffice.cmd
 setlocal

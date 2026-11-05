@@ -1,4 +1,4 @@
-// Added by Dodam on 2026-11-03: reuse a successful PR validation only for its exact main merge.
+// Added by Onyou Office on 2026-11-03: reuse a successful PR validation only for its exact main merge.
 import { execFileSync } from 'node:child_process'
 import { appendFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'

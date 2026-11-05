@@ -210,6 +210,23 @@ describe('check-no-genspark', () => {
     expect(r.stderr).toContain('1 allowlisted hit')
   })
 
+  it('allows only the original-source URL in localized introductions, not vendor services', () => {
+    commit({
+      'docs/readme/i18n/zh.md': '[GenOffice](https://github.com/genspark-ai/genoffice)\n',
+      'docs/readme/i18n/ko.md': '[GenOffice](https://github.com/genspark-ai/genoffice#readme)\n',
+    })
+    expect(check().code).toBe(0)
+    commit({
+      'docs/readme/i18n/zh.md':
+        'https://www.genspark.ai/pricing\nhttps://github.com/genspark-ai/genoffice-login\n',
+      'docs/readme/other.md': 'https://github.com/genspark-ai/genoffice\n',
+    })
+    const result = check()
+    expect(result.code).toBe(1)
+    expect(reportedLines(result.stderr, 'docs/readme/i18n/zh.md')).toEqual([1, 2])
+    expect(reportedLines(result.stderr, 'docs/readme/other.md')).toEqual([1])
+  })
+
   it('allows the acknowledgement section of the README and the link to the original, nothing else', () => {
     const readme = [
       '# Product',

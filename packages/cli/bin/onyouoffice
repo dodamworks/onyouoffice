@@ -1,5 +1,5 @@
 #!/bin/sh
-# Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+# Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 # onyouoffice launcher. Inside a packaged Onyou Office it runs the bundled CLI on the
 # app's own Node runtime (ELECTRON_RUN_AS_NODE); in a dev checkout it falls
 # back to the system node and the local build output. Usually reached through

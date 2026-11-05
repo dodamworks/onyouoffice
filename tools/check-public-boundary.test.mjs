@@ -1,4 +1,4 @@
-// Added by Dodam on 2026-11-04: protect public candidates without exposing private input.
+// Added by Onyou Office on 2026-11-04: protect public candidates without exposing private input.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'

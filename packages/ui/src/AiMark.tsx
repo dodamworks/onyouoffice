@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-02 to apply the selected Onyou Office AI mark.
+// Modified by Onyou Office on 2026-11-02 to apply the selected Onyou Office AI mark.
 export interface AiMarkProps {
   size?: number
   className?: string

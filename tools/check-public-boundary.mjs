@@ -1,4 +1,4 @@
-// Added by Dodam on 2026-11-04: inspect public candidates without printing private values.
+// Added by Onyou Office on 2026-11-04: inspect public candidates without printing private values.
 import { execFileSync } from 'node:child_process'
 import { readFileSync, lstatSync } from 'node:fs'
 import { resolve } from 'node:path'

@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { EventEmitter } from 'node:events'
 import { PassThrough } from 'node:stream'

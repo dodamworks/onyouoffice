@@ -1,4 +1,4 @@
-// Added by Dodam on 2026-11-01: run the unchanged unit suites on isolated CI runners.
+// Added by Onyou Office on 2026-11-01: run the unchanged unit suites on isolated CI runners.
 import { readFileSync, readdirSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 

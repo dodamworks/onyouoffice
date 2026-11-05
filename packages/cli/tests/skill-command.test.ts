@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-01: retain upstream behavior with independent Onyou Office identity.
+// Modified by Onyou Office on 2026-11-01: retain upstream behavior with independent Onyou Office identity.
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'

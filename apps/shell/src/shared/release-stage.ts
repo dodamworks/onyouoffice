@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-02 to remove the beta label from the local product UI.
+// Modified by Onyou Office on 2026-11-02 to remove the beta label from the local product UI.
 /**
  * Whether this build is shown as a beta: a small "Beta" mark beside the logo on
  * the home screen and after the version in Settings > About. The version

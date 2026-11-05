@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { closeSync, fstatSync, openSync, readSync, statSync } from 'node:fs'
 import { DOCX_ZIP_LIMITS } from '@genoffice/docx-engine'
 import { PPTX_ZIP_LIMITS } from '@genoffice/pptx-engine'

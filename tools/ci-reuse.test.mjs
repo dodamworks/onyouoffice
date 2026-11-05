@@ -1,4 +1,4 @@
-// Added by Dodam on 2026-11-03: main may reuse only recent, complete, identical PR validation.
+// Added by Onyou Office on 2026-11-03: main may reuse only recent, complete, identical PR validation.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mergeCandidate, proofMatches } from './ci-reuse.mjs'

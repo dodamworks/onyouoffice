@@ -1,4 +1,4 @@
-// Added by Dodam on 2026-11-03: test-only routes must not hide product or helper changes.
+// Added by Onyou Office on 2026-11-03: test-only routes must not hide product or helper changes.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { testImpact, validationPlan, verifyCiResult } from './ci-scope.mjs'

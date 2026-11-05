@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 /**
  * `pdf translate <file.pdf> --to <lang> [--pages] [--format pdf,md,epub]
  * [--bilingual] [--out] [--partial] [--restart] [--yes] [--allow-paid]

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Modified by Dodam on 2026-10-31: validate the current working tree including unstaged renames.
+// Modified by Onyou Office on 2026-10-31: validate the current working tree including unstaged renames.
 // Repository-wide English-only guard: no Chinese may appear in tracked code
 // comments or documentation prose. Catch violations in the change that
 // introduces them.

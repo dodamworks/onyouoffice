@@ -25,6 +25,7 @@ test('reference documents and data qualify only outside runtime and policy surfa
     'package-lock.json',
     '.github/workflows/ci.yml',
     'tools/ci-scope.mjs',
+    'docs/third-party/LICENSE-UNICODE.txt',
     'docs/dodam/script.mjs',
   ]) {
     assert.equal(referenceOnly(['docs/dodam/README.md', path]), false, path)

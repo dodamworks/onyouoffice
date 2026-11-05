@@ -244,3 +244,10 @@ Product identity and local storage/registration namespaces are separated from
 IeumOffice. Update distribution and feedback endpoints are unconfigured.
 Upstream code, document engines and attribution above are retained.
 Onyou Office rights contact: support@onyouoffice.com
+
+Unicode license source location (Onyou Office)
+
+In this source checkout, the unchanged Unicode License v3 text is stored in
+docs/third-party/LICENSE-UNICODE.txt. Installed builds retain the filename
+LICENSE-UNICODE.txt referenced above. The third-party notice generator
+also includes the full text. No Unicode licensing terms have been changed.

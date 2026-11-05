@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31 for the independent Onyou Office local development build.
+// Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 // Assembles the command line as a standalone archive for machines that do not
 // have the desktop app: agent sandboxes, servers, CI images. It carries the
 // same bundle, jsdom tree, wasm engines and xlsx sidecar the installed app

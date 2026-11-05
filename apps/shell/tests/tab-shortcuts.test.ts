@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-10-31: use the host platform close shortcut in the test.
+// Modified by Onyou Office on 2026-10-31: use the host platform close shortcut in the test.
 import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 import {

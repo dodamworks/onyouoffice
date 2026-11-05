@@ -1,4 +1,4 @@
-// Modified by Dodam on 2026-11-02: read-only desktop development environment check.
+// Modified by Onyou Office on 2026-11-02: read-only desktop development environment check.
 import { existsSync, readFileSync, realpathSync } from 'node:fs'
 import { dirname, resolve, relative, isAbsolute } from 'node:path'
 import { fileURLToPath } from 'node:url'
