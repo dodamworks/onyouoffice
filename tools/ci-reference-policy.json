@@ -1,0 +1,35 @@
+{
+  "roots": ["docs/"],
+  "require_full_ci": [
+    "docs/third-party/LICENSE-UNICODE.txt",
+    "docs/dodam/CI-POLICY.md",
+    "docs/dodam/codebase/DEVELOPMENT.md",
+    "docs/standards.md",
+    "docs/dodam/SOURCE-FIRST.md"
+  ],
+  "root_documents": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "README.md",
+    "README.en.md",
+    "CONTRIBUTING.md",
+    "CONTRIBUTORS.md",
+    "CODE_OF_CONDUCT.md",
+    "SECURITY.md",
+    "PRIVACY.md"
+  ],
+  "extensions": [
+    ".md",
+    ".txt",
+    ".json",
+    ".svg",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".webp",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".otf"
+  ]
+}

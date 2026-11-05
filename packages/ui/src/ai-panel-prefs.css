@@ -1,0 +1,78 @@
+/* AI panel text size (Settings → General). The chat log and composer are
+   scaled as a block so the per-app px type scale keeps its proportions;
+   the factor comes from applyAiPanelPrefs() via --ai-font-zoom. */
+html[data-ai-font-size] .ai-chat,
+html[data-ai-font-size] .ai-composer {
+  zoom: var(--ai-font-zoom, 1);
+}
+
+/* Move only the assistant; document navigation retains its existing ordering. */
+html[data-ai-panel-side='right'] {
+  --ai-panel-border-left: 1px;
+  --ai-panel-border-right: 0px;
+}
+
+html[data-ai-panel-side='right'] .ai-dock {
+  order: 1;
+}
+
+html[data-ai-panel-side='right'] .ai-panel-resizer {
+  left: 0;
+  right: auto;
+}
+
+/* Sheets has a two-column grid instead of the other apps' flex docks. */
+html[data-ai-panel-side='right'] .sheet-body {
+  grid-template-columns: minmax(0, 1fr) var(--copilot-width, 360px);
+}
+
+html[data-ai-panel-side='right'] .sheet-body > .copilot {
+  order: 1;
+}
+
+html[data-ai-panel-side='right'] .app-shell.copilot-collapsed .sheet-body {
+  grid-template-columns: minmax(0, 1fr) 34px;
+}
+
+html[data-ai-panel-side='right'] .ai-panel-collapse svg {
+  transform: scaleX(-1);
+}
+
+/* Keep the simplified panel's instructions and draft input readable in every locale. */
+html .ai-chat-empty,
+html .ai-composer textarea {
+  word-break: normal;
+  overflow-wrap: anywhere;
+  hyphens: manual;
+}
+
+html .ai-chat-empty {
+  text-wrap: pretty;
+}
+
+html:lang(ko) .ai-chat-empty,
+html:lang(ko) .ai-composer textarea {
+  word-break: keep-all;
+}
+
+/* Keep panel contents at their final width while the dock reveals them.
+   Reflowing at every animation frame makes the heading jump between lines. */
+html .ai-dock {
+  background: var(--color-bg-page);
+}
+
+html .ai-dock > .ai-panel,
+html .ai-dock > .copilot {
+  min-width: var(--ai-panel-width, 360px);
+}
+
+/* The collapsed button stays at the window edge instead of travelling across
+   the closing dock. Right-side docks reveal their contents from that edge. */
+html .ai-dock > .ai-rail {
+  flex: 0 0 34px;
+  width: 34px;
+}
+
+html[data-ai-panel-side='right'] .ai-dock {
+  justify-content: flex-end;
+}

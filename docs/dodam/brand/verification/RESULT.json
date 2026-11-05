@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-02",
+  "scope": "Brand sources and isolated generation compatibility; not installed product",
+  "svg_files_checked": 22,
+  "selected_B_and_archives_unchanged": true,
+  "dark_wordmark_only_changed": true,
+  "AI_svg_react_geometry_and_props_match": true,
+  "AI_sizes_checked": [14, 16, 18, 20, 22, 26, 58],
+  "AiMark_source_calls": 34,
+  "name_tests": {
+    "product": 17,
+    "product_identity": 20,
+    "total": 37,
+    "result": "passed"
+  },
+  "font_version": "Version 1.309;Glyphs 3.2 (3225)",
+  "font_OFL_matches_existing": true,
+  "PNG_outputs_decoded": 16,
+  "ICO_sizes_decoded": [16, 24, 32, 48, 64, 128, 256],
+  "ICNS_chunks_decoded": [
+    "ic12",
+    "ic07",
+    "ic13",
+    "ic08",
+    "ic04",
+    "ic14",
+    "ic09",
+    "ic05",
+    "ic10",
+    "ic11"
+  ],
+  "mac_icon_inset_verified": 100,
+  "generator_unchanged": true,
+  "generator_lockup_copy_matches_final_colour_input": true,
+  "project_reference_index_unchanged": true,
+  "blocking_asset_findings": [],
+  "implementation_items": "See INTEGRATION-AUDIT.md; real app/OS registration remains unapplied.",
+  "slides_14px_class_specific_theme_checked": true,
+  "browser_errors": [],
+  "external_requests": []
+}

@@ -1,0 +1,42 @@
+{
+  "status": "Selected brand reference; integrated and visually reviewed in the local desktop build. No public release or all-OS installation claim.",
+  "names": {
+    "ko": "온유오피스",
+    "default": "Onyou Office"
+  },
+  "locale_rule": "Use the same base-language normalization as productName(lang); ko and ko-* use Korean, every other language uses the English/default artwork.",
+  "primary_logo": {
+    "symbol": "logos/symbol.svg",
+    "small": "logos/symbol-small.svg",
+    "light": {
+      "ko": "logos/logo-ko.svg",
+      "default": "logos/logo-en.svg"
+    },
+    "dark": {
+      "ko": "logos/logo-ko-dark.svg",
+      "default": "logos/logo-en-dark.svg"
+    }
+  },
+  "colour_rule": "Keep the original B symbol colours in light/dark/system themes. Swap only wordmark foreground for dark. Never invert the whole coloured SVG.",
+  "mono_role": "Supplemental use when one ink is required; not the automatic default for dark mode.",
+  "AI_mark": {
+    "svg": "logos/ai-mark.svg",
+    "react": "packages/ui/src/AiMark.tsx",
+    "sizes_observed_in_source": [14, 16, 18, 20, 22, 26, 58],
+    "colour": "currentColor",
+    "a11y": "Decorative SVG; keep the existing translated visible button label or accessible name.",
+    "className": "Preserve optional className, including ai-mark on the slides 14px button."
+  },
+  "native_generator": "tools/gen-brand-assets.mjs",
+  "native_inputs": "native-inputs/",
+  "native_default_lockup": "English light outlined artwork for generated presentation exports. The desktop Home uses the optical-small symbol and live Pretendard text instead of these outlined lockups.",
+  "native_preview_warning": "The current Onyou generator uses separate light/dark colour assets without inversion. Earlier asset-only validation used an isolated copy of the old generator.",
+  "product_applied": true,
+  "desktop_integration": {
+    "record": "../DESKTOP-BRAND-INTEGRATION.md",
+    "wordmark": "live productName(lang) text, local Pretendard Variable 600, 14px",
+    "symbol": "optical-small B, 28px",
+    "theme": "semantic text foreground; original blue symbol colours",
+    "release_scope": "local Mac arm64 verification; no publication"
+  }
+}

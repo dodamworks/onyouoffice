@@ -1,0 +1,171 @@
+.kb-document-scope {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-block-start: 12px;
+  margin-block-end: 10px;
+  font-size: 13px;
+}
+.kb-document-scope > label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kb-document-scope select {
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.kb-document-scope summary {
+  padding: 6px 0;
+  cursor: pointer;
+}
+.kb-document-choices {
+  max-height: 260px;
+  max-width: 560px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 8px;
+}
+.kb-document-choices label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px;
+}
+.kb-document-choices span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.kb-document-choices b,
+.kb-document-choices small {
+  display: block;
+}
+.kb-document-choices small {
+  color: var(--text-secondary);
+}
+
+.kb-vault-heading {
+  flex: 1;
+  min-width: 0;
+}
+.kb-vault-heading h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+}
+.kb-vault-heading p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.kb-vault-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.kb-vault-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.kb-vault-summary:empty {
+  display: none;
+}
+.kb-vault-summary .kb-ask-scope {
+  display: flex;
+  flex-wrap: wrap;
+}
+.kb-vault-footer .kb-ask-login {
+  margin: 0;
+}
+.kb-scope-change {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.kb-document-scope .ai-input-below {
+  margin: 0;
+}
+
+.kb-ask-headbar:empty {
+  display: none;
+}
+.kb-vault-welcome {
+  margin: auto;
+  text-align: center;
+  max-width: 420px;
+  padding: 32px 12px;
+}
+.kb-vault-welcome > svg {
+  display: block;
+  margin: 0 auto 20px;
+  color: var(--accent);
+}
+.kb-vault-welcome h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+  font-weight: 700;
+}
+.kb-vault-welcome p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: keep-all;
+  text-wrap: balance;
+}
+.kb-document-scope {
+  position: relative;
+  min-height: 34px;
+}
+.kb-document-scope select {
+  height: 34px;
+  box-sizing: border-box;
+}
+.kb-document-scope summary {
+  box-sizing: border-box;
+  min-height: 34px;
+  padding: 8px 0;
+}
+.kb-document-scope .ai-project-chip {
+  min-height: 34px;
+  box-sizing: border-box;
+}
+.kb-document-choices {
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(100% + 8px);
+  z-index: 20;
+  max-width: none;
+  max-height: min(260px, 40vh);
+  background: var(--surface);
+}
+.kb-vault-footer {
+  min-height: 64px;
+  box-sizing: border-box;
+}
+.kb-vault-summary {
+  flex-wrap: nowrap;
+  min-height: 32px;
+}
+.kb-vault-summary > span {
+  flex-shrink: 0;
+}
+.kb-vault-summary .kb-ask-scope {
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+}
