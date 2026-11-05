@@ -5,7 +5,7 @@
 Bug reports, reproducible examples, documentation, translations and code reviews
 are welcome. Onyou Office is an independent fork of
 [IeumOffice](https://github.com/pblsketch/openoffice), which is based on
-[GenOffice](README.en.md#license-and-acknowledgement). Preserve source attribution,
+[GenOffice](README.md#license-and-origins). Preserve source attribution,
 author credits, copyright notices, [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
 Development for this fork belongs in

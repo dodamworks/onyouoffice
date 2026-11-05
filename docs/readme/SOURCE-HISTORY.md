@@ -5,12 +5,12 @@ commit imports an existing application and our refinements; it does not mean tha
 Onyou Office authored all of that code. Earlier development history is available
 in the linked upstream repositories rather than copied into this main branch.
 
-| Source                                                | Revision and scope                                                                                                                      |
-| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| [GenOffice](https://github.com/genspark-ai/genoffice) | Original office application, inherited through IeumOffice                                                                               |
-| [IeumOffice](https://github.com/pblsketch/openoffice) | Baseline `a2948eecd1e2572aac2f0c43f6c89f081971d4d8`, with 41 selected source changes through `9950706e3ff427198ba91f0f2f89b62a19ddc357` |
-| rhwp                                                  | Pinned engine and carried patches recorded in `vendor/rhwp-core`                                                                        |
-| Onyou Office                                          | Product identity, desktop refinements and integration work described below                                                              |
+| Source                                                       | Revision and scope                                                                                                                      |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| [GenOffice](../dodam/UPSTREAM-INTEGRATION.md#source-lineage) | Original office application, inherited through IeumOffice                                                                               |
+| [IeumOffice](https://github.com/pblsketch/openoffice)        | Baseline `a2948eecd1e2572aac2f0c43f6c89f081971d4d8`, with 41 selected source changes through `9950706e3ff427198ba91f0f2f89b62a19ddc357` |
+| rhwp                                                         | Pinned engine and carried patches recorded in `vendor/rhwp-core`                                                                        |
+| Onyou Office                                                 | Product identity, desktop refinements and integration work described below                                                              |
 
 Upstream copyright, author credits, LICENSE, NOTICE and applicable component
 notices remain in the source. New upstream updates record their source revisions
