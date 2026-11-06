@@ -60,6 +60,7 @@ it('keeps the old first/global whitespace and quoting rules for removed attribut
 })
 
 it.each([
+  'z-order-digits',
   'image-transform',
   'image-extents',
   'image-offset',
@@ -72,11 +73,12 @@ it.each([
     const source = JSON.stringify(new URL('../src/generate.ts', import.meta.url).href)
     const program = `
       import assert from 'node:assert/strict';
-      import { patchImageParagraphXml, patchMathTokens, splitXmlChildren, stripParaMarkColor } from ${source};
+      import { patchImageParagraphXml, patchMathTokens, splitXmlChildren, stripParaMarkColor, applyImageZOrder } from ${source};
       const kind = ${JSON.stringify(kind)};
-      const token = { 'image-transform': '<pic:spPr ', 'image-extents': '<wp:extent cx="1" ', 'image-offset': '<wp:positionH ', 'math-text': '<m:t ', 'raw-tags': '<a', 'paragraph-mark': '<w:rPr>a' }[kind];
+      const token = { 'z-order-digits': '1', 'image-transform': '<pic:spPr ', 'image-extents': '<wp:extent cx="1" ', 'image-offset': '<wp:positionH ', 'math-text': '<m:t ', 'raw-tags': '<a', 'paragraph-mark': '<w:rPr>a' }[kind];
       const xml = token.repeat(100000);
-      if (kind === 'raw-tags') assert.deepEqual(splitXmlChildren(xml), []);
+      if (kind === 'z-order-digits') assert.ok(applyImageZOrder('<wp:anchor id="' + xml + '" relativeHeight="4">', 2).endsWith('relativeHeight="251658242">'));
+      else if (kind === 'raw-tags') assert.deepEqual(splitXmlChildren(xml), []);
       else if (kind === 'paragraph-mark') assert.equal(stripParaMarkColor(xml), xml);
       else if (kind === 'math-text') assert.equal(patchMathTokens(xml, ['new']), xml);
       else assert.equal(patchImageParagraphXml(xml, { rotDeg: 45, widthPx: 20, heightPx: 30, posOffsetX: 123 }), xml);

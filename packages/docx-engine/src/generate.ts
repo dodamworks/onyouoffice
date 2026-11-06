@@ -280,7 +280,8 @@ export function applyImageZOrder(xml: string, zOrder?: number): string {
   const match = attributeMatch(xml, '<wp:anchor', /relativeHeight="(\d+)"/g, { last: false })
   return match
     ? xml.slice(0, match.index) +
-        match[0].replace(/\d+"$/, `${251658240 + (zOrder ?? 0)}"`) +
+        match[0].slice(0, -match[1]!.length - 1) +
+        `${251658240 + (zOrder ?? 0)}"` +
         xml.slice(match.index + match[0].length)
     : xml
 }
