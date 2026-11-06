@@ -80,3 +80,21 @@ For spellcheck instability, reproduce the specific state and compare failures be
 CI executes mechanical checks; Codex reviews the diff and applicable AGENTS guidance. Request one review of a coherent final diff, avoid a duplicate manual request while an automatic review is running, and refresh it after consequential fixes. Record the reviewed commit; do not claim an old review covers a new revision or guarantee incremental-only billing. Repository-specific review rules must preserve document compatibility, identity/data separation and mocked AI/provider boundaries.
 
 See [GitHub skipped/required-check semantics](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks) and [Codex review guidance](https://learn.chatgpt.com/docs/third-party/github). Branch protection, billing plans and Codex account settings are separate from this YAML; none is changed here.
+
+## Bounded document-font setup
+
+The November 6 E2E retry stalled while downloading the 61.2 MB Ubuntu Noto CJK
+package. Keep the same Carlito, Caladea and Noto CJK package versions used by the
+Ubuntu 22.04 visual baselines. `tools/ci-font-packages.json` records their official
+Ubuntu package paths and SHA-256 values; changing the font stack still requires
+visual compatibility review.
+
+Cache only these download archives, using the complete lockfile hash as the key.
+`tools/ci-fonts.mjs` verifies each archive against the committed hash before any
+installation, including cache hits. A bad cache entry is discarded. A download
+has a 15-second connection deadline and a 60-second total deadline, then tries
+one other Ubuntu mirror. The complete setup step is limited to five minutes.
+Verify installed package versions and font-family resolution before tests start.
+A missing font, digest mismatch or failed installation fails the job; no layout
+assertion, test or product check is skipped. Preserve all three E2E shards and
+the existing exact-build and aggregate gates.
