@@ -37,6 +37,13 @@ vi.mock('electron', () => ({
   },
 }))
 
+// Keep font rendering under test while the OS print spooler stays isolated.
+vi.mock('@genoffice/electron-utils/print-cups', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@genoffice/electron-utils/print-cups')>()),
+  printPdfViaCups: vi.fn(async () => ({ ok: true })),
+}))
+
+import { printPdfViaCups } from '@genoffice/electron-utils/print-cups'
 import { exportPdf, printWorkbook } from '../src/main/pdf-export'
 import { TEMPLATE_FONT_FACE_REGISTRATIONS } from '@genoffice/ui/template-fonts'
 
@@ -66,6 +73,7 @@ function expectBundledFaces(html: string): void {
 describe('bundled fonts on the export and print page', () => {
   beforeEach(() => {
     loaded.length = 0
+    vi.mocked(printPdfViaCups).mockClear()
   })
   afterAll(() => {
     rmSync(PDF_PATH, { force: true })
@@ -82,5 +90,13 @@ describe('bundled fonts on the export and print page', () => {
     expect(await printWorkbook(EVENT, { ...REQUEST, deviceName: 'Printer' })).toEqual({ ok: true })
     expect(loaded).toHaveLength(1)
     expectBundledFaces(loaded[0]!)
+    if (process.platform === 'darwin') {
+      expect(printPdfViaCups).toHaveBeenCalledExactlyOnceWith(
+        Buffer.from('%PDF-1.7'),
+        expect.objectContaining({ deviceName: 'Printer', silent: true }),
+      )
+    } else {
+      expect(printPdfViaCups).not.toHaveBeenCalled()
+    }
   })
 })

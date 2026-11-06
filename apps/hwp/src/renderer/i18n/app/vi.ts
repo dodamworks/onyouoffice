@@ -27,6 +27,11 @@ export const vi = {
     'Chưa lưu: tài liệu này có theo dõi thay đổi; lưu ở đây sẽ làm mất chúng và có thể tạo ra tệp mà Hancom Hangul không mở được.',
   savedTailsLost:
     'Đã lưu, nhưng không giữ được một số trang chủ hoặc ghi chú của tệp gốc, và Hancom Hangul có thể không mở được tệp đã lưu. Hãy mở để kiểm tra.',
+  missingFonts:
+    'Một số phông chữ không có trên máy này nên hiển thị trên màn hình bằng phông khác: {fonts}. Tệp đã lưu vẫn giữ tên phông chữ gốc, và văn bản sẽ hiển thị đúng trên máy có các phông chữ đó.',
+  missingFontTag: 'Không có trên máy này',
+  missingFontHint:
+    'Phông chữ này không có trên máy này nên hiển thị trên màn hình bằng phông khác. Tệp vẫn giữ tên phông chữ này.',
   dismiss: 'Đóng',
   aiOpenAssistant: 'Mở trợ lý AI',
   aiNewChat: 'Cuộc trò chuyện mới',
@@ -163,6 +168,9 @@ export const vi = {
     'Các yêu cầu viết lại mặc định sẽ áp dụng cho phần đã chọn; nhấp để xem trước',
   aiScopeClearTitle: 'Xóa phạm vi vùng chọn',
   aiToolNotDone: 'Chưa thực hiện · {what}',
+  aiUnfinishedSteps: 'Bước chưa hoàn thành: {n}',
+  aiUnfinishedNote:
+    'Các bước này chưa được áp dụng vào tài liệu. Hãy kiểm tra những phần này dù câu trả lời nói rằng đã xong.',
   aiChangesTitle: 'Thay đổi trong tài liệu: {count}',
   aiClearMarks: 'Ẩn đánh dấu',
   aiRevert: 'Hoàn tác các thay đổi này',
@@ -250,4 +258,7 @@ export const vi = {
   checkAskAi: 'Giao việc sửa cho AI',
   checkHandedOff: 'Yêu cầu đã ở trong ô AI. Hãy xem lại rồi gửi.',
   checkFixFailed: 'Không thể thay đổi.',
+  easyWordsLabel: 'Giải thích bằng lời dễ hiểu',
+  easyWordsPrompt:
+    'Hãy giải thích đoạn văn được chọn dưới đây bằng tiếng Việt để cả người cần văn bản dễ đọc cũng hiểu được. Dùng từ ngữ hằng ngày và câu ngắn, không bỏ sót bất kỳ sự kiện, con số hay điều kiện nào. Không sửa tài liệu.\n\nĐoạn văn được chọn:\n{text}',
 } satisfies Record<keyof typeof zh, string>

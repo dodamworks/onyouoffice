@@ -78,6 +78,7 @@ import { ATTACHMENT_IMAGE_EXTS } from '../../shared/ipc'
 import type { AttachmentAddResult, AttachmentMeta } from '../../shared/ipc'
 import type { AgentMemoRemovalRefusal, AgentPlace } from '../../../studio-plugin/agent-plugin.mjs'
 import type { AgentBridge } from './agent-bridge'
+import type { AiPrefill } from './easy-words'
 import { blockedRunOf, type AiBlockedRun } from './ai-connection'
 import { AttachmentList, MAX_IMAGES_PER_MESSAGE, PASTE_MIME_EXT } from './attachments'
 import { createFilesSkill } from './files-skill'
@@ -91,6 +92,7 @@ import {
 } from './selection-scope'
 import { createHwpSkill, type HwpChange } from './hwp-skill'
 import { MemoApprovalGate, memoApprovalPreview } from './memo-approval'
+import { unfinishedSteps, type RunStep } from './unfinished-steps'
 import { useSubscriptionConnection } from './subscription-client'
 import { createElectronTransport } from './transport'
 
@@ -150,6 +152,8 @@ interface ChatEntry {
   undelivered?: boolean
   tools?: ToolActivity[]
   changes?: RunChanges
+  /** labels of the edits this run left undone, shown under its last reply */
+  unfinished?: string[]
   /** attachments this message took from the composer (echoed read-only; a retry sends them again) */
   attachments?: AttachmentMeta[]
   /** the selection this message was about, frozen at send */
@@ -214,6 +218,7 @@ export function AiPanel({
   templateDocument,
   onSkillHandoff,
   prefill,
+  onPrefillTaken,
 }: {
   /** the document operations of the open editor */
   bridge: AgentBridge
@@ -224,8 +229,16 @@ export function AiPanel({
   templateDocument?: TemplateDocument | null
   /** this tab took a request handed over by the template flow: show the panel */
   onSkillHandoff?: () => void
-  /** a request from the document check: fills the input box, never sends it */
-  prefill?: { text: string; nonce: number } | null
+  /**
+   * a request handed to the panel: the document check's fills the input box and waits for
+   * the user; one with `autoRun` (the editor's right-click 쉬운 말로 풀기) is sent at once
+   */
+  prefill?: AiPrefill | null
+  /**
+   * the panel took an `autoRun` request: the owner clears it (`afterPrefillTaken`), so the
+   * request runs once even when the panel mounts again with the same props
+   */
+  onPrefillTaken?: (taken: AiPrefill) => void
 }): ReactElement {
   const { lang, t } = useI18n()
   const [chat, setChat] = useState<ChatEntry[]>([])
@@ -237,7 +250,7 @@ export function AiPanel({
 
   // a request handed over by the document check: it waits in the input box for the user
   useEffect(() => {
-    if (!prefill) return
+    if (!prefill || prefill.autoRun) return
     setPrompt(prefill.text)
   }, [prefill])
 
@@ -265,6 +278,8 @@ export function AiPanel({
   >([])
   /** what the tools of the run in flight did, kept with its reply */
   const runToolsRef = useRef<ToolActivity[]>([])
+  /** the tool calls of the run in flight with their arguments, for its unfinished edits */
+  const runStepsRef = useRef<RunStep[]>([])
   /** the project folder of this panel (set once its hook ran; read by callbacks) */
   const projectRef = useRef<ProjectPanel | null>(null)
 
@@ -788,6 +803,12 @@ export function AiPanel({
             output: execution.output?.slice(0, TOOL_OUTPUT_MAX_CHARS),
           }
           runToolsRef.current.push(activity)
+          runStepsRef.current.push({
+            name: call.name,
+            input: call.input,
+            isError: execution.isError,
+            summary: execution.summary,
+          })
           patchLast((last) => {
             // Swap out the running placeholder pushed by onToolStart (parse-fail calls have none)
             const tools = [...(last.tools ?? [])]
@@ -809,12 +830,16 @@ export function AiPanel({
           const changed = takeRunChanges()
           persistMessage('assistant', final, runToolsRef.current)
           runToolsRef.current = []
+          // decided from the tool results, not from what the reply says it did
+          const unfinished = unfinishedSteps(runStepsRef.current).map((step) => step.summary)
+          runStepsRef.current = []
           patchLast((last) => ({
             streaming: false,
             text: final || (last.tools?.length ? last.text : tGlobal('aiNoReply')),
             // A stop mid-tool can leave a running placeholder behind — drop it
             tools: last.tools?.filter((tl) => !tl.running),
             ...changed,
+            ...(unfinished.length > 0 ? { unfinished } : {}),
           }))
           setBusy(false)
           projectRef.current?.finishSend()
@@ -969,6 +994,8 @@ export function AiPanel({
     skillsRef.current.consume(skillUse)
     skillTemplatesRef.current.noteRequest(text)
     runSkillUseRef.current = skillUse
+    runStepsRef.current = []
+    skillRef.current!.beginRun()
     setBusy(true)
     void (async () => {
       try {
@@ -1009,6 +1036,15 @@ export function AiPanel({
     })()
     return true
   }
+
+  // a request that runs as soon as it arrives goes through the same gate as a typed one;
+  // when that gate does not start it, it waits in the input box as a typed one would
+  useEffect(() => {
+    if (!prefill?.autoRun) return
+    if (!send(prefill.text)) setPrompt(prefill.text)
+    onPrefillTaken?.(prefill)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per handed request
+  }, [prefill])
 
   const stop = (): void => {
     // a run waiting on the memo question stops now: the call is answered "keep"
@@ -1398,6 +1434,7 @@ export function AiPanel({
                   </div>
                 )
               )}
+              {entry.unfinished && <UnfinishedSteps steps={entry.unfinished} />}
               {hasTools && <ToolChipList tools={entry.tools!} />}
               <SkillUsedNotes tools={entry.tools} />
               {project.messageParts(entry)}
@@ -1799,6 +1836,24 @@ function StepIcon({ status }: { status: 'running' | 'done' | 'error' }) {
       <circle cx="12" cy="12" r="9" />
       <path d="m8.5 12.4 2.4 2.4 4.6-5" />
     </svg>
+  )
+}
+
+/** The edits a run left undone, under its reply: the count, and their labels when opened. */
+function UnfinishedSteps({ steps }: { steps: string[] }): ReactElement {
+  const { t: tr } = useI18n()
+  return (
+    <details className="ai-unfinished">
+      <summary className="ai-unfinished-summary">
+        {tr('aiUnfinishedSteps', { n: steps.length })}
+      </summary>
+      <p className="ai-unfinished-note">{tr('aiUnfinishedNote')}</p>
+      <ul className="ai-unfinished-list">
+        {steps.map((step, j) => (
+          <li key={j}>{step}</li>
+        ))}
+      </ul>
+    </details>
   )
 }
 
