@@ -55,3 +55,8 @@ Regressions execute the real parsers in a time-limited subprocess, retain normal
 input expectations and check that relationship archive bytes remain unchanged.
 Other static-analysis findings still require entry-point and contract review;
 these fixes are not a claim that every scanner warning is a confirmed exploit.
+
+Header/footer drawing and section-border slice matching also uses literal scans
+instead of retrying a lazy expression for every unterminated opening tag. Preserve
+the original non-overlapping fragments, drawing ordinals and unedited bytes.
+Regressions cover repeated tokens inside valid XML comments and ordinary slices.

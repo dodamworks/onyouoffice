@@ -1,3 +1,4 @@
+// Modified by Onyou Office: bound literal border-slice matching work.
 import type {
   ParsedDoc,
   SectionInfo,
@@ -7,6 +8,14 @@ import type {
   LineNumbering,
 } from './types'
 import { onOffTagIn } from './parse-xml-text'
+import { firstSlice, pairedSlice, selfClosingSlice } from './xml-slices'
+
+function pageBorderSlice(xml: string) {
+  return firstSlice(
+    selfClosingSlice(xml, '<w:pgBorders'),
+    pairedSlice(xml, '<w:pgBorders', '</w:pgBorders>'),
+  )
+}
 
 /** US Letter, portrait, 1-inch margins */
 export const DEFAULT_SECTION: SectionSettings = {
@@ -51,7 +60,7 @@ function intAttr(tag: string, name: string, fallback: number): number {
  * of w:pgBorders must not be treated as a drawn border.
  */
 function hasVisiblePageBorder(xml: string): boolean {
-  const pgBorders = /<w:pgBorders[^>]*\/>|<w:pgBorders[\s\S]*?<\/w:pgBorders>/.exec(xml)?.[0]
+  const pgBorders = pageBorderSlice(xml)?.text
   if (!pgBorders) return false
   const sides = pgBorders.match(/<w:(?:top|left|bottom|right)\b[^>]*\/?>/g) ?? []
   return sides.some((side) => {
@@ -96,7 +105,7 @@ export const LINE_BORDER_VALS = new Set([
 
 /** Styling details of a visible w:pgBorders box (undefined when no visible side). */
 function pageBorderPropsOf(xml: string): SectionSettings['pageBorderProps'] {
-  const pgBorders = /<w:pgBorders[^>]*\/>|<w:pgBorders[\s\S]*?<\/w:pgBorders>/.exec(xml)?.[0]
+  const pgBorders = pageBorderSlice(xml)?.text
   if (!pgBorders || !hasVisiblePageBorder(xml)) return undefined
   const display = strAttr(pgBorders, 'w:display') as 'firstPage' | 'notFirstPage' | undefined
   const offsetFrom = strAttr(pgBorders, 'w:offsetFrom') as 'page' | 'text' | undefined
@@ -515,7 +524,9 @@ export function applySectionSettings(sectPrXml: string, settings: SectionSetting
   }
 
   // page border (pgBorders sits between pgMar and cols in CT_SectPr)
-  xml = xml.replace(/<w:pgBorders[^>]*\/>|<w:pgBorders[\s\S]*?<\/w:pgBorders>/, '')
+  const oldBorder = pageBorderSlice(xml)
+  if (oldBorder)
+    xml = xml.slice(0, oldBorder.index) + xml.slice(oldBorder.index + oldBorder.text.length)
   if (settings.pageBorder) {
     const pgBorders = pageBordersXml(settings.pageBorderProps)
     if (pgBorders) xml = xml.replace(/(<w:pgMar[^>]*\/>)/, `$1${pgBorders}`)
@@ -525,8 +536,14 @@ export function applySectionSettings(sectPrXml: string, settings: SectionSetting
   const colsMatch = /<w:cols[^>]*\/>|<w:cols[^>]*>[\s\S]*?<\/w:cols>/.exec(xml)
   const numAttr = settings.columns > 1 ? ` w:num="${settings.columns}"` : ''
   const colsAnchor = (tag: string): string => {
-    const anchor = /(<w:pgBorders[\s\S]*?<\/w:pgBorders>|<w:pgMar[^>]*\/>)/.exec(xml)
-    if (anchor) return xml.replace(anchor[0], `${anchor[0]}${tag}`)
+    const anchor = firstSlice(
+      pairedSlice(xml, '<w:pgBorders', '</w:pgBorders>'),
+      selfClosingSlice(xml, '<w:pgMar'),
+    )
+    if (anchor) {
+      const end = anchor.index + anchor.text.length
+      return xml.slice(0, end) + tag + xml.slice(end)
+    }
     return xml.replace(/<\/w:sectPr>/, `${tag}</w:sectPr>`)
   }
   if (

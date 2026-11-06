@@ -1,4 +1,6 @@
+// Modified by Onyou Office: scan header/footer drawing slices in linear time.
 import JSZip from 'jszip'
+import { hfDrawingMatches } from './xml-slices'
 import type { JSZipObject } from 'jszip'
 import { LAZY_MEDIA_PLACEHOLDER_BYTES, lazyMediaHashOf, lazyMediaUrl } from './lazy-media'
 import { parseCustGeom } from '@genoffice/pptx-engine/custgeom'
@@ -5998,11 +6000,8 @@ const MATH_HOSTS = new Set(['m:oMath'])
 const TXBX_CONTENT = new Set(['w:txbxContent'])
 const WP_INLINE = new Set(['wp:inline'])
 const WP_ANCHOR = new Set(['wp:anchor'])
-/** the <w:drawing> elements of a header/footer part, in the order HfImage.drawing counts them */
-export const HF_DRAWING_RE = /<w:drawing[\s>][\s\S]*?<\/w:drawing>/g
-
 /**
- * A HF_DRAWING_RE match the strip can move and resize: one floating picture
+ * A header/footer drawing slice the strip can move and resize: one floating picture
  * with its own extents. A text box or group is not one, and neither is a
  * fragment the lazy match cut at the </w:drawing> of a picture nested in a
  * text box (its extents are the box's).
@@ -6348,7 +6347,7 @@ async function hfImages(
     return jc === 'left' || jc === 'center' || jc === 'right' ? jc : undefined
   }
   let drawingOrdinal = -1
-  for (const m of partXml.matchAll(HF_DRAWING_RE)) {
+  for (const m of hfDrawingMatches(partXml)) {
     const frag = m[0]
     drawingOrdinal++
     if (fallbackDup(m.index!)) continue

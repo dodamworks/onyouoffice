@@ -53,7 +53,9 @@ docx 한 파일의 읽기와 쓰기 전부를 맡는다.
 
 ## 원본과 다른 점 (결정 0092)
 
-지금은 없다. 결정 0092의 네 수정(머리글·꼬리말의 `SECTIONPAGES`, 직접 만든 스타일의 목차 줄, 쪽 기준 도형의 감싸기, 대체 글꼴)은 원본 #2364로 원본에 들어갔고, 2026-11-03 받아오기 뒤 엔진 파일이 원본과 같다. 그 시험(`tests/hf-section-pages.test.ts`, `tests/field-display.test.ts`, `tests/page-anchored-wrap.test.ts`, `tests/wrap-topbottom-band.test.ts`)은 원본의 것으로 남는다.
+온유오피스의 2026-11-06 보안 보완은 관계 DOCTYPE 제거와 머리글·꼬리말 그림 및 구역 테두리 조각 검색의 반복 정규식을 순차 검색으로 바꾼다. 문서 형식이나 저장 식별자를 바꾸지 않고 원본 XML 조각과 그림 순번을 유지한다. `tests/input-work-bounds.test.ts`가 악성 반복 입력의 실행 상한, 정상 관계 해석과 원본 바이트, 조각 경계를 확인한다. 전체 왕복·머리글 그림·구역 시험도 유지한다.
+
+결정 0092의 네 수정(머리글·꼬리말의 `SECTIONPAGES`, 직접 만든 스타일의 목차 줄, 쪽 기준 도형의 감싸기, 대체 글꼴)은 원본 #2364로 원본에 들어갔고, 2026-11-03 받아오기 뒤 엔진 파일이 원본과 같다. 그 시험(`tests/hf-section-pages.test.ts`, `tests/field-display.test.ts`, `tests/page-anchored-wrap.test.ts`, `tests/wrap-topbottom-band.test.ts`)은 원본의 것으로 남는다.
 
 ## 테스트
 

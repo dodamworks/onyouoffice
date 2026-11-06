@@ -1,10 +1,12 @@
+// Modified by Onyou Office: avoid retries for unterminated drawing slices.
 import {
   applyImageWrap,
   resizeAnchoredPictureXml,
   resizeInlinePictureXml,
   swapAnchorWrap,
 } from './generate'
-import { HF_DRAWING_RE, hfMovablePictureFrag, runPictureAnchorOf } from './parse'
+import { hfMovablePictureFrag, runPictureAnchorOf } from './parse'
+import { hfDrawingMatches } from './xml-slices'
 import type { HfPictureEdit, ImageWrap } from './types'
 
 const EMU_PER_PX = 9525
@@ -19,7 +21,7 @@ const EMU_PER_PX = 9525
  */
 export function patchHfPicturesXml(partXml: string, edits: Record<number, HfPictureEdit>): string {
   let ordinal = -1
-  return partXml.replace(HF_DRAWING_RE, (frag) => {
+  const rewrite = (frag: string): string => {
     ordinal++
     const edit = edits[ordinal]
     if (!edit || !hfMovablePictureFrag(frag)) return frag
@@ -32,7 +34,15 @@ export function patchHfPicturesXml(partXml: string, edits: Record<number, HfPict
       out = setAnchorPosition(out, 'V', edit.posYPx)
     }
     return resizeAnchoredPictureXml(out, edit.widthPx, edit.heightPx)
-  })
+  }
+  const parts: string[] = []
+  let from = 0
+  for (const match of hfDrawingMatches(partXml)) {
+    parts.push(partXml.slice(from, match.index), rewrite(match[0]))
+    from = match.index + match[0].length
+  }
+  parts.push(partXml.slice(from))
+  return parts.join('')
 }
 
 /**
