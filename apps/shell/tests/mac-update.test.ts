@@ -338,7 +338,7 @@ describe('startMacSwap', () => {
         '/Users/me/Library/Application Support/IeumOffice/update-log.txt',
         '/usr/bin/open',
       ],
-      { detached: true, stdio: 'ignore' },
+      { detached: true, stdio: 'ignore', env: { PATH: '/usr/bin:/bin:/usr/sbin:/sbin' } },
     )
     expect(child.unref).toHaveBeenCalled()
     // a late spawn error does not become an uncaught exception

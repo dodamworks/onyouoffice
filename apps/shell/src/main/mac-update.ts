@@ -1,3 +1,4 @@
+// Modified by Onyou Office: keep the update helper free of inherited shell environment.
 import { execFile, spawn } from 'node:child_process'
 import { mkdirSync, readdirSync, rmSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
@@ -235,7 +236,7 @@ export function startMacSwap(options: {
         logFile,
         opener,
       ],
-      { detached: true, stdio: 'ignore' },
+      { detached: true, stdio: 'ignore', env: { PATH: '/usr/bin:/bin:/usr/sbin:/sbin' } },
     )
     // a failed start is reported here, never as an uncaught error event
     child.on('error', () => {})

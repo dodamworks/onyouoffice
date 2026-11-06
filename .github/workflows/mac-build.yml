@@ -153,7 +153,7 @@ jobs:
           release=apps/shell/release
           version=$(node -p "require('./apps/shell/package.json').version")
           id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$release/mac-arm64/Onyou Office.app/Contents/Info.plist")
-          for name in "OnyouOffice-$version-arm64-mac.zip" "OnyouOffice-$version-mac.zip"; do
+          for name in "Onyou Office-$version-arm64-mac.zip" "Onyou Office-$version-mac.zip"; do
             test -s "$release/$name"
             out="$RUNNER_TEMP/unzip-$name"
             rm -rf "$out"
@@ -181,7 +181,7 @@ jobs:
           rm -rf "$apps_dir"
           mkdir -p "$apps_dir/.Onyou Office.app.update"
           ditto "$release/mac/Onyou Office.app" "$apps_dir/Onyou Office.app"
-          ditto -x -k "$release/OnyouOffice-$version-arm64-mac.zip" "$apps_dir/.Onyou Office.app.update"
+          ditto -x -k "$release/Onyou Office-$version-arm64-mac.zip" "$apps_dir/.Onyou Office.app.update"
           true & gone=$!
           wait "$gone"
           /bin/sh -c "$(cat "$RUNNER_TEMP/swap.sh")" onyouoffice-update "$gone" \

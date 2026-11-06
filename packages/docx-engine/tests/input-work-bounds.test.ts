@@ -17,7 +17,7 @@ describe('hostile input work bounds', () => {
   it.each([
     '<!DOCTYPE Relationships SYSTEM "https://example.invalid/rels.dtd">',
     '<!DOCTYPE Relationships [<!ENTITY literal "quoted ] > [">]>',
-    '<!DOCTYPE Relationships [<!-- brackets [ ] and quotes \" are comment text -->]>',
+    '<!DOCTYPE Relationships [<!-- brackets [ ] and quotes " are comment text -->]>',
   ])('preserves relationship interpretation and original bytes with %s', async (doctype) => {
     const xml = `${doctype}<Relationships><Relationship Id="rId1" Type="image" Target="media/x.png"/></Relationships>`
     const zip = new JSZip().file('_rels/.rels', xml)
