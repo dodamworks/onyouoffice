@@ -1,6 +1,13 @@
 // Modified by Onyou Office: scan header/footer drawing slices in linear time.
 import JSZip from 'jszip'
-import { hfDrawingMatches } from './xml-slices'
+import {
+  hfDrawingMatches,
+  openingTagMatch,
+  openingTagMatches,
+  pairedContents,
+  attributeMatch,
+  firstMatch,
+} from './xml-slices'
 import type { JSZipObject } from 'jszip'
 import { LAZY_MEDIA_PLACEHOLDER_BYTES, lazyMediaHashOf, lazyMediaUrl } from './lazy-media'
 import { parseCustGeom } from '@genoffice/pptx-engine/custgeom'
@@ -8104,7 +8111,7 @@ function rectFrac(tag: string, name: string): number {
  * unrendered.
  */
 function picBorderOf(xml: string): { color: string; widthPt: number } | undefined {
-  const picSpPr = /<pic:spPr[^>]*>([\s\S]*?)<\/pic:spPr>/.exec(xml)?.[1]
+  const picSpPr = pairedContents(xml, '<pic:spPr', '</pic:spPr>')
   const picLn = picSpPr ? /<a:ln\b[^>]*>[\s\S]*?<\/a:ln>/.exec(picSpPr)?.[0] : undefined
   if (!picLn || /<a:noFill\s*\/>/.test(picLn)) return undefined
   const color = /<a:solidFill>\s*<a:srgbClr val="([0-9A-Fa-f]{6})"/.exec(picLn)?.[1]
@@ -8169,9 +8176,50 @@ function groupPictureLayers(
   return layers
 }
 
+/** Inspect each opening tag and alignment token once, including missing-close fragments. */
+function positionHasAlign(
+  xml: string,
+  axis: 'H' | 'V',
+  align: string,
+  relative?: 'line' | 'column',
+  immediate = false,
+): boolean {
+  const token = `<wp:align>${align}</wp:align>`
+  const closing = `</wp:position${axis}>`
+  let alignAt = xml.indexOf(token)
+  let closeAt = xml.indexOf(closing)
+  for (const tag of openingTagMatches(xml, `<wp:position${axis}`)) {
+    const start = tag.index + tag[0]!.length
+    if (alignAt >= 0 && alignAt < start) alignAt = xml.indexOf(token, start)
+    if (alignAt < 0) return false
+    if (closeAt >= 0 && closeAt < start) closeAt = xml.indexOf(closing, start)
+    if (closeAt >= 0 && alignAt >= closeAt) continue
+    if (relative === 'line' && !/relativeFrom\s*=\s*["']line["']/.test(tag[0]!)) continue
+    if (relative === 'column' && !/relativeFrom\s*=\s*["']column["']/.test(tag[0]!)) continue
+    if (immediate) {
+      let at = start
+      while (at < alignAt && /\s/.test(xml[at]!)) at++
+      if (at !== alignAt) continue
+    }
+    return true
+  }
+  return false
+}
+
+function wrapTextMatch(xml: string): RegExpExecArray | null {
+  let first: RegExpExecArray | null = null
+  for (const name of ['Square', 'Tight', 'Through']) {
+    const match = attributeMatch(xml, `<wp:wrap${name}`, /wrapText\s*=\s*["']([^"']+)["']/g)
+    first = firstMatch(first, match) as RegExpExecArray | null
+  }
+  return first
+}
+
 /** rotation/flip live on the pic's own xfrm (an anchored textbox sibling has its own wps xfrm) */
 function picTransformOf(xml: string): { rotDeg?: number; flipH?: boolean; flipV?: boolean } {
-  const picXfrm = /<pic:spPr[^>]*>[\s\S]*?<a:xfrm([^>]*)>/.exec(xml)?.[1]
+  const spPr = openingTagMatch(xml, '<pic:spPr')
+  const xfrm = spPr && openingTagMatch(xml, '<a:xfrm', { from: spPr.index + spPr[0]!.length })
+  const picXfrm = xfrm?.[0]?.slice('<a:xfrm'.length, -1)
   if (!picXfrm) return {}
   const out: { rotDeg?: number; flipH?: boolean; flipV?: boolean } = {}
   const rot = parseInt(/\brot="(-?\d+)"/.exec(picXfrm)?.[1] ?? '', 10)
@@ -8222,12 +8270,7 @@ export function runPictureAnchorOf(drawingXml: string): RunPictureAnchor {
   if (meta.imageWrapDistRightEmu !== undefined) anchor.wrapDistRightEmu = meta.imageWrapDistRightEmu
   // Word centers the object on the anchor line (tdf#162551: the picture
   // juts above the line rather than hanging below it)
-  if (
-    /<wp:positionV[^>]*relativeFrom\s*=\s*["']line["'][^>]*>\s*<wp:align>center<\/wp:align>/.test(
-      drawingXml,
-    )
-  )
-    anchor.lineCenterV = true
+  if (positionHasAlign(drawingXml, 'V', 'center', 'line', true)) anchor.lineCenterV = true
   if (meta.imageNoOverlap) anchor.noOverlap = true
   return anchor
 }
@@ -8333,7 +8376,7 @@ function imageMeta(xml: string, ctx?: BuildContext): ImageMeta {
       if (g.indentLeftTwips && g.indentLeftTwips > 0) meta.imageIndentLeftTwips = g.indentLeftTwips
     }
   }
-  const extent = /<wp:extent[^>]*\/?>/.exec(xml)?.[0]
+  const extent = openingTagMatch(xml, '<wp:extent')?.[0]
   if (extent) {
     const cx = parseInt(/\bcx\s*=\s*["'](\d+)["']/.exec(extent)?.[1] ?? '', 10)
     const cy = parseInt(/\bcy\s*=\s*["'](\d+)["']/.exec(extent)?.[1] ?? '', 10)
@@ -8359,7 +8402,10 @@ function imageMeta(xml: string, ctx?: BuildContext): ImageMeta {
   if (border) meta.imageBorder = border
   // source crop (a:srcRect) and fill placement (a:stretch/a:fillRect): applied
   // by the renderer as an overflow-hidden window over a scaled/offset image
-  const srcRect = /<a:srcRect\s[^>]*\/>/.exec(xml)?.[0]
+  const srcRect = openingTagMatch(xml, '<a:srcRect', {
+    requireWhitespace: true,
+    selfClosingOnly: true,
+  })?.[0]
   if (srcRect) {
     const crop = {
       l: rectFrac(srcRect, 'l'),
@@ -8381,7 +8427,7 @@ function imageMeta(xml: string, ctx?: BuildContext): ImageMeta {
     }
     if (fr.l || fr.t || fr.r || fr.b) meta.imageFillRect = fr
   }
-  const anchor = /<wp:anchor[^>]*>/.exec(xml)?.[0]
+  const anchor = openingTagMatch(xml, '<wp:anchor')?.[0]
   if (anchor) {
     const wrapDistance = (attr: string): number | undefined => {
       const value = Number(new RegExp(`\\b${attr}\\s*=\\s*["'](\\d+)["']`).exec(anchor)?.[1] ?? NaN)
@@ -8410,25 +8456,21 @@ function imageMeta(xml: string, ctx?: BuildContext): ImageMeta {
     else if (/<wp:wrapTopAndBottom/.test(xml)) meta.imageWrap = 'topBottom'
     else if (/<wp:wrap(Square|Tight|Through)/.test(xml)) {
       const kind = /<wp:wrap(Square|Tight|Through)/.exec(xml)![1]
-      const alignRight =
-        /<wp:positionH[^>]*>(?:(?!<\/wp:positionH>)[\s\S])*?<wp:align>right<\/wp:align>/.test(xml)
+      const alignRight = positionHasAlign(xml, 'H', 'right')
       // column-relative only: margin/page align pairs are the position-gallery
       // presets and keep their square wrap (imagePosH/V round-trip)
-      const alignCenter =
-        /<wp:positionH[^>]*relativeFrom\s*=\s*["']column["'][^>]*>(?:(?!<\/wp:positionH>)[\s\S])*?<wp:align>center<\/wp:align>/.test(
-          xml,
-        )
+      const alignCenter = positionHasAlign(xml, 'H', 'center', 'column')
       // wrapText names the side the text goes on — the object floats opposite;
       // with bothSides, the object's CENTER past mid-body (~4680 twips usable
       // half on Letter/A4) means it hugs the right side: a left-edge test
       // misclassifies wide pictures whose X sits before the midline but whose
       // body fills the right half (public issue #118)
-      const wrapText = /<wp:wrap(?:Square|Tight|Through)[^>]*wrapText\s*=\s*["']([^"']+)["']/.exec(
-        xml,
-      )?.[1]
-      const posH = /<wp:positionH[^>]*>([\s\S]*?)<\/wp:positionH>/.exec(xml)?.[1] ?? ''
+      const wrapText = wrapTextMatch(xml)?.[1]
+      const posH = pairedContents(xml, '<wp:positionH', '</wp:positionH>') ?? ''
       const offX = Number(/<wp:posOffset>(-?\d+)<\/wp:posOffset>/.exec(posH)?.[1] ?? NaN)
-      const extentCx = Number(/<wp:extent[^>]*\bcx\s*=\s*["'](\d+)["']/.exec(xml)?.[1] ?? NaN)
+      const extentCx = Number(
+        attributeMatch(xml, '<wp:extent', /\bcx\s*=\s*["'](\d+)["']/g)?.[1] ?? NaN,
+      )
       const centerX = offX + (Number.isFinite(extentCx) ? extentCx / 2 : 0)
       const side =
         alignRight || wrapText === 'left' || (wrapText !== 'right' && centerX > 4680 * 635)
@@ -8445,15 +8487,15 @@ function imageMeta(xml: string, ctx?: BuildContext): ImageMeta {
             : `square-${side}`
     } else meta.imageWrap = 'front'
     // Parse numeric posOffset for free-position floating images
-    const posHBody = /<wp:positionH[^>]*>([\s\S]*?)<\/wp:positionH>/.exec(xml)?.[1] ?? ''
-    const posVBody = /<wp:positionV[^>]*>([\s\S]*?)<\/wp:positionV>/.exec(xml)?.[1] ?? ''
+    const posHBody = pairedContents(xml, '<wp:positionH', '</wp:positionH>') ?? ''
+    const posVBody = pairedContents(xml, '<wp:positionV', '</wp:positionV>') ?? ''
     const offsetX = /<wp:posOffset>(-?\d+)<\/wp:posOffset>/.exec(posHBody)?.[1]
     const offsetY = /<wp:posOffset>(-?\d+)<\/wp:posOffset>/.exec(posVBody)?.[1]
     if (offsetX !== undefined) meta.imageOffsetXEmu = parseInt(offsetX, 10)
     if (offsetY !== undefined) meta.imageOffsetYEmu = parseInt(offsetY, 10)
     // margin-relative wp:align pair = Word position-gallery preset
-    const posHFrom = /<wp:positionH[^>]*relativeFrom="([^"]+)"/.exec(xml)?.[1]
-    const posVFrom = /<wp:positionV[^>]*relativeFrom="([^"]+)"/.exec(xml)?.[1]
+    const posHFrom = attributeMatch(xml, '<wp:positionH', /relativeFrom="([^"]+)"/g)?.[1]
+    const posVFrom = attributeMatch(xml, '<wp:positionV', /relativeFrom="([^"]+)"/g)?.[1]
     const alignH = /<wp:align>(left|center|right)<\/wp:align>/.exec(posHBody)?.[1]
     const alignV = /<wp:align>(top|center|bottom)<\/wp:align>/.exec(posVBody)?.[1]
     // line-relative offsets measure from the anchor line, paragraph-relative
@@ -9160,7 +9202,7 @@ async function extractChart(xml: string, ctx: BuildContext): Promise<ChartDispla
     // speaks classic c: syntax, so keeping them out makes edits no-ops
     // instead of corruption
     if (!partXml.includes('<cx:chartSpace')) ctx.chartParts[path] = partXml
-    const extentTag = /<wp:extent[^>]*\/?>/.exec(xml)?.[0] ?? ''
+    const extentTag = openingTagMatch(xml, '<wp:extent')?.[0] ?? ''
     const cx = parseInt(/\bcx\s*=\s*["'](\d+)["']/.exec(extentTag)?.[1] ?? '', 10)
     const cy = parseInt(/\bcy\s*=\s*["'](\d+)["']/.exec(extentTag)?.[1] ?? '', 10)
     if (Number.isFinite(cx) && cx > 0) display.widthPx = Math.round(cx / EMU_PER_PX)

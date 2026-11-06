@@ -1,3 +1,6 @@
+// Modified by Onyou Office: preserve raw revision tokens with bounded scanning.
+import { revisionTagMatches } from './xml-slices'
+
 /**
  * Accept / reject tracked changes in a raw WordprocessingML part (headers,
  * footers, footnotes, endnotes): the parts the editor never loads as nodes.
@@ -49,14 +52,10 @@ interface El {
   parent: number
 }
 
-const TAG_RE =
-  /<(\/?)([A-Za-z][\w.-]*:?[\w.-]*)((?:\s+[^>]*?)?)(\/?)>|<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<\?[\s\S]*?\?>/g
-
 function scan(xml: string): El[] {
   const out: El[] = []
   const stack: number[] = []
-  TAG_RE.lastIndex = 0
-  for (let m = TAG_RE.exec(xml); m; m = TAG_RE.exec(xml)) {
+  for (const m of revisionTagMatches(xml)) {
     if (m[2] === undefined) continue
     const [whole, close, name, attrs, self] = m
     const start = m.index

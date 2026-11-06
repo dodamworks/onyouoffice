@@ -1,3 +1,5 @@
+// Modified by Onyou Office: inspect watermark attributes within individual raw tags.
+import { attributeMatch } from './xml-slices'
 import {
   vmlColorHex,
   vmlFloatAnchor,
@@ -24,7 +26,7 @@ export const WATERMARK_NS =
 /** read the watermark text from a header part; null when it has none */
 export function readWatermarkText(headerXml: string): string | null {
   if (!headerXml.includes('<v:textpath')) return null
-  const m = /<v:textpath[^>]*\bstring="([^"]*)"/.exec(headerXml)
+  const m = attributeMatch(headerXml, '<v:textpath', /\bstring="([^"]*)"/g)
   if (!m) return null
   const text = m[1]
     .replace(/&lt;/g, '<')
@@ -227,7 +229,7 @@ export function readPictureWatermark(headerXml: string): PictureWatermarkInfo | 
     const shape = m[0]
     if (!PICTURE_WATERMARK_ID.test(shape) && !isWatermarkChild({ name: 'w:p', xml: shape }))
       continue
-    const rId = /<v:imagedata[^>]*\br:id\s*=\s*(["'])([^"']+)\1/.exec(shape)?.[2]
+    const rId = attributeMatch(shape, '<v:imagedata', /\br:id\s*=\s*(["'])([^"']+)\1/g)?.[2]
     if (!rId) continue
     const style = /\sstyle="([^"]*)"/.exec(shape)?.[1] ?? ''
     return {

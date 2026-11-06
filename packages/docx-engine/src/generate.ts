@@ -1,3 +1,11 @@
+// Modified by Onyou Office: match wrap slices without repeated tail scans.
+import {
+  openingTagMatch,
+  openingTagMatches,
+  pairedMatch,
+  replaceMatches,
+  type XmlMatch,
+} from './xml-slices'
 import { sdtCheckboxGlyphs, sdtCheckboxIsChecked, syncSdtCheckbox } from './checkbox-control'
 import type {
   CellMargins,
@@ -168,8 +176,54 @@ export function patchImageParagraphXml(xml: string, patch: ImagePatch): string {
   return out
 }
 
-const WRAP_ELEMENT_RE =
-  /<wp:wrapNone\s*\/>|<wp:wrapSquare[^>]*\/>|<wp:wrapTight[^>]*\/>|<wp:wrapThrough[^>]*\/>|<wp:wrapTopAndBottom\s*\/>|<wp:wrapSquare[\s\S]*?<\/wp:wrapSquare>|<wp:wrapTight[\s\S]*?<\/wp:wrapTight>|<wp:wrapThrough[\s\S]*?<\/wp:wrapThrough>|<wp:wrapTopAndBottom[\s\S]*?<\/wp:wrapTopAndBottom>/g
+function* wrapMatches(xml: string): Generator<XmlMatch> {
+  const prefixes = /<wp:wrap(None|Square|Tight|Through|TopAndBottom)/g
+  const closeAt = new Map<string, number>()
+  let gt = xml.indexOf('>')
+  let prefix: RegExpExecArray | null
+  while ((prefix = prefixes.exec(xml))) {
+    const kind = prefix[1]!
+    const after = prefixes.lastIndex
+    if (gt >= 0 && gt < after) gt = xml.indexOf('>', after)
+    if (gt < 0) return
+    let end = -1
+    if (kind === 'None' || kind === 'TopAndBottom') {
+      let at = after
+      while (at < xml.length && /\s/.test(xml[at]!)) at++
+      if (xml.startsWith('/>', at)) end = at + 2
+    } else if (xml[gt - 1] === '/') {
+      end = gt + 1
+    }
+    if (end < 0 && kind !== 'None') {
+      const closing = `</wp:wrap${kind}>`
+      let at = closeAt.get(kind)
+      if (at === undefined || (at >= 0 && at < after)) {
+        at = xml.indexOf(closing, after)
+        closeAt.set(kind, at)
+      }
+      if (at >= 0) end = at + closing.length
+    }
+    if (end >= 0) {
+      yield Object.assign([xml.slice(prefix.index, end)], { index: prefix.index, input: xml })
+      prefixes.lastIndex = end
+    }
+  }
+}
+
+function stripWrapElements(xml: string): string {
+  return replaceMatches(xml, wrapMatches(xml), () => '')
+}
+
+function stripImagePosition(xml: string): string {
+  let out = xml
+  const simple = openingTagMatch(out, '<wp:simplePos', { selfClosingOnly: true })
+  if (simple) out = out.replace(simple[0]!, '')
+  for (const axis of ['H', 'V']) {
+    const position = pairedMatch(out, `<wp:position${axis}`, `</wp:position${axis}>`)
+    if (position) out = out.replace(position[0]!, '')
+  }
+  return stripWrapElements(out)
+}
 
 /**
  * Re-encode ONLY the stacking rank of an existing wp:anchor as Word's
@@ -200,12 +254,8 @@ export function applyImageWrap(
   const hasAnchor = /<wp:anchor[\s>]/.test(xml)
   // Original wrapTight/wrapThrough bytes (including wp:wrapPolygon) — reused as a whole
   // when the target is still the same wrap kind
-  const existingWrap = xml.match(WRAP_ELEMENT_RE)?.[0]
-  let out = xml
-    .replace(/<wp:simplePos[^>]*\/>/, '')
-    .replace(/<wp:positionH[\s\S]*?<\/wp:positionH>/, '')
-    .replace(/<wp:positionV[\s\S]*?<\/wp:positionV>/, '')
-    .replace(WRAP_ELEMENT_RE, '')
+  const existingWrap = wrapMatches(xml).next().value?.[0]
+  let out = stripImagePosition(xml)
 
   if (!wrap) {
     if (!hasAnchor) return xml
@@ -262,7 +312,8 @@ export function applyImageWrap(
   } else {
     out = out.replace(/<wp:inline[^>]*>/, anchorOpen).replace(/<\/wp:inline>/, '</wp:anchor>')
   }
-  out = out.replace(/(<wp:anchor[^>]*>)/, `$1${position}`)
+  const placedAnchor = openingTagMatch(out, '<wp:anchor')
+  if (placedAnchor) out = out.replace(placedAnchor[0]!, () => placedAnchor[0]! + position)
   // wrap element sits between extent/effectExtent and docPr in CT_Anchor order
   if (/<wp:docPr/.test(out)) return out.replace(/<wp:docPr/, `${wrapElement}<wp:docPr`)
   return out.replace(/<a:graphic[\s>]/, (m) => `${wrapElement}${m}`)
@@ -339,11 +390,7 @@ export function applyShapeWrapAt(
   let next: string
   if (wrap === null) {
     if (!hasAnchor) return paragraphXml
-    next = drawing
-      .replace(/<wp:simplePos[^>]*\/>/, '')
-      .replace(/<wp:positionH[\s\S]*?<\/wp:positionH>/, '')
-      .replace(/<wp:positionV[\s\S]*?<\/wp:positionV>/, '')
-      .replace(WRAP_ELEMENT_RE, '')
+    next = stripImagePosition(drawing)
       .replace(/<wp:anchor[^>]*>/, '<wp:inline distT="0" distB="0" distL="0" distR="0">')
       .replace(/<\/wp:anchor>/, '</wp:inline>')
   } else if (!hasAnchor) {
@@ -367,13 +414,11 @@ export function swapAnchorWrap(drawingXml: string, wrap: ImageWrap, zOrder?: num
       : wrap === 'topBottom'
         ? '<wp:wrapTopAndBottom/>'
         : '<wp:wrapSquare wrapText="bothSides"/>'
-  let next = drawingXml
-    .replace(WRAP_ELEMENT_RE, '')
-    .replace(/<wp:anchor[^>]*>/, (tag) =>
-      tag.includes('behindDoc=')
-        ? tag.replace(/behindDoc="[^"]*"/, `behindDoc="${behind}"`)
-        : tag.replace(/<wp:anchor/, `<wp:anchor behindDoc="${behind}"`),
-    )
+  let next = stripWrapElements(drawingXml).replace(/<wp:anchor[^>]*>/, (tag) =>
+    tag.includes('behindDoc=')
+      ? tag.replace(/behindDoc="[^"]*"/, `behindDoc="${behind}"`)
+      : tag.replace(/<wp:anchor/, `<wp:anchor behindDoc="${behind}"`),
+  )
   if (zOrder !== undefined) next = setAnchorRank(next, zOrder)
   return /<wp:docPr/.test(next)
     ? next.replace(/<wp:docPr/, `${wrapElement}<wp:docPr`)
@@ -2907,7 +2952,7 @@ function resizeDrawingExtents(xml: string, widthPx: number, heightPx: number): s
   const ext = (tag: string) =>
     tag.replace(/\bcx="\d+"/, `cx="${cx}"`).replace(/\bcy="\d+"/, `cy="${cy}"`)
   let out = xml.replace(/<wp:extent\b[^>]*>/, ext)
-  const pic = /<pic:spPr[\s>][\s\S]*?<\/pic:spPr>/.exec(out)
+  const pic = pairedMatch(out, '<pic:spPr', '</pic:spPr>', { strictOpening: true })
   if (pic) out = out.replace(pic[0], pic[0].replace(/<a:ext\b[^>]*>/, ext))
   return out
 }
@@ -3361,7 +3406,14 @@ function runFragmentXml(run: Run, insideLink: boolean): string {
       // ☐↔☒ edit must land in w:checked or Word keeps the old state.
       const syncedField = (checked: boolean): string => {
         const val = `<w:checked w:val="${checked ? '1' : '0'}"/>`
-        let begin = run.fldBeginXml!.replace(/<w:checked(?:\s[^>]*)?\/>/g, '')
+        let begin = replaceMatches(
+          run.fldBeginXml!,
+          openingTagMatches(run.fldBeginXml!, '<w:checked', {
+            selfClosingOnly: true,
+            strictBoundary: true,
+          }),
+          () => '',
+        )
         if (begin.includes('</w:checkBox>'))
           begin = begin.replace('</w:checkBox>', `${val}</w:checkBox>`)
         else

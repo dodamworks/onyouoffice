@@ -1,3 +1,13 @@
+// Modified by Onyou Office: bound raw XML searches while retaining document ids and unedited bytes.
+import {
+  attributeMatch,
+  attributeMatches,
+  elementMatches,
+  openingTagMatch,
+  openingTagMatches,
+  removeSpacePrefixedAttribute,
+  replaceMatches,
+} from './xml-slices'
 import JSZip from 'jszip'
 import {
   applyRevisionResolutions,
@@ -144,10 +154,10 @@ const RELATIONSHIP_TAG = /<Relationship\b[^>]*\/>/g
  * an id read as "absent" is worse than no read at all, because a new picture
  * then mints one that is already in use.
  */
-const DRAWING_DOCPR_ID = /<wp:docPr\s[^>]*?\bid\s*=\s*(["'])(\d+)\1/g
+const DRAWING_DOCPR_ID = /\bid\s*=\s*(["'])(\d+)\1/g
 
 /** w:id of a bookmark endpoint, either quote style */
-const BOOKMARK_ID = /<w:bookmark(?:Start|End)\s[^>]*?\bid\s*=\s*(["'])(\d+)\1/g
+const BOOKMARK_ID = /\bid\s*=\s*(["'])(\d+)\1/g
 
 /** wp:docPr/@id of a newly embedded picture is DOCPR_ID_BASE + its sequence */
 const DOCPR_ID_BASE = 9000
@@ -1288,7 +1298,7 @@ export async function saveDocx(
   for (const edit of options.sectionHf ?? []) {
     const block = parsed.blocks.find((b) => b.docxIndex === edit.lastBlockIndex)
     const sectPr =
-      block?.originalXml?.match(/<w:sectPr[^>]*\/>|<w:sectPr[\s\S]*?<\/w:sectPr>/)?.[0] ?? ''
+      elementMatches(block?.originalXml ?? '', '<w:sectPr', '</w:sectPr>').next().value?.[0] ?? ''
     const refs = hfReferenceTags(sectPr, edit.kind)
     const variant = edit.variant ?? 'default'
     // non-schema w:type="odd" and untyped references count as default (mirrors parse)
@@ -1924,9 +1934,19 @@ export async function saveDocx(
   // (the trailing sectPr already received them above and is skipped by the
   // lookahead; sections that carry their own references keep them)
   if (options.hfAllSections && hfRefTags.length > 0) {
-    newDocumentXml = newDocumentXml.replace(
-      /(<w:sectPr(?:\s[^>]*)?>)(?!<w:headerReference|<w:footerReference)/g,
-      `$1${hfRefTags.join('')}`,
+    newDocumentXml = replaceMatches(
+      newDocumentXml,
+      openingTagMatches(newDocumentXml, '<w:sectPr', { strictBoundary: true }),
+      (tag, match) => {
+        const end = match.index + tag.length
+        if (
+          tag === '<w:sectPr/>' ||
+          newDocumentXml.startsWith('<w:headerReference', end) ||
+          newDocumentXml.startsWith('<w:footerReference', end)
+        )
+          return tag
+        return tag + hfRefTags.join('')
+      },
     )
   }
 
@@ -1936,7 +1956,10 @@ export async function saveDocx(
     const inherited = new Map<string, string>()
     const touched = new Set<string>()
     const sections = [
-      ...newDocumentXml.matchAll(/<w:sectPr\b[^>]*\/>|<w:sectPr\b[^>]*>[\s\S]*?<\/w:sectPr>/g),
+      ...elementMatches(newDocumentXml, '<w:sectPr', '</w:sectPr>', {
+        openingTag: true,
+        wordBoundary: true,
+      }),
     ]
     const replacements: string[] = []
     const even = options.evenAndOddHeaders ?? parsed.evenAndOddHeaders ?? false
@@ -1947,7 +1970,7 @@ export async function saveDocx(
         const id = hfReferenceRId(ref)
         if (id) inherited.set(type === 'odd' || type === undefined ? 'default' : type, id)
       }
-      const titleTag = /<w:titlePg\b[^>]*\/?\s*>/.exec(sectionXml)?.[0]
+      const titleTag = openingTagMatch(sectionXml, '<w:titlePg', { wordBoundary: true })?.[0]
       const first = titleTag && !/\bw:val\s*=\s*["'](?:0|false|off)["']/.test(titleTag)
       const variants = ['default', ...(first ? ['first'] : []), ...(even ? ['even'] : [])]
       for (const variant of variants) {
@@ -2010,7 +2033,10 @@ export async function saveDocx(
 
   // editor-generated formulas need the math namespace on the document root;
   // docx produced by non-Word generators may not declare it
-  if (newDocumentXml.includes('<m:') && !/<w:document[^>]*xmlns:m=/.test(newDocumentXml)) {
+  if (
+    newDocumentXml.includes('<m:') &&
+    !attributeMatch(newDocumentXml, '<w:document', /xmlns:m=/g)
+  ) {
     newDocumentXml = newDocumentXml.replace(
       /<w:document /,
       '<w:document xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" ',
@@ -2078,7 +2104,7 @@ export async function saveDocx(
 
   if (
     newDocumentXml.includes(' w16du:dateUtc=') &&
-    !/<w:document[^>]*xmlns:w16du=/.test(newDocumentXml)
+    !attributeMatch(newDocumentXml, '<w:document', /xmlns:w16du=/g)
   ) {
     newDocumentXml = newDocumentXml.replace(
       /<w:document /,
@@ -2505,7 +2531,7 @@ function withWatermarkNs(openTag: string): string {
  * null when the root tag cannot be recognized so the caller falls back to a full rebuild.
  */
 function patchWatermarkInPart(originalXml: string, watermarkXml: string): string | null {
-  const open = /<w:hdr[^>]*>/.exec(originalXml)?.[0]
+  const open = openingTagMatch(originalXml, '<w:hdr')?.[0]
   if (!open) return null
   const openIdx = originalXml.indexOf(open)
   const closeIdx = originalXml.lastIndexOf('</w:hdr>')
@@ -3171,12 +3197,18 @@ function applyPageColor(documentXml: string, color: string | null): string {
   // w:background children; CT_Document admits one and Word then reports the
   // file as corrupt. Strip the pair whole, VML child included, and re-emit the
   // canonical self-closing form, for the same reason stripElement() does.
-  let xml = documentXml.replace(
-    /<w:background[^>]*\/>|<w:background[^>]*>[\s\S]*?<\/w:background>/g,
-    '',
+  let xml = replaceMatches(
+    documentXml,
+    elementMatches(documentXml, '<w:background', '</w:background>', { openingTag: true }),
+    () => '',
   )
   if (color) {
-    xml = xml.replace(/(<w:document[^>]*>)/, `$1<w:background w:color="${escapeXmlAttr(color)}"/>`)
+    const root = openingTagMatch(xml, '<w:document')
+    if (root)
+      xml = xml.replace(
+        root[0]!,
+        () => `${root[0]}<w:background w:color="${escapeXmlAttr(color)}"/>`,
+      )
   }
   return xml
 }
@@ -3208,7 +3240,11 @@ function nextImageSeq(zip: JSZip): number {
 function maxDocPrId(documentXml: string): number {
   let max = 0
   // quote-agnostic: a writer that single-quotes its attributes still owns those ids
-  for (const m of documentXml.matchAll(DRAWING_DOCPR_ID)) max = Math.max(max, parseInt(m[2], 10))
+  for (const m of attributeMatches(documentXml, '<wp:docPr', DRAWING_DOCPR_ID, {
+    last: false,
+    requireWhitespace: true,
+  }))
+    max = Math.max(max, parseInt(m[2], 10))
   return max
 }
 
@@ -3290,7 +3326,30 @@ function fillRevisionIds(xml: string, allocate: () => string): string {
 function maxBookmarkId(documentXml: string): number {
   let max = 0
   // quote-agnostic, and the end tag carries the same id as its start
-  for (const m of documentXml.matchAll(BOOKMARK_ID)) max = Math.max(max, parseInt(m[2], 10))
+  const iterators = ['Start', 'End'].map((kind) =>
+    attributeMatches(documentXml, `<w:bookmark${kind}`, BOOKMARK_ID, {
+      last: false,
+      requireWhitespace: true,
+    }),
+  )
+  const pending = iterators.map((iterator) => iterator.next())
+  let from = 0
+  for (;;) {
+    let selected = -1
+    for (let i = 0; i < iterators.length; i++) {
+      while (!pending[i]!.done && pending[i]!.value.index < from) pending[i] = iterators[i]!.next()
+      if (
+        !pending[i]!.done &&
+        (selected < 0 || pending[i]!.value.index < pending[selected]!.value.index)
+      )
+        selected = i
+    }
+    if (selected < 0) break
+    const match = pending[selected]!.value as RegExpExecArray
+    max = Math.max(max, parseInt(match[2]!, 10))
+    from = match.index + match[0].length
+    pending[selected] = iterators[selected]!.next()
+  }
   return max
 }
 
@@ -3319,7 +3378,7 @@ function retargetImageBlip(xml: string, rId: string): string {
   // Word "insert and link" pictures carry both attributes: a surviving r:link
   // would let Word refresh from the old external file, discarding the swap
   if (/r:embed="/.test(tag))
-    tag = tag.replace(/r:embed="[^"]*"/, `r:embed="${rId}"`).replace(/\s+r:link="[^"]*"/, '')
+    tag = removeSpacePrefixedAttribute(tag.replace(/r:embed="[^"]*"/, `r:embed="${rId}"`), 'r:link')
   else if (/r:link="/.test(tag)) tag = tag.replace(/r:link="[^"]*"/, `r:embed="${rId}"`)
   else tag = tag.replace(/<a:blip\b/, `<a:blip r:embed="${rId}"`)
   return (
