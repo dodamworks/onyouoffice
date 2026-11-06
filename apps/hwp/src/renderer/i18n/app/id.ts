@@ -28,6 +28,11 @@ export const id = {
     'Tidak disimpan: dokumen ini memiliki pelacakan perubahan; menyimpannya di sini akan menghilangkannya dan dapat menghasilkan file yang tidak bisa dibuka Hancom Hangul.',
   savedTailsLost:
     'Tersimpan, tetapi sebagian halaman master atau memo dari file asli tidak dapat dipertahankan, dan Hancom Hangul mungkin tidak dapat membuka file yang disimpan. Buka untuk memeriksanya.',
+  missingFonts:
+    'Beberapa font tidak ada di PC ini, jadi tampil dengan font lain di layar: {fonts}. File yang disimpan tetap memakai nama font aslinya, dan teks tampil sebagaimana mestinya di PC yang memiliki font tersebut.',
+  missingFontTag: 'Tidak ada di PC ini',
+  missingFontHint:
+    'Font ini tidak ada di PC ini, jadi tampil dengan font lain di layar. File tetap menyimpan nama font ini.',
   dismiss: 'Tutup',
   aiOpenAssistant: 'Buka asisten AI',
   aiNewChat: 'Obrolan baru',
@@ -164,6 +169,9 @@ export const id = {
     'Instruksi penulisan ulang secara default hanya berlaku pada teks terpilih; klik untuk pratinjau',
   aiScopeClearTitle: 'Hapus cakupan pilihan',
   aiToolNotDone: 'Tidak dilakukan · {what}',
+  aiUnfinishedSteps: 'Langkah yang belum selesai: {n}',
+  aiUnfinishedNote:
+    'Langkah-langkah ini tidak diterapkan ke dokumen. Periksa bagian ini meskipun balasan mengatakan sudah selesai.',
   aiChangesTitle: 'Perubahan pada dokumen: {count}',
   aiClearMarks: 'Sembunyikan tanda',
   aiRevert: 'Batalkan perubahan ini',
@@ -253,4 +261,7 @@ export const id = {
   checkAskAi: 'Serahkan perbaikan ke AI',
   checkHandedOff: 'Permintaan ada di kotak AI. Periksa lalu kirim.',
   checkFixFailed: 'Tidak dapat mengubah.',
+  easyWordsLabel: 'Jelaskan dengan kata sederhana',
+  easyWordsPrompt:
+    'Jelaskan teks yang dipilih di bawah ini dalam bahasa Indonesia agar orang yang membutuhkan teks mudah dibaca juga bisa memahaminya. Gunakan kata sehari-hari dan kalimat pendek, dan jangan lewatkan satu pun fakta, angka, atau syarat. Jangan ubah dokumen.\n\nTeks yang dipilih:\n{text}',
 } satisfies Record<keyof typeof zh, string>

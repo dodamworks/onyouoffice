@@ -18,7 +18,7 @@ import {
   patchTargets,
   pluginHooks,
 } from '../scripts/rhwp-patches.mjs'
-import { AGENT_PLUGIN_ID } from '../studio-plugin/agent-plugin.mjs'
+import { AGENT_PLUGIN_ID, EASY_WORDS_COMMAND } from '../studio-plugin/agent-plugin.mjs'
 
 const require = createRequire(import.meta.url)
 
@@ -378,6 +378,76 @@ describe('rhwp memo menu patches', () => {
   })
 })
 
+describe('rhwp easy-words menu patch', () => {
+  // the ends of the two right-click lists and what follows them, as the pinned release has them
+  const menus = [
+    '  private getTableContextMenuItems(): ContextMenuItem[] {',
+    '    return [',
+    "      { type: 'command', commandId: 'table:formula', label: '계산식(F)...' },",
+    "      { type: 'separator' },",
+    "      { type: 'command', commandId: 'table:split', label: '표 나누기' },",
+    "      { type: 'command', commandId: 'table:delete' },",
+    '    ];',
+    '  }',
+    '',
+    '  /** 일반 컨텍스트 메뉴 항목 */',
+    '  private getDefaultContextMenuItems(): ContextMenuItem[] {',
+    '    return [',
+    "      { type: 'command', commandId: 'format:para-num-shape', label: '문단 번호 모양(N)...' },",
+    '    ];',
+    '  }',
+    '',
+    '  /** 특수 키 처리 (Backspace, Enter, 화살표, Ctrl+Z/Y) */',
+    '  private onKeyDown(e: KeyboardEvent): void {',
+  ].join('\n')
+  const item = `      { type: 'command', commandId: '${EASY_WORDS_COMMAND}' },`
+  const split = (patched: string) => {
+    const at = patched.indexOf('getDefaultContextMenuItems')
+    return { table: patched.slice(0, at), body: patched.slice(at) }
+  }
+
+  it("put the plugin's command in the body and table cell menus, once each, by its own name", () => {
+    const patched = applyPatch('studio-easy-words-context-menu', menus)
+    const { table, body } = split(patched)
+    for (const menu of [table, body]) expect(menu.split(item)).toHaveLength(2)
+    // no label of its own: the menu shows the label the app gives the command
+    expect(patched).not.toMatch(/ieum-easy-words', label/)
+    expect(body).toContain(`${item}\n    ];`)
+    expect(table).toContain(
+      `${item}\n      { type: 'separator' },\n      { type: 'command', commandId: 'table:split'`,
+    )
+  })
+
+  it('stand right after 메모 once the memo patch is in, as the build applies them', () => {
+    expect(STUDIO_PATCHES.indexOf('studio-easy-words-context-menu')).toBe(
+      STUDIO_PATCHES.indexOf('studio-memo-context-menu') + 1,
+    )
+    const patched = applyPatch(
+      'studio-easy-words-context-menu',
+      applyPatch('studio-memo-context-menu', menus),
+    )
+    const memo = "      { type: 'command', commandId: 'insert:comment' },"
+    const { table, body } = split(patched)
+    expect(body).toContain(`${memo}\n${item}\n    ];`)
+    expect(table).toContain(`${memo}\n${item}\n      { type: 'separator' },`)
+  })
+
+  it('keep CRLF sources working and fail when a list changed', () => {
+    const crlf = applyPatch('studio-easy-words-context-menu', menus.replaceAll('\n', '\r\n'))
+    expect(crlf.split(EASY_WORDS_COMMAND)).toHaveLength(3)
+    expect(crlf).not.toMatch(/[^\r]\n/)
+    expect(() =>
+      applyPatch('studio-easy-words-context-menu', menus.replace('표 나누기', '표 쪼개기')),
+    ).toThrow(/rhwp patch/)
+    expect(() =>
+      applyPatch(
+        'studio-easy-words-context-menu',
+        menus.replace('/** 특수 키 처리', '/** 키 처리'),
+      ),
+    ).toThrow(/rhwp patch/)
+  })
+})
+
 describe('rhwp memo delete-undo patches', () => {
   // the studio's text around the patches, as the pinned release has it
   const bridge = [
@@ -530,9 +600,11 @@ describe('rhwp PDF import options patch', () => {
 describe('rhwp PC fonts patch', () => {
   // the studio's text around the patch, as the pinned release has it
   const main = [
+    "import { loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';",
     'import {',
     '  clearStoredLocalFonts,',
     '  detectLocalFonts,',
+    '  getLocalFontRecords,',
     '  getLocalFontState,',
     '  loadStoredLocalFonts,',
     '  resolveLocalFont,',
@@ -546,13 +618,30 @@ describe('rhwp PC fonts patch', () => {
   const patched = applyPatch('studio-pc-fonts', main)
 
   it('looks at the PC once the studio listens for font changes, with its own detection', () => {
-    expect(patched).toContain(`import { refreshPcFonts } from '${PC_FONTS_MODULE}';`)
-    expect(patched).toContain('  getLocalFontRecords,\n')
+    expect(patched).toContain(
+      `import { installFontPresence, refreshPcFonts } from '${PC_FONTS_MODULE}';`,
+    )
+    // the studio imports the records itself; the patch does not import them a second time
+    expect(patched.match(/getLocalFontRecords,/g)).toHaveLength(1)
     const call = patched.indexOf('void refreshPcFonts({')
     expect(call).toBeGreaterThan(patched.indexOf('setupEventListeners();'))
     expect(call).toBeLessThan(patched.indexOf('setupModalFocusRestore();'))
     expect(patched).toContain('detect: () => detectLocalFonts({ force: true }),')
     expect(patched).toContain("eventBus.emit('local-fonts-changed'")
+  })
+
+  it('hands the font marks what the studio knows of the PC before it looks', () => {
+    expect(patched).toContain(
+      "import { getDetectedOSFonts, loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';",
+    )
+    const hand = patched.indexOf('installFontPresence({')
+    expect(hand).toBeGreaterThan(patched.indexOf('setupEventListeners();'))
+    expect(hand).toBeLessThan(patched.indexOf('void refreshPcFonts({'))
+    expect(patched).toContain(
+      '      records: () => getLocalFontRecords({ includeRegistered: true }),\n',
+    )
+    expect(patched).toContain('      detected: getDetectedOSFonts,\n')
+    expect(patched).toContain('      state: getLocalFontState,\n')
   })
 
   it('keeps CRLF sources working, fails when the text is gone, and is in the studio build', () => {
@@ -563,6 +652,45 @@ describe('rhwp PC fonts patch', () => {
       /studio-pc-fonts/,
     )
     expect(STUDIO_PATCHES).toContain('studio-pc-fonts')
+  })
+})
+
+describe('rhwp missing font marks patch', () => {
+  // the studio's text around the patch, as the pinned release has it
+  const toolbar = [
+    "import { getLocalFonts } from '@/core/local-fonts';",
+    '  ) {',
+    "    this.styleName = container.querySelector('#style-name')!;",
+    "    this.fontName = container.querySelector('#font-name')!;",
+    "    this.fontSize = container.querySelector('#font-size')!;",
+    '        button.textContent = entry.label;',
+    '        button.title = entry.label;',
+    "        button.addEventListener('click', () => this.selectFontMenuEntry(entry.value));",
+    '',
+  ].join('\n')
+  const patched = applyPatch('studio-missing-font-marks', toolbar)
+
+  it('watches the font box as soon as the toolbar has it', () => {
+    expect(patched).toContain(`import { markFontOption, watchFontBox } from '${PC_FONTS_MODULE}';`)
+    expect(patched).toContain(
+      "    this.fontName = container.querySelector('#font-name')!;\n    watchFontBox(this.fontName);\n",
+    )
+  })
+
+  it('marks each font menu entry after the studio named it', () => {
+    expect(patched).toContain(
+      '        button.title = entry.label;\n        markFontOption(button, entry.value);\n',
+    )
+  })
+
+  it('keeps CRLF sources working, fails when the text is gone, and is in the studio build', () => {
+    expect(applyPatch('studio-missing-font-marks', toolbar.replaceAll('\n', '\r\n'))).toContain(
+      'markFontOption(button, entry.value);\r\n',
+    )
+    expect(() =>
+      applyPatch('studio-missing-font-marks', toolbar.replace('button.title', 'x')),
+    ).toThrow(/studio-missing-font-marks/)
+    expect(STUDIO_PATCHES).toContain('studio-missing-font-marks')
   })
 })
 
@@ -684,6 +812,7 @@ describe('the studio source the build fetched', () => {
     'src/command/shortcut-map.ts',
     'src/ui/table-cell-props-dialog.ts',
     'src/ui/options-dialog.ts',
+    'src/ui/toolbar.ts',
     'src/command/registry.ts',
     'src/i18n/locales/ko.ts',
     'src/i18n/locales/en.ts',
@@ -698,6 +827,28 @@ describe('the studio source the build fetched', () => {
       expect(() => applyPatch(name, readFileSync(targets[0], 'utf8')), name).not.toThrow()
     }
   })
+
+  it.skipIf(!existsSync(studio))(
+    'puts 쉬운 말로 풀기 after 메모 in both menus, in build order',
+    () => {
+      const file = join(studio, 'src/engine/input-handler.ts')
+      let code = readFileSync(file, 'utf8')
+      for (const name of STUDIO_PATCHES) {
+        if (patchTargets(name, file)) code = applyPatch(name, code)
+      }
+      const lines = code.split(/\r?\n/)
+      const after = (method: string) => {
+        const from = lines.findIndex((line) =>
+          line.includes(`private ${method}(): ContextMenuItem[]`),
+        )
+        const memo = lines.indexOf("      { type: 'command', commandId: 'insert:comment' },", from)
+        return lines[memo + 1]
+      }
+      const item = `      { type: 'command', commandId: '${EASY_WORDS_COMMAND}' },`
+      expect(after('getTableContextMenuItems')).toBe(item)
+      expect(after('getDefaultContextMenuItems')).toBe(item)
+    },
+  )
 
   it.skipIf(!existsSync(studio))('has what the plugin and the Hangul keys reach into', () => {
     const read = (file: string) => {

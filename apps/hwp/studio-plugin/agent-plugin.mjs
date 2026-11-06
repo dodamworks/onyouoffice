@@ -14,6 +14,7 @@
  */
 
 import { installDialogTheme } from './dialog-theme.mjs'
+import { missingFonts, setMissingFontLabels, whenPcFontsSettled } from './pc-fonts.mjs'
 
 export const AGENT_PLUGIN_ID = 'ieum-agent'
 
@@ -35,6 +36,10 @@ const MAX_PROFILE_CELL_PARAGRAPHS = 4000
 const MAX_PROFILE_PICTURES = 100
 /** Characters of surrounding text shown with each listed match. */
 const CONTEXT_CHARS = 30
+/** Characters of the paragraph in front shown with each listed match (its heading, often). */
+const BEFORE_CHARS = 24
+/** Paragraphs looked back through for that one. */
+const BEFORE_LOOKBACK = 20
 /** Most history steps one undo call takes back. */
 const MAX_UNDO_STEPS = 200
 /** Most paragraphs one insert call adds. */
@@ -105,6 +110,22 @@ const FILE_MENU = [
 ]
 /** The command that reads what the user has selected in the editor. */
 const SELECTION_COMMAND = 'ext:ieum-selection'
+/**
+ * The command behind the editor's right-click item 쉬운 말로 풀기, which the
+ * studio-easy-words-context-menu patch puts into the body and table cell menus. The menu
+ * shows the command's label, which the app gives in its language (installEasyWords).
+ */
+export const EASY_WORDS_COMMAND = 'ext:ieum-easy-words'
+/**
+ * The event that item fires on the editor's window, with the selected text as its detail
+ * (`{ text }`): the app asks its AI panel to explain that text in plain words.
+ */
+export const EASY_WORDS_EVENT = 'ieum:easy-words'
+/**
+ * The event watchMissingFonts fires on the editor's window once the PC's fonts are known,
+ * with the fonts of the document that are not on this PC as its detail (`{ fonts }`).
+ */
+export const MISSING_FONTS_EVENT = 'ieum:missing-fonts'
 /** The command that selects the word under the caret (a double click in the page). */
 const WORD_COMMAND = 'ext:ieum-select-word'
 /** The command that selects the paragraph under the caret (a triple click in the page). */
@@ -1060,15 +1081,34 @@ function contextOf(doc, hit) {
   return count > 0 ? doc.getTextRange(hit.sec, hit.para, start, count) : ''
 }
 
+/**
+ * The nearest paragraph in front of a match, in its cell or section, that is not blank and
+ * does not hold the matched text: under several "○ " lines that is their heading, which
+ * tells the matches apart where the text around them is the same.
+ */
+function beforeOf(doc, hit) {
+  const box = containerOf(doc, hit)
+  const own = box.text(box.index, box.length(box.index))
+  const found = own.slice(hit.charOffset, hit.charOffset + hit.length)
+  for (let k = box.index - 1; k >= 0 && k >= box.index - BEFORE_LOOKBACK; k--) {
+    const text = squash(box.text(k, box.length(k)))
+    if (text && !text.includes(squash(found))) return clip(text, BEFORE_CHARS)
+  }
+  return ''
+}
+
 function describe(doc, hit, index) {
   const row = { occurrence: index + 1, inTable: Boolean(hit.cellContext) }
   if (!isReplaceable(hit)) return { ...row, replaceable: false }
+  let described = row
   try {
-    return { ...row, context: contextOf(doc, hit) }
+    described = { ...row, context: contextOf(doc, hit) }
+    const before = beforeOf(doc, hit)
+    if (before) described.before = before
   } catch {
     // the surrounding text is a courtesy; the match itself is still valid
-    return row
   }
+  return described
 }
 
 function searchAll(doc, find) {
@@ -4938,6 +4978,36 @@ export const agentPlugin = {
     }
 
     /**
+     * Whether paragraphs added after paragraph `k` of the body should be made in front of
+     * the one that follows it instead, so that they take that one's formatting. Paragraphs
+     * the AI adds are body text, and after a heading Enter would give them the heading's
+     * look: so where `k` stands out from the next paragraph (larger text, bold over plain,
+     * or an outline level over none), the next one is taken to be the body. Anything else
+     * (the same look, a list item before its sub-item, a heading after body text) keeps
+     * Enter's way. Not in a cell, where a paragraph's objects cannot be asked for, and not
+     * next to an object, where a split may carry it along.
+     */
+    const opensBeforeBody = (doc, box, plain) => {
+      const k = box.index
+      if (box.inTable || plain || k + 1 >= box.count()) return false
+      if (box.objectPositions(k + 1).length > 0) return false
+      const { sec } = box.place(k, 0)
+      try {
+        // the text Enter carries over (the end of `k`) against the text the next one starts with
+        const own = parse(doc.getCharPropertiesAt(sec, k, box.length(k)))
+        const next = parse(doc.getCharPropertiesAt(sec, k + 1, 0))
+        const outline = (p) => parse(doc.getParaPropertiesAt(sec, p)).headType === 'Outline'
+        return (
+          own.fontSize > next.fontSize ||
+          (own.fontSize === next.fontSize && own.bold && !next.bold) ||
+          (outline(k) && !outline(k + 1))
+        )
+      } catch {
+        return false
+      }
+    }
+
+    /**
      * The paragraph a paragraph edit works on: the one `anchor` occurs in, or for "end" the
      * last paragraph of the document. `box` addresses it; without one, `refusal` says why.
      */
@@ -5139,7 +5209,10 @@ export const agentPlugin = {
       /**
        * Add new paragraphs next to the paragraph `anchor` occurs in (`where` "after" or
        * "before"), or after the last paragraph of the document ("end"). They are made the way
-       * Enter makes one, so they take the paragraph and character formatting of that paragraph.
+       * Enter makes one, so they take the paragraph and character formatting of that paragraph,
+       * except after a heading, where they take the body's (opensBeforeBody). "before" a
+       * heading is left as it is: what goes there may be the end of the part above it or a
+       * new heading, and neither can be told from the document.
        */
       insertParagraphs: guarded((anchor, occurrence, where, paragraphs, options) => {
         checkWhere(where)
@@ -5161,9 +5234,13 @@ export const agentPlugin = {
                 const first = texts.shift()
                 if (first) box.insert(at, first)
               }
+              // after a heading the first one is split off the front of the body paragraph
+              // that follows; the rest are made after it and so look like it too
+              const beforeBody = where === 'after' && opensBeforeBody(doc, box, plain)
               for (const text of texts) {
                 // only the anchor can hold an object; the paragraphs made here are plain text
-                openAfter(box, at, plain && at === box.index)
+                if (beforeBody && at === box.index) box.split(at + 1, 0)
+                else openAfter(box, at, plain && at === box.index)
                 at += 1
                 if (text) box.insert(at, text)
               }
@@ -5184,12 +5261,33 @@ export const agentPlugin = {
 
       /**
        * Remove the paragraph `find` occurs in. A paragraph that holds a table, a picture or
-       * a form field is left alone: removing it would take the object with it.
+       * a form field is left alone: removing it would take the object with it. One whose
+       * whole text is among `options.protectTexts` is left alone too (`protected`): the panel
+       * names the paragraphs its run added, which a stale occurrence number would hit.
        */
       deleteParagraph: guarded((find, occurrence, options) => {
+        const protectTexts = Array.isArray(options?.protectTexts)
+          ? new Set(
+              options.protectTexts
+                .filter((text) => typeof text === 'string')
+                .map(squash)
+                .filter(Boolean),
+            )
+          : null
         const refusal = host.read((doc) => {
           const { box, refusal: why } = locate(doc, find, occurrence, 'after')
           if (!box) return why
+          if (protectTexts) {
+            const whole = box.text(box.index, box.length(box.index))
+            if (protectTexts.has(squash(whole))) {
+              return {
+                ok: false,
+                reason: 'protected',
+                count: 1,
+                text: whole.slice(0, MAX_REPORTED_CHARS),
+              }
+            }
+          }
           // the first paragraph is only emptied, which the check after the change covers
           const removed = box.index > 0 && box.count() > 1
           return removed && box.objectPositions(box.index).length > 0
@@ -6782,6 +6880,81 @@ export const agentPlugin = {
         } catch {
           return { ok: false }
         }
+        return { ok: true }
+      }),
+
+      /**
+       * Name the editor's right-click item 쉬운 말로 풀기 (EASY_WORDS_COMMAND) in the app's
+       * language. The item is off while nothing is selected. A click reads the selection as
+       * selection() does and fires EASY_WORDS_EVENT with its text, a line per paragraph; it
+       * changes nothing in the document. A later call gives the item its new name.
+       */
+      installEasyWords: guarded((label) => {
+        if (typeof label !== 'string' || !label.trim()) {
+          throw fail('BAD_ARGUMENT', 'label must be a non-empty string')
+        }
+        if (!host.automation.registerCommand) return { ok: false }
+        try {
+          // the studio's registry overwrites an id; a host that refuses one is cleared first
+          host.automation.unregisterCommand?.(EASY_WORDS_COMMAND)
+        } catch {
+          // nothing registered yet
+        }
+        try {
+          host.automation.registerCommand({
+            id: EASY_WORDS_COMMAND,
+            label,
+            canExecute: (ctx) =>
+              ctx?.hasDocument === true &&
+              (ctx.hasSelection === true || ctx.inCellSelectionMode === true),
+            execute: () => {
+              let read
+              try {
+                read = api.selection()
+              } catch {
+                return
+              }
+              if (!read?.ok) return
+              const text = read.segments
+                .map((segment) => segment.text)
+                .join('\n')
+                .trim()
+              if (!text) return
+              globalThis.dispatchEvent?.(new CustomEvent(EASY_WORDS_EVENT, { detail: { text } }))
+            },
+          })
+        } catch {
+          return { ok: false }
+        }
+        return { ok: true }
+      }),
+
+      /**
+       * Mark the fonts that are not on this PC in the editor's font menu and font box, with
+       * the app's words (`tag` beside a menu entry, `hint` as the tooltip), and tell which of
+       * the document's fonts are not on this PC: once the editor's start-up look at the PC's
+       * fonts is over, MISSING_FONTS_EVENT fires with the names the text uses. Reads only.
+       */
+      watchMissingFonts: guarded((given) => {
+        if (
+          typeof given?.tag !== 'string' ||
+          !given.tag.trim() ||
+          typeof given.hint !== 'string' ||
+          !given.hint.trim()
+        ) {
+          throw fail('BAD_ARGUMENT', 'tag and hint must be non-empty strings')
+        }
+        setMissingFontLabels({ tag: given.tag, hint: given.hint })
+        void whenPcFontsSettled().then(() => {
+          let used
+          try {
+            used = host.read((doc) => parse(doc.getDocumentInfo()).fontsUsed)
+          } catch {
+            return
+          }
+          const fonts = missingFonts(Array.isArray(used) ? used : [])
+          globalThis.dispatchEvent?.(new CustomEvent(MISSING_FONTS_EVENT, { detail: { fonts } }))
+        })
         return { ok: true }
       }),
 

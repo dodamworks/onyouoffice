@@ -248,10 +248,48 @@ describe('home settings entry', () => {
     expect(entryText('.account-sub')).toBe(aiSubscriptionText('en', 'cardReady'))
   })
 
-  it('keeps the cost in sight for an accepted metered login', async () => {
-    await renderHome(statuses({ state: 'signed-out' }, { state: 'metered', meteredAccepted: true }))
+  it('keeps the cost in sight for an accepted metered login that is selected', async () => {
+    const map = statuses({ state: 'signed-out' }, { state: 'metered', meteredAccepted: true })
+    await renderHome(map, {
+      aiSettings: { ...defaultAiSettings(), provider: 'codex', meteredAccepted: { codex: true } },
+    })
     expect(entryText('.account-name')).toBe('Codex')
     expect(entryText('.account-sub')).toBe(aiSubscriptionText('en', 'cardMeteredAccepted'))
+
+    // under auto the metered login does not run, so it is not shown as in use
+    await renderHome(map, {
+      aiSettings: { ...defaultAiSettings(), meteredAccepted: { codex: true } },
+    })
+    expect(entry().dataset.subscription).toBe('disconnected')
+    expect(entryText('.account-name')).toBe(aiSubscriptionText('en', 'pickerNotConnected'))
+  })
+
+  it('names the selected key provider in use over the subscriptions', async () => {
+    await renderHome(statuses({ state: 'ready', planName: 'max' }, { state: 'ready' }), {
+      aiSettings: {
+        ...defaultAiSettings(),
+        provider: 'gemini',
+        providers: { gemini: { apiKey: 'key', model: 'gemini-3.5-flash-lite' } },
+      },
+    })
+    expect(entry().dataset.subscription).toBe('connected')
+    expect(entryText('.account-name')).toBe('Gemini')
+    expect(entryText('.account-sub')).toBe('Connected · in use')
+  })
+
+  it('shows the selected key provider as needing a connection when its key is missing', async () => {
+    await renderHome(statuses({ state: 'ready', planName: 'max' }, { state: 'ready' }), {
+      aiSettings: { ...defaultAiSettings(), provider: 'gemini' },
+    })
+    expect(entry().dataset.subscription).toBe('needs-connection')
+    expect(entryText('.account-name')).toBe('Gemini')
+    expect(entryText('.account-sub')).toBe('Needs connecting')
+    expect(entry().querySelector('.account-avatar')?.classList.contains('logged-in')).toBe(false)
+  })
+
+  it('reads the statuses alone while the settings are not read', async () => {
+    await renderHome(statuses({ state: 'ready' }, { state: 'ready' }), { aiSettings: null })
+    expect(entryText('.account-name')).toBe('Claude · Codex')
   })
 
   it('invites to connect when nothing is, and waits while still checking', async () => {

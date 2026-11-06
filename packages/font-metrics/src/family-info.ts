@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-06: bound font style-suffix matching.
 /**
  * Per-family facts the font pickers need but the renderer's font enumeration
  * (queryLocalFonts) does not report: it lists every family under its English
@@ -96,8 +97,21 @@ export function faceFamilies(
 // The OS groups weight/width/slope faces into one family and drops those words
 // from its name (`KoPubDotum Bold` → `KoPubDotum`, `A2Z 1 Thin` → `A2Z 1`), so an
 // enumerated family can be a face's family name minus a style suffix.
-const STYLE_SUFFIX =
-  /^(?:[\s-]+(?:extra|ultra|semi|demi)?[\s-]?(?:thin|hairline|light|regular|normal|book|medium|bold|heavy|black|italic|oblique|condensed|narrow|expanded))+$/i
+const STYLE_WORD =
+  /(?:extra|ultra|semi|demi)?[\s-]?(?:thin|hairline|light|regular|normal|book|medium|bold|heavy|black|italic|oblique|condensed|narrow|expanded)/iy
+
+function isStyleSuffix(value: string): boolean {
+  let pos = 0
+  while (pos < value.length) {
+    const start = pos
+    while (pos < value.length && /[\s-]/.test(value[pos]!)) pos++
+    if (pos === start) return false
+    STYLE_WORD.lastIndex = pos
+    if (!STYLE_WORD.test(value)) return false
+    pos = STYLE_WORD.lastIndex
+  }
+  return pos > 0
+}
 
 function mergeFaces(
   family: string,
@@ -139,9 +153,7 @@ export function resolveFamilyInfo(
       const suffixOf = (f: FaceFamily) => f.name.slice(family.length)
       info = mergeFaces(
         family,
-        faces.filter(
-          (f) => f.name.toLowerCase().startsWith(lower) && STYLE_SUFFIX.test(suffixOf(f)),
-        ),
+        faces.filter((f) => f.name.toLowerCase().startsWith(lower) && isStyleSuffix(suffixOf(f))),
         suffixOf,
       )
     }

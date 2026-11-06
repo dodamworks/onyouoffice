@@ -132,8 +132,11 @@ const structure: PdfStructureApi = {
 const store: PdfStoreApi = {
   docHash: (path) => outcome(PDF_CHANNELS.storeDocHash, path),
   aiReadPages: (docHash) => outcome(PDF_CHANNELS.storeAiReadPages, docHash),
-  translations: (docHash) => outcome(PDF_CHANNELS.storeTranslations, docHash),
-  translation: (docHash, lang) => outcome(PDF_CHANNELS.storeTranslation, docHash, lang),
+  // a plain translation call sends no mode, as before
+  translations: (docHash, mode) =>
+    outcome(PDF_CHANNELS.storeTranslations, docHash, ...(mode === undefined ? [] : [mode])),
+  translation: (docHash, lang, mode) =>
+    outcome(PDF_CHANNELS.storeTranslation, docHash, lang, ...(mode === undefined ? [] : [mode])),
   unfinishedJobs: (docHash) => outcome(PDF_CHANNELS.storeUnfinishedJobs, docHash),
   write: (request) => outcome(PDF_CHANNELS.storeWrite, request),
   migrate: (request) => outcome(PDF_CHANNELS.storeMigrate, request),
@@ -145,7 +148,8 @@ const store: PdfStoreApi = {
   insights: (docHash, lang) => outcome(PDF_CHANNELS.storeInsights, docHash, lang),
   deleteCounts: (docHash) => outcome(PDF_CHANNELS.storeDeleteCounts, docHash),
   pageFingerprints: (request) => outcome(PDF_CHANNELS.storePageFingerprints, request),
-  translationRecency: (docHash) => outcome(PDF_CHANNELS.storeTranslationRecency, docHash),
+  translationRecency: (docHash, mode) =>
+    outcome(PDF_CHANNELS.storeTranslationRecency, docHash, ...(mode === undefined ? [] : [mode])),
 }
 
 const api: PdfApi = {
@@ -188,6 +192,11 @@ const api: PdfApi = {
   splitPages: (request) => ipcRenderer.invoke(PDF_CHANNELS.splitPages, request),
   cropPages: (request) => ipcRenderer.invoke(PDF_CHANNELS.cropPages, request),
   exportImages: (request) => ipcRenderer.invoke(PDF_CHANNELS.exportImages, request),
+  onExportImagesRequest: (handler) => {
+    const listener = () => handler()
+    ipcRenderer.on(PDF_CHANNELS.exportImagesRequest, listener)
+    return () => ipcRenderer.removeListener(PDF_CHANNELS.exportImagesRequest, listener)
+  },
   convertOffice: (format) => ipcRenderer.invoke(PDF_CHANNELS.convertOffice, format),
   onConvertDialogRequest: (handler) => {
     const listener = (_e: Electron.IpcRendererEvent, request: unknown) => {
@@ -195,8 +204,8 @@ const api: PdfApi = {
       const { format, outPath } = request as { format?: unknown; outPath?: unknown }
       if (format !== 'md' && format !== 'epub') return
       if (outPath !== undefined && (typeof outPath !== 'string' || !outPath)) return
-      // only a Markdown target may be preset (Save As › Markdown)
-      if (outPath !== undefined && format !== 'md') return
+      // a preset target (Save As › Markdown / EPUB) carries its format's extension
+      if (outPath !== undefined && !outPath.toLowerCase().endsWith(`.${format}`)) return
       handler(outPath === undefined ? { format } : { format, outPath })
     }
     ipcRenderer.on(PDF_CHANNELS.convertDialogRequest, listener)

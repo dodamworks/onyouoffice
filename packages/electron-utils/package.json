@@ -20,9 +20,11 @@
     "./generated-images": "./src/generated-images.ts",
     "./mcp-tools-bridge": "./src/mcp-tools-bridge.ts",
     "./mcp-tools-channels": "./src/mcp-tools-channels.ts",
+    "./numbered-export-paths": "./src/numbered-export-paths.ts",
     "./font-store": "./src/font-store.ts",
     "./office-encryption": "./src/office-encryption.ts",
     "./headless-export": "./src/headless-export.ts",
+    "./print-cups": "./src/print-cups.ts",
     "./print-job": "./src/print-job.ts",
     "./print-window": "./src/print-window.ts",
     "./remote-image": "./src/remote-image.ts",
@@ -51,6 +53,6 @@
   },
   "dependencies": {
     "parse5": "^8.0.1",
-    "undici": "^6.29.0"
+    "undici": "^6.29.1"
   }
 }

@@ -28,6 +28,11 @@ export const ja = {
     '保存しませんでした。この文書には変更履歴があり、ここで保存すると変更履歴が失われ、Hancom Hangul で開けないファイルになることがあります。',
   savedTailsLost:
     '保存しましたが、元のファイルにあったマスターページやメモの一部を引き継げませんでした。保存したファイルは Hancom Hangul で開けないことがあります。開いて確認してください。',
+  missingFonts:
+    'このPCにないフォントがあるため、画面では別のフォントで表示されています：{fonts}。保存したファイルには元のフォント名がそのまま残り、そのフォントがあるPCでは元どおりに表示されます。',
+  missingFontTag: 'このPCにない',
+  missingFontHint:
+    'このPCにないフォントのため、画面では別のフォントで表示されます。ファイルにはこのフォント名がそのまま保存されます。',
   dismiss: '閉じる',
   aiOpenAssistant: 'AI アシスタントを開く',
   aiNewChat: '新しいチャット',
@@ -163,6 +168,9 @@ export const ja = {
   aiScopeSelectionTip: '書き換え系の指示は既定で選択範囲にのみ適用されます。クリックでプレビュー',
   aiScopeClearTitle: '選択範囲を解除',
   aiToolNotDone: '実行できませんでした · {what}',
+  aiUnfinishedSteps: '完了しなかった手順：{n} 件',
+  aiUnfinishedNote:
+    '次の手順は文書に反映されていません。返答に完了と書かれていても、この部分を確認してください。',
   aiChangesTitle: '文書を {count} か所変更しました',
   aiClearMarks: '表示を消す',
   aiRevert: '変更を元に戻す',
@@ -251,4 +259,7 @@ export const ja = {
   checkAskAi: 'AI に修正を任せる',
   checkHandedOff: 'AI の入力欄に依頼を入れました。確認して送信してください。',
   checkFixFailed: '変更できませんでした。',
+  easyWordsLabel: 'やさしい言葉で説明',
+  easyWordsPrompt:
+    '下の選んだ文章を、やさしい文章が必要な人にもわかるように日本語で説明してください。ふだん使う言葉と短い文で書き、事実・数字・条件はひとつも落とさないでください。文書は変更しないでください。\n\n選んだ文章:\n{text}',
 } satisfies Record<keyof typeof zh, string>
