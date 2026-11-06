@@ -1,6 +1,16 @@
 // Modified by Onyou Office: match wrap slices without repeated tail scans.
 import {
   openingTagMatch,
+  pairedTagMatches,
+  delimitedMatches,
+  replaceOpeningTag,
+  replacePaired,
+  attributeMatch,
+  attributeMatches,
+  removeLooseAttribute,
+  removeSpacePrefixedAttributes,
+  rawTagMatches,
+  removeSpacePrefixedAttribute,
   openingTagMatches,
   pairedMatch,
   replaceMatches,
@@ -66,6 +76,37 @@ export interface ImagePatch {
   flipV?: boolean
 }
 
+function extentSizeMatch(xml: string): [string, string, string] | null {
+  const ys = xml.matchAll(/\bcy="(\d+)"/g)
+  let y = ys.next().value
+  let gt = xml.indexOf('>')
+  for (const x of attributeMatches(xml, '<wp:extent', /\bcx="(\d+)"/g, { last: false })) {
+    const after = x.index + x[0].length
+    while (y && y.index < after) y = ys.next().value
+    if (!y) return null
+    if (gt >= 0 && gt < x.index + '<wp:extent'.length)
+      gt = xml.indexOf('>', x.index + '<wp:extent'.length)
+    if (gt < 0 || y.index < gt) return [xml.slice(x.index, y.index + y[0].length), x[1]!, y[1]!]
+  }
+  return null
+}
+
+function patchPositionOffset(xml: string, axis: 'H' | 'V', value: number): string {
+  const open = openingTagMatch(xml, `<wp:position${axis}`)
+  if (!open) return xml
+  const offsets = /<wp:posOffset>-?\d+<\/wp:posOffset>/g
+  offsets.lastIndex = open.index + open[0]!.length
+  const offset = offsets.exec(xml)
+  if (!offset) return xml
+  const closing = xml.indexOf(`</wp:position${axis}>`, offsets.lastIndex)
+  if (closing < 0) return xml
+  return (
+    xml.slice(0, offset.index) +
+    `<wp:posOffset>${value}</wp:posOffset>` +
+    xml.slice(offset.index + offset[0].length)
+  )
+}
+
 /**
  * Rewrite the display size (wp:extent + a:xfrm a:ext) and/or paragraph
  * alignment (w:jc) of an image paragraph, leaving everything else untouched.
@@ -74,10 +115,12 @@ export function patchImageParagraphXml(xml: string, patch: ImagePatch): string {
   let out = xml
   if (patch.rotDeg !== undefined || patch.flipH !== undefined || patch.flipV !== undefined) {
     // rotation/flip live on the pic's own xfrm, not an anchored textbox sibling's
-    out = out.replace(/(<pic:spPr[^>]*>[\s\S]*?)<a:xfrm([^>]*)>/, (_whole, prefix, attrs) => {
-      let a = attrs as string
-      const setAttr = (name: string, value: string | null) => {
-        a = a.replace(new RegExp(`\\s*\\b${name}\\s*=\\s*(?:"[^"]*"|'[^']*')`), '')
+    const spPr = openingTagMatch(out, '<pic:spPr')
+    const xfrm = spPr && openingTagMatch(out, '<a:xfrm', { from: spPr.index + spPr[0]!.length })
+    if (xfrm) {
+      let a = xfrm[0]!.slice('<a:xfrm'.length, -1)
+      const setAttr = (name: 'rot' | 'flipH' | 'flipV', value: string | null) => {
+        a = removeLooseAttribute(a, name)
         if (value != null) a += ` ${name}="${value}"`
       }
       if (patch.rotDeg !== undefined && Number.isFinite(patch.rotDeg)) {
@@ -86,8 +129,8 @@ export function patchImageParagraphXml(xml: string, patch: ImagePatch): string {
       }
       if (patch.flipH !== undefined) setAttr('flipH', patch.flipH ? '1' : null)
       if (patch.flipV !== undefined) setAttr('flipV', patch.flipV ? '1' : null)
-      return `${prefix}<a:xfrm${a}>`
-    })
+      out = out.slice(0, xfrm.index) + `<a:xfrm${a}>` + out.slice(xfrm.index + xfrm[0]!.length)
+    }
   }
   if (patch.widthPx && patch.heightPx) {
     // Non-finite dimensions must not land in the XML verbatim (cx="Infinity"
@@ -99,8 +142,8 @@ export function patchImageParagraphXml(xml: string, patch: ImagePatch): string {
     if (cx !== null && cy !== null) {
       const resize = (tag: string) =>
         tag.replace(/cx="\d+"/, `cx="${cx}"`).replace(/cy="\d+"/, `cy="${cy}"`)
-      out = out.replace(/<wp:extent[^>]*\/?>/, resize)
-      out = out.replace(/<a:ext[^>]*\/>/, resize)
+      out = replaceOpeningTag(out, '<wp:extent', resize)
+      out = replaceOpeningTag(out, '<a:ext', resize, { selfClosingOnly: true })
     }
   }
   // Word lays the drawing out against the unrotated wp:extent plus
@@ -110,8 +153,13 @@ export function patchImageParagraphXml(xml: string, patch: ImagePatch): string {
   // effect — flips leave the bounding box alone, and untouched drawings keep
   // their original effectExtent (possibly Word-authored shadow/glow padding).
   {
-    const rotM = /<pic:spPr[^>]*>[\s\S]*?<a:xfrm[^>]*?\brot="(-?\d+)"/.exec(out)
-    const extM = /<wp:extent[^>]*?\bcx="(\d+)"[^>]*?\bcy="(\d+)"/.exec(out)
+    const spPr = openingTagMatch(out, '<pic:spPr')
+    const rotM =
+      spPr &&
+      attributeMatch(out.slice(spPr.index + spPr[0]!.length), '<a:xfrm', /\brot="(-?\d+)"/g, {
+        last: false,
+      })
+    const extM = extentSizeMatch(out)
     const touchRot = patch.rotDeg !== undefined
     const touchSize = !!(patch.widthPx && patch.heightPx)
     if (extM && (touchRot || (touchSize && rotM))) {
@@ -134,7 +182,11 @@ export function patchImageParagraphXml(xml: string, patch: ImagePatch): string {
     const align = patch.align === 'left' ? null : patch.align
     if (align) {
       const jc = `<w:jc w:val="${align}"/>`
-      const pPr = /(<w:pPr[^>]*>)([\s\S]*?)<\/w:pPr>/.exec(out)
+      const pPr = pairedMatch(out, '<w:pPr', '</w:pPr>', { openingTag: true })
+      if (pPr) {
+        const end = pPr[0]!.indexOf('>') + 1
+        pPr.push(pPr[0]!.slice(0, end), pPr[0]!.slice(end, -'</w:pPr>'.length))
+      }
       if (pPr) {
         // w:jc must precede the paragraph-mark w:rPr inside pPr
         const [whole, open, inner] = pPr
@@ -148,30 +200,22 @@ export function patchImageParagraphXml(xml: string, patch: ImagePatch): string {
           '</w:pPr>' +
           out.slice(pPr.index + whole.length)
       } else {
-        out = out.replace(/(<w:p(?: [^>]*)?>)/, `$1<w:pPr>${jc}</w:pPr>`)
+        out = replaceOpeningTag(out, '<w:p', (tag) => tag + `<w:pPr>${jc}</w:pPr>`, {
+          spaceOnlyBoundary: true,
+        })
       }
     }
   }
   // Rewrite posOffset values inside positionH / positionV (surgical). Non-finite
   // offsets would land verbatim (posOffset>NaN<) — skip and keep the original.
   const finiteOffset = (v: number): number | null => (Number.isFinite(v) ? Math.round(v) : null)
-  if (patch.posOffsetX !== undefined) {
-    const x = finiteOffset(patch.posOffsetX)
-    if (x !== null) {
-      out = out.replace(
-        /(<wp:positionH[^>]*>[\s\S]*?)<wp:posOffset>-?\d+<\/wp:posOffset>([\s\S]*?<\/wp:positionH>)/,
-        `$1<wp:posOffset>${x}</wp:posOffset>$2`,
-      )
-    }
-  }
-  if (patch.posOffsetY !== undefined) {
-    const y = finiteOffset(patch.posOffsetY)
-    if (y !== null) {
-      out = out.replace(
-        /(<wp:positionV[^>]*>[\s\S]*?)<wp:posOffset>-?\d+<\/wp:posOffset>([\s\S]*?<\/wp:positionV>)/,
-        `$1<wp:posOffset>${y}</wp:posOffset>$2`,
-      )
-    }
+  for (const [axis, value] of [
+    ['H', patch.posOffsetX],
+    ['V', patch.posOffsetY],
+  ] as const) {
+    if (value === undefined) continue
+    const offset = finiteOffset(value)
+    if (offset !== null) out = patchPositionOffset(out, axis, offset)
   }
   return out
 }
@@ -233,7 +277,12 @@ function stripImagePosition(xml: string): string {
  * producer values). No-op on inline images (no wp:anchor).
  */
 export function applyImageZOrder(xml: string, zOrder?: number): string {
-  return xml.replace(/(<wp:anchor[^>]*?relativeHeight=")\d+(")/, `$1${251658240 + (zOrder ?? 0)}$2`)
+  const match = attributeMatch(xml, '<wp:anchor', /relativeHeight="(\d+)"/g, { last: false })
+  return match
+    ? xml.slice(0, match.index) +
+        match[0].replace(/\d+"$/, `${251658240 + (zOrder ?? 0)}"`) +
+        xml.slice(match.index + match[0].length)
+    : xml
 }
 
 /**
@@ -259,7 +308,11 @@ export function applyImageWrap(
 
   if (!wrap) {
     if (!hasAnchor) return xml
-    out = out.replace(/<wp:anchor[^>]*>/, '<wp:inline distT="0" distB="0" distL="0" distR="0">')
+    out = replaceOpeningTag(
+      out,
+      '<wp:anchor',
+      () => '<wp:inline distT="0" distB="0" distL="0" distR="0">',
+    )
     return out.replace(/<\/wp:anchor>/, '</wp:inline>')
   }
 
@@ -308,9 +361,12 @@ export function applyImageWrap(
     `<wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0"` +
     ` relativeHeight="${251658240 + (zOrder ?? 0)}" behindDoc="${behind}" locked="0" layoutInCell="1" allowOverlap="1">`
   if (hasAnchor) {
-    out = out.replace(/<wp:anchor[^>]*>/, anchorOpen)
+    out = replaceOpeningTag(out, '<wp:anchor', () => anchorOpen)
   } else {
-    out = out.replace(/<wp:inline[^>]*>/, anchorOpen).replace(/<\/wp:inline>/, '</wp:anchor>')
+    out = replaceOpeningTag(out, '<wp:inline', () => anchorOpen).replace(
+      /<\/wp:inline>/,
+      '</wp:anchor>',
+    )
   }
   const placedAnchor = openingTagMatch(out, '<wp:anchor')
   if (placedAnchor) out = out.replace(placedAnchor[0]!, () => placedAnchor[0]! + position)
@@ -352,7 +408,7 @@ function shapeDrawingSegment(
 
 /** Re-encode the rank of the drawing's own wp:anchor tag, never a nested drawing's. */
 function setAnchorRank(drawingXml: string, zOrder: number): string {
-  return drawingXml.replace(/<wp:anchor[^>]*>/, (tag) =>
+  return replaceOpeningTag(drawingXml, '<wp:anchor', (tag) =>
     tag.replace(/relativeHeight="\d+"/, `relativeHeight="${251658240 + zOrder}"`),
   )
 }
@@ -390,9 +446,11 @@ export function applyShapeWrapAt(
   let next: string
   if (wrap === null) {
     if (!hasAnchor) return paragraphXml
-    next = stripImagePosition(drawing)
-      .replace(/<wp:anchor[^>]*>/, '<wp:inline distT="0" distB="0" distL="0" distR="0">')
-      .replace(/<\/wp:anchor>/, '</wp:inline>')
+    next = replaceOpeningTag(
+      stripImagePosition(drawing),
+      '<wp:anchor',
+      () => '<wp:inline distT="0" distB="0" distL="0" distR="0">',
+    ).replace(/<\/wp:anchor>/, '</wp:inline>')
   } else if (!hasAnchor) {
     next = applyImageWrap(drawing, wrap, undefined, undefined, zOrder)
   } else {
@@ -414,7 +472,7 @@ export function swapAnchorWrap(drawingXml: string, wrap: ImageWrap, zOrder?: num
       : wrap === 'topBottom'
         ? '<wp:wrapTopAndBottom/>'
         : '<wp:wrapSquare wrapText="bothSides"/>'
-  let next = stripWrapElements(drawingXml).replace(/<wp:anchor[^>]*>/, (tag) =>
+  let next = replaceOpeningTag(stripWrapElements(drawingXml), '<wp:anchor', (tag) =>
     tag.includes('behindDoc=')
       ? tag.replace(/behindDoc="[^"]*"/, `behindDoc="${behind}"`)
       : tag.replace(/<wp:anchor/, `<wp:anchor behindDoc="${behind}"`),
@@ -459,9 +517,7 @@ function decodeXmlText(text: string): string {
 function textNodes(xml: string, tag: 'w:t' | 'm:t'): XmlTextNode[] {
   const nodes: XmlTextNode[] = []
   // Paired text nodes: <w:t>text</w:t> (may carry xml:space)
-  const re = new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}>`, 'g')
-  let match: RegExpExecArray | null
-  while ((match = re.exec(xml)) !== null) {
+  for (const match of pairedTagMatches(xml, `<${tag}`, `</${tag}>`)) {
     const openEnd = match[0].indexOf('>') + 1
     const closeStart = match[0].lastIndexOf(`</${tag}>`)
     nodes.push({
@@ -476,8 +532,10 @@ function textNodes(xml: string, tag: 'w:t' | 'm:t'): XmlTextNode[] {
   // mathTokensOf tokenizes paired <m:t> only, so counting <m:t/> here would
   // desync patchMathTokens' length check against the tokens it was given.
   if (tag === 'w:t') {
-    const selfRe = /<w:t(?:\s[^>]*)?\/>/g
-    while ((match = selfRe.exec(xml)) !== null) {
+    for (const match of openingTagMatches(xml, '<w:t', {
+      selfClosingOnly: true,
+      strictBoundary: true,
+    })) {
       nodes.push({
         start: match.index,
         end: match.index + match[0].length,
@@ -864,10 +922,14 @@ export interface TextboxParaPatch {
 /** plain text of one w:p fragment (w:t + tabs/breaks), for change detection */
 function paraPlainText(pXml: string): string {
   let out = ''
-  const re =
-    /<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>|<w:tab\s*\/>|<w:tab>\s*<\/w:tab>|<w:br\/>|<w:cr\/>/g
-  let m: RegExpExecArray | null
-  while ((m = re.exec(pXml)) !== null) {
+  const matches = [
+    ...pairedTagMatches(pXml, '<w:t', '</w:t>'),
+    ...pXml.matchAll(/<w:tab\s*\/>|<w:tab>\s*<\/w:tab>|<w:br\/>|<w:cr\/>/g),
+  ].sort((a, b) => a.index - b.index)
+  let consumed = 0
+  for (const m of matches) {
+    if (m.index < consumed) continue
+    consumed = m.index + m[0]!.length
     if (m[0].startsWith('<w:tab')) out += '\t'
     else if (m[0] === '<w:br/>' || m[0] === '<w:cr/>') out += '\n'
     else {
@@ -887,7 +949,9 @@ function paraPlainText(pXml: string): string {
  * jc — so it is inserted after pStyle when present (the common textbox shape)
  * and otherwise directly after the pPr opening tag. */
 function pPrWithNumPr(pPr: string, numPr: TextboxParaPatch['numPr']): string {
-  const out = pPr.replace(/<w:pPr([^>]*)\/>/, '<w:pPr$1></w:pPr>')
+  const out = replaceOpeningTag(pPr, '<w:pPr', (tag) => tag.slice(0, -2) + '></w:pPr>', {
+    selfClosingOnly: true,
+  })
   const stripped = out.replace(/<w:numPr>[\s\S]*?<\/w:numPr>/, '').replace(/<w:numPr\/>/, '')
   if (!numPr) return stripped === '<w:pPr></w:pPr>' ? '' : stripped
   const num = `<w:numPr><w:ilvl w:val="${numPr.ilvl}"/><w:numId w:val="${numPr.numId}"/></w:numPr>`
@@ -905,11 +969,18 @@ function pPrWithNumPr(pPr: string, numPr: TextboxParaPatch['numPr']): string {
  * w:leftChars="0" the way Word itself writes pt indents. CT_PPr places ind
  * before jc and the paragraph-mark rPr. */
 function pPrWithIndLeft(pPr: string, left: number | null): string {
-  let out = pPr.replace(/<w:pPr([^>]*)\/>/, '<w:pPr$1></w:pPr>')
+  let out = replaceOpeningTag(pPr, '<w:pPr', (tag) => tag.slice(0, -2) + '></w:pPr>', {
+    selfClosingOnly: true,
+  })
   const value = left == null ? '' : ` w:left="${left}" w:leftChars="0"`
   const ind = /<w:ind\b([^>]*)\/>/.exec(out)
   if (ind) {
-    const attrs = ind[1].replace(/\s+w:(left|start|leftChars|startChars)="[^"]*"/g, '')
+    const attrs = removeSpacePrefixedAttributes(ind[1], [
+      'w:left',
+      'w:start',
+      'w:leftChars',
+      'w:startChars',
+    ])
     const next = `${attrs}${value}`
     out = out.replace(ind[0], next.trim() ? `<w:ind${next}/>` : '')
   } else if (left != null) {
@@ -923,7 +994,10 @@ function pPrWithIndLeft(pPr: string, left: number | null): string {
 }
 
 function pPrWithJc(pPr: string, align: TextboxParaPatch['align']): string {
-  const out = pPr.replace(/<w:pPr([^>]*)\/>/, '<w:pPr$1></w:pPr>').replace(/<w:jc [^>]*\/>/, '')
+  const expanded = replaceOpeningTag(pPr, '<w:pPr', (tag) => tag.slice(0, -2) + '></w:pPr>', {
+    selfClosingOnly: true,
+  })
+  const out = replaceOpeningTag(expanded, '<w:jc ', () => '', { selfClosingOnly: true })
   const jcVal = align === 'justify' ? 'both' : align
   if (!jcVal) return out === '<w:pPr></w:pPr>' ? '' : out
   const jc = `<w:jc w:val="${jcVal}"/>`
@@ -995,9 +1069,7 @@ export function patchTextboxParas(paragraphXml: string, patches: TextboxParasPat
   let xml = paragraphXml
   if (segs.length > 0 && byIndex.length > 0) {
     const fallbacks: Array<{ start: number; end: number }> = []
-    const fbRe = /<mc:Fallback>[\s\S]*?<\/mc:Fallback>/g
-    let fb: RegExpExecArray | null
-    while ((fb = fbRe.exec(paragraphXml)) !== null) {
+    for (const fb of delimitedMatches(paragraphXml, '<mc:Fallback>', '</mc:Fallback>')) {
       fallbacks.push({ start: fb.index, end: fb.index + fb[0].length })
     }
     const inFallback = (pos: number) => fallbacks.some((f) => pos >= f.start && pos < f.end)
@@ -1122,31 +1194,37 @@ export function patchTextboxHeights(
   let resizedXml = out + paragraphXml.slice(cursor)
 
   let fallbackIndex = -1
-  resizedXml = resizedXml.replace(/<mc:Fallback>[\s\S]*?<\/mc:Fallback>/g, (fallback) => {
-    if (!fallback.includes('<w:txbxContent') || paraPlainText(fallback) === '') return fallback
-    fallbackIndex++
-    const heightPx = heightsPx[fallbackIndex]
-    if (!heightPx) return fallback
-    return fallback.replace(
-      /(style="[^"]*\bheight:)\s*[\d.]+(pt|px)/,
-      (_whole, prefix: string, unit: string) => {
-        const value =
-          unit === 'pt' ? Math.round(heightPx * 75) / 100 : Math.round(heightPx * 100) / 100
-        return `${prefix}${value}${unit}`
-      },
-    )
-  })
+  resizedXml = replaceMatches(
+    resizedXml,
+    delimitedMatches(resizedXml, '<mc:Fallback>', '</mc:Fallback>'),
+    (fallback) => {
+      if (!fallback.includes('<w:txbxContent') || paraPlainText(fallback) === '') return fallback
+      fallbackIndex++
+      const heightPx = heightsPx[fallbackIndex]
+      if (!heightPx) return fallback
+      return fallback.replace(
+        /(style="[^"]*\bheight:)\s*[\d.]+(pt|px)/,
+        (_whole, prefix: string, unit: string) => {
+          const value =
+            unit === 'pt' ? Math.round(heightPx * 75) / 100 : Math.round(heightPx * 100) / 100
+          return `${prefix}${value}${unit}`
+        },
+      )
+    },
+  )
   return resizedXml
 }
 
 /** Connector/line prsts rendered as display boxes despite having no text body */
-const LINE_SHAPE_RE =
-  /<a:prstGeom[^>]*prst="(?:line|straightConnector1|bentConnector[234]|curvedConnector[234])"/
+const LINE_SHAPE_RE = /prst="(?:line|straightConnector1|bentConnector[234]|curvedConnector[234])"/g
 
 /** Same drawing set extractTextboxes yields boxes for (keeps patch indexes aligned) */
 function isBoxDrawing(drawingXml: string): boolean {
   if (drawingXml.includes('<w:txbxContent') && paraPlainText(drawingXml) !== '') return true
-  return LINE_SHAPE_RE.test(drawingXml) && drawingXml.includes('<wp:wrapSquare')
+  return (
+    !!attributeMatch(drawingXml, '<a:prstGeom', LINE_SHAPE_RE) &&
+    drawingXml.includes('<wp:wrapSquare')
+  )
 }
 
 export interface TextboxSizePatch {
@@ -1195,35 +1273,39 @@ export function patchTextboxSizes(
   let resizedXml = out + paragraphXml.slice(cursor)
 
   let fallbackIndex = -1
-  resizedXml = resizedXml.replace(/<mc:Fallback>[\s\S]*?<\/mc:Fallback>/g, (fallback) => {
-    if (!isBoxDrawing(fallback) && !fallback.includes('<w:txbxContent')) return fallback
-    if (fallback.includes('<w:txbxContent') && paraPlainText(fallback) === '') return fallback
-    fallbackIndex++
-    const size = sizes[fallbackIndex]
-    if (!size) return fallback
-    let next = fallback
-    if (size.hPx != null) {
-      next = next.replace(
-        /(style="[^"]*\bheight:)\s*[\d.]+(pt|px)/,
-        (_whole, prefix: string, unit: string) => {
-          const value =
-            unit === 'pt' ? Math.round(size.hPx! * 75) / 100 : Math.round(size.hPx! * 100) / 100
-          return `${prefix}${value}${unit}`
-        },
-      )
-    }
-    if (size.wPx != null) {
-      next = next.replace(
-        /(style="[^"]*\bwidth:)\s*[\d.]+(pt|px)/,
-        (_whole, prefix: string, unit: string) => {
-          const value =
-            unit === 'pt' ? Math.round(size.wPx! * 75) / 100 : Math.round(size.wPx! * 100) / 100
-          return `${prefix}${value}${unit}`
-        },
-      )
-    }
-    return next
-  })
+  resizedXml = replaceMatches(
+    resizedXml,
+    delimitedMatches(resizedXml, '<mc:Fallback>', '</mc:Fallback>'),
+    (fallback) => {
+      if (!isBoxDrawing(fallback) && !fallback.includes('<w:txbxContent')) return fallback
+      if (fallback.includes('<w:txbxContent') && paraPlainText(fallback) === '') return fallback
+      fallbackIndex++
+      const size = sizes[fallbackIndex]
+      if (!size) return fallback
+      let next = fallback
+      if (size.hPx != null) {
+        next = next.replace(
+          /(style="[^"]*\bheight:)\s*[\d.]+(pt|px)/,
+          (_whole, prefix: string, unit: string) => {
+            const value =
+              unit === 'pt' ? Math.round(size.hPx! * 75) / 100 : Math.round(size.hPx! * 100) / 100
+            return `${prefix}${value}${unit}`
+          },
+        )
+      }
+      if (size.wPx != null) {
+        next = next.replace(
+          /(style="[^"]*\bwidth:)\s*[\d.]+(pt|px)/,
+          (_whole, prefix: string, unit: string) => {
+            const value =
+              unit === 'pt' ? Math.round(size.wPx! * 75) / 100 : Math.round(size.wPx! * 100) / 100
+            return `${prefix}${value}${unit}`
+          },
+        )
+      }
+      return next
+    },
+  )
   return resizedXml
 }
 
@@ -1254,7 +1336,7 @@ function patchShapeRotation(spPr: string, rotDeg: number | null): string {
   }
   const tag =
     emu === 0
-      ? xfrm[0].replace(/\s+rot="[^"]*"/, '')
+      ? removeSpacePrefixedAttribute(xfrm[0], 'rot')
       : /\brot="/.test(xfrm[0])
         ? xfrm[0].replace(/\brot="[^"]*"/, `rot="${emu}"`)
         : xfrm[0].replace(/^<a:xfrm\b/, `<a:xfrm rot="${emu}"`)
@@ -1275,7 +1357,7 @@ function patchShapeLineWidth(spPr: string, borderWidthPx: number | null): string
   }
   const tag =
     emu === null
-      ? ln[0].replace(/\s+w="[^"]*"/, '')
+      ? removeSpacePrefixedAttribute(ln[0], 'w')
       : /\bw="/.test(ln[0])
         ? ln[0].replace(/\bw="[^"]*"/, `w="${emu}"`)
         : ln[0].replace(/^<a:ln\b/, `<a:ln w="${emu}"`)
@@ -1285,8 +1367,8 @@ function patchShapeLineWidth(spPr: string, borderWidthPx: number | null): string
 /** Replace the first fill slot (a:solidFill/a:noFill) inside an XML slice. */
 function replaceFillSlot(xml: string, hex: string | null): string {
   const markup = hex ? `<a:solidFill><a:srgbClr val="${hex}"/></a:solidFill>` : '<a:noFill/>'
-  if (/<a:solidFill>[\s\S]*?<\/a:solidFill>/.test(xml)) {
-    return xml.replace(/<a:solidFill>[\s\S]*?<\/a:solidFill>/, markup)
+  if (pairedMatch(xml, '<a:solidFill>', '</a:solidFill>')) {
+    return replacePaired(xml, '<a:solidFill>', '</a:solidFill>', () => markup)
   }
   if (xml.includes('<a:noFill/>')) return xml.replace('<a:noFill/>', markup)
   return xml
@@ -1336,7 +1418,7 @@ export function patchShapeStyles(
         spPr = replaceFillSlot(head, style.fillHex) + tail
       }
       if (style.borderHex !== undefined) {
-        const lnMatch = /<a:ln[\s>][\s\S]*?<\/a:ln>/.exec(spPr)
+        const lnMatch = pairedMatch(spPr, '<a:ln', '</a:ln>', { strictOpening: true })
         if (lnMatch) {
           spPr = spPr.replace(lnMatch[0], replaceFillSlot(lnMatch[0], style.borderHex))
         } else if (style.borderHex) {
@@ -1658,12 +1740,10 @@ const FORMAT_MANAGED_TAGS = new Set([
 /** top-level child elements of an XML fragment (depth-aware, attrs kept) */
 export function splitXmlChildren(xml: string): PPrChild[] {
   const out: PPrChild[] = []
-  const tagRe = /<(\/?)([A-Za-z0-9:._-]+)((?:"[^"]*"|'[^']*'|[^"'>])*)>/g
   let depth = 0
   let start = -1
   let name = ''
-  let match: RegExpExecArray | null
-  while ((match = tagRe.exec(xml)) !== null) {
+  for (const match of rawTagMatches(xml)) {
     const closing = match[1] === '/'
     const selfClosing = match[3].endsWith('/')
     if (closing) {
@@ -2132,7 +2212,7 @@ export function mergePPrFormat(
 /** hex color of the paragraph mark (pPr/rPr w:color), ignoring the pPrChange history */
 export function paraMarkColor(rawPPr: string): string | undefined {
   const live = stripPPrChange(rawPPr)
-  const rPr = /<w:rPr>([\s\S]*?)<\/w:rPr>/.exec(live)?.[1]
+  const rPr = delimitedMatches(live, '<w:rPr>', '</w:rPr>').next().value?.[1]
   const color = rPr ? /<w:color\b[^>]*\bw:val="#?([^"]+)"/.exec(rPr)?.[1] : undefined
   return color && color !== 'auto' ? color.toUpperCase() : undefined
 }
@@ -2146,7 +2226,7 @@ export function stripParaMarkColor(rawPPr: string): string {
   const changeStart = rawPPr.indexOf('<w:pPrChange')
   const live = changeStart === -1 ? rawPPr : rawPPr.slice(0, changeStart)
   const tail = changeStart === -1 ? '' : rawPPr.slice(changeStart)
-  const stripped = live.replace(/<w:rPr>([\s\S]*?)<\/w:rPr>/, (_m, inner: string) => {
+  const stripped = replacePaired(live, '<w:rPr>', '</w:rPr>', (_m, inner) => {
     // self-closing or paired form
     const rest = inner.replace(/<w:color\b[^>]*(?:\/>|>[\s\S]*?<\/w:color>)/, '')
     return rest.trim() ? `<w:rPr>${rest}</w:rPr>` : ''
@@ -2199,7 +2279,7 @@ export function stripParaMarkRevision(rawPPr: string, kind: 'del' | 'ins'): stri
   const live = changeStart === -1 ? rawPPr : rawPPr.slice(0, changeStart)
   const tail = changeStart === -1 ? '' : rawPPr.slice(changeStart)
   const tags = kind === 'del' ? 'del|moveFrom' : 'ins|moveTo'
-  const stripped = live.replace(/<w:rPr>([\s\S]*?)<\/w:rPr>/, (_m, inner: string) => {
+  const stripped = replacePaired(live, '<w:rPr>', '</w:rPr>', (_m, inner) => {
     const rest = inner.replace(new RegExp(`<w:(?:${tags})\\b[^>]*/>`), '')
     return rest.trim() ? `<w:rPr>${rest}</w:rPr>` : ''
   })
@@ -3417,7 +3497,12 @@ function runFragmentXml(run: Run, insideLink: boolean): string {
         if (begin.includes('</w:checkBox>'))
           begin = begin.replace('</w:checkBox>', `${val}</w:checkBox>`)
         else
-          begin = begin.replace(/<w:checkBox((?:\s[^>]*)?)\/>/, `<w:checkBox$1>${val}</w:checkBox>`)
+          begin = replaceOpeningTag(
+            begin,
+            '<w:checkBox',
+            (tag) => tag.slice(0, -2) + '>' + val + '</w:checkBox>',
+            { selfClosingOnly: true, strictBoundary: true },
+          )
         return begin + instrXml + endXml
       }
       // no glyph left = the user typed over / deleted the checkbox; Word also

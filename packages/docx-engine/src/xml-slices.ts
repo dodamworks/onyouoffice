@@ -58,6 +58,7 @@ export function openingTagMatch(
   options: {
     selfClosingOnly?: boolean
     strictBoundary?: boolean
+    spaceOnlyBoundary?: boolean
     wordBoundary?: boolean
     requireWhitespace?: boolean
     allowUnterminated?: boolean
@@ -70,6 +71,10 @@ export function openingTagMatch(
     const index = xml.indexOf(prefix, from)
     if (index < 0) return null
     const after = index + prefix.length
+    if (options.spaceOnlyBoundary && xml[after] !== ' ' && xml[after] !== '>') {
+      from = after
+      continue
+    }
     if (options.wordBoundary && /\w/.test(xml[after] ?? '')) {
       from = after
       continue
@@ -171,6 +176,7 @@ export function* openingTagMatches(
     allowUnterminated?: boolean
     selfClosingOnly?: boolean
     strictBoundary?: boolean
+    spaceOnlyBoundary?: boolean
     wordBoundary?: boolean
     requireWhitespace?: boolean
   } = {},
@@ -348,4 +354,146 @@ export function* revisionTagMatches(xml: string): Generator<XmlMatch> {
     yield match
     from = gt + 1
   }
+}
+
+/** Global lazy paired matches: no later opener can match once the closing delimiter is absent. */
+export function* pairedTagMatches(
+  xml: string,
+  prefix: string,
+  closing: string,
+): Generator<XmlMatch> {
+  let from = 0
+  while (from < xml.length) {
+    const match = pairedMatch(xml, prefix, closing, { from, openingTag: true, strictOpening: true })
+    if (!match) return
+    match.push(match[0]!.slice(match[0]!.indexOf('>') + 1, -closing.length))
+    yield match
+    from = match.index + match[0]!.length
+  }
+}
+
+export function replaceOpeningTag(
+  xml: string,
+  prefix: string,
+  edit: (tag: string) => string,
+  options: Parameters<typeof openingTagMatch>[2] = {},
+): string {
+  const match = openingTagMatch(xml, prefix, options)
+  return match
+    ? xml.slice(0, match.index) + edit(match[0]!) + xml.slice(match.index + match[0]!.length)
+    : xml
+}
+
+export function replacePaired(
+  xml: string,
+  prefix: string,
+  closing: string,
+  edit: (part: string, inner: string) => string,
+): string {
+  const match = pairedMatch(xml, prefix, closing)
+  return match
+    ? xml.slice(0, match.index) +
+        edit(match[0]!, match[0]!.slice(prefix.length, -closing.length)) +
+        xml.slice(match.index + match[0]!.length)
+    : xml
+}
+
+/** Raw tag grammar: retain quoted > bytes and original captures, without retrying suffixes. */
+export function* rawTagMatches(xml: string, pptx = false): Generator<XmlMatch> {
+  const delimiters = [...xml.matchAll(/["'>]/g)].map((m) => m.index)
+  const ends = new Int32Array(delimiters.length + 1).fill(-1)
+  let single = -1
+  let double = -1
+  for (let i = delimiters.length - 1; i >= 0; i--) {
+    const ch = xml[delimiters[i]!]!
+    if (ch === '>') ends[i] = delimiters[i]!
+    else if (ch === "'") {
+      ends[i] = single < 0 ? -1 : ends[single + 1]!
+      single = i
+    } else {
+      ends[i] = double < 0 ? -1 : ends[double + 1]!
+      double = i
+    }
+  }
+  const name = pptx ? /[A-Za-z][\w:]*/y : /[A-Za-z0-9:._-]+/y
+  let from = 0
+  let delimiter = 0
+  while (from < xml.length) {
+    const start = xml.indexOf('<', from)
+    if (start < 0) return
+    const closing = xml[start + 1] === '/'
+    name.lastIndex = start + (closing ? 2 : 1)
+    const token = name.exec(xml)
+    if (!token) {
+      from = start + 1
+      continue
+    }
+    while (delimiter < delimiters.length && delimiters[delimiter]! < name.lastIndex) delimiter++
+    const end = ends[delimiter]!
+    if (end < 0) {
+      from = start + 1
+      continue
+    }
+    let attrs = xml.slice(name.lastIndex, end)
+    const self = pptx && attrs.endsWith('/')
+    if (self) attrs = attrs.slice(0, -1)
+    const match = Object.assign([xml.slice(start, end + 1), closing ? '/' : '', token[0], attrs], {
+      index: start,
+      input: xml,
+    })
+    if (pptx) match.push(self ? '/' : '')
+    yield match
+    from = end + 1
+  }
+}
+
+/** Same first loose attribute removal, without retries at each leading whitespace byte. */
+export function removeLooseAttribute(xml: string, name: 'rot' | 'flipH' | 'flipV'): string {
+  const re = {
+    rot: /\brot\s*=\s*(?:"[^"]*"|'[^']*')/y,
+    flipH: /\bflipH\s*=\s*(?:"[^"]*"|'[^']*')/y,
+    flipV: /\bflipV\s*=\s*(?:"[^"]*"|'[^']*')/y,
+  }[name]
+  let from = 0
+  while (from < xml.length) {
+    const at = xml.indexOf(name, from)
+    if (at < 0) return xml
+    re.lastIndex = at
+    const match = re.exec(xml)
+    if (match) {
+      let start = at
+      while (start > 0 && /\s/.test(xml[start - 1]!)) start--
+      return xml.slice(0, start) + xml.slice(at + match[0].length)
+    }
+    from = at + name.length
+  }
+  return xml
+}
+
+/** Global whitespace-prefixed attributes, preserving the original global match boundaries. */
+export function removeSpacePrefixedAttributes(xml: string, names: readonly string[]): string {
+  const needles = names.map((name) => `${name}="`)
+  const positions = needles.map((needle) => xml.indexOf(needle))
+  const parts: string[] = []
+  let consumed = 0
+  while (true) {
+    let choice = -1
+    for (let i = 0; i < positions.length; i++)
+      if (positions[i]! >= 0 && (choice < 0 || positions[i]! < positions[choice]!)) choice = i
+    if (choice < 0) break
+    const at = positions[choice]!
+    const end = xml.indexOf('"', at + needles[choice]!.length)
+    if (end < 0) break
+    if (at > consumed && /\s/.test(xml[at - 1]!)) {
+      let start = at
+      while (start > consumed && /\s/.test(xml[start - 1]!)) start--
+      parts.push(xml.slice(consumed, start))
+      consumed = end + 1
+    }
+    const next = Math.max(at + 1, consumed)
+    for (let i = 0; i < positions.length; i++)
+      if (positions[i]! >= 0 && positions[i]! < next) positions[i] = xml.indexOf(needles[i]!, next)
+  }
+  parts.push(xml.slice(consumed))
+  return parts.join('')
 }
