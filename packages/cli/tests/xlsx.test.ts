@@ -660,6 +660,7 @@ describe('formula cache policy', () => {
       expect(sheet).toMatch(
         /<c r="A2"[^>]*\bcm="1"[^>]*><f t="array" ref="A2">_xlfn\._xlws\.FILTER\(/,
       )
+      expect(sheet).toMatch(/<c r="A2"[^>]*\bt="e"[^>]*>.*?<v>#SPILL!<\/v>/)
       expect(sheet).not.toContain('#NAME?')
       const unknown = /<c r="E2"[^>]*>(.*?)<\/c>/.exec(sheet)?.[1]
       expect(unknown).toContain('<f>ONYOUNOTIMPLEMENTED(A1)</f>')

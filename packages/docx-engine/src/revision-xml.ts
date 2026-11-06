@@ -1,3 +1,6 @@
+// Modified by Onyou Office: preserve raw revision tokens with bounded scanning.
+import { revisionTagMatches } from './xml-slices'
+
 /**
  * Accept / reject tracked changes in a raw WordprocessingML part (headers,
  * footers, footnotes, endnotes): the parts the editor never loads as nodes.
@@ -49,14 +52,10 @@ interface El {
   parent: number
 }
 
-const TAG_RE =
-  /<(\/?)([A-Za-z][\w.-]*:?[\w.-]*)((?:\s+[^>]*?)?)(\/?)>|<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<\?[\s\S]*?\?>/g
-
 function scan(xml: string): El[] {
   const out: El[] = []
   const stack: number[] = []
-  TAG_RE.lastIndex = 0
-  for (let m = TAG_RE.exec(xml); m; m = TAG_RE.exec(xml)) {
+  for (const m of revisionTagMatches(xml)) {
     if (m[2] === undefined) continue
     const [whole, close, name, attrs, self] = m
     const start = m.index
@@ -383,12 +382,19 @@ export function applyTrackedChangesXml(
   mode: RevisionXmlMode,
   filter?: RevisionXmlFilter,
 ): RevisionXmlResult {
-  if (countTrackedChangesXml(xml) === 0) return { xml, applied: 0, remaining: 0 }
+  if (countTrackedChangesXml(xml) === 0) {
+    // nothing countable is left, but a part whose move markup lost its partner
+    // (the move was resolved earlier, e.g. in the body) still gets the orphan
+    // markers back instead of shipping markup Word never resolves
+    const cleaned = cleanMoveRangeMarkers(xml)
+    return { xml: cleaned.xml, applied: 0, remaining: 0 }
+  }
   const els = scan(xml)
   const { edits, applied } = planEdits(els, xml, mode, filter)
   // a property holder emptied by independent edits (markers and record both resolved) goes
   const out = edits.length ? applyEdits(xml, edits).replace(/<w:(rPr|trPr)><\/w:\1>/g, '') : xml
-  return { xml: out, applied, remaining: countTrackedChangesXml(out) }
+  const cleaned = cleanMoveRangeMarkers(out)
+  return { xml: cleaned.xml, applied, remaining: countTrackedChangesXml(cleaned.xml) }
 }
 
 /** the editor's accept / reject decisions replayed on the part's original bytes */
@@ -460,4 +466,45 @@ export function resolvePropChangeXml(
       ? [remove(change)]
       : revertPropChange(els, xml, change)
   return applyEdits(xml, edits).replace(/<w:(rPr|trPr|tcPr|tblPrEx)><\/w:\1>/g, '')
+}
+
+/**
+ * Drop orphaned move-range markers: an end whose start is gone (the moved
+ * paragraph was accepted / rejected, so the wrapper left and the untouched
+ * following paragraph keeps the end), and defensively a start whose end is
+ * gone. A range pairs by side and w:id (a moveFrom range and a moveTo range
+ * that happen to share an id are independent), and an end closes the nearest
+ * still-open start of its side, mirroring how the parser closes the ranges it
+ * reads. A range with both markers (a still-pending move) is left alone. The
+ * final save runs this over the body and every story part because the editor
+ * rebuilds edited paragraphs from its model, which does not model the range
+ * markers.
+ */
+export function cleanMoveRangeMarkers(xml: string): { xml: string; removed: number } {
+  if (!/<w:move(?:From|To)Range(?:Start|End)[\s/>]/.test(xml)) {
+    return { xml, removed: 0 }
+  }
+  const els = scan(xml)
+  const open = new Map<string, El[]>()
+  const dropped: El[] = []
+  for (const el of els) {
+    if (!RANGE_MARKERS.has(el.name)) continue
+    const side = el.name.startsWith('w:moveFrom') ? 'moveFrom' : 'moveTo'
+    const idMatch = /\bw:id\s*=\s*(?:"([^"]*)"|'([^']*)')/.exec(el.attrs)
+    const id = idMatch?.[1] ?? idMatch?.[2] ?? ''
+    if (el.name.endsWith('Start')) {
+      const key = side + '|' + id
+      const stack = open.get(key)
+      if (stack) stack.push(el)
+      else open.set(key, [el])
+    } else {
+      // an end pairs with the nearest still-open start of the same side and
+      // w:id; a shared id across moveFrom / moveTo is two independent ranges
+      const start = open.get(side + '|' + id)?.pop()
+      if (!start) dropped.push(el)
+    }
+  }
+  for (const stack of open.values()) dropped.push(...stack)
+  if (dropped.length === 0) return { xml, removed: 0 }
+  return { xml: applyEdits(xml, dropped.map(remove)), removed: dropped.length }
 }

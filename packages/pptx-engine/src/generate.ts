@@ -1,3 +1,14 @@
+// Modified by Onyou Office: bound raw XML matching while preserving original slices.
+import {
+  openingTagMatch,
+  pairedMatch,
+  firstMatch,
+  removeAttribute,
+  rawTagMatches,
+  quotedTagEnd,
+  quotedTagMatch,
+  propertyOpeningMatch,
+} from './xml-slices'
 /**
  * Phase 3.3 element-level patch generation — regenerating OOXML fragments for
  * dirty elements.
@@ -10,11 +21,14 @@
  *     (b/i/u/sz + solidFill color).
  *   - Untouched bytes (bodyPr/spPr/geometry/placeholder attributes…) are kept verbatim.
  *
- * If the model's run count doesn't match the original XML's <a:r> count (runs
- * added/removed / paragraph structure changed), fall back to the
- * "rebuild txBody per paragraph" path (still keeping outer bytes like spPr where
- * possible). The Phase 3 editor uses the former (lossless) when only text and
- * formatting change without structural edits; structural changes use the latter.
+ * If the model's run count doesn't match the original XML's <a:r> count, or any
+ * paragraph's run count differs (runs added/removed / paragraph structure
+ * changed), fall back to the "rebuild txBody per paragraph" path (still keeping
+ * outer bytes like spPr where possible). A text edit whose traced paragraph/run
+ * moved (element.textMoved) also rebuilds: the in-place patch would keep the
+ * attributes of the old run now at that position. The Phase 3 editor uses the
+ * former (lossless) when only text and formatting change in place; structural or
+ * reordered edits use the latter.
  */
 import type {
   SlideElement,
@@ -54,15 +68,34 @@ function bulletGlyphXml(b: BulletModel): string {
  */
 export function patchTextElementXml(el: TextElement, originalXml: string): string {
   if (!el.text || !el.text.paragraphs.length) return originalXml
+  // The in-place patch writes each run into the old run at the same position; when a
+  // traced paragraph/run moved, that position holds another run's attributes, so the
+  // model's own paragraphs are rebuilt from their traced runs instead.
+  if (el.textMoved) return rebuildTxBody(el, originalXml)
 
+  const modelParagraphs = el.text.paragraphs
   // Collect all model runs (flattened across paragraphs, incl. "\n" soft-break sentinels),
   // one-to-one with the original XML's <a:r>/<a:br> sequence (parse rewrites <a:br/>
   // as a sentinel run, order preserved)
-  const modelRuns: TextRun[] = el.text.paragraphs.flatMap((p) => p.runs)
+  const modelRuns: TextRun[] = modelParagraphs.flatMap((p) => p.runs)
   const runSpans = findRunSpans(originalXml)
+
+  // The flattened count can line up while the paragraph layout differs (4 one-run
+  // paragraphs vs 2 two-run paragraphs = 4 runs either way); each model run must stay in
+  // its own original paragraph or every run lands in the first <a:p>. Require the
+  // paragraph count and every paragraph's run count to match before patching in place.
+  const paragraphSpans = findParagraphSpans(originalXml)
+  const paragraphsAligned =
+    paragraphSpans.length === modelParagraphs.length &&
+    paragraphSpans.every(
+      (span, index) =>
+        findRunSpans(originalXml.slice(span.start, span.end)).length ===
+        modelParagraphs[index]!.runs.length,
+    )
 
   // Count and kind aligned position by position (sentinel ⇔ <a:br>) → lossless in-place patch of each run, br bytes untouched
   const aligned =
+    paragraphsAligned &&
     runSpans.length === modelRuns.length &&
     runSpans.length > 0 &&
     runSpans.every((s, i) => (s.kind === 'br' || !!s.newlineOnly) === isSoftBreakRun(modelRuns[i]!))
@@ -255,7 +288,22 @@ interface Span {
 /** Locate all top-level <a:r>…</a:r> and <a:br/> (incl. paired form) spans in document order. */
 function findRunSpans(xml: string): Span[] {
   const spans: Span[] = []
-  const re = /<a:r>|<a:r\s[^>]*>|<a:br\b[^>]*\/>|<a:br\b[^>]*>|<mc:AlternateContent\b[^>]*>/g
+  const prefixes = /<a:r(?=[\s>])|<a:br\b|<mc:AlternateContent\b/g
+  const re = {
+    lastIndex: 0,
+    exec(text: string): RegExpExecArray | null {
+      prefixes.lastIndex = this.lastIndex
+      const prefix = prefixes.exec(text)
+      if (!prefix) return null
+      const end = text.indexOf('>', prefixes.lastIndex)
+      if (end < 0) return null
+      this.lastIndex = end + 1
+      return Object.assign([text.slice(prefix.index, end + 1)], {
+        index: prefix.index,
+        input: text,
+      }) as RegExpExecArray
+    },
+  }
   let m: RegExpExecArray | null
   while ((m = re.exec(xml)) !== null) {
     const start = m.index
@@ -272,7 +320,7 @@ function findRunSpans(xml: string): Span[] {
     }
     if (m[0].startsWith('<a:br')) {
       if (m[0].endsWith('/>')) {
-        spans.push({ start, end: re.lastIndex, kind: 'br' })
+        spans.push({ start, end: m.index + m[0]!.length, kind: 'br' })
       } else {
         const close = xml.indexOf('</a:br>', re.lastIndex)
         if (close < 0) break
@@ -493,7 +541,9 @@ function hlinkXml(run: TextRun): string {
  * range of its content; null when it cannot be located structurally.
  */
 function ownRPr(runXml: string) {
-  const runOpen = /^<[^\s/>]+(?:"[^"]*"|'[^']*'|[^"'>])*?>/.exec(runXml)?.[0]
+  const name = /^<[^\s/>]+/.exec(runXml)
+  const end = name ? quotedTagEnd(runXml, name[0].length) : -1
+  const runOpen = end < 0 ? undefined : runXml.slice(0, end + 1)
   const rPr = runOpen
     ? topLevelChildren(runXml, runOpen.length, runXml.length).find((c) => c.name === 'a:rPr')
     : undefined
@@ -654,7 +704,9 @@ function patchRunFont(runXml: string, family: string): string {
   // The run's OWN properties, taken as a direct child rather than as the first a:rPr in the text:
   // an extension payload may carry one of its own, and filling that one in would leave the real
   // slots untouched.
-  const runOpen = /^<[^\s/>]+(?:"[^"]*"|'[^']*'|[^"'>])*?>/.exec(runXml)?.[0]
+  const name = /^<[^\s/>]+/.exec(runXml)
+  const end = name ? quotedTagEnd(runXml, name[0].length) : -1
+  const runOpen = end < 0 ? undefined : runXml.slice(0, end + 1)
   if (!runOpen) return patchRunFontUnscannable(runXml, esc)
   const rPr = topLevelChildren(runXml, runOpen.length, runXml.length).find(
     (c) => c.name === 'a:rPr',
@@ -1064,13 +1116,12 @@ export function topLevelChildren(
   to: number,
 ): Array<{ name: string; start: number; end: number }> {
   const out: Array<{ name: string; start: number; end: number }> = []
-  const re = /<(\/?)([a-zA-Z][\w:]*)((?:"[^"]*"|'[^']*'|[^"'>])*?)(\/?)>/g
-  re.lastIndex = from
+
   let depth = 0
   let curStart = -1
   let curName = ''
-  let m: RegExpExecArray | null
-  while ((m = re.exec(xml)) !== null && m.index < to) {
+  for (const m of rawTagMatches(xml, true, from)) {
+    if (m.index >= to) break
     const closing = m[1] === '/'
     const selfClose = m[4] === '/'
     if (!closing && !selfClose) {
@@ -1081,9 +1132,9 @@ export function topLevelChildren(
       depth++
     } else if (closing) {
       depth--
-      if (depth === 0) out.push({ name: curName, start: curStart, end: re.lastIndex })
+      if (depth === 0) out.push({ name: curName, start: curStart, end: m.index + m[0]!.length })
     } else if (selfClose && depth === 0) {
-      out.push({ name: m[2]!, start: m.index, end: re.lastIndex })
+      out.push({ name: m[2]!, start: m.index, end: m.index + m[0]!.length })
     }
   }
   return out
@@ -1091,10 +1142,13 @@ export function topLevelChildren(
 
 /** Expand a self-closing <p:spPr/> (common on placeholders, geometry/fill fully inherited) into a pair for child injection. */
 function expandEmptySpPr(xml: string): string {
-  return xml.replace(
-    /<p:spPr(\s[^>]*?)?\/>/,
-    (_all, attrs: string | undefined) => `<p:spPr${attrs ?? ''}></p:spPr>`,
-  )
+  const tag = openingTagMatch(xml, '<p:spPr', true)
+  return tag
+    ? xml.slice(0, tag.index) +
+        tag[0]!.slice(0, -2) +
+        '></p:spPr>' +
+        xml.slice(tag.index + tag[0]!.length)
+    : xml
 }
 
 /** Gradient fill write-back parameters (subset of the model's Fill gradient). */
@@ -1229,7 +1283,7 @@ function patchGradFillXml(gradXml: string, patch: GradientFillPatch): string {
  */
 export function patchElementFill(originalXml: string, fill: FillPatch): string {
   originalXml = expandEmptySpPr(originalXml)
-  const spPrOpen = /<p:spPr(\s[^>]*)?>/.exec(originalXml)
+  const spPrOpen = openingTagMatch(originalXml, '<p:spPr')
   if (!spPrOpen) return originalXml
   const innerStart = spPrOpen.index + spPrOpen[0].length
   const spPrClose = originalXml.indexOf('</p:spPr>', innerStart)
@@ -1354,7 +1408,7 @@ function patchLnXml(lnXml: string, stroke: StrokePatch | null): string {
  */
 export function patchElementStroke(originalXml: string, stroke: StrokePatch | null): string {
   originalXml = expandEmptySpPr(originalXml)
-  const spPrOpen = /<p:spPr(\s[^>]*)?>/.exec(originalXml)
+  const spPrOpen = openingTagMatch(originalXml, '<p:spPr')
   if (!spPrOpen) return originalXml
   const innerStart = spPrOpen.index + spPrOpen[0].length
   const spPrClose = originalXml.indexOf('</p:spPr>', innerStart)
@@ -1401,7 +1455,7 @@ export function patchPictureSrcRect(
   srcRect: { l: number; t: number; r: number; b: number } | null,
 ): string {
   // Locate the <p:blipFill> range
-  const blipFillOpen = /<p:blipFill(\s[^>]*)?>/.exec(originalXml)
+  const blipFillOpen = openingTagMatch(originalXml, '<p:blipFill')
   if (!blipFillOpen) return originalXml
   const innerStart = blipFillOpen.index + blipFillOpen[0].length
   const blipFillClose = originalXml.indexOf('</p:blipFill>', innerStart)
@@ -1433,7 +1487,7 @@ export function patchPictureSrcRect(
   const srcRectXml = `<a:srcRect${attrs}/>`
 
   // Insert after <a:blip> (OOXML blipFill order: blip → srcRect → fillMode)
-  const blipFillOpenNew = /<p:blipFill(\s[^>]*)?>/.exec(xmlInner)
+  const blipFillOpenNew = openingTagMatch(xmlInner, '<p:blipFill')
   if (!blipFillOpenNew) return xmlInner
   const innerStartNew = blipFillOpenNew.index + blipFillOpenNew[0].length
   const blipFillCloseNew = xmlInner.indexOf('</p:blipFill>', innerStartNew)
@@ -1469,7 +1523,10 @@ export function patchSlideBackgroundXml(bodyPrefix: string, fill: BackgroundFill
         '</a:blipFill>'
       : buildFillXml(fill)
   const bgXml = `<p:bg><p:bgPr>${fillXml}<a:effectLst/></p:bgPr></p:bg>`
-  const existing = /<p:bg>[\s\S]*?<\/p:bg>|<p:bg\s[^>]*\/>/.exec(bodyPrefix)
+  const existing = firstMatch(
+    pairedMatch(bodyPrefix, '<p:bg>', '</p:bg>'),
+    openingTagMatch(bodyPrefix, '<p:bg', true, true),
+  )
   if (existing) {
     return (
       bodyPrefix.slice(0, existing.index) +
@@ -1477,7 +1534,7 @@ export function patchSlideBackgroundXml(bodyPrefix: string, fill: BackgroundFill
       bodyPrefix.slice(existing.index + existing[0].length)
     )
   }
-  const cSld = /<p:cSld(\s[^>]*)?>/.exec(bodyPrefix)
+  const cSld = openingTagMatch(bodyPrefix, '<p:cSld')
   if (!cSld) return bodyPrefix
   const at = cSld.index + cSld[0].length
   return bodyPrefix.slice(0, at) + bgXml + bodyPrefix.slice(at)
@@ -1485,7 +1542,10 @@ export function patchSlideBackgroundXml(bodyPrefix: string, fill: BackgroundFill
 
 /** Remove the slide's own <p:bg> override (background falls back to layout/master). */
 export function removeSlideBackgroundXml(bodyPrefix: string): string {
-  const existing = /<p:bg>[\s\S]*?<\/p:bg>|<p:bg\s[^>]*\/>/.exec(bodyPrefix)
+  const existing = firstMatch(
+    pairedMatch(bodyPrefix, '<p:bg>', '</p:bg>'),
+    openingTagMatch(bodyPrefix, '<p:bg', true, true),
+  )
   if (!existing) return bodyPrefix
   return bodyPrefix.slice(0, existing.index) + bodyPrefix.slice(existing.index + existing[0].length)
 }
@@ -1496,9 +1556,9 @@ export function removeSlideBackgroundXml(bodyPrefix: string): string {
  * (default is shown).
  */
 export function patchSlideShowMasterSpXml(bodyPrefix: string, hidden: boolean): string {
-  const open = /<p:sld((?:\s(?:"[^"]*"|'[^']*'|[^"'>])*?)?)>/.exec(bodyPrefix)
+  const open = quotedTagMatch(bodyPrefix, '<p:sld')
   if (!open) return bodyPrefix
-  let attrs = (open[1] ?? '').replace(/\s+showMasterSp=(?:"[^"]*"|'[^']*')/, '')
+  let attrs = removeAttribute(open[1] ?? '', 'showMasterSp', true)
   if (hidden) attrs += ' showMasterSp="0"'
   return (
     bodyPrefix.slice(0, open.index) +
@@ -1612,12 +1672,17 @@ export function readSlideTransitionXml(bodySuffix: string): SlideTransitionKind 
 /** Set/remove advTm on every <p:transition> open tag in the block (both Choice/Fallback in morph's AC wrapper). */
 function patchAdvTmAttr(block: string, ms: number | null): string {
   return block.replace(/<p:transition\b[^>]*>/g, (tag) => {
-    const cleaned = tag.replace(/\s+advTm="[^"]*"/, '')
+    const cleaned = removeAttribute(tag, 'advTm')
     if (ms == null) return cleaned
-    return cleaned.replace(
-      /(\s*\/)?>$/,
-      (_m, close: string | undefined) => ` advTm="${clampInt(ms, 0, 4294967295)}"${close ?? ''}>`,
-    )
+    let at = cleaned.length - 1
+    let close = ''
+    if (cleaned[at - 1] === '/') {
+      let start = at - 1
+      while (start > 0 && /\s/.test(cleaned[start - 1]!)) start--
+      close = cleaned.slice(start, at)
+      at = start
+    }
+    return cleaned.slice(0, at) + ` advTm="${clampInt(ms, 0, 4294967295)}"${close}>`
   })
 }
 
@@ -1659,7 +1724,7 @@ const SLD_OPEN_RE = /<p:sld\b[^>]*>/
 export function patchSlideHiddenXml(bodyPrefix: string, hidden: boolean): string {
   const m = SLD_OPEN_RE.exec(bodyPrefix)
   if (!m) return bodyPrefix
-  let tag = m[0].replace(/\s+show="[^"]*"/, '')
+  let tag = removeAttribute(m[0], 'show')
   if (hidden) tag = `${tag.slice(0, -1)} show="0">`
   return bodyPrefix.slice(0, m.index) + tag + bodyPrefix.slice(m.index + m[0].length)
 }
@@ -1719,7 +1784,7 @@ export function patchElementXfrm(el: SlideElement, originalXml: string): string 
   }
   if (isFrame) return originalXml
   // No xfrm: inject after the spPr / grpSpPr open tag (self-closing <p:spPr/> expanded first)
-  const spPr = /<(p:spPr|p:grpSpPr|pic:spPr)(\s[^>]*?)?(\/?)>/.exec(originalXml)
+  const spPr = propertyOpeningMatch(originalXml)
   if (!spPr) return originalXml
   const tag = spPr[1]!
   if (spPr[3] === '/') {

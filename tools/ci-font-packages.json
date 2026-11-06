@@ -1,0 +1,26 @@
+{
+  "ubuntu": "22.04",
+  "packages": [
+    {
+      "name": "fonts-crosextra-caladea",
+      "version": "20130214-2.1",
+      "path": "pool/universe/f/fonts-crosextra-caladea/fonts-crosextra-caladea_20130214-2.1_all.deb",
+      "sha256": "1330d25dfa5bab2e9b712b4950d2855cdb63a2b2b9451e2ffb93618c77e1f242",
+      "source": "https://packages.ubuntu.com/jammy/all/fonts-crosextra-caladea/download"
+    },
+    {
+      "name": "fonts-crosextra-carlito",
+      "version": "20130920-1.1",
+      "path": "pool/universe/f/fonts-crosextra-carlito/fonts-crosextra-carlito_20130920-1.1_all.deb",
+      "sha256": "7385475cde807e1363c3361976576571870373032466c7f525d5900852b6f420",
+      "source": "https://packages.ubuntu.com/jammy/all/fonts-crosextra-carlito/download"
+    },
+    {
+      "name": "fonts-noto-cjk",
+      "version": "1:20220127+repack1-1",
+      "path": "pool/main/f/fonts-noto-cjk/fonts-noto-cjk_20220127+repack1-1_all.deb",
+      "sha256": "e804b3474a79bd70d5f03f590e2d06dbc5ce17f48be7cfaf6c48086471edd5be",
+      "source": "https://packages.ubuntu.com/jammy/all/fonts-noto-cjk/download"
+    }
+  ]
+}

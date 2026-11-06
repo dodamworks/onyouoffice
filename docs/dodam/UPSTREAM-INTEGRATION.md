@@ -42,6 +42,31 @@ nickname, common AI panel presentation and separate app/data registrations.
 Engine/studio source stays pinned; importing a candidate is not an installer
 release or a claim that it has passed validation.
 
+## November 6 maintenance source
+
+The next maintenance source pins IeumOffice
+[`999d2ed2a25424df2b293282bea6c980f3bb9f0e`](https://github.com/pblsketch/openoffice/commit/999d2ed2a25424df2b293282bea6c980f3bb9f0e),
+including its 0.12.11 release changes. This extends the selected-port basis above;
+upstream growth snapshots and release/operations records remain separate.
+
+The imported changes include legacy Word `.doc` conversion, additional Save As
+export formats, PDF source/translated sentence pairing and easy explanations,
+HWP missing-font notices and AI edit feedback, spreadsheet external-link/cache
+and legacy `.xls` style preservation, shared mind-map layouts, and document
+round-trip fixes. The original source, authorship, license and engine contracts
+remain those of the credited upstream projects.
+
+Preserve Onyou branding, Home order and nickname, common AI controls, installed
+identifiers/data separation, project features and existing validation. Linux
+Create New templates use product-specific filenames. The inherited Mac update
+helper is tested with isolated packages, but no update feed or in-app automatic
+installation is enabled: product updates remain manual downloads.
+
+The app version for this source is 0.12.11. Source integration, passing CI and
+actual installer availability are distinct; use GitHub Releases and its build
+provenance to determine the published installer state. Dependency security work
+is recorded in [security maintenance](SECURITY-MAINTENANCE.md).
+
 ## Accept changes deliberately
 
 ### Recurring maintenance
@@ -148,3 +173,21 @@ credentials, dependencies or generated outputs through shared writable links.
 Previous internal PR numbers and personal operational records are not part of
 the public contribution workflow. New PRs describe the current problem, final
 change, upstream basis and applicable verification.
+
+### Preserve security maintenance adaptations
+
+Keep the raw-XML work bounds in `packages/docx-engine/src/xml-slices.ts` and its
+section, picture/generation, patch, watermark, ink, content-control, property and
+revision consumers. Preserve both input-work-bound and raw-slice compatibility
+regressions; existing document bytes and identifiers remain the contract. Keep
+the checked metadata-read order in `packages/ai-provider/src/agent-session/skills.ts`
+and its boundary regressions. Retire a local adaptation only when an upstream
+replacement provides the same protection and passes the relevant compatibility
+tests. The CI font lock/cache is product validation infrastructure: preserve its
+verified archive hashes, setup deadlines and all visual assertions during ports.
+
+The DOCX and PPTX generation paths also retain bounded raw tag, image/shape,
+paragraph-property and slide-background matching. Preserve each engine's
+`tests/raw-xml-generation.test.ts` and its `src/xml-slices.ts` helper alongside
+the unchanged-save and edited-save contracts; no new public package export or
+engine dependency is needed for these internal adaptations.
