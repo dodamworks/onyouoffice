@@ -1,5 +1,19 @@
+// Modified by Onyou Office: bound raw XML searches while retaining document ids and unedited bytes.
+import {
+  attributeMatch,
+  attributeMatches,
+  elementMatches,
+  openingTagMatch,
+  openingTagMatches,
+  removeSpacePrefixedAttribute,
+  replaceMatches,
+} from './xml-slices'
 import JSZip from 'jszip'
-import { applyRevisionResolutions, resolvePropChangeXml } from './revision-xml'
+import {
+  applyRevisionResolutions,
+  cleanMoveRangeMarkers,
+  resolvePropChangeXml,
+} from './revision-xml'
 import { REDACT_EL, REDACT_NS, REDACT_PREFIX } from '@genoffice/agent-core/redact-range'
 import {
   applyImageWrap,
@@ -27,6 +41,7 @@ import {
   stripInkRuns,
 } from './ink'
 import { resolveRelationshipTargetPath } from './parse-package'
+import { applyRemoveParts, planRemoveParts, type RemovePartsOptions } from './remove-parts'
 import { assertZipWithinLimits, resolveMainDocumentPath, type ParseExtras } from './parse'
 import { cleanupDocxOwnedResources } from './resource-cleanup'
 import { loadDocxZip } from './zip-load'
@@ -116,6 +131,7 @@ import {
   patchZoteroDocumentDataXml,
 } from './zotero-doc-props'
 import { applyPropertyChanges, type PropertyChanges } from './doc-properties'
+import { patchHfPicturesXml } from './run-picture'
 
 /**
  * Relationship attributes are read quote-agnostically and with any spacing
@@ -138,10 +154,10 @@ const RELATIONSHIP_TAG = /<Relationship\b[^>]*\/>/g
  * an id read as "absent" is worse than no read at all, because a new picture
  * then mints one that is already in use.
  */
-const DRAWING_DOCPR_ID = /<wp:docPr\s[^>]*?\bid\s*=\s*(["'])(\d+)\1/g
+const DRAWING_DOCPR_ID = /\bid\s*=\s*(["'])(\d+)\1/g
 
 /** w:id of a bookmark endpoint, either quote style */
-const BOOKMARK_ID = /<w:bookmark(?:Start|End)\s[^>]*?\bid\s*=\s*(["'])(\d+)\1/g
+const BOOKMARK_ID = /\bid\s*=\s*(["'])(\d+)\1/g
 
 /** wp:docPr/@id of a newly embedded picture is DOCPR_ID_BASE + its sequence */
 const DOCPR_ID_BASE = 9000
@@ -392,8 +408,12 @@ export interface SaveOptions {
   /**
    * Block-level content controls (w:sdt) for the saved body. `wrap` puts the
    * listed body blocks into one new control (the blocks stay individually
-   * editable), `unwrap` removes the wrapper of the control with that tag and
-   * leaves its blocks as plain body children.
+   * editable). `unwrap` removes the wrapper of every control with that tag and
+   * leaves its blocks as plain body children; nested controls are unwrapped
+   * level by level (unwrapping an inner tag keeps the outer shell, unwrapping
+   * the outer tag keeps inner controls as their blocks' own shells) and a tag
+   * that appears more than once is unwrapped everywhere. Inline (run-level)
+   * controls are reported read-only and are not unwrapped by this option.
    */
   contentControls?: {
     wrap?: Array<{ docxIndexes: number[]; spec: ContentControlSpec }>
@@ -552,6 +572,14 @@ export interface SaveOptions {
    * keeps every property as it is.
    */
   properties?: PropertyChanges
+  /**
+   * Remove metadata-carrying package parts (customXml stores, web-extension
+   * parts, explicit paths) in the final package pass, together with their
+   * relationships, content-type entries and empty folders. Content controls
+   * bound to a removed customXml store refuse the save by default; pass
+   * dataBinding: 'strip' to unbind them and keep their text.
+   */
+  removeParts?: RemovePartsOptions
 }
 
 const HYPERLINK_REL_TYPE =
@@ -777,10 +805,17 @@ export async function saveDocx(
     options.themeFonts === undefined &&
     options.themeColors === undefined &&
     options.properties === undefined &&
+    options.removeParts === undefined &&
     options.contentControls === undefined &&
     (options.partXml === undefined || Object.keys(options.partXml).length === 0) &&
     (options.partBinary === undefined || Object.keys(options.partBinary).length === 0)
-  if (isUnchanged && !scrubPersonalInfo) return originalBytes
+  if (isUnchanged && !scrubPersonalInfo) {
+    // remove_parts may be the only requested change: when nothing matches, the
+    // package is already scrubbed and the original bytes are the right answer
+    if (options.removeParts === undefined) return originalBytes
+    const plan = await planRemoveParts(originalBytes, options.removeParts)
+    if (plan.removedPaths.length === 0) return originalBytes
+  }
 
   const zip = await loadDocxZip(originalBytes)
   assertZipWithinLimits(zip)
@@ -1181,6 +1216,20 @@ export async function saveDocx(
     if (rIds.size > 0) hfRelsOut.set(relsPath, relsXml)
     return out
   }
+  /** an existing part after a strip edit: moved / resized floating pictures are
+   *  patched into their drawings, and a picture-only edit keeps the text bytes */
+  const editedHfPartXml = (
+    kind: 'header' | 'footer',
+    hf: HeaderFooter,
+    originalXml: string | null,
+  ): string => {
+    const base =
+      originalXml && hf.pictureEdits
+        ? patchHfPicturesXml(originalXml, hf.pictureEdits)
+        : originalXml
+    if (base && (hf.pictureOnly || hf.keepContent)) return base
+    return headerFooterPartXml(kind, hf, undefined, base, options.pageCount)
+  }
   const planHeaderFooter = async (
     kind: 'header' | 'footer',
     hf: HeaderFooter | undefined,
@@ -1202,13 +1251,7 @@ export async function saveDocx(
       if (!path) return
       const file = zip.file(path)
       const originalXml = hfOriginalXml(hf, file ? await file.async('string') : null)
-      const partXml = await resolveHfNewPictures(
-        path,
-        hf.keepContent && originalXml
-          ? originalXml
-          : headerFooterPartXml(kind, hf, undefined, originalXml, options.pageCount),
-        hf,
-      )
+      const partXml = await resolveHfNewPictures(path, editedHfPartXml(kind, hf, originalXml), hf)
       hfParts.push({ path, xml: partXml })
     } else {
       let n = 1
@@ -1255,7 +1298,7 @@ export async function saveDocx(
   for (const edit of options.sectionHf ?? []) {
     const block = parsed.blocks.find((b) => b.docxIndex === edit.lastBlockIndex)
     const sectPr =
-      block?.originalXml?.match(/<w:sectPr[^>]*\/>|<w:sectPr[\s\S]*?<\/w:sectPr>/)?.[0] ?? ''
+      elementMatches(block?.originalXml ?? '', '<w:sectPr', '</w:sectPr>').next().value?.[0] ?? ''
     const refs = hfReferenceTags(sectPr, edit.kind)
     const variant = edit.variant ?? 'default'
     // non-schema w:type="odd" and untyped references count as default (mirrors parse)
@@ -1276,9 +1319,7 @@ export async function saveDocx(
         path,
         xml: await resolveHfNewPictures(
           path,
-          edit.hf.keepContent && originalXml
-            ? originalXml
-            : headerFooterPartXml(edit.kind, edit.hf, undefined, originalXml, options.pageCount),
+          editedHfPartXml(edit.kind, edit.hf, originalXml),
           edit.hf,
         ),
       })
@@ -1417,6 +1458,8 @@ export async function saveDocx(
   const commentsExtPath = 'word/commentsExtended.xml'
   let commentsXml: string | null = null
   let commentsIsNew = false
+  let commentsRelsXml: string | null = null
+  let commentsRelsIsNew = false
   let commentsExtXml: string | null = null
   let commentsExtIsNew = false
   if (options.comments) {
@@ -1434,10 +1477,72 @@ export async function saveDocx(
               .padStart(8, '0'),
           },
     )
+    // comment pictures: the bytes land as media parts and their relationships
+    // live in the comments part's own rels file, not the document's (genoffice#2040)
     const commentsFile = zip.file(commentsPath)
+    const imageRuns = new Map<string, string>()
+    const imageComments = withParaIds.filter((c) => c.image)
+    // a comment whose text AND picture bytes are both unchanged keeps its
+    // original XML verbatim — resolve what the original carried so the loop
+    // below can tell a kept picture from a new one
+    const originalImageBytesOf = new Map<string, string | null>()
+    const keptImageRuns = new Map<string, string>()
+    const originalCommentsXml = commentsFile ? await commentsFile.async('string') : null
+    if (originalCommentsXml) {
+      const origRelsFile = zip.file('word/_rels/comments.xml.rels')
+      const origRels = origRelsFile ? await origRelsFile.async('string') : null
+      for (const m of originalCommentsXml.match(/<w:comment\s[^>]*>[\s\S]*?<\/w:comment>/g) ?? []) {
+        const id = /w:id="([^"]+)"/.exec(m)?.[1]
+        if (!id) continue
+        const blipRel = /r:embed="([^"]+)"/.exec(m)?.[1]
+        const rel =
+          blipRel && origRels
+            ? new RegExp(`<Relationship\\b[^>]*Id="${blipRel}"[^>]*/>`).exec(origRels)?.[0]
+            : undefined
+        const target = rel ? /Target="([^"]+)"/.exec(rel)?.[1] : undefined
+        const mediaFile = target ? zip.file(`word/${target.replace(/^\/?(?:word\/)?/, '')}`) : null
+        originalImageBytesOf.set(id, mediaFile ? await mediaFile.async('base64') : null)
+        const drawing = /<w:drawing>[\s\S]*?<\/w:drawing>/.exec(m)?.[0]
+        if (drawing) keptImageRuns.set(id, `<w:r>${drawing}</w:r>`)
+      }
+    }
+    if (imageComments.length > 0) {
+      const commentsRelsPath = 'word/_rels/comments.xml.rels'
+      const relsFile = zip.file(commentsRelsPath)
+      const relsXml: string | null = relsFile ? await relsFile.async('string') : null
+      if (!relsXml) commentsRelsIsNew = true
+      let relSeq = 0
+      for (const m of (relsXml ?? '').matchAll(/Id="rId(\d+)"/g)) {
+        relSeq = Math.max(relSeq, parseInt(m[1]!, 10))
+      }
+      const added: string[] = []
+      for (const c of imageComments) {
+        const image = c.image!
+        if (originalImageBytesOf.get(c.id) === image.base64) continue
+        const mediaPath = landMedia({ base64: image.base64, mime: image.mime })
+        usedExtensions.add(IMAGE_EXT[image.mime])
+        const rId = `rId${++relSeq}`
+        added.push(
+          `<Relationship Id="${rId}" Type="${IMAGE_REL_TYPE}" Target="${mediaPath.replace(/^word\//, '')}"/>`,
+        )
+        const drawing = inlinePictureDrawingXml({
+          rId,
+          docPrId: DOCPR_ID_BASE + ++docPrSeq,
+          widthPx: image.widthPx,
+          heightPx: image.heightPx,
+        })
+        imageRuns.set(c.id, `<w:r>${drawing}</w:r>`)
+      }
+      commentsRelsXml = (
+        relsXml ??
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>'
+      ).replace('</Relationships>', `${added.join('')}</Relationships>`)
+    }
     commentsXml = buildCommentsXml(
       withParaIds,
       commentsFile ? await commentsFile.async('string') : null,
+      imageRuns,
+      keptImageRuns,
     )
     if (!zip.file(commentsPath)) {
       commentsIsNew = true
@@ -1615,19 +1720,71 @@ export async function saveDocx(
   }
 
   // Block-level content controls: a new control wraps the blocks of one range,
-  // an unwrap drops the wrapper of the control with that tag. Both work on the
-  // emitted bytes, so the blocks inside stay individually editable.
+  // an unwrap drops the wrapper of every control carrying that tag. Both work
+  // on the emitted bytes, so the blocks inside stay individually editable.
+  // Nested controls unwrap level by level (matching an inner tag keeps the
+  // outer shell; matching the outermost keeps inner controls as the blocks'
+  // own shells) and a tag that appears more than once is unwrapped everywhere.
   const unwrapTags = new Set((options.contentControls?.unwrap ?? []).map((u) => u.tag))
+  // A split control keeps its open bytes on one block and its close bytes on
+  // another, so strip by the owning block + offset: the closing bytes of
+  // nested controls are identical strings and content matching would remove
+  // the wrong level.
+  interface UnwrapSlice {
+    offset: number
+    length: number
+    xml: string
+  }
+  const unwrapSlicesByIndex = new Map<number, UnwrapSlice[]>()
+  // fragments saved without a docxIndex (self-contained editor xml) are
+  // stripped by content: prefix first, then suffix, like the shell contract
+  const unwrapShellBytes: string[] = []
+  const addUnwrapSlice = (
+    docxIndex: number | undefined,
+    offset: number | undefined,
+    xml: string,
+  ): void => {
+    if (!xml) return
+    if (!unwrapShellBytes.includes(xml)) unwrapShellBytes.push(xml)
+    if (docxIndex === undefined || offset === undefined) return
+    const slices = unwrapSlicesByIndex.get(docxIndex) ?? []
+    if (slices.some((slice) => slice.offset === offset && slice.length === xml.length)) return
+    slices.push({ offset, length: xml.length, xml })
+    unwrapSlicesByIndex.set(docxIndex, slices)
+  }
+  for (const block of parsed.blocks) {
+    const chain = block.sdtShells ?? (block.sdtShell ? [block.sdtShell] : [])
+    for (const shell of chain) {
+      if (!unwrapTags.has(shell.tag)) continue
+      addUnwrapSlice(shell.openBlock, shell.openOffset, shell.openXml)
+      addUnwrapSlice(shell.closeBlock, shell.closeOffset, shell.closeXml)
+    }
+  }
+  const stripUnwrappedBytes = (xml: string): string => {
+    for (const bytes of unwrapShellBytes) {
+      if (xml.startsWith(bytes)) xml = xml.slice(bytes.length)
+      else if (xml.endsWith(bytes)) xml = xml.slice(0, xml.length - bytes.length)
+    }
+    return xml
+  }
   // an edited block saves as its original xml (shell bytes included), so the
-  // shell is stripped by content, whichever block kind carries it
-  const unwrapShells = parsed.blocks
-    .map((b) => b.sdtShell)
-    .filter((shell): shell is NonNullable<typeof shell> => !!shell && unwrapTags.has(shell.tag))
-  const stripUnwrappedShell = (xml: string): string => {
-    for (const shell of unwrapShells) {
-      if (shell.openXml && xml.startsWith(shell.openXml)) xml = xml.slice(shell.openXml.length)
-      if (shell.closeXml && xml.endsWith(shell.closeXml))
-        xml = xml.slice(0, xml.length - shell.closeXml.length)
+  // shell is stripped from whichever block kind carries it
+  const stripUnwrappedShell = (xml: string, docxIndex: number | undefined): string => {
+    // a fragment without a docxIndex carries its own shell bytes: strip by
+    // content. A known block only owns the slices recorded for it (a block
+    // outside the unwrapped control must stay byte-identical).
+    if (docxIndex === undefined) return stripUnwrappedBytes(xml)
+    const slices = unwrapSlicesByIndex.get(docxIndex)
+    if (!slices || slices.length === 0) return xml
+    for (const slice of [...slices].sort((a, b) => b.offset - a.offset)) {
+      if (xml.slice(slice.offset, slice.offset + slice.length) === slice.xml) {
+        xml = xml.slice(0, slice.offset) + xml.slice(slice.offset + slice.length)
+        continue
+      }
+      // the emitted xml no longer matches the original slice (edited block):
+      // fall back to the first exact occurrence
+      const at = xml.indexOf(slice.xml)
+      if (at !== -1) xml = xml.slice(0, at) + xml.slice(at + slice.xml.length)
     }
     return xml
   }
@@ -1660,17 +1817,20 @@ export async function saveDocx(
       if (!el) throw new Error(`invalid docxIndex ${fb.docxIndex}`)
       xml = documentXml.slice(el.start, el.end)
       fbDocxIndex = fb.docxIndex
-      if (unwrapShells.length > 0) xml = stripUnwrappedShell(xml)
+      if (unwrapSlicesByIndex.size > 0) xml = stripUnwrappedShell(xml, fb.docxIndex)
     } else if (fb.kind === 'generated') {
       if (fb.docxIndex !== undefined) fbDocxIndex = fb.docxIndex
       xml = generateParagraphXml(fb.block, genCtx)
-      // If the original paragraph was inside a w:sdt shell, re-wrap it
+      // If the original paragraph was inside a w:sdt shell, re-wrap it. The
+      // chain is flattened here to the outermost shell (nested regenerated
+      // paragraphs inside several controls are not re-wrapped; an untouched
+      // block keeps its chain byte-identically through the original path).
       const shell = fb.block.sdtShell
       if (shell && !unwrapTags.has(shell.tag)) {
         xml = shell.openXml + xml + shell.closeXml
       }
     } else if (fb.kind === 'xml') {
-      xml = unwrapShells.length > 0 ? stripUnwrappedShell(fb.xml) : fb.xml
+      xml = unwrapSlicesByIndex.size > 0 ? stripUnwrappedShell(fb.xml, fb.docxIndex) : fb.xml
       fbDocxIndex = fb.docxIndex
       if (fb.replaceImage) xml = retargetImageBlip(xml, embedImageMedia(fb.replaceImage))
     } else if (fb.kind === 'chart') {
@@ -1774,9 +1934,19 @@ export async function saveDocx(
   // (the trailing sectPr already received them above and is skipped by the
   // lookahead; sections that carry their own references keep them)
   if (options.hfAllSections && hfRefTags.length > 0) {
-    newDocumentXml = newDocumentXml.replace(
-      /(<w:sectPr(?:\s[^>]*)?>)(?!<w:headerReference|<w:footerReference)/g,
-      `$1${hfRefTags.join('')}`,
+    newDocumentXml = replaceMatches(
+      newDocumentXml,
+      openingTagMatches(newDocumentXml, '<w:sectPr', { strictBoundary: true }),
+      (tag, match) => {
+        const end = match.index + tag.length
+        if (
+          tag === '<w:sectPr/>' ||
+          newDocumentXml.startsWith('<w:headerReference', end) ||
+          newDocumentXml.startsWith('<w:footerReference', end)
+        )
+          return tag
+        return tag + hfRefTags.join('')
+      },
     )
   }
 
@@ -1786,7 +1956,10 @@ export async function saveDocx(
     const inherited = new Map<string, string>()
     const touched = new Set<string>()
     const sections = [
-      ...newDocumentXml.matchAll(/<w:sectPr\b[^>]*\/>|<w:sectPr\b[^>]*>[\s\S]*?<\/w:sectPr>/g),
+      ...elementMatches(newDocumentXml, '<w:sectPr', '</w:sectPr>', {
+        openingTag: true,
+        wordBoundary: true,
+      }),
     ]
     const replacements: string[] = []
     const even = options.evenAndOddHeaders ?? parsed.evenAndOddHeaders ?? false
@@ -1797,7 +1970,7 @@ export async function saveDocx(
         const id = hfReferenceRId(ref)
         if (id) inherited.set(type === 'odd' || type === undefined ? 'default' : type, id)
       }
-      const titleTag = /<w:titlePg\b[^>]*\/?\s*>/.exec(sectionXml)?.[0]
+      const titleTag = openingTagMatch(sectionXml, '<w:titlePg', { wordBoundary: true })?.[0]
       const first = titleTag && !/\bw:val\s*=\s*["'](?:0|false|off)["']/.test(titleTag)
       const variants = ['default', ...(first ? ['first'] : []), ...(even ? ['even'] : [])]
       for (const variant of variants) {
@@ -1860,7 +2033,10 @@ export async function saveDocx(
 
   // editor-generated formulas need the math namespace on the document root;
   // docx produced by non-Word generators may not declare it
-  if (newDocumentXml.includes('<m:') && !/<w:document[^>]*xmlns:m=/.test(newDocumentXml)) {
+  if (
+    newDocumentXml.includes('<m:') &&
+    !attributeMatch(newDocumentXml, '<w:document', /xmlns:m=/g)
+  ) {
     newDocumentXml = newDocumentXml.replace(
       /<w:document /,
       '<w:document xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" ',
@@ -1928,7 +2104,7 @@ export async function saveDocx(
 
   if (
     newDocumentXml.includes(' w16du:dateUtc=') &&
-    !/<w:document[^>]*xmlns:w16du=/.test(newDocumentXml)
+    !attributeMatch(newDocumentXml, '<w:document', /xmlns:w16du=/g)
   ) {
     newDocumentXml = newDocumentXml.replace(
       /<w:document /,
@@ -2132,6 +2308,8 @@ export async function saveDocx(
       out.file(name, commentsXml, { date: entry.date })
     } else if (name === commentsExtPath && commentsExtXml !== null) {
       out.file(name, commentsExtXml, { date: entry.date })
+    } else if (name === 'word/_rels/comments.xml.rels' && commentsRelsXml !== null) {
+      out.file(name, commentsRelsXml, { date: entry.date })
     } else if (name === numberingPath && numberingXmlOut !== null) {
       out.file(name, numberingXmlOut, { date: entry.date })
     } else if (numberingRelsOut && name === numberingRelsOut.path) {
@@ -2173,6 +2351,9 @@ export async function saveDocx(
   }
   if (commentsExtIsNew && commentsExtXml !== null) {
     out.file(commentsExtPath, commentsExtXml)
+  }
+  if (commentsRelsIsNew && commentsRelsXml !== null) {
+    out.file('word/_rels/comments.xml.rels', commentsRelsXml)
   }
   if (numberingIsNew && numberingXmlOut !== null) {
     out.file(numberingPath, numberingXmlOut)
@@ -2217,7 +2398,11 @@ export async function saveDocx(
     out.file(CUSTOM_PROPERTIES_PATH, customPropertiesXml)
   }
   await cleanupDocxOwnedResources(out, docPath)
+  await cleanStoryMoveRanges(out, docPath)
   if (scrubPersonalInfo) await scrubPersonalMetadata(out)
+  // metadata scrubs come after every generated/copied part is in place, so a
+  // customXml store the save itself created (bibliography sources) is covered too
+  if (options.removeParts) await applyRemoveParts(out, options.removeParts)
   // the property write comes last: what the caller asked for wins over the scrub
   if (options.properties) await applyPropertyChanges(out, options.properties)
   return out.generateAsync({
@@ -2346,7 +2531,7 @@ function withWatermarkNs(openTag: string): string {
  * null when the root tag cannot be recognized so the caller falls back to a full rebuild.
  */
 function patchWatermarkInPart(originalXml: string, watermarkXml: string): string | null {
-  const open = /<w:hdr[^>]*>/.exec(originalXml)?.[0]
+  const open = openingTagMatch(originalXml, '<w:hdr')?.[0]
   if (!open) return null
   const openIdx = originalXml.indexOf(open)
   const closeIdx = originalXml.lastIndexOf('</w:hdr>')
@@ -2603,7 +2788,15 @@ const COMMENTS_NS =
   'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ' +
   'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"'
 
-function buildCommentsXml(comments: CommentInfo[], originalXml: string | null): string {
+function buildCommentsXml(
+  comments: CommentInfo[],
+  originalXml: string | null,
+  /** a comment id -> the picture's run XML; its drawing rides the comment's last paragraph */
+  imageRuns?: ReadonlyMap<string, string>,
+  /** a comment id -> the run of the picture it already carries, for when the
+   * text edit cannot be patched in place and the comment regenerates */
+  keptImageRuns?: ReadonlyMap<string, string>,
+): string {
   const originals = new Map<string, { text: string; xml: string }>()
   if (originalXml) {
     for (const m of originalXml.match(/<w:comment\s[^>]*>[\s\S]*?<\/w:comment>/g) ?? []) {
@@ -2614,8 +2807,10 @@ function buildCommentsXml(comments: CommentInfo[], originalXml: string | null): 
   const body = comments
     .map((c) => {
       const orig = originals.get(c.id)
-      if (orig && orig.text === c.text) return orig.xml
-      if (orig) {
+      // a picture-bearing comment always regenerates: the byte-preserved and
+      // w:t-patch paths carry no drawing, so the picture would drop
+      if (orig && orig.text === c.text && !imageRuns?.has(c.id)) return orig.xml
+      if (orig && !imageRuns?.has(c.id)) {
         // In-paragraph w:t-level patch: text edits keep the comment's rich formatting,
         // multiple paragraphs, and inline links
         const patched = patchParagraphTexts(orig.xml, c.text)
@@ -2626,21 +2821,32 @@ function buildCommentsXml(comments: CommentInfo[], originalXml: string | null): 
         (c.initials ? ` w:initials="${escapeXmlAttr(c.initials)}"` : '') +
         (c.date ? ` w:date="${escapeXmlAttr(c.date)}"` : '')
       const lines = c.text.split('\n')
-      const paras = lines
-        .map((line, i) => {
-          // The last paragraph carries w14:paraId (the commentsExtended link key)
-          const pid =
-            i === lines.length - 1 && c.paraId ? ` w14:paraId="${escapeXmlAttr(c.paraId)}"` : ''
-          return `<w:p${pid}><w:r><w:t xml:space="preserve">${escapeXmlText(line)}</w:t></w:r></w:p>`
-        })
-        .join('')
-      return `<w:comment ${attrs}>${paras}</w:comment>`
+      const paras = lines.map((line, i) => {
+        // The last paragraph carries w14:paraId (the commentsExtended link key)
+        const pid =
+          i === lines.length - 1 && c.paraId ? ` w14:paraId="${escapeXmlAttr(c.paraId)}"` : ''
+        return `<w:p${pid}><w:r><w:t xml:space="preserve">${escapeXmlText(line)}</w:t></w:r></w:p>`
+      })
+      // the picture rides inline at the end of the last paragraph, keeping the
+      // commentsExtended link key on the final w:p
+      const run = imageRuns?.get(c.id) ?? keptImageRuns?.get(c.id)
+      if (run && paras.length > 0) {
+        paras[paras.length - 1] = paras[paras.length - 1]!.replace(/<\/w:p>$/, `${run}</w:p>`)
+      }
+      return `<w:comment ${attrs}>${paras.join('')}</w:comment>`
     })
     .join('')
   // Rebuilt comments always emit w14:paraId (ensured above), so w14 must be bound even
-  // when the original root — e.g. from a non-Word producer — never declared it.
+  // when the original root — e.g. from a non-Word producer — never declared it. A
+  // picture-bearing rebuild draws with wp:/r: prefixed elements, so those bind too.
   const ns = rootAttributes(originalXml, 'w:comments', COMMENTS_NS, {
     w14: 'http://schemas.microsoft.com/office/word/2010/wordml',
+    ...((imageRuns && imageRuns.size > 0) || (keptImageRuns && keptImageRuns.size > 0)
+      ? {
+          wp: 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing',
+          r: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+        }
+      : {}),
   })
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:comments ${ns}>${body}</w:comments>`
 }
@@ -2888,6 +3094,32 @@ function scrubPeopleMetadata(xml: string): string {
   return out
 }
 
+/** Story parts whose XML can carry w:moveFromRangeStart/End / w:moveToRangeStart/End pairs. */
+const MOVE_STORY_PART_RE = /^word\/(?:header|footer)[^/]*\.xml$/i
+
+/**
+ * Orphaned move-range markers are a package-level residue: the editor rebuilds
+ * an edited paragraph from its model (which does not model the range markers),
+ * while an untouched neighbouring paragraph keeps its original bytes including
+ * the end marker of the same range. Drop the markers whose counterpart is gone
+ * so Accept/Reject All never leaves a dangling range behind.
+ */
+async function cleanStoryMoveRanges(zip: JSZip, documentPath: string): Promise<void> {
+  for (const [name, entry] of Object.entries(zip.files)) {
+    if (entry.dir || !/\.xml$/i.test(name)) continue
+    if (
+      name !== documentPath &&
+      !MOVE_STORY_PART_RE.test(name) &&
+      !/^word\/(?:footnotes|endnotes)\.xml$/i.test(name) &&
+      name !== 'word/glossary/document.xml'
+    )
+      continue
+    const xml = await entry.async('string')
+    const cleaned = cleanMoveRangeMarkers(xml)
+    if (cleaned.removed > 0) zip.file(name, cleaned.xml, { date: entry.date })
+  }
+}
+
 /**
  * Strict final-package scrub. It runs after generated and copy-through parts
  * have been assembled, so headers, footers, notes, glossary and people data all
@@ -2965,12 +3197,18 @@ function applyPageColor(documentXml: string, color: string | null): string {
   // w:background children; CT_Document admits one and Word then reports the
   // file as corrupt. Strip the pair whole, VML child included, and re-emit the
   // canonical self-closing form, for the same reason stripElement() does.
-  let xml = documentXml.replace(
-    /<w:background[^>]*\/>|<w:background[^>]*>[\s\S]*?<\/w:background>/g,
-    '',
+  let xml = replaceMatches(
+    documentXml,
+    elementMatches(documentXml, '<w:background', '</w:background>', { openingTag: true }),
+    () => '',
   )
   if (color) {
-    xml = xml.replace(/(<w:document[^>]*>)/, `$1<w:background w:color="${escapeXmlAttr(color)}"/>`)
+    const root = openingTagMatch(xml, '<w:document')
+    if (root)
+      xml = xml.replace(
+        root[0]!,
+        () => `${root[0]}<w:background w:color="${escapeXmlAttr(color)}"/>`,
+      )
   }
   return xml
 }
@@ -3002,7 +3240,11 @@ function nextImageSeq(zip: JSZip): number {
 function maxDocPrId(documentXml: string): number {
   let max = 0
   // quote-agnostic: a writer that single-quotes its attributes still owns those ids
-  for (const m of documentXml.matchAll(DRAWING_DOCPR_ID)) max = Math.max(max, parseInt(m[2], 10))
+  for (const m of attributeMatches(documentXml, '<wp:docPr', DRAWING_DOCPR_ID, {
+    last: false,
+    requireWhitespace: true,
+  }))
+    max = Math.max(max, parseInt(m[2], 10))
   return max
 }
 
@@ -3084,7 +3326,30 @@ function fillRevisionIds(xml: string, allocate: () => string): string {
 function maxBookmarkId(documentXml: string): number {
   let max = 0
   // quote-agnostic, and the end tag carries the same id as its start
-  for (const m of documentXml.matchAll(BOOKMARK_ID)) max = Math.max(max, parseInt(m[2], 10))
+  const iterators = ['Start', 'End'].map((kind) =>
+    attributeMatches(documentXml, `<w:bookmark${kind}`, BOOKMARK_ID, {
+      last: false,
+      requireWhitespace: true,
+    }),
+  )
+  const pending = iterators.map((iterator) => iterator.next())
+  let from = 0
+  for (;;) {
+    let selected = -1
+    for (let i = 0; i < iterators.length; i++) {
+      while (!pending[i]!.done && pending[i]!.value.index < from) pending[i] = iterators[i]!.next()
+      if (
+        !pending[i]!.done &&
+        (selected < 0 || pending[i]!.value.index < pending[selected]!.value.index)
+      )
+        selected = i
+    }
+    if (selected < 0) break
+    const match = pending[selected]!.value as RegExpExecArray
+    max = Math.max(max, parseInt(match[2]!, 10))
+    from = match.index + match[0].length
+    pending[selected] = iterators[selected]!.next()
+  }
   return max
 }
 
@@ -3113,7 +3378,7 @@ function retargetImageBlip(xml: string, rId: string): string {
   // Word "insert and link" pictures carry both attributes: a surviving r:link
   // would let Word refresh from the old external file, discarding the swap
   if (/r:embed="/.test(tag))
-    tag = tag.replace(/r:embed="[^"]*"/, `r:embed="${rId}"`).replace(/\s+r:link="[^"]*"/, '')
+    tag = removeSpacePrefixedAttribute(tag.replace(/r:embed="[^"]*"/, `r:embed="${rId}"`), 'r:link')
   else if (/r:link="/.test(tag)) tag = tag.replace(/r:link="[^"]*"/, `r:embed="${rId}"`)
   else tag = tag.replace(/<a:blip\b/, `<a:blip r:embed="${rId}"`)
   return (

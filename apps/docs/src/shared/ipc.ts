@@ -103,7 +103,7 @@ import type { AiToolCapabilities, MediaToolErrorCode } from '@genoffice/ai-searc
 import type { HeadlessExportTarget } from '@genoffice/electron-utils/headless-export'
 import type { FaceVerticalMetrics } from '@genoffice/font-metrics'
 import type { AiPanelPrefs, FontFamilyInfo } from '@genoffice/ui'
-import type { DocFormat } from './open-file'
+import type { DocFormat, SaveAsKind } from './open-file'
 
 export type { FaceVerticalMetrics }
 
@@ -401,6 +401,14 @@ export interface PrintJobOptions {
   duplex?: PrintDuplex
 }
 
+/** the document's own paper size in twips, read off the pagination preview's
+ * first sheet: the CUPS print route bakes printToPDF pages at this size
+ * instead of Chromium's Letter default. Optional — absent falls back. */
+export interface PrintPaper {
+  widthTwips: number
+  heightTwips: number
+}
+
 export interface PrinterInfo {
   name: string
   displayName: string
@@ -549,12 +557,16 @@ export interface DesktopApi {
   spellSetLanguages(langs: string[]): Promise<SpellLanguages>
   /** Save As, step one: the dialog offers Word (.docx) and ODT (.odt), the
    *  document's own `format` first; the picked extension is the format to write.
-   *  null = canceled */
+   *  With `offerExports` it also lists PDF, HTML, Markdown and page images
+   *  (`kind` other than docx/odt): that path is pre-authorized for the export,
+   *  which writes a copy and leaves the document as it is; page images also
+   *  carry the folder and temp PDF of the image export. null = canceled */
   pickSaveAsPath(
     defaultName: string,
     sourcePath: string | null,
     format: DocFormat,
-  ): Promise<{ path: string } | null>
+    offerExports?: boolean,
+  ): Promise<{ path: string; kind?: SaveAsKind; dir?: string; pdfPath?: string } | null>
   /** Save As, step two: write to the path step one returned (nothing else is
    *  accepted), docx or ODT bytes as its extension says. sourcePath: the
    *  document's current path — a docx write uses its desired next-save password
@@ -638,8 +650,14 @@ export interface DesktopApi {
   /** print the current window; ok=false without error = canceled.
    *  scale: print scale inverting the preview's print zoom (print-zoom.ts).
    *  job: printer/copies/duplex from the in-app dialog; a named printer ('' = OS
-   *  default) prints silently, null or omitted opens the system dialog */
-  print(scale?: number, job?: PrintJobOptions): Promise<{ ok: boolean; error?: string }>
+   *  default) prints silently, null or omitted opens the system dialog.
+   *  paper: the document's own page size in twips (the preview's first sheet),
+   *  used by the CUPS print route to size printToPDF's pages */
+  print(
+    scale?: number,
+    job?: PrintJobOptions,
+    paper?: PrintPaper,
+  ): Promise<{ ok: boolean; error?: string }>
   /** installed printers for the in-app print dialog */
   listPrinters(): Promise<PrinterInfo[]>
   /** render the document to PDF and ask where to save; size in twips.

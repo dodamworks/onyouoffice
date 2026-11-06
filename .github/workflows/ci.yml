@@ -54,7 +54,7 @@ jobs:
         with:
           node-version: ${{ env.CI_NODE_VERSION }}
       - name: Verify change classification
-        run: node --test tools/ci-scope.test.mjs tools/ci-workspaces.test.mjs tools/ci-e2e-artifact.test.mjs tools/ci-reuse.test.mjs tools/ci-impact.test.mjs tools/check-public-boundary.test.mjs tools/release-readiness-skill.test.mjs
+        run: node --test tools/ci-scope.test.mjs tools/ci-workspaces.test.mjs tools/ci-e2e-artifact.test.mjs tools/ci-fonts.test.mjs tools/ci-reuse.test.mjs tools/ci-impact.test.mjs tools/check-public-boundary.test.mjs tools/release-readiness-skill.test.mjs
       - name: Classify complete change
         id: classify
         run: node tools/ci-scope.mjs
@@ -278,7 +278,9 @@ jobs:
       # CLI tests must see a finished sidecar, even on a cold isolated runner.
       - name: Build sidecar for CLI coverage
         if: matrix.group == 'libraries'
-        run: npm run native:build -w @genoffice/sheets
+        run: |
+          npm run native:build -w @genoffice/sheets
+          npm run fixtures -w @genoffice/sheets
 
       - name: Unit tests
         run: node tools/ci-workspaces.mjs ${{ matrix.group }}
@@ -363,8 +365,8 @@ jobs:
     # 22.04, not -latest: 24.04's AppArmor hardening blocks Electron renderer
     # spawn under xvfb even with --no-sandbox and the userns sysctl lifted
     runs-on: ubuntu-22.04
-    # A cold font install took 24m in #124; leave room for the full serial
-    # Electron suite as well as setup. Individual test timeouts stay unchanged.
+    # Leave room for the full serial Electron suite as well as setup.
+    # Font setup is bounded separately; individual test timeouts stay unchanged.
     timeout-minutes: 60
     steps:
       - name: Checkout
@@ -421,11 +423,15 @@ jobs:
       # Pixel baselines (docs-visual.spec.ts) depend on the font stack: pin
       # Calibri/Cambria metric-compatible faces and CJK glyphs so renders are
       # reproducible across runner images and contributor machines.
+      - name: Cache pinned document font packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/onyou-font-packages
+          key: document-fonts-ubuntu22-v1-${{ hashFiles('tools/ci-font-packages.json') }}
+
       - name: Install document fonts (visual baselines)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            fonts-crosextra-carlito fonts-crosextra-caladea fonts-noto-cjk
+        timeout-minutes: 5
+        run: node tools/ci-fonts.mjs
 
       # CSS layout tests use standalone Chromium in addition to Electron.
       # Keep the pinned document font stack unchanged: --with-deps adds fonts

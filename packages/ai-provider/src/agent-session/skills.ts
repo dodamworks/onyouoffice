@@ -1,3 +1,4 @@
+// Modified by Onyou Office: apply the checked file walk before reading skill metadata.
 /**
  * The skills an agent session gets (decision 0032, spec 6.1): a copy of every
  * enabled skill in one plugin folder of the app's own. Claude Code runs with
@@ -343,17 +344,6 @@ async function buildNow(
       skipped.push({ ...info, reason: 'duplicate' })
       continue
     }
-    let text: string
-    try {
-      text = await readFile(join(skill.dir, 'SKILL.md'), 'utf8')
-    } catch {
-      skipped.push({ ...info, reason: 'unreadable' })
-      continue
-    }
-    if (!parseSkillMd(text)) {
-      skipped.push({ ...info, reason: 'no-frontmatter' })
-      continue
-    }
     const facts = await folderFacts(skill.dir)
     if (!facts) {
       skipped.push({ ...info, reason: 'unreadable' })
@@ -361,6 +351,26 @@ async function buildNow(
     }
     if (facts.tooLarge) {
       skipped.push({ ...info, reason: 'too-large' })
+      continue
+    }
+    const metadata =
+      facts.files.find((file) => file.rel === 'SKILL.md') ??
+      (process.platform === 'win32'
+        ? facts.files.find((file) => file.rel.toLowerCase() === 'skill.md')
+        : undefined)
+    if (!metadata) {
+      skipped.push({ ...info, reason: 'unreadable' })
+      continue
+    }
+    let text: string
+    try {
+      text = await readFile(metadata.path, 'utf8')
+    } catch {
+      skipped.push({ ...info, reason: 'unreadable' })
+      continue
+    }
+    if (!parseSkillMd(text)) {
+      skipped.push({ ...info, reason: 'no-frontmatter' })
       continue
     }
     // a plugin skill may name files beside its skills folder: ${CLAUDE_PLUGIN_ROOT}/…
