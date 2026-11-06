@@ -400,7 +400,8 @@ export function replacePaired(
 
 /** Raw tag grammar: retain quoted > bytes and original captures, without retrying suffixes. */
 export function* rawTagMatches(xml: string, pptx = false): Generator<XmlMatch> {
-  const delimiters = [...xml.matchAll(/["'>]/g)].map((m) => m.index)
+  const delimiters: number[] = []
+  for (const match of xml.matchAll(/["'>]/g)) delimiters.push(match.index)
   const ends = new Int32Array(delimiters.length + 1).fill(-1)
   let single = -1
   let double = -1

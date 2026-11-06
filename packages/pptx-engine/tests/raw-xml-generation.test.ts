@@ -81,6 +81,7 @@ it('keeps quoted slide-opening bytes, property capture order and whitespace attr
 
 it.each([
   'raw-tags',
+  'raw-quotes',
   'shape-fill',
   'picture-crop',
   'slide-background',
@@ -95,9 +96,10 @@ it.each([
       import assert from 'node:assert/strict';
       import { topLevelChildren, patchElementFill, patchPictureSrcRect, patchSlideBackgroundXml, patchSlideShowMasterSpXml, patchSlideHiddenXml, patchElementXfrm } from ${source};
       const kind = ${JSON.stringify(kind)};
-      const token = { 'raw-tags': '<a', 'shape-fill': '<p:spPr ', 'picture-crop': '<p:blipFill ', 'slide-background': '<p:bg>', 'slide-root': '<p:sld x="', 'hidden-whitespace': ' ', 'property-transform': '<p:spPr ' }[kind];
+      const token = { 'raw-tags': '<a', 'raw-quotes': 'x', 'shape-fill': '<p:spPr ', 'picture-crop': '<p:blipFill ', 'slide-background': '<p:bg>', 'slide-root': '<p:sld x="', 'hidden-whitespace': ' ', 'property-transform': '<p:spPr ' }[kind];
       const raw = token.repeat(100000);
-      if (kind === 'raw-tags') assert.deepEqual(topLevelChildren(raw, 0, raw.length), []);
+      if (kind === 'raw-quotes') assert.deepEqual(topLevelChildren('<a ' + '"'.repeat(1000000), 0, 2000000), []);
+      else if (kind === 'raw-tags') assert.deepEqual(topLevelChildren(raw, 0, raw.length), []);
       else if (kind === 'shape-fill') assert.equal(patchElementFill(raw, '112233'), raw);
       else if (kind === 'picture-crop') assert.equal(patchPictureSrcRect(raw, null), raw);
       else if (kind === 'slide-background') assert.equal(patchSlideBackgroundXml(raw, '112233'), raw);
@@ -109,7 +111,14 @@ it.each([
     expect(
       execFileSync(
         process.execPath,
-        ['--import', 'tsx', '--input-type=module', '--eval', program],
+        [
+          ...(kind === 'raw-quotes' ? ['--max-old-space-size=128'] : []),
+          '--import',
+          'tsx',
+          '--input-type=module',
+          '--eval',
+          program,
+        ],
         { timeout: 5000, encoding: 'utf8' },
       ).trim(),
     ).toBe('bounded')

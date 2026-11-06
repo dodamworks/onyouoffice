@@ -66,6 +66,7 @@ it.each([
   'image-offset',
   'math-text',
   'raw-tags',
+  'raw-quotes',
   'paragraph-mark',
 ])(
   'bounds %s through the production generation entry point',
@@ -75,9 +76,10 @@ it.each([
       import assert from 'node:assert/strict';
       import { patchImageParagraphXml, patchMathTokens, splitXmlChildren, stripParaMarkColor, applyImageZOrder } from ${source};
       const kind = ${JSON.stringify(kind)};
-      const token = { 'z-order-digits': '1', 'image-transform': '<pic:spPr ', 'image-extents': '<wp:extent cx="1" ', 'image-offset': '<wp:positionH ', 'math-text': '<m:t ', 'raw-tags': '<a', 'paragraph-mark': '<w:rPr>a' }[kind];
+      const token = { 'z-order-digits': '1', 'image-transform': '<pic:spPr ', 'image-extents': '<wp:extent cx="1" ', 'image-offset': '<wp:positionH ', 'math-text': '<m:t ', 'raw-tags': '<a', 'raw-quotes': 'x', 'paragraph-mark': '<w:rPr>a' }[kind];
       const xml = token.repeat(100000);
       if (kind === 'z-order-digits') assert.ok(applyImageZOrder('<wp:anchor id="' + xml + '" relativeHeight="4">', 2).endsWith('relativeHeight="251658242">'));
+      else if (kind === 'raw-quotes') assert.deepEqual(splitXmlChildren('<a ' + '"'.repeat(1000000)), []);
       else if (kind === 'raw-tags') assert.deepEqual(splitXmlChildren(xml), []);
       else if (kind === 'paragraph-mark') assert.equal(stripParaMarkColor(xml), xml);
       else if (kind === 'math-text') assert.equal(patchMathTokens(xml, ['new']), xml);
@@ -87,7 +89,14 @@ it.each([
     expect(
       execFileSync(
         process.execPath,
-        ['--import', 'tsx', '--input-type=module', '--eval', program],
+        [
+          ...(kind === 'raw-quotes' ? ['--max-old-space-size=128'] : []),
+          '--import',
+          'tsx',
+          '--input-type=module',
+          '--eval',
+          program,
+        ],
         { timeout: 5000, encoding: 'utf8' },
       ).trim(),
     ).toBe('bounded')

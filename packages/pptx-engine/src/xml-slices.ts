@@ -68,7 +68,8 @@ export function removeAttribute(xml: string, name: string, bothQuotes = false): 
 
 /** Raw tag grammar: retain quoted > bytes and original captures, without retrying suffixes. */
 export function* rawTagMatches(xml: string, pptx = false, from = 0): Generator<XmlMatch> {
-  const delimiters = [...xml.matchAll(/["'>]/g)].map((m) => m.index)
+  const delimiters: number[] = []
+  for (const match of xml.matchAll(/["'>]/g)) delimiters.push(match.index)
   const ends = new Int32Array(delimiters.length + 1).fill(-1)
   let single = -1
   let double = -1
@@ -130,7 +131,8 @@ export function quotedTagEnd(xml: string, from: number): number {
 
 /** Prefix-directed quote-aware lookup, including matches in opaque/raw fragments. */
 export function quotedTagMatch(xml: string, prefix: string): XmlMatch | null {
-  const positions = [...xml.matchAll(/["'>]/g)].map((m) => m.index)
+  const positions: number[] = []
+  for (const match of xml.matchAll(/["'>]/g)) positions.push(match.index)
   const ends = new Int32Array(positions.length + 1).fill(-1)
   let single = -1
   let double = -1
