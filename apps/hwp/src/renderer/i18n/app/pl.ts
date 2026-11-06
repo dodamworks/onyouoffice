@@ -28,6 +28,11 @@ export const pl = {
     'Nie zapisano: ten dokument zawiera śledzone zmiany; zapisanie go tutaj spowodowałoby ich utratę, a pliku Hancom Hangul mógłby nie otworzyć.',
   savedTailsLost:
     'Zapisano, ale części stron wzorcowych lub notatek z oryginalnego pliku nie udało się zachować; Hancom Hangul może nie otworzyć zapisanego pliku. Otwórz go, aby sprawdzić.',
+  missingFonts:
+    'Niektórych czcionek nie ma na tym komputerze, więc na ekranie są wyświetlane innymi czcionkami: {fonts}. Zapisany plik zachowuje oryginalne nazwy czcionek, a na komputerze, który je ma, tekst wygląda tak, jak powinien.',
+  missingFontTag: 'Brak na tym komputerze',
+  missingFontHint:
+    'Tej czcionki nie ma na tym komputerze, więc na ekranie jest wyświetlana inną. Plik zachowuje nazwę tej czcionki.',
   dismiss: 'Zamknij',
   aiOpenAssistant: 'Otwórz asystenta AI',
   aiNewChat: 'Nowy czat',
@@ -164,6 +169,9 @@ export const pl = {
     'Polecenia przepisania domyślnie dotyczą tylko zaznaczenia; kliknij, aby zobaczyć podgląd',
   aiScopeClearTitle: 'Usuń zakres zaznaczenia',
   aiToolNotDone: 'Nie wykonano · {what}',
+  aiUnfinishedSteps: 'Nieukończone kroki: {n}',
+  aiUnfinishedNote:
+    'Te kroki nie zostały zastosowane w dokumencie. Sprawdź te miejsca, nawet jeśli odpowiedź mówi, że wszystko gotowe.',
   aiChangesTitle: 'Zmiany w dokumencie: {count}',
   aiClearMarks: 'Ukryj oznaczenia',
   aiRevert: 'Cofnij te zmiany',
@@ -254,4 +262,7 @@ export const pl = {
   checkAskAi: 'Zleć poprawki AI',
   checkHandedOff: 'Prośba jest w polu AI. Sprawdź ją i wyślij.',
   checkFixFailed: 'Nie udało się zmienić.',
+  easyWordsLabel: 'Wyjaśnij prostymi słowami',
+  easyWordsPrompt:
+    'Wyjaśnij po polsku zaznaczony poniżej tekst tak, aby zrozumiała go także osoba, która potrzebuje tekstu łatwego do czytania. Używaj codziennych słów i krótkich zdań i nie pomijaj żadnego faktu, liczby ani warunku. Nie zmieniaj dokumentu.\n\nZaznaczony tekst:\n{text}',
 } satisfies Record<keyof typeof zh, string>

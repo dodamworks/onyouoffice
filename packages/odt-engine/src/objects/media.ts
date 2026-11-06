@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-06: scan SVG prologues without backtracking.
 /**
  * Picture bytes: format sniffing, base64 and data URLs (no Node builtins),
  * and the neutral placeholder picture.
@@ -43,8 +44,18 @@ export function sniffImage(bytes: Uint8Array): ImageFormat | null {
   )
     return { ext: 'wmf', mime: 'image/x-wmf' }
   const head = String.fromCharCode(...bytes.subarray(0, Math.min(bytes.length, 512)))
-  if (/^\s*(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*<svg[\s>]/.test(head))
-    return { ext: 'svg', mime: 'image/svg+xml' }
+  let prefix = head.trimStart()
+  if (prefix.startsWith('<?xml')) {
+    const end = prefix.indexOf('>')
+    if (end < 0) return null
+    prefix = prefix.slice(end + 1).trimStart()
+  }
+  while (prefix.startsWith('<!--')) {
+    const end = prefix.indexOf('-->', 4)
+    if (end < 0) return null
+    prefix = prefix.slice(end + 3).trimStart()
+  }
+  if (/^<svg[\s>]/.test(prefix)) return { ext: 'svg', mime: 'image/svg+xml' }
   return null
 }
 

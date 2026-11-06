@@ -47,6 +47,7 @@ import type {
   WorkbookRangeResult,
   WorkbookRecalcRequest,
   WorkbookRecalcResult,
+  WorkbookQueriesResult,
   WorkbookRichRun,
   WorkbookSaveRequest,
   WorkbookSaveResult,
@@ -317,6 +318,24 @@ const desktopApi: DesktopApi = {
       validatedRequest,
     )
     return parsePivotDefinitionResult(result)
+  },
+  async readWorkbookQueries(request) {
+    if (!isRecord(request) || !isUuid(request.sessionId)) {
+      throw new Error('Invalid queries request.')
+    }
+    const result: unknown = await ipcRenderer.invoke(IPC_CHANNELS.readWorkbookQueries, {
+      sessionId: request.sessionId,
+    })
+    // structural check; the main process zod-validates the full shape
+    if (!Array.isArray(result) || result.length > 1_000) {
+      throw new Error('Invalid queries response.')
+    }
+    for (const query of result) {
+      if (!isRecord(query) || typeof query.name !== 'string' || typeof query.kind !== 'string') {
+        throw new Error('Invalid queries response.')
+      }
+    }
+    return result as WorkbookQueriesResult
   },
   async saveWorkbookEdits(request) {
     const validatedRequest = parseSaveRequest(request)
@@ -2737,6 +2756,7 @@ function isPdfExportRequest(request: unknown): boolean {
     (request.firstPage !== undefined && !isPdfPageVariant(request.firstPage)) ||
     (request.evenPages !== undefined && !isPdfPageVariant(request.evenPages)) ||
     (request.outPath !== undefined && !isBoundedString(request.outPath, 4096)) ||
+    (request.saveAsPath !== undefined && !isBoundedString(request.saveAsPath, 4096)) ||
     // '' = the system default printer
     (request.deviceName !== undefined &&
       (typeof request.deviceName !== 'string' || request.deviceName.length > 255)) ||
@@ -3029,6 +3049,12 @@ function parseSaveResult(input: unknown): WorkbookSaveResult {
         throw new Error('Invalid workbook save response.')
       }
       return { canceled: true, csvSaveAsPath: input.csvSaveAsPath }
+    }
+    if (input.pdfSaveAsPath !== undefined) {
+      if (typeof input.pdfSaveAsPath !== 'string' || input.pdfSaveAsPath.length === 0) {
+        throw new Error('Invalid workbook save response.')
+      }
+      return { canceled: true, pdfSaveAsPath: input.pdfSaveAsPath }
     }
     return { canceled: true }
   }

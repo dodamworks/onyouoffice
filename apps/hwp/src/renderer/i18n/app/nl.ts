@@ -28,6 +28,11 @@ export const nl = {
     'Niet opgeslagen: dit document bevat bijgehouden wijzigingen; door het hier op te slaan gaan ze verloren en kan Hancom Hangul het bestand mogelijk niet openen.',
   savedTailsLost:
     "Opgeslagen, maar sommige basispagina's of memo's van het oorspronkelijke bestand konden niet worden behouden; Hancom Hangul kan het opgeslagen bestand mogelijk niet openen. Open het ter controle.",
+  missingFonts:
+    'Sommige lettertypen staan niet op deze pc en worden op het scherm in andere lettertypen getoond: {fonts}. Het opgeslagen bestand houdt de oorspronkelijke namen van de lettertypen, en op een pc met die lettertypen ziet de tekst er uit zoals bedoeld.',
+  missingFontTag: 'Niet op deze pc',
+  missingFontHint:
+    'Dit lettertype staat niet op deze pc en wordt op het scherm in een ander lettertype getoond. Het bestand houdt de naam van dit lettertype.',
   dismiss: 'Sluiten',
   aiOpenAssistant: 'AI-assistent openen',
   aiNewChat: 'Nieuwe chat',
@@ -164,6 +169,9 @@ export const nl = {
     'Herschrijfopdrachten gelden standaard alleen voor de selectie; klik voor een voorbeeld',
   aiScopeClearTitle: 'Selectiebereik wissen',
   aiToolNotDone: 'Niet uitgevoerd · {what}',
+  aiUnfinishedSteps: 'Niet afgeronde stappen: {n}',
+  aiUnfinishedNote:
+    'Deze stappen zijn niet op het document toegepast. Controleer deze delen, ook als het antwoord zegt dat het klaar is.',
   aiChangesTitle: 'Wijzigingen in het document: {count}',
   aiClearMarks: 'Markeringen verbergen',
   aiRevert: 'Deze wijzigingen ongedaan maken',
@@ -259,4 +267,7 @@ export const nl = {
   checkAskAi: 'Het herstellen aan de AI geven',
   checkHandedOff: 'Het verzoek staat in het AI-veld. Controleer het en verstuur het.',
   checkFixFailed: 'De wijziging is niet gelukt.',
+  easyWordsLabel: 'Uitleggen in eenvoudige woorden',
+  easyWordsPrompt:
+    'Leg de hieronder geselecteerde tekst in het Nederlands uit, zodat ook iemand die makkelijk leesbare tekst nodig heeft hem begrijpt. Gebruik gewone woorden en korte zinnen en laat geen feit, getal of voorwaarde weg. Wijzig het document niet.\n\nGeselecteerde tekst:\n{text}',
 } satisfies Record<keyof typeof zh, string>

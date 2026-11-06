@@ -117,6 +117,13 @@
  *   so a selection can take a memo without going to the Insert menu. The menu keeps the
  *   selection, and the memo editor reads it when it opens.
  *
+ * studio-easy-words-context-menu
+ *   The same two right-click menus gain 쉬운 말로 풀기 next to 메모: it asks the AI panel to
+ *   explain the selected text in plain words, in the app's language, and changes nothing in
+ *   the document. The item is the command the app's plugin registers (EASY_WORDS_COMMAND),
+ *   so its name is the label the app gives it, and it is off while nothing is selected.
+ *   Before the plugin registers it the menus leave it out.
+ *
  * studio-memo-anchors, studio-memo-delete-undo
  *   The engine drops a memo when Backspace or Delete removes the last character of its
  *   anchor (vendor/rhwp-core patch 0018, decision 0072). The studio's undo of a typed
@@ -136,9 +143,17 @@
  *   so its font lists held the base fonts and the document's own until then. At start-up
  *   it now asks the PC for its font list and detects anew when that differs from the
  *   kept one (studio-plugin/pc-fonts.mjs), then tells the font lists as the button does.
+ *   It also hands that module what the studio knows of the PC's fonts, for the marks below.
+ *
+ * studio-missing-font-marks
+ *   A font that is not on the PC is drawn with another one, while the font menu and the
+ *   font box showed its name as if it were there. The menu marks such an entry and the box
+ *   underlines such a name, with a tooltip saying the file keeps the font's name
+ *   (studio-plugin/pc-fonts.mjs, in the words the app gives).
  */
 
 import { CLIPBOARD_HTML_MODULE } from '../studio-plugin/clipboard-html.mjs'
+import { EASY_WORDS_COMMAND } from '../studio-plugin/agent-plugin.mjs'
 import { HANCOM_KEYS_MODULE, studioCommandIds } from '../studio-plugin/hancom-keys.mjs'
 import { PC_FONTS_MODULE } from '../studio-plugin/pc-fonts.mjs'
 
@@ -849,6 +864,39 @@ const PATCHES = {
       },
     ],
   },
+  'studio-easy-words-context-menu': {
+    file: /[\\/]rhwp-studio[\\/]src[\\/]engine[\\/]input-handler\.ts$/,
+    edits: [
+      // the end of the menu of body text (and of a header or footer), after 메모
+      {
+        find: [
+          '    ];',
+          '  }',
+          '',
+          '  /** 특수 키 처리 (Backspace, Enter, 화살표, Ctrl+Z/Y) */',
+        ].join('\n'),
+        replace: [
+          `      { type: 'command', commandId: '${EASY_WORDS_COMMAND}' },`,
+          '    ];',
+          '  }',
+          '',
+          '  /** 특수 키 처리 (Backspace, Enter, 화살표, Ctrl+Z/Y) */',
+        ].join('\n'),
+      },
+      // the menu inside a table cell, after 메모 and before the table's own commands
+      {
+        find: [
+          "      { type: 'separator' },",
+          "      { type: 'command', commandId: 'table:split', label: '표 나누기' },",
+        ].join('\n'),
+        replace: [
+          `      { type: 'command', commandId: '${EASY_WORDS_COMMAND}' },`,
+          "      { type: 'separator' },",
+          "      { type: 'command', commandId: 'table:split', label: '표 나누기' },",
+        ].join('\n'),
+      },
+    ],
+  },
   'studio-memo-label-ko': {
     file: /[\\/]rhwp-studio[\\/]src[\\/]i18n[\\/]locales[\\/]ko\.ts$/,
     find: '  "command.insert.comment.label": "주석",',
@@ -1126,15 +1174,25 @@ const PATCHES = {
         find: ['  resolveLocalFont,', "} from '@/core/local-fonts';"].join('\n'),
         replace: [
           '  resolveLocalFont,',
-          '  getLocalFontRecords,',
           "} from '@/core/local-fonts';",
-          `import { refreshPcFonts } from '${PC_FONTS_MODULE}';`,
+          `import { installFontPresence, refreshPcFonts } from '${PC_FONTS_MODULE}';`,
         ].join('\n'),
+      },
+      {
+        find: "import { loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';",
+        replace:
+          "import { getDetectedOSFonts, loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';",
       },
       {
         find: ['    setupEventListeners();', '    setupModalFocusRestore();'].join('\n'),
         replace: [
           '    setupEventListeners();',
+          '    installFontPresence({',
+          '      resolveLocalFont,',
+          '      records: () => getLocalFontRecords({ includeRegistered: true }),',
+          '      detected: getDetectedOSFonts,',
+          '      state: getLocalFontState,',
+          '    });',
           '    void refreshPcFonts({',
           '      queryLocalFonts: (globalThis as { queryLocalFonts?: () => Promise<{ family: string; fullName: string; postscriptName: string }[]> }).queryLocalFonts?.bind(globalThis),',
           '      loadStored: loadStoredLocalFonts,',
@@ -1144,6 +1202,32 @@ const PATCHES = {
           '      document,',
           '    });',
           '    setupModalFocusRestore();',
+        ].join('\n'),
+      },
+    ],
+  },
+  'studio-missing-font-marks': {
+    file: /[\\/]rhwp-studio[\\/]src[\\/]ui[\\/]toolbar\.ts$/,
+    edits: [
+      {
+        find: "import { getLocalFonts } from '@/core/local-fonts';",
+        replace: [
+          "import { getLocalFonts } from '@/core/local-fonts';",
+          `import { markFontOption, watchFontBox } from '${PC_FONTS_MODULE}';`,
+        ].join('\n'),
+      },
+      {
+        find: "    this.fontName = container.querySelector('#font-name')!;",
+        replace: [
+          "    this.fontName = container.querySelector('#font-name')!;",
+          '    watchFontBox(this.fontName);',
+        ].join('\n'),
+      },
+      {
+        find: '        button.title = entry.label;',
+        replace: [
+          '        button.title = entry.label;',
+          '        markFontOption(button, entry.value);',
         ].join('\n'),
       },
     ],
@@ -1206,6 +1290,7 @@ export const STUDIO_PATCHES = /** @type {const} */ ([
   'studio-table-props-menu-label',
   'studio-memo-command',
   'studio-memo-context-menu',
+  'studio-easy-words-context-menu',
   'studio-memo-label-ko',
   'studio-memo-label-en',
   'studio-memo-anchors',
@@ -1213,6 +1298,7 @@ export const STUDIO_PATCHES = /** @type {const} */ ([
   'studio-cell-block-paste',
   'studio-pdf-import-options',
   'studio-pc-fonts',
+  'studio-missing-font-marks',
 ])
 
 /** Whether a patch is written against this file. */

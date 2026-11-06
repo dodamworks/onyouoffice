@@ -1,3 +1,4 @@
+// Modified by Onyou Office: bound literal border-slice matching work.
 import type {
   ParsedDoc,
   SectionInfo,
@@ -7,6 +8,14 @@ import type {
   LineNumbering,
 } from './types'
 import { onOffTagIn } from './parse-xml-text'
+import { firstSlice, pairedSlice, selfClosingSlice } from './xml-slices'
+
+function pageBorderSlice(xml: string) {
+  return firstSlice(
+    selfClosingSlice(xml, '<w:pgBorders'),
+    pairedSlice(xml, '<w:pgBorders', '</w:pgBorders>'),
+  )
+}
 
 /** US Letter, portrait, 1-inch margins */
 export const DEFAULT_SECTION: SectionSettings = {
@@ -51,7 +60,7 @@ function intAttr(tag: string, name: string, fallback: number): number {
  * of w:pgBorders must not be treated as a drawn border.
  */
 function hasVisiblePageBorder(xml: string): boolean {
-  const pgBorders = /<w:pgBorders[^>]*\/>|<w:pgBorders[\s\S]*?<\/w:pgBorders>/.exec(xml)?.[0]
+  const pgBorders = pageBorderSlice(xml)?.text
   if (!pgBorders) return false
   const sides = pgBorders.match(/<w:(?:top|left|bottom|right)\b[^>]*\/?>/g) ?? []
   return sides.some((side) => {
@@ -60,8 +69,13 @@ function hasVisiblePageBorder(xml: string): boolean {
   })
 }
 
+function onOffAttr(tag: string, attr: string): boolean {
+  const v = strAttr(tag, attr)
+  return v === '1' || v === 'true' || v === 'on'
+}
+
 /** ST_Border line styles; every other w:val is an art (bitmap) border. */
-const LINE_BORDER_VALS = new Set([
+export const LINE_BORDER_VALS = new Set([
   'single',
   'thick',
   'double',
@@ -91,7 +105,7 @@ const LINE_BORDER_VALS = new Set([
 
 /** Styling details of a visible w:pgBorders box (undefined when no visible side). */
 function pageBorderPropsOf(xml: string): SectionSettings['pageBorderProps'] {
-  const pgBorders = /<w:pgBorders[^>]*\/>|<w:pgBorders[\s\S]*?<\/w:pgBorders>/.exec(xml)?.[0]
+  const pgBorders = pageBorderSlice(xml)?.text
   if (!pgBorders || !hasVisiblePageBorder(xml)) return undefined
   const display = strAttr(pgBorders, 'w:display') as 'firstPage' | 'notFirstPage' | undefined
   const offsetFrom = strAttr(pgBorders, 'w:offsetFrom') as 'page' | 'text' | undefined
@@ -114,6 +128,8 @@ function pageBorderPropsOf(xml: string): SectionSettings['pageBorderProps'] {
       spacePt: intAttr(side, 'w:space', 0),
       ...(sideColor ? { color: sideColor } : {}),
       ...(art ? { art } : {}),
+      ...(onOffAttr(side, 'w:shadow') ? { shadow: true } : {}),
+      ...(onOffAttr(side, 'w:frame') ? { frame: true } : {}),
     }
     spacePt = Math.max(spacePt, intAttr(side, 'w:space', 0))
     widthPt = Math.max(widthPt, sides[name]!.widthPt)
@@ -425,6 +441,39 @@ function roundColsInPlace(xml: string, cols: string): string {
   return rounded === cols ? xml : xml.replace(cols, rounded)
 }
 
+/**
+ * w:pgBorders for pageBorderProps. Without props the legacy single-line box
+ * (½ pt, 24 pt from the page edge) is written; props with no sides yield ''.
+ */
+export function pageBordersXml(props: SectionSettings['pageBorderProps']): string {
+  const sides = props?.sides
+  if (props && !(sides && Object.keys(sides).length > 0)) return ''
+  if (!props || !sides) {
+    const side = (name: string) =>
+      `<w:${name} w:val="single" w:sz="4" w:space="24" w:color="auto"/>`
+    return (
+      '<w:pgBorders w:offsetFrom="page">' +
+      `${side('top')}${side('left')}${side('bottom')}${side('right')}` +
+      '</w:pgBorders>'
+    )
+  }
+  let out = '<w:pgBorders'
+  if (props.zOrder === 'back') out += ' w:zOrder="back"'
+  if (props.display) out += ` w:display="${props.display}"`
+  out += ` w:offsetFrom="${props.offsetFrom ?? 'text'}">`
+  for (const name of ['top', 'left', 'bottom', 'right'] as const) {
+    const side = sides[name]
+    if (!side) continue
+    const sz = side.art ? Math.round(side.widthPt) : Math.round(side.widthPt * 8)
+    out += `<w:${name} w:val="${side.val}" w:sz="${sz}" w:space="${Math.round(side.spacePt)}"`
+    out += ` w:color="${side.color ?? 'auto'}"`
+    if (side.shadow) out += ' w:shadow="1"'
+    if (side.frame) out += ' w:frame="1"'
+    out += '/>'
+  }
+  return out + '</w:pgBorders>'
+}
+
 /** Rewrite pgSz / pgMar inside a w:sectPr XML slice, preserving everything else. */
 export function applySectionSettings(sectPrXml: string, settings: SectionSettings): string {
   const orient = settings.orientation === 'landscape' ? ' w:orient="landscape"' : ''
@@ -474,25 +523,27 @@ export function applySectionSettings(sectPrXml: string, settings: SectionSetting
     xml = xml.replace(/<\/w:sectPr>/, `${pgMar}</w:sectPr>`)
   }
 
-  // page border: single-line box measured from the page edge (pgBorders sits
-  // between pgMar and cols in CT_SectPr)
-  xml = xml.replace(/<w:pgBorders[^>]*\/>|<w:pgBorders[\s\S]*?<\/w:pgBorders>/, '')
+  // page border (pgBorders sits between pgMar and cols in CT_SectPr)
+  const oldBorder = pageBorderSlice(xml)
+  if (oldBorder)
+    xml = xml.slice(0, oldBorder.index) + xml.slice(oldBorder.index + oldBorder.text.length)
   if (settings.pageBorder) {
-    const side = (name: string) =>
-      `<w:${name} w:val="single" w:sz="4" w:space="24" w:color="auto"/>`
-    const pgBorders =
-      '<w:pgBorders w:offsetFrom="page">' +
-      `${side('top')}${side('left')}${side('bottom')}${side('right')}` +
-      '</w:pgBorders>'
-    xml = xml.replace(/(<w:pgMar[^>]*\/>)/, `$1${pgBorders}`)
+    const pgBorders = pageBordersXml(settings.pageBorderProps)
+    if (pgBorders) xml = xml.replace(/(<w:pgMar[^>]*\/>)/, `$1${pgBorders}`)
   }
 
   // columns (w:cols may be self-closing or carry explicit <w:col> children)
   const colsMatch = /<w:cols[^>]*\/>|<w:cols[^>]*>[\s\S]*?<\/w:cols>/.exec(xml)
   const numAttr = settings.columns > 1 ? ` w:num="${settings.columns}"` : ''
   const colsAnchor = (tag: string): string => {
-    const anchor = /(<w:pgBorders[\s\S]*?<\/w:pgBorders>|<w:pgMar[^>]*\/>)/.exec(xml)
-    if (anchor) return xml.replace(anchor[0], `${anchor[0]}${tag}`)
+    const anchor = firstSlice(
+      pairedSlice(xml, '<w:pgBorders', '</w:pgBorders>'),
+      selfClosingSlice(xml, '<w:pgMar'),
+    )
+    if (anchor) {
+      const end = anchor.index + anchor.text.length
+      return xml.slice(0, end) + tag + xml.slice(end)
+    }
     return xml.replace(/<\/w:sectPr>/, `${tag}</w:sectPr>`)
   }
   if (

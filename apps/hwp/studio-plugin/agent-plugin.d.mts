@@ -17,6 +17,8 @@ export interface AgentMatch {
   context?: string
   /** false for text inside an equation, which has no replace path */
   replaceable?: false
+  /** the nearest paragraph in front that does not hold the match (its heading, often), cut short */
+  before?: string
 }
 
 export interface AgentFindResult {
@@ -74,6 +76,8 @@ export type AgentDeleteResult =
       place: AgentPlace
     }
   | AgentPlaceRefusal
+  /** the paragraph's whole text is one of `protectTexts`: nothing was removed */
+  | { ok: false; reason: 'protected'; count: number; text: string }
 
 export type AgentTableResult =
   | { ok: true; rows: number; cols: number; inTable: boolean; place: AgentPlace }
@@ -508,6 +512,33 @@ export type AgentFileCommand = 'save' | 'saveAs' | 'pdf' | 'preview' | 'print'
 export declare const FILE_COMMAND_EVENT: 'ieum:file-command'
 export declare const DOCUMENT_CHECK_EVENT: 'ieum:document-check'
 
+/** The command behind the editor's right-click item 쉬운 말로 풀기. */
+export declare const EASY_WORDS_COMMAND: 'ext:ieum-easy-words'
+
+/** The event that item fires on the editor's window; `detail` is an AgentEasyWordsDetail. */
+export declare const EASY_WORDS_EVENT: 'ieum:easy-words'
+
+/** What a click on 쉬운 말로 풀기 hands the app: the selected text, a line per paragraph. */
+export interface AgentEasyWordsDetail {
+  text: string
+}
+
+/** The event watchMissingFonts fires on the editor's window; `detail` is an AgentMissingFontsDetail. */
+export declare const MISSING_FONTS_EVENT: 'ieum:missing-fonts'
+
+/** The fonts the document's text uses that are not on this PC, each once. */
+export interface AgentMissingFontsDetail {
+  fonts: string[]
+}
+
+/** The words the editor marks a font that is not on this PC with. */
+export interface AgentMissingFontLabels {
+  /** shown beside the font's entry in the font menu */
+  tag: string
+  /** the tooltip of that entry and of the font box */
+  hint: string
+}
+
 /** The parts of the editor toolbar's style list (a select element) syncStyleList uses. */
 export interface StyleListElement {
   readonly options: ArrayLike<{ value: string; textContent: string | null }>
@@ -809,6 +840,11 @@ export interface AgentChangeOptions {
   memoPolicy?: 'ask' | 'allow'
   /** the memos the user approved taking (ids of the refusal): any other one is refused again */
   approvedMemoIds?: number[]
+  /**
+   * deleteParagraph only: a paragraph whose whole text (spaces squashed) is one of these is
+   * not removed, and the call answers `protected`
+   */
+  protectTexts?: string[]
 }
 
 /**
@@ -1028,6 +1064,8 @@ export interface AgentPluginSurface {
   deleteTable(table: number, options?: AgentChangeOptions): AgentDeleteTableResult
   installDocumentCheckMenu(label: string): { ok: boolean }
   installFileMenu(labels: Record<AgentFileCommand, string>): { ok: boolean }
+  installEasyWords(label: string): { ok: boolean }
+  watchMissingFonts(labels: AgentMissingFontLabels): { ok: boolean }
   reveal(place: AgentPlace): { ok: boolean }
   selection(): AgentSelectionResult
   replaceSelection(
@@ -1178,6 +1216,13 @@ export type AgentPageTarget =
   | { ok: false; reason: 'no_paragraph' }
 
 /** The part of the studio's plugin host this plugin uses. */
+/** The part of the editor's state a command's canExecute reads. */
+export interface AgentEditorContext {
+  hasDocument: boolean
+  hasSelection: boolean
+  inCellSelectionMode: boolean
+}
+
 export interface AgentPluginHost {
   read<T>(fn: (doc: never) => T): T
   transaction<T>(label: string, fn: (tx: { doc(): never; deferPagination(): void }) => T): T
@@ -1188,8 +1233,11 @@ export interface AgentPluginHost {
       id: string
       label: string
       shortcutLabel?: string
+      /** whether the command is on now; the editor greys its menu item out otherwise */
+      canExecute?(context: AgentEditorContext): boolean
       execute(services: never, params?: never): void
     }): void
+    unregisterCommand?(id: string): void
     addMenuItem?(spec: { menuId: string; commandId: string; position?: 'top' | 'bottom' }): void
   }
 }
