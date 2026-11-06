@@ -1,4 +1,5 @@
 // Modified by Onyou Office on 2026-11-01: exercise the independent product project folder.
+// Modified by Onyou Office: wait for an idle composer before each scripted send.
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type ElectronApplication, type Page } from '@playwright/test'
@@ -57,8 +58,12 @@ async function setup(name: string): Promise<Setup> {
 }
 
 async function send(page: Page, text: string): Promise<void> {
-  await page.locator('.ai-composer textarea').first().fill(text)
-  await page.locator('.ai-composer .ai-send-btn').first().click()
+  const composer = page.locator('.ai-composer').first()
+  // The stub records a request before its delayed reply finishes. While busy,
+  // ai-send-btn is the Stop button; a second click would cancel, not send.
+  await expect(composer.locator('.ai-stop-btn')).toHaveCount(0)
+  await composer.locator('textarea').fill(text)
+  await composer.locator('.ai-send-btn:not(.ai-stop-btn)').click()
 }
 
 async function openDoc(s: Setup, file: string, urlPart: string): Promise<Page> {
