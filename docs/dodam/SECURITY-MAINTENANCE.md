@@ -76,3 +76,10 @@ folder-size limits. Use the canonical metadata path returned by that walk; a fil
 it excludes must not be opened by independently joining its name again. Unit
 regressions use synthetic files and mocked boundary results, never real login
 files or account connections.
+
+Generation paths require the same bounds as parsing: raw quoted-tag scans,
+picture transforms and coordinates, paragraph-mark properties, slide shape
+properties and backgrounds must not restart a full suffix search per opener.
+Keep captures, whitespace, quoted `>` values and global match ordering unchanged.
+Use compatibility comparisons and subprocess deadlines together with the full
+DOCX/PPTX round-trip and schema suites when integrating a replacement.

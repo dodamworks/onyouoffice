@@ -185,3 +185,9 @@ and its boundary regressions. Retire a local adaptation only when an upstream
 replacement provides the same protection and passes the relevant compatibility
 tests. The CI font lock/cache is product validation infrastructure: preserve its
 verified archive hashes, setup deadlines and all visual assertions during ports.
+
+The DOCX and PPTX generation paths also retain bounded raw tag, image/shape,
+paragraph-property and slide-background matching. Preserve each engine's
+`tests/raw-xml-generation.test.ts` and its `src/xml-slices.ts` helper alongside
+the unchanged-save and edited-save contracts; no new public package export or
+engine dependency is needed for these internal adaptations.
