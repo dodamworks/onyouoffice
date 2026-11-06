@@ -278,7 +278,9 @@ jobs:
       # CLI tests must see a finished sidecar, even on a cold isolated runner.
       - name: Build sidecar for CLI coverage
         if: matrix.group == 'libraries'
-        run: npm run native:build -w @genoffice/sheets
+        run: |
+          npm run native:build -w @genoffice/sheets
+          npm run fixtures -w @genoffice/sheets
 
       - name: Unit tests
         run: node tools/ci-workspaces.mjs ${{ matrix.group }}

@@ -35,11 +35,12 @@ import type { IntegrationsApi } from '../../shared/integrations-api'
 import { markText } from '../../shared/text-marks'
 import {
   AiMark,
+  aiProviderDisplayName,
   aiSubscriptionCardView,
-  aiSubscriptionProviderName,
   aiSubscriptionText,
   useDismissablePopover,
 } from '@genoffice/ui'
+import { isSubscriptionProvider } from '@genoffice/ai-provider/browser'
 import type { AiSettings } from '@genoffice/ai-provider/browser'
 import { productName } from '@genoffice/i18n'
 import { RELEASE_IS_BETA } from '../../shared/release-stage'
@@ -58,7 +59,7 @@ import { onFilesChanged } from './file-events'
 import { FirstConnectionDialog } from './FirstConnectionNotice'
 import { LaunchRecoveryList } from './RecoveryList'
 import type { SubscriptionConnection } from './subscription-client'
-import { subscriptionSummary } from './subscription-status'
+import { homeAiEntry } from './subscription-status'
 import { normalizeNickname } from '../../shared/nickname'
 import './pdf-tools/globals'
 import './quick-look/globals'
@@ -964,18 +965,21 @@ function GroupPicker({ groups, count, onCancel, onPick, onCreate, onRemove }: Gr
 }
 
 // ── Settings entry (bottom-left) ─────────────────────────
-// Shows where the AI subscription connection stands. Clicking it opens the
+// Shows the AI that requests run on (homeAiEntry). Clicking it opens the
 // settings modal (SettingsModal.tsx) on its AI section, where the connect
 // cards live; the other preferences (language, theme, save location, update
 // channel) are one click away in the same dialog.
 
 function AccountEntry({
   connection,
+  aiSettings,
   onOpenChange,
   onFileSearchSettingsChange,
   openRequest,
 }: {
   connection: SubscriptionConnection
+  /** the AI settings as last read; null until the first read answers */
+  aiSettings: AiSettings | null
   /** the settings modal opened or closed */
   onOpenChange?: (open: boolean) => void
   onFileSearchSettingsChange?: () => void
@@ -1020,23 +1024,29 @@ function AccountEntry({
     refresh()
   }
 
-  const summary = subscriptionSummary(connection.statuses)
-  const names = summary.connected.map(aiSubscriptionProviderName).join(' · ')
-  // one connection shows its own state line (plan, or charged by usage); two just read "Connected"
-  const only = summary.connected.length === 1 ? summary.connected[0] : undefined
-  const onlyView = only ? aiSubscriptionCardView(connection.statuses[only]) : null
+  const summary = homeAiEntry(aiSettings, connection.statuses)
+  const names = summary.providers.map(aiProviderDisplayName).join(' · ')
+  // one connection shows its own state line (plan, charged by usage, or a selected key
+  // provider in use); two just read "Connected"
+  const only = summary.providers.length === 1 ? summary.providers[0] : undefined
+  const onlyView =
+    only && isSubscriptionProvider(only) ? aiSubscriptionCardView(connection.statuses[only]) : null
   const stateText =
     summary.state === 'connected'
       ? onlyView
         ? aiSubscriptionText(lang, onlyView.statusKey, { plan: onlyView.planName ?? '' })
-        : aiSubscriptionText(lang, 'cardReady')
-      : null
-  const label =
-    summary.state === 'connected'
-      ? names
-      : summary.state === 'checking'
-        ? aiSubscriptionText(lang, 'cardChecking')
-        : aiSubscriptionText(lang, 'pickerNotConnected')
+        : only
+          ? t('freeStatusInUse')
+          : aiSubscriptionText(lang, 'cardReady')
+      : summary.state === 'needs-connection'
+        ? t('homeAiNeedsConnection')
+        : null
+  const named = summary.state === 'connected' || summary.state === 'needs-connection'
+  const label = named
+    ? names
+    : summary.state === 'checking'
+      ? aiSubscriptionText(lang, 'cardChecking')
+      : aiSubscriptionText(lang, 'pickerNotConnected')
 
   return (
     <div className="account-entry">
@@ -1056,7 +1066,7 @@ function AccountEntry({
         aria-expanded={settingsOpen}
         data-subscription={summary.state}
         data-tip={
-          summary.state === 'connected'
+          named
             ? `${names} · ${stateText}`
             : summary.state === 'checking'
               ? t('settings')
@@ -3626,6 +3636,7 @@ export function Home({
         {renderFolderPanel()}
         <AccountEntry
           connection={connection}
+          aiSettings={aiSettings}
           onOpenChange={handleSettingsOpenChange}
           onFileSearchSettingsChange={() => setRerankSettingsTick((n) => n + 1)}
           openRequest={settingsRequest}

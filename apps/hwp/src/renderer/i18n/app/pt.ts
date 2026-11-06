@@ -28,6 +28,11 @@ export const pt = {
     'Não foi salvo: este documento tem alterações controladas; salvá-lo aqui faria com que se perdessem e poderia gerar um arquivo que o Hancom Hangul não consegue abrir.',
   savedTailsLost:
     'Salvo, mas algumas páginas mestras ou notas do arquivo original não puderam ser mantidas, e o Hancom Hangul pode não abrir o arquivo salvo. Abra-o para conferir.',
+  missingFonts:
+    'Algumas fontes não estão neste PC e aparecem na tela com outras fontes: {fonts}. O arquivo salvo mantém os nomes de fonte originais, e o texto aparece como previsto em um PC que tenha essas fontes.',
+  missingFontTag: 'Não está neste PC',
+  missingFontHint:
+    'Esta fonte não está neste PC e aparece na tela com outra fonte. O arquivo mantém o nome desta fonte.',
   dismiss: 'Fechar',
   aiOpenAssistant: 'Abrir assistente de IA',
   aiNewChat: 'Nova conversa',
@@ -166,6 +171,9 @@ export const pt = {
     'Instruções de reescrita aplicam-se por padrão à seleção; clique para pré-visualizar',
   aiScopeClearTitle: 'Remover o escopo da seleção',
   aiToolNotDone: 'Não realizado · {what}',
+  aiUnfinishedSteps: 'Etapas não concluídas: {n}',
+  aiUnfinishedNote:
+    'Estas etapas não foram aplicadas ao documento. Verifique estas partes mesmo que a resposta diga que está feito.',
   aiChangesTitle: 'Alterações feitas no documento: {count}',
   aiClearMarks: 'Ocultar marcas',
   aiRevert: 'Desfazer estas alterações',
@@ -256,4 +264,7 @@ export const pt = {
   checkAskAi: 'Entregar a correção à IA',
   checkHandedOff: 'O pedido está no campo da IA. Reveja e envie.',
   checkFixFailed: 'Não foi possível alterar.',
+  easyWordsLabel: 'Explicar com palavras simples',
+  easyWordsPrompt:
+    'Explique em português o texto selecionado abaixo para que alguém que precisa de textos fáceis de ler também entenda. Use palavras do dia a dia e frases curtas, e não deixe de fora nenhum fato, número ou condição. Não altere o documento.\n\nTexto selecionado:\n{text}',
 } satisfies Record<keyof typeof zh, string>

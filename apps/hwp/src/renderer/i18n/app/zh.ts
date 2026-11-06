@@ -25,6 +25,10 @@ export const zh = {
     '未保存：此文档包含修订记录，在这里保存会丢失修订记录，并且保存的文件可能无法在 Hancom Hangul 中打开。',
   savedTailsLost:
     '已保存，但原文件中的部分母版页或批注未能保留，保存的文件可能无法在 Hancom Hangul 中打开。请打开确认。',
+  missingFonts:
+    '此电脑上没有部分字体，屏幕上以其他字体显示：{fonts}。保存的文件仍保留原字体名称，在装有这些字体的电脑上会按原样显示。',
+  missingFontTag: '此电脑上没有',
+  missingFontHint: '此电脑上没有这个字体，屏幕上以其他字体显示。文件中仍保存这个字体名称。',
   dismiss: '关闭',
   aiOpenAssistant: '打开 AI 助手',
   aiNewChat: '新对话',
@@ -158,6 +162,8 @@ export const zh = {
   aiScopeSelectionTip: '改写类指令默认只作用于选中内容;点击预览',
   aiScopeClearTitle: '取消选中范围',
   aiToolNotDone: '未完成 · {what}',
+  aiUnfinishedSteps: '未完成的步骤：{n} 个',
+  aiUnfinishedNote: '以下步骤没有应用到文档中。即使回复说已完成，也请检查这些部分。',
   aiChangesTitle: '已修改文档 {count} 处',
   aiClearMarks: '清除标记',
   aiRevert: '撤销这些修改',
@@ -241,4 +247,7 @@ export const zh = {
   checkAskAi: '交给 AI 修改',
   checkHandedOff: '请求已放入 AI 输入框，请确认后发送。',
   checkFixFailed: '未能修改。',
+  easyWordsLabel: '用简单的话解释',
+  easyWordsPrompt:
+    '请用中文解释下面选中的文字，让需要浅显文字的人也能看懂。用日常词语和短句，不要漏掉任何事实、数字或条件。不要修改文档。\n\n选中的文字：\n{text}',
 }
