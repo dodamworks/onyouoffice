@@ -1,3 +1,5 @@
+// Modified by Onyou Office: scan ink runs once and retain all other bytes.
+import { delimitedMatches, replaceDelimited } from './xml-slices'
 import type { NewInkImage } from './types'
 import { escapeXmlAttr } from './xml-utils'
 
@@ -83,14 +85,17 @@ export function anchoredInkRunXml(
   )
 }
 
-const ANCHOR_RUN_RE = /<w:r><w:drawing><wp:anchor[\s\S]*?<\/wp:anchor><\/w:drawing><\/w:r>/g
+const ANCHOR_RUN_OPEN = '<w:r><w:drawing><wp:anchor'
+const ANCHOR_RUN_CLOSE = '</wp:anchor></w:drawing></w:r>'
 
 const isInkRun = (run: string) => run.includes(`name="${INK_NAME_PREFIX}`)
 
 /** Remove every aidocs-ink run from a body-element XML slice. */
 export function stripInkRuns(xml: string): string {
   if (!xml.includes(INK_NAME_PREFIX)) return xml
-  return xml.replace(ANCHOR_RUN_RE, (run) => (isInkRun(run) ? '' : run))
+  return replaceDelimited(xml, ANCHOR_RUN_OPEN, ANCHOR_RUN_CLOSE, (run) =>
+    isInkRun(run) ? '' : run,
+  )
 }
 
 /** One raw ink run found in a paragraph's XML. */
@@ -110,7 +115,8 @@ export interface InkRunMatch {
 export function findInkRuns(paragraphXml: string): InkRunMatch[] {
   if (!paragraphXml.includes(INK_NAME_PREFIX)) return []
   const out: InkRunMatch[] = []
-  for (const run of paragraphXml.match(ANCHOR_RUN_RE) ?? []) {
+  for (const match of delimitedMatches(paragraphXml, ANCHOR_RUN_OPEN, ANCHOR_RUN_CLOSE)) {
+    const run = match[0]!
     if (!isInkRun(run)) continue
     const emu = (value: string | undefined) => parseInt(value ?? '0', 10) || 0
     const descr = /<wp:docPr [^>]*descr="([^"]*)"/.exec(run)?.[1]

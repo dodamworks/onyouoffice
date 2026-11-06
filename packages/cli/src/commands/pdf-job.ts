@@ -58,8 +58,13 @@ export function assertPaidAllowed(route: AvailableRoute, allowPaid: boolean): vo
   )
 }
 
-/** How the refusal names a running job of each kind. */
-function runningJobLabel(kind: JobKind, lang: string | undefined): string {
+/** How the refusal names a running job of each kind; an easy explanation says so. */
+function runningJobLabel(kind: JobKind, lang: string | undefined, easy: boolean): string {
+  if (easy) {
+    return kind === 'translate-page'
+      ? `an easy explanation of a page (${lang})`
+      : `an easy explanation (${lang})`
+  }
   switch (kind) {
     case 'ai-read':
       return 'an AI page reading'
@@ -78,7 +83,9 @@ function runningJobLabel(kind: JobKind, lang: string | undefined): string {
 
 /**
  * One document job at a time per document, in this process and in any other
- * (spec §9). `statusCommand` is the command the refusal points at.
+ * (spec §9). `statusCommand` is the command the refusal points at. The
+ * refusal's `detail.job` has `mode: "easy"` when the running job is an easy
+ * explanation's (its kind stays `translate` or `translate-page`).
  */
 export async function assertNoRunningJob(
   store: ResultStore,
@@ -88,17 +95,24 @@ export async function assertNoRunningJob(
   const here = documentJobs.running(docHash)
   const elsewhere = here ? null : (await store.listJobs(docHash)).find((j) => j.state === 'running')
   const running = here
-    ? { kind: here.kind, lang: here.lang, runId: here.runId, progress: here.progress }
+    ? {
+        kind: here.kind,
+        lang: here.lang,
+        runId: here.runId,
+        easy: here.mode === 'easy',
+        progress: here.progress,
+      }
     : elsewhere
       ? {
           kind: elsewhere.kind,
           lang: elsewhere.lang,
           runId: elsewhere.runId,
+          easy: elsewhere.mode === 'easy',
           progress: elsewhere.progress,
         }
       : null
   if (!running) return
-  const label = runningJobLabel(running.kind, running.lang)
+  const label = runningJobLabel(running.kind, running.lang, running.easy)
   const progress = running.progress ? ` (${running.progress.done}/${running.progress.total})` : ''
   throw new CliError(
     EXIT.app,
@@ -109,6 +123,7 @@ export async function assertNoRunningJob(
         kind: running.kind,
         ...(running.lang !== undefined ? { lang: running.lang } : {}),
         ...(running.runId !== undefined ? { runId: running.runId } : {}),
+        ...(running.easy ? { mode: 'easy' } : {}),
         ...(running.progress ? { progress: running.progress } : {}),
       },
     },

@@ -21,7 +21,7 @@ The [shared policy](../../tools/ci-reference-policy.json) declares documentation
 
 The [reference checker](../../tools/check-reference.py) checks changed files plus affected surviving links/provenance. It validates tracked local Markdown link targets (not external URL availability or heading anchors), JSON syntax and declared asset hashes, static self-contained SVGs, fully decoded raster images, and readable font tables with adjacent notices. Visual quality, wording, accessibility in a real UI and legal suitability still require review. Original third-party text is read without rewriting its whitespace.
 
-The dedicated Ubuntu job uses Python 3.12 and three hash-pinned, CI-only validators: Pillow 12.3.0, fontTools 4.63.0 and Brotli 1.2.0. The [requirements](../../tools/reference-requirements.txt) pin Linux x86_64 wheels; these do not enter the application's dependency graph or installers. Pillow uses an HPND-style license, fontTools and Brotli use MIT licenses. See [Pillow license](https://github.com/python-pillow/Pillow/blob/12.3.0/LICENSE), [fontTools license](https://github.com/fonttools/fonttools/blob/4.63.0/LICENSE), [Brotli license](https://github.com/google/brotli/blob/v1.2.0/LICENSE).
+The dedicated Ubuntu job uses Python 3.12 and three hash-pinned, CI-only validators: Pillow 13.0.0, fontTools 4.63.0 and Brotli 1.2.1. The [requirements](../../tools/reference-requirements.txt) pin Linux x86_64 wheels; these do not enter the application's dependency graph or installers. Pillow uses an HPND-style license, fontTools and Brotli use MIT licenses. See [Pillow license](https://github.com/python-pillow/Pillow/blob/13.0.0/LICENSE), [fontTools license](https://github.com/fonttools/fonttools/blob/4.63.0/LICENSE), [Brotli license](https://github.com/google/brotli/blob/v1.2.1/LICENSE).
 
 The final `CI result` checks the classifier and all applicable job outcomes, including reference failures and cancellation. The CI-policy PR itself requires full product checks. Manual or unavailable comparisons retain full product checks; without a verified range the change-specific reference job is not claimed to have run.
 
@@ -80,3 +80,21 @@ For spellcheck instability, reproduce the specific state and compare failures be
 CI executes mechanical checks; Codex reviews the diff and applicable AGENTS guidance. Request one review of a coherent final diff, avoid a duplicate manual request while an automatic review is running, and refresh it after consequential fixes. Record the reviewed commit; do not claim an old review covers a new revision or guarantee incremental-only billing. Repository-specific review rules must preserve document compatibility, identity/data separation and mocked AI/provider boundaries.
 
 See [GitHub skipped/required-check semantics](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks) and [Codex review guidance](https://learn.chatgpt.com/docs/third-party/github). Branch protection, billing plans and Codex account settings are separate from this YAML; none is changed here.
+
+## Bounded document-font setup
+
+The November 6 E2E retry stalled while downloading the 61.2 MB Ubuntu Noto CJK
+package. Keep the same Carlito, Caladea and Noto CJK package versions used by the
+Ubuntu 22.04 visual baselines. `tools/ci-font-packages.json` records their official
+Ubuntu package paths and SHA-256 values; changing the font stack still requires
+visual compatibility review.
+
+Cache only these download archives, using the complete lockfile hash as the key.
+`tools/ci-fonts.mjs` verifies each archive against the committed hash before any
+installation, including cache hits. A bad cache entry is discarded. A download
+has a 15-second connection deadline and a 60-second total deadline, then tries
+one other Ubuntu mirror. The complete setup step is limited to five minutes.
+Verify installed package versions and font-family resolution before tests start.
+A missing font, digest mismatch or failed installation fails the job; no layout
+assertion, test or product check is skipped. Preserve all three E2E shards and
+the existing exact-build and aggregate gates.

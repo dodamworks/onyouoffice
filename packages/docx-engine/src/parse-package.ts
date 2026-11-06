@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-06: bound relationship prologue scanning.
 // Package-level parts: main document path, relationships, comments,
 // protection settings and numbering definitions.
 import JSZip from 'jszip'
@@ -15,6 +16,7 @@ import {
 import { customEnumItems } from './list-markers'
 import { decodeNumericCharRefs, onOffOf, type RelInfo } from './parse-xml-text'
 import type {
+  CommentImage,
   CommentInfo,
   DocProtection,
   NumberingDef,
@@ -64,6 +66,28 @@ export function resolveRelationshipTargetPath(sourcePath: string, target: string
   return parts.join('/') || null
 }
 
+/** Skip the prologue in one pass, including quoted brackets and internal subsets. */
+function withoutDoctype(xml: string): string {
+  const start = xml.search(/<!DOCTYPE/i)
+  if (start < 0) return xml
+  let quote = ''
+  let depth = 0
+  for (let i = start + 9; i < xml.length; i++) {
+    const char = xml[i]!
+    if (quote) {
+      if (char === quote) quote = ''
+    } else if (char === '"' || char === "'") quote = char
+    else if (xml.startsWith('<!--', i)) {
+      const end = xml.indexOf('-->', i + 4)
+      if (end < 0) throw new Error('Unterminated relationship DOCTYPE comment')
+      i = end + 2
+    } else if (char === '[') depth++
+    else if (char === ']') depth--
+    else if (char === '>' && depth <= 0) return xml.slice(0, start) + xml.slice(i + 1)
+  }
+  throw new Error('Unterminated relationship DOCTYPE')
+}
+
 export async function parseRels(zip: JSZip, path: string): Promise<Map<string, RelInfo>> {
   const rels = new Map<string, RelInfo>()
   const file = zip.file(path)
@@ -71,10 +95,7 @@ export async function parseRels(zip: JSZip, path: string): Promise<Map<string, R
   // fast-xml-parser rejects a DOCTYPE declaring external entities; drop the
   // prologue instead of failing the whole document (entities never resolve —
   // XXE-safe — and Relationship elements carry everything in attributes)
-  const relsXml = (await file.async('string')).replace(
-    /<!DOCTYPE(?:[^>"'\x5B\x5D]|\[[\s\S]*?\]|"[^"]*"|'[^']*')*>/i,
-    '',
-  )
+  const relsXml = withoutDoctype(await file.async('string'))
   const parsed = xmlParser.parse(relsXml) as XNode[]
   const root = parsed.find((n) => nameOf(n) === 'Relationships')
   if (!root) return rels
@@ -103,6 +124,54 @@ function resultTextOf(node: XNode): string {
   return out
 }
 
+/**
+ * The first picture a comment carries: the blip's relationship resolves
+ * against word/_rels/comments.xml.rels, the bytes come from the media part,
+ * the display size from wp:extent. Everything missing (no rels part, an
+ * external target, an unknown media path) degrades to no image — the text
+ * still shows.
+ */
+async function commentImageOf(zip: JSZip, comment: XNode): Promise<CommentImage | undefined> {
+  let blipAttrs: Record<string, string> | undefined
+  let extent: Record<string, string> | undefined
+  const walk = (node: XNode): void => {
+    if (blipAttrs) return
+    const name = nameOf(node)
+    if (name === 'a:blip') {
+      blipAttrs = attrsOf(node)
+      return
+    }
+    if (name === 'wp:extent') extent = attrsOf(node)
+    for (const child of childrenOf(node)) walk(child)
+  }
+  for (const para of findChildren(comment, 'w:p')) walk(para)
+  const relId = blipAttrs?.['r:embed']
+  if (!relId) return undefined
+  const relsFile = zip.file('word/_rels/comments.xml.rels')
+  if (!relsFile) return undefined
+  const relsXml = await relsFile.async('string')
+  const relRe = new RegExp(`<Relationship\\b[^>]*Id="${relId}"[^>]*/>`)
+  const rel = relRe.exec(relsXml)?.[0]
+  const target = rel ? /Target="([^"]+)"/.exec(rel)?.[1] : undefined
+  if (!target || /TargetMode="External"/.test(rel ?? '')) return undefined
+  const mediaPath = `word/${target.replace(/^\//, '').replace(/^word\//, '')}`
+  const mediaFile = zip.file(mediaPath)
+  if (!mediaFile) return undefined
+  const mime = mediaPath.toLowerCase().endsWith('.png')
+    ? 'image/png'
+    : mediaPath.toLowerCase().endsWith('.gif')
+      ? 'image/gif'
+      : 'image/jpeg'
+  const widthPx = extent?.cx ? Math.round(parseInt(extent.cx, 10) / 9525) : 0
+  const heightPx = extent?.cy ? Math.round(parseInt(extent.cy, 10) / 9525) : 0
+  return {
+    mime,
+    base64: await mediaFile.async('base64'),
+    ...(widthPx > 0 ? { widthPx } : { widthPx: 160 }),
+    ...(heightPx > 0 ? { heightPx } : { heightPx: 120 }),
+  }
+}
+
 /** word/comments.xml (+ reply/resolved relations from commentsExtended) -> display list, file order */
 export async function parseComments(zip: JSZip): Promise<CommentInfo[]> {
   const file = zip.file('word/comments.xml')
@@ -116,6 +185,7 @@ export async function parseComments(zip: JSZip): Promise<CommentInfo[]> {
     if (!attrs['w:id']) continue
     const paras = findChildren(node, 'w:p')
     const paraId = paras.length > 0 ? attrsOf(paras[paras.length - 1])['w14:paraId'] : undefined
+    const image = await commentImageOf(zip, node)
     out.push({
       id: attrs['w:id'],
       author: attrs['w:author'] ?? '',
@@ -123,6 +193,7 @@ export async function parseComments(zip: JSZip): Promise<CommentInfo[]> {
       date: attrs['w:date'],
       text: paras.map(resultTextOf).join('\n'),
       ...(paraId ? { paraId } : {}),
+      ...(image ? { image } : {}),
     })
   }
   // commentsExtended.xml: paraId → parent paraId / done (Word 2013+ replies and resolution)

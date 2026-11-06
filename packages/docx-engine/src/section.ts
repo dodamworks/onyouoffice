@@ -1,3 +1,4 @@
+// Modified by Onyou Office: bound literal border-slice matching work.
 import type {
   ParsedDoc,
   SectionInfo,
@@ -7,6 +8,28 @@ import type {
   LineNumbering,
 } from './types'
 import { onOffTagIn } from './parse-xml-text'
+import {
+  firstSlice,
+  pairedSlice,
+  selfClosingSlice,
+  firstMatch,
+  openingTagMatch,
+  openingTagMatches,
+  pairedMatch,
+} from './xml-slices'
+
+function pageBorderSlice(xml: string) {
+  return firstSlice(
+    selfClosingSlice(xml, '<w:pgBorders'),
+    pairedSlice(xml, '<w:pgBorders', '</w:pgBorders>'),
+  )
+}
+
+function columnTags(xml: string): string[] {
+  return [...openingTagMatches(xml, '<w:col ')]
+    .map((m) => m[0]!)
+    .filter((tag) => /w:w=["'][\d.]+["']/.test(tag))
+}
 
 /** US Letter, portrait, 1-inch margins */
 export const DEFAULT_SECTION: SectionSettings = {
@@ -25,7 +48,7 @@ export const DEFAULT_SECTION: SectionSettings = {
 
 /** Vertical alignment of page content (sectPr w:vAlign); top/default returns undefined */
 function vAlignOf(xml: string): 'center' | 'both' | 'bottom' | undefined {
-  const v = strAttr(/<w:vAlign[^>]*\/?>/.exec(xml)?.[0] ?? '', 'w:val')
+  const v = strAttr(openingTagMatch(xml, '<w:vAlign')?.[0] ?? '', 'w:val')
   return v === 'center' || v === 'both' || v === 'bottom' ? v : undefined
 }
 
@@ -51,7 +74,7 @@ function intAttr(tag: string, name: string, fallback: number): number {
  * of w:pgBorders must not be treated as a drawn border.
  */
 function hasVisiblePageBorder(xml: string): boolean {
-  const pgBorders = /<w:pgBorders[^>]*\/>|<w:pgBorders[\s\S]*?<\/w:pgBorders>/.exec(xml)?.[0]
+  const pgBorders = pageBorderSlice(xml)?.text
   if (!pgBorders) return false
   const sides = pgBorders.match(/<w:(?:top|left|bottom|right)\b[^>]*\/?>/g) ?? []
   return sides.some((side) => {
@@ -60,8 +83,13 @@ function hasVisiblePageBorder(xml: string): boolean {
   })
 }
 
+function onOffAttr(tag: string, attr: string): boolean {
+  const v = strAttr(tag, attr)
+  return v === '1' || v === 'true' || v === 'on'
+}
+
 /** ST_Border line styles; every other w:val is an art (bitmap) border. */
-const LINE_BORDER_VALS = new Set([
+export const LINE_BORDER_VALS = new Set([
   'single',
   'thick',
   'double',
@@ -91,7 +119,7 @@ const LINE_BORDER_VALS = new Set([
 
 /** Styling details of a visible w:pgBorders box (undefined when no visible side). */
 function pageBorderPropsOf(xml: string): SectionSettings['pageBorderProps'] {
-  const pgBorders = /<w:pgBorders[^>]*\/>|<w:pgBorders[\s\S]*?<\/w:pgBorders>/.exec(xml)?.[0]
+  const pgBorders = pageBorderSlice(xml)?.text
   if (!pgBorders || !hasVisiblePageBorder(xml)) return undefined
   const display = strAttr(pgBorders, 'w:display') as 'firstPage' | 'notFirstPage' | undefined
   const offsetFrom = strAttr(pgBorders, 'w:offsetFrom') as 'page' | 'text' | undefined
@@ -114,6 +142,8 @@ function pageBorderPropsOf(xml: string): SectionSettings['pageBorderProps'] {
       spacePt: intAttr(side, 'w:space', 0),
       ...(sideColor ? { color: sideColor } : {}),
       ...(art ? { art } : {}),
+      ...(onOffAttr(side, 'w:shadow') ? { shadow: true } : {}),
+      ...(onOffAttr(side, 'w:frame') ? { frame: true } : {}),
     }
     spacePt = Math.max(spacePt, intAttr(side, 'w:space', 0))
     widthPt = Math.max(widthPt, sides[name]!.widthPt)
@@ -135,12 +165,12 @@ export function sectionSettingsFromXml(
   xml: string,
   opts: { gutterAtTop?: boolean } = {},
 ): SectionSettings {
-  const pgSz = /<w:pgSz[^>]*\/?>/.exec(xml)?.[0] ?? ''
-  const pgMar = /<w:pgMar[^>]*\/?>/.exec(xml)?.[0] ?? ''
+  const pgSz = openingTagMatch(xml, '<w:pgSz')?.[0] ?? ''
+  const pgMar = openingTagMatch(xml, '<w:pgMar')?.[0] ?? ''
 
   // Parse docGrid (w:docGrid)
   let docGrid: DocGrid | undefined
-  const docGridTag = /<w:docGrid[^>]*\/?>/.exec(xml)?.[0]
+  const docGridTag = openingTagMatch(xml, '<w:docGrid')?.[0]
   if (docGridTag) {
     const gridType = (strAttr(docGridTag, 'w:type') ?? 'default') as DocGrid['type']
     const validTypes: DocGrid['type'][] = ['default', 'lines', 'linesAndChars', 'snapToChars']
@@ -156,8 +186,8 @@ export function sectionSettingsFromXml(
   // explicit unequal column widths (w:cols > w:col children). w:col is an empty
   // element, so matching its start tag covers both the self-closing and the paired
   // spelling, and either attribute quote style
-  const colsElement = /<w:cols[^>]*>[\s\S]*?<\/w:cols>/.exec(xml)?.[0]
-  const colWidths = (colsElement?.match(/<w:col [^>]*w:w=["'][\d.]+["'][^>]*>/g) ?? [])
+  const colsElement = pairedMatch(xml, '<w:cols', '</w:cols>', { openingTag: true })?.[0]
+  const colWidths = columnTags(colsElement ?? '')
     .map((tag) => intAttr(tag, 'w:w', 0))
     .filter((w) => w > 0)
 
@@ -189,8 +219,8 @@ export function sectionSettingsFromXml(
     ...(vAlignOf(xml) ? { vAlign: vAlignOf(xml) } : {}),
     pageBorder: hasVisiblePageBorder(xml),
     ...(pageBorderProps ? { pageBorderProps } : {}),
-    columns: intAttr(/<w:cols[^>]*\/?>/.exec(xml)?.[0] ?? '', 'w:num', 1),
-    colSpace: intAttr(/<w:cols[^>]*\/?>/.exec(xml)?.[0] ?? '', 'w:space', 720),
+    columns: intAttr(openingTagMatch(xml, '<w:cols')?.[0] ?? '', 'w:num', 1),
+    colSpace: intAttr(openingTagMatch(xml, '<w:cols')?.[0] ?? '', 'w:space', 720),
     ...(colWidths.length >= 2 ? { colWidths } : {}),
     ...(lineNumbers ? { lineNumbers } : {}),
     ...(onOffTagIn(xml, 'w:bidi') ? { bidi: true } : {}),
@@ -248,7 +278,7 @@ export function lineNumberingOf(xml: string): LineNumbering | undefined {
 }
 
 function textDirectionOf(xml: string): string | undefined {
-  const val = strAttr(/<w:textDirection[^>]*\/?>/.exec(xml)?.[0] ?? '', 'w:val')
+  const val = strAttr(openingTagMatch(xml, '<w:textDirection')?.[0] ?? '', 'w:val')
   return val && val !== 'lrTb' ? val : undefined
 }
 
@@ -258,7 +288,12 @@ export function readSectionSettings(parsed: ParsedDoc): SectionSettings {
   return sectionSettingsFromXml(sectBlock?.originalXml ?? '', { gutterAtTop: parsed.gutterAtTop })
 }
 
-const SECT_PR_RE = /<w:sectPr[^>]*\/>|<w:sectPr[\s\S]*?<\/w:sectPr>/
+function sectionMatch(xml: string) {
+  return firstMatch(
+    openingTagMatch(xml, '<w:sectPr', { selfClosingOnly: true }),
+    pairedMatch(xml, '<w:sectPr', '</w:sectPr>'),
+  )
+}
 
 /** On/off flag element (w:titlePg, w:evenAndOddHeaders, …) present and not switched
  *  off: matches self-closing and paired forms, w:val="0|false|off" counts as off. */
@@ -315,8 +350,8 @@ export function sectionFromSectPr(
   lastBlockIndex: number,
   gutterAtTop?: boolean,
 ): SectionInfo {
-  const pgNumTag = /<w:pgNumType[^>]*\/?>/.exec(sectPrXml)?.[0] ?? ''
-  const type = strAttr(/<w:type[^>]*\/?>/.exec(sectPrXml)?.[0] ?? '', 'w:val')
+  const pgNumTag = openingTagMatch(sectPrXml, '<w:pgNumType')?.[0] ?? ''
+  const type = strAttr(openingTagMatch(sectPrXml, '<w:type')?.[0] ?? '', 'w:val')
   const startType =
     type === 'continuous' ||
     type === 'evenPage' ||
@@ -373,7 +408,7 @@ export function applyPageNumType(
  * the child was written after it, as a sibling inside w:body / w:pPr.
  */
 export function injectIntoSectPr(xml: string, tag: string): string {
-  const m = /<w:sectPr(?:\s[^>]*?)?\/>|<w:sectPr(?:\s[^>]*?)?>/.exec(xml)
+  const m = openingTagMatch(xml, '<w:sectPr', { strictBoundary: true })
   if (!m) return xml
   const open = m[0].endsWith('/>') ? `${m[0].slice(0, -2)}>` : m[0]
   return xml.replace(m[0], () => `${open}${tag}${m![0].endsWith('/>') ? '</w:sectPr>' : ''}`)
@@ -401,7 +436,7 @@ export function readSections(parsed: ParsedDoc): SectionInfo[] {
   for (const block of parsed.blocks) {
     const xml = block.originalXml ?? ''
     if (block.docxIndex == null || !xml.includes('<w:sectPr')) continue
-    const sectPrXml = SECT_PR_RE.exec(xml)?.[0]
+    const sectPrXml = sectionMatch(xml)?.[0]
     if (!sectPrXml) continue
     sections.push(sectionFromSectPr(sectPrXml, first, block.docxIndex, parsed.gutterAtTop))
     first = block.docxIndex + 1
@@ -425,13 +460,47 @@ function roundColsInPlace(xml: string, cols: string): string {
   return rounded === cols ? xml : xml.replace(cols, rounded)
 }
 
+/**
+ * w:pgBorders for pageBorderProps. Without props the legacy single-line box
+ * (½ pt, 24 pt from the page edge) is written; props with no sides yield ''.
+ */
+export function pageBordersXml(props: SectionSettings['pageBorderProps']): string {
+  const sides = props?.sides
+  if (props && !(sides && Object.keys(sides).length > 0)) return ''
+  if (!props || !sides) {
+    const side = (name: string) =>
+      `<w:${name} w:val="single" w:sz="4" w:space="24" w:color="auto"/>`
+    return (
+      '<w:pgBorders w:offsetFrom="page">' +
+      `${side('top')}${side('left')}${side('bottom')}${side('right')}` +
+      '</w:pgBorders>'
+    )
+  }
+  let out = '<w:pgBorders'
+  if (props.zOrder === 'back') out += ' w:zOrder="back"'
+  if (props.display) out += ` w:display="${props.display}"`
+  out += ` w:offsetFrom="${props.offsetFrom ?? 'text'}">`
+  for (const name of ['top', 'left', 'bottom', 'right'] as const) {
+    const side = sides[name]
+    if (!side) continue
+    const sz = side.art ? Math.round(side.widthPt) : Math.round(side.widthPt * 8)
+    out += `<w:${name} w:val="${side.val}" w:sz="${sz}" w:space="${Math.round(side.spacePt)}"`
+    out += ` w:color="${side.color ?? 'auto'}"`
+    if (side.shadow) out += ' w:shadow="1"'
+    if (side.frame) out += ' w:frame="1"'
+    out += '/>'
+  }
+  return out + '</w:pgBorders>'
+}
+
 /** Rewrite pgSz / pgMar inside a w:sectPr XML slice, preserving everything else. */
 export function applySectionSettings(sectPrXml: string, settings: SectionSettings): string {
   const orient = settings.orientation === 'landscape' ? ' w:orient="landscape"' : ''
   const pgSz = `<w:pgSz w:w="${settings.pageWidth}" w:h="${settings.pageHeight}"${orient}/>`
   let xml = sectPrXml
-  if (/<w:pgSz[^>]*\/?>/.test(xml)) {
-    xml = xml.replace(/<w:pgSz[^>]*\/?>/, pgSz)
+  const oldSize = openingTagMatch(xml, '<w:pgSz')
+  if (oldSize) {
+    xml = xml.replace(oldSize[0]!, pgSz)
   } else {
     xml = injectIntoSectPr(xml, pgSz)
   }
@@ -441,7 +510,7 @@ export function applySectionSettings(sectPrXml: string, settings: SectionSetting
     }
     return tag.replace(/\/>$/, ` ${name}="${value}"/>`)
   }
-  const marMatch = /<w:pgMar[^>]*\/>/.exec(xml)
+  const marMatch = openingTagMatch(xml, '<w:pgMar', { selfClosingOnly: true })
   if (marMatch) {
     let tag = marMatch[0]
     // the gutter was folded into the parsed margin; a user-set margin below it writes 0, not a negative value
@@ -474,25 +543,31 @@ export function applySectionSettings(sectPrXml: string, settings: SectionSetting
     xml = xml.replace(/<\/w:sectPr>/, `${pgMar}</w:sectPr>`)
   }
 
-  // page border: single-line box measured from the page edge (pgBorders sits
-  // between pgMar and cols in CT_SectPr)
-  xml = xml.replace(/<w:pgBorders[^>]*\/>|<w:pgBorders[\s\S]*?<\/w:pgBorders>/, '')
+  // page border (pgBorders sits between pgMar and cols in CT_SectPr)
+  const oldBorder = pageBorderSlice(xml)
+  if (oldBorder)
+    xml = xml.slice(0, oldBorder.index) + xml.slice(oldBorder.index + oldBorder.text.length)
   if (settings.pageBorder) {
-    const side = (name: string) =>
-      `<w:${name} w:val="single" w:sz="4" w:space="24" w:color="auto"/>`
-    const pgBorders =
-      '<w:pgBorders w:offsetFrom="page">' +
-      `${side('top')}${side('left')}${side('bottom')}${side('right')}` +
-      '</w:pgBorders>'
-    xml = xml.replace(/(<w:pgMar[^>]*\/>)/, `$1${pgBorders}`)
+    const pgBorders = pageBordersXml(settings.pageBorderProps)
+    const margin = openingTagMatch(xml, '<w:pgMar', { selfClosingOnly: true })
+    if (pgBorders && margin) xml = xml.replace(margin[0]!, () => margin[0]! + pgBorders)
   }
 
   // columns (w:cols may be self-closing or carry explicit <w:col> children)
-  const colsMatch = /<w:cols[^>]*\/>|<w:cols[^>]*>[\s\S]*?<\/w:cols>/.exec(xml)
+  const colsMatch = firstMatch(
+    openingTagMatch(xml, '<w:cols', { selfClosingOnly: true }),
+    pairedMatch(xml, '<w:cols', '</w:cols>', { openingTag: true }),
+  )
   const numAttr = settings.columns > 1 ? ` w:num="${settings.columns}"` : ''
   const colsAnchor = (tag: string): string => {
-    const anchor = /(<w:pgBorders[\s\S]*?<\/w:pgBorders>|<w:pgMar[^>]*\/>)/.exec(xml)
-    if (anchor) return xml.replace(anchor[0], `${anchor[0]}${tag}`)
+    const anchor = firstSlice(
+      pairedSlice(xml, '<w:pgBorders', '</w:pgBorders>'),
+      selfClosingSlice(xml, '<w:pgMar'),
+    )
+    if (anchor) {
+      const end = anchor.index + anchor.text.length
+      return xml.slice(0, end) + tag + xml.slice(end)
+    }
     return xml.replace(/<\/w:sectPr>/, `${tag}</w:sectPr>`)
   }
   if (
@@ -502,9 +577,7 @@ export function applySectionSettings(sectPrXml: string, settings: SectionSetting
   ) {
     // explicit unequal widths: rebuild the element (opt-in via colWidths) —
     // unless the document already carries exactly these values (round-trip)
-    const currentWidths = (colsMatch?.[0].match(/<w:col [^>]*w:w=["'][\d.]+["'][^>]*>/g) ?? []).map(
-      (t) => intAttr(t, 'w:w', 0),
-    )
+    const currentWidths = columnTags(colsMatch?.[0] ?? '').map((t) => intAttr(t, 'w:w', 0))
     const unchanged =
       colsMatch !== null &&
       intAttr(colsMatch[0], 'w:num', 1) === settings.columns &&
@@ -592,6 +665,11 @@ export function applyTitlePg(sectPrXml: string, on: boolean): string {
 
 /** Read the page color (w:background) from document.xml; null when unset. */
 export function readPageColor(parsed: ParsedDoc): string | null {
-  const m = /<w:background[^>]*w:color="([0-9A-Fa-f]{6})"/.exec(parsed.internal.documentXml)
-  return m ? m[1].toUpperCase() : null
+  for (const tag of openingTagMatches(parsed.internal.documentXml, '<w:background', {
+    allowUnterminated: true,
+  })) {
+    const colors = [...tag[0]!.matchAll(/w:color="([0-9A-Fa-f]{6})"/g)]
+    if (colors.length) return colors.at(-1)![1]!.toUpperCase()
+  }
+  return null
 }

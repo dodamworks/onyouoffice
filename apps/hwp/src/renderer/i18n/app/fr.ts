@@ -28,6 +28,11 @@ export const fr = {
     "Non enregistré : ce document contient des modifications suivies ; l'enregistrer ici les ferait perdre et pourrait produire un fichier que Hancom Hangul ne peut pas ouvrir.",
   savedTailsLost:
     "Enregistré, mais certaines pages maîtres ou certains mémos du fichier d'origine n'ont pas pu être conservés ; Hancom Hangul pourrait ne pas ouvrir le fichier enregistré. Ouvrez-le pour vérifier.",
+  missingFonts:
+    "Certaines polices ne sont pas sur ce PC et s'affichent à l'écran avec d'autres polices : {fonts}. Le fichier enregistré conserve les noms de police d'origine, et le texte s'affiche comme prévu sur un PC qui possède ces polices.",
+  missingFontTag: 'Absente de ce PC',
+  missingFontHint:
+    "Cette police n'est pas sur ce PC et s'affiche à l'écran avec une autre police. Le fichier conserve le nom de cette police.",
   dismiss: 'Fermer',
   aiOpenAssistant: "Ouvrir l'assistant IA",
   aiNewChat: 'Nouvelle conversation',
@@ -167,6 +172,9 @@ export const fr = {
     "Les instructions de réécriture s'appliquent par défaut à la sélection ; cliquez pour prévisualiser",
   aiScopeClearTitle: 'Effacer la portée de la sélection',
   aiToolNotDone: 'Non effectué · {what}',
+  aiUnfinishedSteps: 'Étapes non terminées : {n}',
+  aiUnfinishedNote:
+    "Ces étapes n'ont pas été appliquées au document. Vérifiez ces passages même si la réponse dit que c'est fait.",
   aiChangesTitle: 'Modifications apportées au document : {count}',
   aiClearMarks: 'Masquer les marques',
   aiRevert: 'Annuler ces modifications',
@@ -260,4 +268,7 @@ export const fr = {
   checkAskAi: "Confier la correction à l'IA",
   checkHandedOff: "La demande est dans le champ de l'IA. Vérifiez-la, puis envoyez-la.",
   checkFixFailed: 'La modification a échoué.',
+  easyWordsLabel: 'Expliquer simplement',
+  easyWordsPrompt:
+    "Explique en français le texte sélectionné ci-dessous pour qu'une personne qui a besoin d'un texte facile à lire puisse le comprendre. Utilise des mots de tous les jours et des phrases courtes, et n'oublie aucun fait, chiffre ou condition. Ne modifie pas le document.\n\nTexte sélectionné :\n{text}",
 } satisfies Record<keyof typeof zh, string>

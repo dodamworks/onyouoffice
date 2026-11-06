@@ -15,6 +15,7 @@ import type {
   JobStatus,
   TranslationBlockEntry,
   TranslationBlockInput,
+  TranslationMode,
 } from '../../../../packages/pdf-structure/src/store/store'
 import type {
   HighlightBlockEntry,
@@ -79,6 +80,8 @@ export const PDF_CHANNELS = {
   splitPages: 'pdf:split-pages',
   cropPages: 'pdf:crop-pages',
   exportImages: 'pdf:export-images',
+  // Save As › PNG page images: the shell picked the name; the renderer draws the pages
+  exportImagesRequest: 'pdf:export-images-request',
   convertOffice: 'pdf:convert-office',
   createDocument: 'pdf:create-document',
   openInPdfTools: 'pdf:open-in-pdf-tools',
@@ -325,9 +328,10 @@ export type PdfConvertFormat = 'docx' | 'xlsx' | 'pptx'
 /** the reflowable formats the conversion dialog writes (document-structure jobs) */
 export type PdfReflowFormat = 'md' | 'epub'
 
-/** Shell File menu / Save As → the conversion dialog. `outPath` is a Markdown
-    target the shell's own save dialog picked (Save As › Markdown): the dialog
-    converts to it right away instead of asking for a page range and a target. */
+/** Shell File menu / Save As → the conversion dialog. `outPath` is a target
+    the shell's own save dialog picked: Save As › Markdown converts to it right
+    away instead of asking for a page range; Save As › EPUB opens the form
+    (page range, book information) with that target already chosen. */
 export interface PdfConvertDialogRequest {
   format: PdfReflowFormat
   outPath?: string
@@ -1155,6 +1159,9 @@ export interface ExportImagesRequest {
   baseName: string
   /** Image encoding; anything other than 'jpg' falls back to png */
   format: 'png' | 'jpg'
+  /** Save As › PNG page images: write to the name the shell's save dialog picked
+      for this view (numbered per page) instead of asking for a folder */
+  saveAs?: boolean
 }
 
 export type ExportImagesResult =
@@ -1386,6 +1393,9 @@ export interface PdfStructureApi {
 // ── result store (window.pdfApi.store) ──
 // Document hashes are accepted only after the main process computed them for
 // this view (docHash, migrate, or a structure job's answer).
+// A translation call or write takes an optional `mode` (TranslationMode):
+// left out it is 'translate' and reaches the plain translation as before;
+// 'easy' reaches the easy explanation kept apart in the same store.
 
 /** a translation as stored, blocks in a plain list */
 export interface PdfStoredTranslation {
@@ -1404,13 +1414,39 @@ export type PdfStoreWriteRequest =
       provider?: string
       model?: string
     }
-  | { kind: 'translationMeta'; docHash: string; lang: string; provider: string; model: string }
-  | { kind: 'translationBlocks'; docHash: string; lang: string; blocks: TranslationBlockInput[] }
-  | { kind: 'deleteTranslation'; docHash: string; lang: string }
-  /** the record is found by (kind, key): `lang`, or `runId` for 'highlight' (JobRecordInput) */
+  | {
+      kind: 'translationMeta'
+      docHash: string
+      lang: string
+      provider: string
+      model: string
+      mode?: TranslationMode
+    }
+  | {
+      kind: 'translationBlocks'
+      docHash: string
+      lang: string
+      blocks: TranslationBlockInput[]
+      mode?: TranslationMode
+    }
+  | { kind: 'deleteTranslation'; docHash: string; lang: string; mode?: TranslationMode }
+  /**
+   * the record is found by (kind, key): `lang`, or `runId` for 'highlight'
+   * (JobRecordInput); `job.mode` 'easy' keeps an easy explanation's record apart
+   */
   | { kind: 'job'; docHash: string; job: JobRecordInput }
-  /** `lang` for translate / translate-page / summary, `runId` for highlight, neither for ai-read */
-  | { kind: 'heartbeat'; docHash: string; job: JobKind; lang?: string; runId?: string }
+  /**
+   * `lang` for translate / translate-page / summary, `runId` for highlight,
+   * neither for ai-read; `mode` 'easy' for an easy explanation's job
+   */
+  | {
+      kind: 'heartbeat'
+      docHash: string
+      job: JobKind
+      lang?: string
+      runId?: string
+      mode?: TranslationMode
+    }
   /** write (or replace) a passage card; the store stamps savedAt */
   | { kind: 'passage'; docHash: string; card: PassageCardInput }
   | { kind: 'deletePassage'; docHash: string; id: string }
@@ -1435,9 +1471,15 @@ export type PdfStoreWriteRequest =
       lang: string
       key: TranslationBlockKey
       text: string
+      mode?: TranslationMode
     }
   /** "translate again from the start" keeping the edits; answers `removed` */
-  | { kind: 'deleteTranslationExceptEdited'; docHash: string; lang: string }
+  | {
+      kind: 'deleteTranslationExceptEdited'
+      docHash: string
+      lang: string
+      mode?: TranslationMode
+    }
 
 /** what a store write answers besides `ok` */
 export interface PdfStoreWriteResult {
@@ -1466,11 +1508,15 @@ export interface PdfStoreMigrateResult {
   highlightBlocks?: number
   /** insights entries moved; present only when some were */
   insights?: number
+  /** easy explanation blocks moved; present only when some were */
+  easyBlocks?: number
+  /** easy explanation languages that received anything; present only when some did */
+  easyLanguages?: string[]
 }
 
 /** what deleting the document's stored results also removes (the confirmation names it) */
 export interface PdfStoreDeleteCounts {
-  /** translation blocks a person edited, in every language */
+  /** blocks a person edited, in every language, of the translations and the easy explanations */
   editedTranslationBlocks: number
   passages: number
 }
@@ -1492,12 +1538,20 @@ export interface PdfStoreApi {
   /** result-store key of the open file's current bytes */
   docHash(path: string): Promise<PdfStructureOutcome<{ docHash: string }>>
   aiReadPages(docHash: string): Promise<PdfStructureOutcome<{ pages: AiReadPageEntry[] }>>
-  translations(docHash: string): Promise<PdfStructureOutcome<{ langs: string[] }>>
+  /** languages of the stored translations, or of the easy explanations with `mode` 'easy' */
+  translations(
+    docHash: string,
+    mode?: TranslationMode,
+  ): Promise<PdfStructureOutcome<{ langs: string[] }>>
   translation(
     docHash: string,
     lang: string,
+    mode?: TranslationMode,
   ): Promise<PdfStructureOutcome<{ translation: PdfStoredTranslation | null }>>
-  /** not complete (stopped, or running elsewhere): the source of the resume offer */
+  /**
+   * not complete (stopped, or running elsewhere): the source of the resume
+   * offer. Easy explanations' records come too, each with `mode: 'easy'`.
+   */
   unfinishedJobs(docHash: string): Promise<PdfStructureOutcome<{ jobs: JobStatus[] }>>
   write(request: PdfStoreWriteRequest): Promise<PdfStructureOutcome<PdfStoreWriteResult>>
   /** after an in-app save: carry results and job records to the new hash */
@@ -1531,9 +1585,10 @@ export interface PdfStoreApi {
   pageFingerprints(
     request: PdfStorePageFingerprintsRequest,
   ): Promise<PdfStructureOutcome<{ docHash: string; fingerprints: string[] }>>
-  /** stored translation languages, most recently written first */
+  /** stored translation languages (easy explanations' with `mode` 'easy'), most recently written first */
   translationRecency(
     docHash: string,
+    mode?: TranslationMode,
   ): Promise<PdfStructureOutcome<{ langs: PdfTranslationRecency[] }>>
 }
 
@@ -1711,6 +1766,8 @@ export interface PdfApi {
   splitPages(request: SplitPagesRequest): Promise<SplitPagesResult>
   cropPages(request: CropPagesRequest): Promise<CropPagesResult>
   exportImages(request: ExportImagesRequest): Promise<ExportImagesResult>
+  /** Shell Save As › PNG page images → draw every page and export it with `saveAs: true` */
+  onExportImagesRequest(handler: () => void): () => void
   /** Convert the current PDF to Word / Excel / PowerPoint via the shell's local conversion flows */
   convertOffice(format: PdfConvertFormat): Promise<void>
   /** Shell File menu / Save As → open the Markdown / EPUB conversion dialog */

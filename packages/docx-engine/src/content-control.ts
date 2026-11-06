@@ -1,3 +1,5 @@
+// Modified by Onyou Office: enumerate raw control-property slices without regex retries.
+import { attributeMatch, delimitedMatches } from './xml-slices'
 // Block-level content controls (w:sdt): the metadata a control carries and the
 // bytes a newly created one is written as. A control wraps body blocks
 // (paragraphs, tables) so a consumer can find them by tag and confirm they
@@ -68,8 +70,8 @@ export function buildContentControlXml(spec: ContentControlSpec): ContentControl
  */
 export function nextContentControlId(documentXml: string): number {
   let max = 0
-  for (const m of documentXml.matchAll(/<w:sdtPr>([\s\S]*?)<\/w:sdtPr>/g)) {
-    const id = /<w:id[^>]*\bw:val=(?:"(\d+)"|'(\d+)')/.exec(m[1] ?? '')
+  for (const m of delimitedMatches(documentXml, '<w:sdtPr>', '</w:sdtPr>')) {
+    const id = attributeMatch(m[1] ?? '', '<w:id', /\bw:val=(?:"(\d+)"|'(\d+)')/g)
     const value = Number(id?.[1] ?? id?.[2] ?? 0)
     if (Number.isFinite(value)) max = Math.max(max, value)
   }

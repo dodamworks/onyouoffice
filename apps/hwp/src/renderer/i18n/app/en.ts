@@ -27,6 +27,11 @@ export const en = {
     'Not saved: this document has tracked changes, and saving it here would lose them and may write a file Hancom Hangul cannot open.',
   savedTailsLost:
     'Saved, but some master pages or memos of the original file could not be carried over, and Hancom Hangul may not open the saved file. Please open it there to check.',
+  missingFonts:
+    'Some fonts are not on this PC, so they appear in other fonts on screen: {fonts}. The saved file keeps the original font names, and the text looks as intended on a PC that has those fonts.',
+  missingFontTag: 'Not on this PC',
+  missingFontHint:
+    "This font is not on this PC, so it appears in another font on screen. The file keeps this font's name.",
   dismiss: 'Dismiss',
   aiOpenAssistant: 'Open AI assistant',
   aiNewChat: 'New chat',
@@ -162,6 +167,9 @@ export const en = {
   aiScopeSelectionTip: 'Rewrite-style requests apply to the selection by default; click to preview',
   aiScopeClearTitle: 'Clear the selection scope',
   aiToolNotDone: 'Not done · {what}',
+  aiUnfinishedSteps: 'Unfinished steps: {n}',
+  aiUnfinishedNote:
+    'These steps were not applied to the document. Check these parts even if the reply says it is done.',
   aiChangesTitle: 'Changes made to the document: {count}',
   aiClearMarks: 'Hide marks',
   aiRevert: 'Undo these changes',
@@ -250,4 +258,7 @@ export const en = {
   checkAskAi: 'Hand the fixing to the AI',
   checkHandedOff: 'The request is in the AI box. Read it, then send it.',
   checkFixFailed: 'Could not make the change.',
+  easyWordsLabel: 'Explain in plain words',
+  easyWordsPrompt:
+    'Explain the selected text below in English so that someone who needs easy-to-read text can understand it. Use everyday words and short sentences, and leave out no fact, number or condition. Do not change the document.\n\nSelected text:\n{text}',
 } satisfies Record<keyof typeof zh, string>

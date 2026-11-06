@@ -26,6 +26,10 @@ export const zhTW = {
     '未儲存：此文件包含追蹤修訂，在這裡儲存會遺失修訂記錄，而且儲存的檔案可能無法在 Hancom Hangul 中開啟。',
   savedTailsLost:
     '已儲存，但原檔案中的部分主版頁面或註解未能保留，儲存的檔案可能無法在 Hancom Hangul 中開啟。請開啟確認。',
+  missingFonts:
+    '這台電腦上沒有部分字型，畫面上以其他字型顯示：{fonts}。儲存的檔案仍保留原字型名稱，在裝有這些字型的電腦上會照原樣顯示。',
+  missingFontTag: '這台電腦上沒有',
+  missingFontHint: '這台電腦上沒有這個字型，畫面上以其他字型顯示。檔案中仍儲存這個字型名稱。',
   dismiss: '關閉',
   aiOpenAssistant: '開啟 AI 助手',
   aiNewChat: '新對話',
@@ -159,6 +163,8 @@ export const zhTW = {
   aiScopeSelectionTip: '改寫類指令預設只作用於選中內容;點擊預覽',
   aiScopeClearTitle: '取消選中範圍',
   aiToolNotDone: '未完成 · {what}',
+  aiUnfinishedSteps: '未完成的步驟：{n} 個',
+  aiUnfinishedNote: '以下步驟沒有套用到文件中。即使回覆說已完成，也請檢查這些部分。',
   aiChangesTitle: '已修改文件 {count} 處',
   aiClearMarks: '清除標記',
   aiRevert: '復原這些修改',
@@ -242,4 +248,7 @@ export const zhTW = {
   checkAskAi: '交給 AI 修改',
   checkHandedOff: '請求已放入 AI 輸入框，請確認後送出。',
   checkFixFailed: '未能修改。',
+  easyWordsLabel: '用簡單的話解釋',
+  easyWordsPrompt:
+    '請用中文解釋下面選取的文字，讓需要淺顯文字的人也能看懂。用日常詞語和短句，不要漏掉任何事實、數字或條件。不要修改文件。\n\n選取的文字：\n{text}',
 } satisfies Record<keyof typeof zh, string>
