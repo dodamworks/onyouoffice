@@ -4,6 +4,12 @@
 
 GenOffice → IeumOffice → Onyou Office.
 
+IeumOffice is the single routine integration source. GenOffice may be inspected
+for important fixes delayed or deferred by IeumOffice, but it is not a second
+automatic import stream. Record a specific exception before taking a change
+directly, including overlap with IeumOffice's ports and its reasons for deferral.
+Preserve both projects' attribution regardless of which source supplied a port.
+
 - [GenOffice](https://github.com/genspark-ai/genoffice): original office application.
 - [IeumOffice](https://github.com/pblsketch/openoffice): the direct development base.
 - Onyou Office: independent product identity and desktop experience.
@@ -37,6 +43,93 @@ Engine/studio source stays pinned; importing a candidate is not an installer
 release or a claim that it has passed validation.
 
 ## Accept changes deliberately
+
+### Recurring maintenance
+
+Keep upstream maintenance continuous as independent Onyou features are added.
+Prefer carrying forward compatible upstream functionality over freezing the
+inherited editors. Keep the Onyou-specific delta small and explicit.
+
+For each run:
+
+1. Read current instructions and inspect the real worktree, local changes and
+   any unfinished integration. Never reset, stash or overwrite another task's
+   work. Continue an existing candidate instead of creating duplicate candidates.
+2. Pin the latest upstream main SHA and latest release separately. Read public
+   source into an isolated comparison workspace; leave the fixed reference
+   checkout unchanged. A release number alone is not the comparison baseline.
+3. Compare both accepted upstream to candidate upstream and accepted upstream to
+   current Onyou. The public source history starts from a snapshot: do not assume
+   Git ancestry or commit counts identify missing functionality. Check actual
+   source and prerequisite changes before importing anything.
+4. Keep a change ledger identifying inherited functionality, Onyou changes and
+   deliberately deferred upstream changes. For each port, record source SHA,
+   affected paths, prerequisites, local adaptation and verification. Branding,
+   wording and installation separation are not new editor capabilities.
+5. Prepare compatible changes in a separate local integration workspace. Preserve
+   the accepted brand/copy, installation/data separation, external-service
+   boundaries and future independent features. Resolve routine conflicts from
+   source contracts; do not automatically prefer either side of every conflict.
+6. Read affected module instructions and preserve security, licensing and
+   document-format contracts. Where instructions require a human decision, retain
+   the candidate analysis and continue independent work; record the exact reason
+   and affected change. Do not invent new features as conflict resolution.
+7. Run focused checks during integration and the existing full validation required
+   for product changes before declaring the candidate ready. Use synthetic
+   documents/profiles and mocked providers. Upstream test success does not prove
+   the adapted Onyou tree works. Do not weaken checks to finish an unattended run.
+8. Record observed, prepared, locally validated and accepted states separately.
+   Advance the accepted upstream basis only with the actual accepted integration,
+   retaining every deferred change. Keep unvalidated work resumable. Rebase or
+   revalidate a candidate when concurrent Onyou changes affect its basis.
+
+Schedules, standing maintainer authorization and machine-local progress belong
+in private operational records. The schedule itself grants no permissions. When
+the maintainer authorizes recurring integration, follow that recorded scope
+without asking again for each routine run.
+
+### Completing an authorized update
+
+1. Create or resume one `codex/upstream-sync-*` branch and its existing PR. Keep
+   it separate from concurrent feature work and record the Onyou base, upstream
+   candidate and candidate head. Never force-push or rewrite published history.
+2. Include a monotonically increasing Onyou app version for functional updates.
+   The source of truth is `apps/shell/package.json`; keep the corresponding
+   `apps/shell` entry in `package-lock.json` consistent. Do not bump the root
+   workspace version or adopt upstream's product name, release tag or endpoints.
+   Documentation and growth snapshots alone do not require an app version bump.
+3. Commit and push only reviewed public source using the verified project account
+   and product author identity. Preserve upstream authorship and licenses, and
+   keep raw evidence, machine settings and private records out of publication.
+4. Open or update the PR with source provenance, preserved Onyou changes,
+   deliberately deferred changes and actual validation. Review the complete
+   adapted diff for semantic conflicts even when Git reports a clean merge.
+   Perform general code review and a separate security-focused review locally,
+   recording their actual scope, findings and verification on the final head.
+   Remote Codex code/security bot reviews are not maintenance prerequisites;
+   retain GitHub CI and platform build checks independently of any AI review
+   integration. Keep existing account connections unchanged.
+5. Observe all applicable checks on the exact final head. Fix integration failures
+   and repeat affected checks; do not merge on pending, failed, cancelled,
+   incomplete or stale evidence. Respect repository protections without admin
+   bypasses or weakening checks. Revalidate after relevant base/head changes.
+6. Merge only the reviewed head under the maintainer's authorization. If hosted
+   merge identity cannot satisfy project policy, use an explicitly identified
+   local merge and validate its tree and PR relationship. A successful push alone
+   is not proof of a merged PR. Verify main, PR state and post-merge CI.
+7. If installer publication is authorized, continue through
+   [release preparation](../PUBLIC-RELEASE.md): build from the accepted source,
+   verify platform artifacts, privacy, attribution, versions and provenance, then
+   publish the matching Onyou release. Versioned source, merged code, generated
+   installers and a published release are separate milestones. Resume an
+   incomplete release before allocating another version; never overwrite an
+   existing published tag or artifact with different bytes.
+
+Record progress after each stage so interrupted runs can resume without duplicate
+PRs or releases. Report the actual completed stage and concrete remaining
+conditions; a prepared branch is not a shipped update. Repository/account policy
+changes, live-provider trials and unrelated feature work remain outside ordinary
+upstream maintenance.
 
 1. Record the currently accepted SHA and pin the candidate upstream revision.
 2. Compare files, prerequisites, license changes, public contracts and local
