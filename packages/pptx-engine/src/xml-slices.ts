@@ -55,7 +55,10 @@ export function removeAttribute(xml: string, name: string, bothQuotes = false): 
     if (at < 0) return xml
     const quoteAt = at + name.length + 1
     const end = xml.indexOf(xml[quoteAt]!, quoteAt + 1)
-    if (end < 0) return xml
+    if (end < 0) {
+      from = quoteAt + 1
+      continue
+    }
     if (at > 0 && /\s/.test(xml[at - 1]!)) {
       let start = at
       while (start > 0 && /\s/.test(xml[start - 1]!)) start--

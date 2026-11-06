@@ -79,6 +79,29 @@ it('keeps quoted slide-opening bytes, property capture order and whitespace attr
     }
 })
 
+it('keeps first-match attribute removal for malformed mixed-quote fragments', () => {
+  const tokens = [
+    'text',
+    ' showMasterSp="1"',
+    " showMasterSp='2'",
+    'notshowMasterSp="unfinished',
+    "notshowMasterSp='unfinished",
+    ' showMasterSp="unfinished',
+    " showMasterSp='unfinished",
+    '"',
+    "'",
+    ' ',
+  ]
+  for (const a of tokens)
+    for (const b of tokens)
+      for (const c of tokens) {
+        const xml = a + b + c
+        expect(removeAttribute(xml, 'showMasterSp', true)).toBe(
+          xml.replace(/\s+showMasterSp=(?:"[^"]*"|'[^']*')/, ''),
+        )
+      }
+})
+
 it.each([
   'raw-tags',
   'raw-quotes',
