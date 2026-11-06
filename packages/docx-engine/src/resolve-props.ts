@@ -1,3 +1,5 @@
+// Modified by Onyou Office: avoid retrying unterminated paragraph-property slices.
+import { firstMatch, pairedMatch } from './xml-slices'
 /**
  * Single resolver for effective paragraph / run properties (ECMA-376 §17.7.2):
  * builtin -> docDefaults -> table style (whole table, then conditions) ->
@@ -604,7 +606,10 @@ export function resolveParagraphPropsXml(
   ctx: ResolveCtx,
   opts?: ResolveParaOptions,
 ): EffectivePPr {
-  const m = /<w:pPr(?:\s[^>]*)?>[\s\S]*?<\/w:pPr>|<w:pPr\s*\/>/.exec(xml)
+  const m = firstMatch(
+    pairedMatch(xml, '<w:pPr', '</w:pPr>', { openingTag: true, strictOpening: true }),
+    /<w:pPr\s*\/>/.exec(xml),
+  )
   if (!m) return resolveParagraphProps(undefined, ctx, opts)
   let pPr: XNode | undefined
   try {
@@ -706,7 +711,7 @@ function directRLayer(
   const rfNode = findChild(rPr, 'w:rFonts')
   if (rfNode) {
     const rf = themedRFonts(attrsOf(rfNode), themeFonts)
-    if (rf.ascii ?? rf.hAnsi) out.ascii = rf.ascii ?? rf.hAnsi
+    if (rf.ascii) out.ascii = rf.ascii
     if (rf.eastAsia) out.eastAsia = rf.eastAsia
     if (rf.eaSlotEmpty) out.eaSlotEmpty = true
     if (rf.cs) out.cs = rf.cs

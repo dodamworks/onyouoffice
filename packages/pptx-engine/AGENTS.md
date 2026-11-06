@@ -47,6 +47,8 @@ pptx 한 파일의 모델과 저장을 맡는다. `openPptx`가 zip 전체를 �
 
 원본을 받아올 때 아래 시험이 통과하는지 본다. 충돌이 나면 이 동작을 남긴다.
 
+- **원시 XML 검색 시간 보완(온유오피스, 2026-11-07).** `src/xml-slices.ts`와 `src/generate.ts`는 원본 XML 조각·인용·위치·첫 일치 규칙을 유지하며, 미완성 태그·그림 채움·슬라이드 배경·속성 검색의 반복 실행을 줄인다. 문서 전체를 다시 직렬화하거나 저장 식별자를 바꾸지 않는다. `tests/raw-xml-generation.test.ts`가 기존 캡처와 시작 위치, 반복 입력의 실행 상한을 확인한다. 전체 변경 없는 저장·일부 요소 편집·스키마 시험을 함께 유지하고, 동등한 방어가 원본에 들어오기 전에는 덮어쓰지 않는다.
+
 - **강조 색·문자 간격의 제자리 패치(결정 0094).** `TextRun.highlightEdited`·`letterSpacingEdited`가 선 런만 `patchRunProps`가 `<a:highlight>`(채움·효과 뒤, 글꼴 앞)와 `spc`를 쓰거나 지운다. 런이 없던 `a:rPr`에 강조 색을 넣는 길도 같다. `ElementFontPatch`에 `highlight`(`null`은 지움)·`letterSpacingPt`(0·`null`은 표준)가 있다. 시험: `tests/run-highlight-spacing-visibility.test.ts`.
 - **도형 숨기기·이름(결정 0094).** `setElementHidden`·`setElementName`이 원본 조각의 첫 `p:cNvPr` 여는 태그에서 `hidden`·`name` 속성 하나만 바꾸고 `structureDirty`를 세운다. 숨기기 뒤의 모델은 부르는 쪽이 `materializeSlide`로 다시 읽는다. 시험: 같은 파일.
 

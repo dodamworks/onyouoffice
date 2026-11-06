@@ -27,6 +27,11 @@ export const ko = {
     '저장하지 않았습니다. 변경 내용 추적이 든 문서인데, 여기서 저장하면 추적 기록이 사라지고 한컴 한글에서 열리지 않는 파일이 될 수 있습니다.',
   savedTailsLost:
     '저장했지만, 원본에 있던 바탕쪽이나 메모 일부를 옮기지 못했습니다. 저장한 파일이 한컴 한글에서 열리지 않을 수 있으니 열어서 확인해 주세요.',
+  missingFonts:
+    '이 PC에 없는 글꼴이 있어 화면에는 다른 글꼴로 보입니다: {fonts}. 저장한 파일에는 원래 글꼴 이름이 그대로 남고, 그 글꼴이 있는 PC에서는 원래대로 보입니다.',
+  missingFontTag: 'PC에 없음',
+  missingFontHint:
+    '이 PC에 없는 글꼴이라 화면에는 다른 글꼴로 보입니다. 파일에는 이 글꼴 이름이 그대로 저장됩니다.',
   dismiss: '닫기',
   aiOpenAssistant: 'AI 도우미 열기',
   aiNewChat: '새 대화',
@@ -162,6 +167,9 @@ export const ko = {
   aiScopeSelectionTip: '다시 쓰기류 지시는 기본적으로 선택 영역에만 적용됩니다. 클릭하여 미리 보기',
   aiScopeClearTitle: '선택 범위 해제',
   aiToolNotDone: '하지 못함 · {what}',
+  aiUnfinishedSteps: '끝내지 못한 단계 {n}개',
+  aiUnfinishedNote:
+    '아래 단계는 문서에 반영되지 않았습니다. 답에 끝냈다고 적혀 있어도 이 부분은 확인하세요.',
   aiChangesTitle: '문서 {count}곳을 고쳤습니다',
   aiClearMarks: '표시 지우기',
   aiRevert: '되돌리기',
@@ -248,4 +256,7 @@ export const ko = {
   checkAskAi: 'AI에게 고치기 맡기기',
   checkHandedOff: 'AI 입력 칸에 요청을 넣었습니다. 확인하고 보내세요.',
   checkFixFailed: '고치지 못했습니다.',
+  easyWordsLabel: '쉬운 말로 풀기',
+  easyWordsPrompt:
+    '아래 고른 글을 쉬운 글이 필요한 사람도 알 수 있게 한국어로 풀어 설명해 주세요. 날마다 쓰는 쉬운 낱말과 짧은 문장으로 쓰고, 사실·숫자·조건은 하나도 빠뜨리지 마세요. 문서는 고치지 마세요.\n\n고른 글:\n{text}',
 } satisfies Record<keyof typeof zh, string>

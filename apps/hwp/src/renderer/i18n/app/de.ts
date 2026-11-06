@@ -28,6 +28,11 @@ export const de = {
     'Nicht gespeichert: Dieses Dokument enthält nachverfolgte Änderungen. Beim Speichern hier gingen sie verloren, und Hancom Hangul könnte die Datei nicht öffnen.',
   savedTailsLost:
     'Gespeichert, aber einige Masterseiten oder Memos der Originaldatei konnten nicht übernommen werden. Hancom Hangul kann die gespeicherte Datei möglicherweise nicht öffnen. Bitte dort zur Kontrolle öffnen.',
+  missingFonts:
+    'Einige Schriftarten sind auf diesem PC nicht vorhanden und werden am Bildschirm in anderen Schriftarten angezeigt: {fonts}. Die gespeicherte Datei behält die ursprünglichen Schriftnamen, und auf einem PC mit diesen Schriftarten sieht der Text wie vorgesehen aus.',
+  missingFontTag: 'Nicht auf diesem PC',
+  missingFontHint:
+    'Diese Schriftart ist auf diesem PC nicht vorhanden und wird am Bildschirm in einer anderen angezeigt. Die Datei behält den Namen dieser Schriftart.',
   dismiss: 'Schließen',
   aiOpenAssistant: 'KI-Assistent öffnen',
   aiNewChat: 'Neuer Chat',
@@ -168,6 +173,9 @@ export const de = {
     'Umschreib-Anweisungen wirken standardmäßig nur auf die Auswahl; zum Vorschauen klicken',
   aiScopeClearTitle: 'Auswahlbereich aufheben',
   aiToolNotDone: 'Nicht ausgeführt · {what}',
+  aiUnfinishedSteps: 'Nicht abgeschlossene Schritte: {n}',
+  aiUnfinishedNote:
+    'Diese Schritte wurden nicht auf das Dokument angewendet. Prüfen Sie diese Stellen, auch wenn die Antwort sagt, dass alles erledigt ist.',
   aiChangesTitle: 'Änderungen am Dokument: {count}',
   aiClearMarks: 'Markierungen ausblenden',
   aiRevert: 'Diese Änderungen zurücknehmen',
@@ -261,4 +269,7 @@ export const de = {
   checkAskAi: 'Das Beheben der KI übergeben',
   checkHandedOff: 'Die Anfrage steht im KI-Feld. Prüfen und senden.',
   checkFixFailed: 'Die Änderung war nicht möglich.',
+  easyWordsLabel: 'In einfachen Worten erklären',
+  easyWordsPrompt:
+    'Erkläre den unten ausgewählten Text auf Deutsch so, dass ihn auch jemand versteht, der leicht verständliche Texte braucht. Verwende Alltagswörter und kurze Sätze und lass keine Tatsache, Zahl oder Bedingung weg. Ändere das Dokument nicht.\n\nAusgewählter Text:\n{text}',
 } satisfies Record<keyof typeof zh, string>

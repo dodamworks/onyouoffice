@@ -28,6 +28,11 @@ export const it = {
     'Non salvato: questo documento contiene revisioni; salvandolo qui andrebbero perse e il file potrebbe non aprirsi in Hancom Hangul.',
   savedTailsLost:
     'Salvato, ma non è stato possibile conservare alcune pagine master o note del file originale; Hancom Hangul potrebbe non aprire il file salvato. Aprilo per verificare.',
+  missingFonts:
+    'Alcuni caratteri non sono presenti su questo PC e sullo schermo appaiono con altri caratteri: {fonts}. Il file salvato mantiene i nomi dei caratteri originali e il testo appare come previsto su un PC che ha quei caratteri.',
+  missingFontTag: 'Non su questo PC',
+  missingFontHint:
+    'Questo carattere non è presente su questo PC e sullo schermo appare con un altro. Il file mantiene il nome di questo carattere.',
   dismiss: 'Chiudi',
   aiOpenAssistant: 'Apri assistente IA',
   aiNewChat: 'Nuova chat',
@@ -167,6 +172,9 @@ export const it = {
     "Le istruzioni di riscrittura si applicano per impostazione predefinita alla selezione; fai clic per l'anteprima",
   aiScopeClearTitle: "Rimuovi l'ambito della selezione",
   aiToolNotDone: 'Non eseguito · {what}',
+  aiUnfinishedSteps: 'Passaggi non completati: {n}',
+  aiUnfinishedNote:
+    'Questi passaggi non sono stati applicati al documento. Controlla queste parti anche se la risposta dice che è fatto.',
   aiChangesTitle: 'Modifiche apportate al documento: {count}',
   aiClearMarks: 'Nascondi segni',
   aiRevert: 'Annulla queste modifiche',
@@ -259,4 +267,7 @@ export const it = {
   checkAskAi: "Affida la correzione all'IA",
   checkHandedOff: "La richiesta è nel campo dell'IA. Controllala e inviala.",
   checkFixFailed: 'Non è stato possibile modificare.',
+  easyWordsLabel: 'Spiega con parole semplici',
+  easyWordsPrompt:
+    'Spiega in italiano il testo selezionato qui sotto in modo che lo capisca anche chi ha bisogno di testi facili da leggere. Usa parole di tutti i giorni e frasi brevi, e non tralasciare nessun fatto, numero o condizione. Non modificare il documento.\n\nTesto selezionato:\n{text}',
 } satisfies Record<keyof typeof zh, string>

@@ -28,6 +28,11 @@ export const cs = {
     'Neuloženo: tento dokument obsahuje sledované změny; uložením zde by se ztratily a soubor by Hancom Hangul nemusel otevřít.',
   savedTailsLost:
     'Uloženo, ale některé předlohy stránek nebo poznámky z původního souboru se nepodařilo zachovat; Hancom Hangul nemusí uložený soubor otevřít. Otevřete jej pro kontrolu.',
+  missingFonts:
+    'Některá písma na tomto počítači nejsou, a proto se na obrazovce zobrazují jinými písmy: {fonts}. Uložený soubor si ponechá původní názvy písem a na počítači, který tato písma má, vypadá text tak, jak má.',
+  missingFontTag: 'Na tomto počítači není',
+  missingFontHint:
+    'Toto písmo na tomto počítači není, a proto se na obrazovce zobrazuje jiným. Soubor si ponechá název tohoto písma.',
   dismiss: 'Zavřít',
   aiOpenAssistant: 'Otevřít asistenta AI',
   aiNewChat: 'Nový chat',
@@ -165,6 +170,9 @@ export const cs = {
     'Požadavky na přepsání se ve výchozím nastavení vztahují na výběr; kliknutím zobrazíte náhled',
   aiScopeClearTitle: 'Zrušit rozsah výběru',
   aiToolNotDone: 'Neprovedeno · {what}',
+  aiUnfinishedSteps: 'Nedokončené kroky: {n}',
+  aiUnfinishedNote:
+    'Tyto kroky nebyly v dokumentu provedeny. Zkontrolujte tato místa, i když odpověď říká, že je hotovo.',
   aiChangesTitle: 'Změny v dokumentu: {count}',
   aiClearMarks: 'Skrýt označení',
   aiRevert: 'Vrátit tyto změny',
@@ -252,4 +260,7 @@ export const cs = {
   checkAskAi: 'Předat opravy AI',
   checkHandedOff: 'Požadavek je v poli AI. Zkontrolujte ho a odešlete.',
   checkFixFailed: 'Změnu se nepodařilo provést.',
+  easyWordsLabel: 'Vysvětlit jednoduše',
+  easyWordsPrompt:
+    'Vysvětli česky níže vybraný text tak, aby mu porozuměl i člověk, který potřebuje snadno čitelný text. Používej běžná slova a krátké věty a nevynechej žádný fakt, číslo ani podmínku. Dokument neměň.\n\nVybraný text:\n{text}',
 } satisfies Record<keyof typeof zh, string>
