@@ -60,3 +60,19 @@ Header/footer drawing and section-border slice matching also uses literal scans
 instead of retrying a lazy expression for every unterminated opening tag. Preserve
 the original non-overlapping fragments, drawing ordinals and unedited bytes.
 Regressions cover repeated tokens inside valid XML comments and ordinary slices.
+
+## Raw XML matching and skill metadata
+
+Retain the same raw slices and match order when bounding section, picture,
+watermark, ink, content-control, revision-token and existing-ID searches. Delimiter
+cursors move forward, including when a closing tag is missing; attribute matching
+keeps the original first/last-attribute rule and permits quoted values containing
+`>`. Do not replace these operations with whole-document serialization. Run the
+compatibility corpus, unchanged-save/edited-save tests and time-limited hostile
+input subprocesses after upstream changes.
+
+Before reading a skill's metadata, apply the existing checked file walk and
+folder-size limits. Use the canonical metadata path returned by that walk; a file
+it excludes must not be opened by independently joining its name again. Unit
+regressions use synthetic files and mocked boundary results, never real login
+files or account connections.

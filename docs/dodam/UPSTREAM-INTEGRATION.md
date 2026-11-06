@@ -173,3 +173,15 @@ credentials, dependencies or generated outputs through shared writable links.
 Previous internal PR numbers and personal operational records are not part of
 the public contribution workflow. New PRs describe the current problem, final
 change, upstream basis and applicable verification.
+
+### Preserve security maintenance adaptations
+
+Keep the raw-XML work bounds in `packages/docx-engine/src/xml-slices.ts` and its
+section, picture/generation, patch, watermark, ink, content-control, property and
+revision consumers. Preserve both input-work-bound and raw-slice compatibility
+regressions; existing document bytes and identifiers remain the contract. Keep
+the checked metadata-read order in `packages/ai-provider/src/agent-session/skills.ts`
+and its boundary regressions. Retire a local adaptation only when an upstream
+replacement provides the same protection and passes the relevant compatibility
+tests. The CI font lock/cache is product validation infrastructure: preserve its
+verified archive hashes, setup deadlines and all visual assertions during ports.
