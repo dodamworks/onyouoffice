@@ -21,7 +21,8 @@ Onyou Office is a free, open-source desktop office with AI agents alongside your
 editors. Connect the AI service you choose, or work without AI.
 
 <p align="center">
-  <a href="#get-started">Build from source</a> ·
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest">Download</a> ·
+  <a href="#get-started">Get started</a> ·
   <a href="https://github.com/dodamworks/onyouoffice/issues">Report a bug</a> ·
   <a href="CONTRIBUTING.md">Contribute</a>
 </p>
@@ -32,6 +33,26 @@ editors. Connect the AI service you choose, or work without AI.
 **English** · [العربية](docs/readme/i18n/ar.md) · [Čeština](docs/readme/i18n/cs.md) · [Deutsch](docs/readme/i18n/de.md) · [Español](docs/readme/i18n/es.md) · [Français](docs/readme/i18n/fr.md) · [עברית](docs/readme/i18n/he.md) · [हिन्दी](docs/readme/i18n/hi.md) · [Bahasa Indonesia](docs/readme/i18n/id.md) · [Italiano](docs/readme/i18n/it.md) · [日本語](docs/readme/i18n/ja.md) · [한국어](docs/readme/i18n/ko.md) · [Bahasa Melayu](docs/readme/i18n/ms.md) · [Nederlands](docs/readme/i18n/nl.md) · [Polski](docs/readme/i18n/pl.md) · [Português](docs/readme/i18n/pt.md) · [Русский](docs/readme/i18n/ru.md) · [ไทย](docs/readme/i18n/th.md) · [Tiếng Việt](docs/readme/i18n/vi.md) · [简体中文](docs/readme/i18n/zh.md) · [繁體中文](docs/readme/i18n/zh-TW.md) <!-- lang-switcher -->
 
 </details>
+
+## See AI at work
+
+### Documents
+
+[![AI document creation and editing](docs/readme/demos/document.gif)](docs/readme/demos/document.mp4)
+
+### Presentations
+
+[![AI presentation creation and editing](docs/readme/demos/presentation.gif)](docs/readme/demos/presentation.mp4)
+
+### Spreadsheets
+
+[![AI spreadsheet editing and formula recalculation](docs/readme/demos/spreadsheet.gif)](docs/readme/demos/spreadsheet.mp4)
+
+### Mind maps
+
+[![AI mind map creation and editing](docs/readme/demos/mindmap.gif)](docs/readme/demos/mindmap.mp4)
+
+_10-second demos of the real app. Playback is sped up and waiting time is removed._
 
 ## One workspace for your documents
 

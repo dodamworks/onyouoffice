@@ -1,10 +1,10 @@
 <!-- Modified by Onyou Office on 2026-11-04. -->
 
 <p align="center">
-  <img src="../../../apps/shell/build/brand/app-icon.svg" alt="Onyou Office" width="88" height="88">
+  <img src="../../../apps/shell/build/brand/app-icon.svg" alt="온유오피스" width="88" height="88">
 </p>
 
-<h1 align="center">Onyou Office</h1>
+<h1 align="center">온유오피스</h1>
 
 <p align="center"><strong>AI 에이전트와 함께하는 나만의 오피스.</strong></p>
 
@@ -22,6 +22,26 @@
 [English](../../../README.md) · [العربية](ar.md) · [Čeština](cs.md) · [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [עברית](he.md) · [हिन्दी](hi.md) · [Bahasa Indonesia](id.md) · [Italiano](it.md) · [日本語](ja.md) · **한국어** · [Bahasa Melayu](ms.md) · [Nederlands](nl.md) · [Polski](pl.md) · [Português](pt.md) · [Русский](ru.md) · [ไทย](th.md) · [Tiếng Việt](vi.md) · [简体中文](zh.md) · [繁體中文](zh-TW.md) <!-- lang-switcher -->
 
 </details>
+
+## AI로 작성하고, 원하는 대로 다듬으세요
+
+### 문서
+
+[![AI로 문서를 작성하고 수정하는 모습](../demos/document.gif)](../demos/document.mp4)
+
+### 발표 자료
+
+[![AI로 발표 자료를 만들고 수정하는 모습](../demos/presentation.gif)](../demos/presentation.mp4)
+
+### 스프레드시트
+
+[![AI로 스프레드시트를 수정하고 수식으로 다시 계산하는 모습](../demos/spreadsheet.gif)](../demos/spreadsheet.mp4)
+
+### 마인드맵
+
+[![AI로 마인드맵을 만들고 수정하는 모습](../demos/mindmap.gif)](../demos/mindmap.mp4)
+
+_실제 앱의 작업 과정을 담은 10초 시연입니다. 재생 속도를 높이고 대기 시간을 줄였습니다._
 
 ## 문서 작업을 한곳에서
 
