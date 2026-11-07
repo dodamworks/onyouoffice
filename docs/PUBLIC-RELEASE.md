@@ -11,6 +11,20 @@ is used. The release assets and their recorded build results define the
 actually available downloads. Source publication and installer distribution
 remain separate operations for future releases.
 
+## Independent product versions
+
+The independent Onyou Office release series starts at **1.0.0**. The source app
+version and its lockfile entry use the same number. Published downloads are
+identified by their actual release tag; changing the source version does not
+publish new installers.
+
+Routine maintenance takes the next unused Onyou patch version. Onyou feature
+releases may advance the minor version after an explicit release decision.
+Upstream release numbers do not determine Onyou versions: the accepted upstream
+source commit and observed upstream release are tracked separately in the
+[integration record](dodam/UPSTREAM-INTEGRATION.md).
+Existing published 0.x tags, release records and installer files remain unchanged.
+
 ## Before making the source public
 
 - Review the final source/ref range, README, license and upstream acknowledgements.

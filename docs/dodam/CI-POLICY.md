@@ -75,11 +75,20 @@ For a single merge pushed to `main`, `tools/ci-reuse.mjs` may reuse a successful
 
 For spellcheck instability, reproduce the specific state and compare failures before changing assertions. Keep diagnostic screenshots and private environment records outside the public source tree.
 
+## Dependency changes
+
+The `Dependency review` workflow runs on pull requests to `main` using a pinned
+GitHub-maintained action on a standard runner. It rejects newly introduced known
+vulnerabilities at low severity or above across runtime, development and unknown
+scopes. It uses read-only repository permissions and posts no PR comments.
+Keep this result alongside the existing CI and code scanning checks when merging.
+Dependabot alerts remain enabled; automatic dependency fix PRs remain disabled.
+
 ## Review policy
 
-CI executes mechanical checks; Codex reviews the diff and applicable AGENTS guidance. Request one review of a coherent final diff, avoid a duplicate manual request while an automatic review is running, and refresh it after consequential fixes. Record the reviewed commit; do not claim an old review covers a new revision or guarantee incremental-only billing. Repository-specific review rules must preserve document compatibility, identity/data separation and mocked AI/provider boundaries.
+CI executes mechanical checks. Perform general code review and a separate security review locally against the final diff and applicable repository guidance. Fix findings before merge and refresh reviews after consequential changes. Record the reviewed commit; an old review does not cover a new revision. Do not request automatic or manual remote PR reviews as part of this maintenance flow. Preserve document compatibility, identity/data separation and mocked AI/provider boundaries.
 
-See [GitHub skipped/required-check semantics](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks) and [Codex review guidance](https://learn.chatgpt.com/docs/third-party/github). Branch protection, billing plans and Codex account settings are separate from this YAML; none is changed here.
+See [GitHub skipped/required-check semantics](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks). Branch protection, billing plans and account connections are separate from this YAML; none is changed here. Keep the existing GitHub CI, code scanning and platform build checks.
 
 ## Bounded document-font setup
 

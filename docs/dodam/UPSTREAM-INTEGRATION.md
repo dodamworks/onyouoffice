@@ -115,7 +115,7 @@ without asking again for each routine run.
 
 ### Completing an authorized update
 
-1. Create or resume one `codex/upstream-sync-*` branch and its existing PR. Keep
+1. Create or resume one `fix/upstream-sync-*` branch and its existing PR. Keep
    it separate from concurrent feature work and record the Onyou base, upstream
    candidate and candidate head. Never force-push or rewrite published history.
 2. Include a monotonically increasing Onyou app version for functional updates.
@@ -131,9 +131,9 @@ without asking again for each routine run.
    adapted diff for semantic conflicts even when Git reports a clean merge.
    Perform general code review and a separate security-focused review locally,
    recording their actual scope, findings and verification on the final head.
-   Remote Codex code/security bot reviews are not maintenance prerequisites;
-   retain GitHub CI and platform build checks independently of any AI review
-   integration. Keep existing account connections unchanged.
+   Do not invoke automatic or manual remote PR reviews. Retain GitHub CI,
+   code scanning and platform build checks. Keep existing account connections
+   unchanged.
 5. Observe all applicable checks on the exact final head. Fix integration failures
    and repeat affected checks; do not merge on pending, failed, cancelled,
    incomplete or stale evidence. Respect repository protections without admin
