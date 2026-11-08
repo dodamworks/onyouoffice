@@ -21,7 +21,7 @@ import {
   revokeChatGptSession,
   verifyChatGptIdToken,
   waitForChatGptCallback,
-  type ChatGptSignInFailure,
+  type ChatGptSignInFailed,
   type ChatGptTokenSet,
   type FetchLike,
 } from './oauth'
@@ -44,7 +44,7 @@ export interface ChatGptSignInOptions {
   timeoutMs?: number | undefined
 }
 
-export type ChatGptSignInResult = { ok: true } | { ok: false; reason: ChatGptSignInFailure }
+export type ChatGptSignInResult = { ok: true } | ChatGptSignInFailed
 
 export interface ChatGptConnectionState {
   signedIn: boolean
@@ -216,7 +216,7 @@ export function createChatGptConnection(deps: ChatGptConnectionDeps): ChatGptCon
       )
       if (!exchanged.ok) return exchanged
       const tokens = exchanged.tokens
-      if (!tokens.idToken) return { ok: false, reason: 'denied' }
+      if (!tokens.idToken) return { ok: false, reason: 'denied', step: 'id-token-missing' }
       let identity
       try {
         const keys = await fetchChatGptSigningKeys(deps.fetch, options.signal)
@@ -227,13 +227,24 @@ export function createChatGptConnection(deps: ChatGptConnectionDeps): ChatGptCon
           Math.floor(now() / 1000),
         )
       } catch {
-        return { ok: false, reason: options.signal?.aborted ? 'cancelled' : 'network' }
+        if (options.signal?.aborted) return { ok: false, reason: 'cancelled' }
+        return { ok: false, reason: 'network', step: 'signing-keys' }
       }
-      if (!identity || (record.subject && identity.subject !== record.subject)) {
-        return { ok: false, reason: 'denied' }
+      if (!identity) return { ok: false, reason: 'denied', step: 'id-token-invalid' }
+      // signed in, but the use of the ChatGPT plan was not allowed: nothing to run on.
+      // OpenAI documents `scope` as always in the answer and asks for the plan scope
+      // in it; a valid ID token alone does not allow plan use, so a missing field is
+      // no grant either. The step tells the two apart for whoever helps the user.
+      if (!tokens.scopes.includes(CHATGPT_PLAN_SCOPE)) {
+        return {
+          ok: false,
+          reason: 'no-plan',
+          step: tokens.scopeMissing ? 'scope-missing' : 'plan-scope-missing',
+        }
       }
-      // signed in, but the use of the ChatGPT plan was not allowed: nothing to run on
-      if (!tokens.scopes.includes(CHATGPT_PLAN_SCOPE)) return { ok: false, reason: 'no-plan' }
+      if (record.subject && identity.subject !== record.subject) {
+        return { ok: false, reason: 'denied', step: 'id-token-invalid' }
+      }
       await serial(async () => {
         const current = await deps.store.read()
         await deps.store.write({

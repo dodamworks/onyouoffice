@@ -13,6 +13,14 @@
  * Everything returned crosses to the app renderer by structured clone.
  */
 
+import {
+  charCountItem,
+  charCountText,
+  charCounter,
+  checkCharCountLabels,
+  countCollector,
+} from './char-count.mjs'
+import { documentStats, engineChars, engineLength, engineSlice } from './document-info.mjs'
 import { installDialogTheme } from './dialog-theme.mjs'
 import { missingFonts, setMissingFontLabels, whenPcFontsSettled } from './pc-fonts.mjs'
 
@@ -110,6 +118,8 @@ const FILE_MENU = [
 ]
 /** The command that reads what the user has selected in the editor. */
 const SELECTION_COMMAND = 'ext:ieum-selection'
+/** The command that counts the document's characters for the status bar (char-count.mjs). */
+const COUNT_COMMAND = 'ext:ieum-count-characters'
 /**
  * The command behind the editor's right-click item 쉬운 말로 풀기, which the
  * studio-easy-words-context-menu patch puts into the body and table cell menus. The menu
@@ -747,7 +757,8 @@ function runCollector() {
       segments.push({
         ...box.place(k, end - start),
         offset: start,
-        text: box.text(k, length).slice(start, end),
+        // the engine's offsets count characters, not a JavaScript string's units
+        text: engineSlice(box.text(k, length), start, end),
       })
     },
     tooLong: () => segments.length > MAX_SELECTED_RUNS || chars > MAX_SELECTED_CHARS,
@@ -810,6 +821,82 @@ function collectBody(doc, tablesNow, start, end, out) {
 }
 
 /**
+ * The runs of what the selection command saw (`seen`) put into `out` (runCollector, or the
+ * status bar's count): a block of cells, a stretch inside one cell, from cell to cell of one
+ * table, or across the body, where an end inside a table takes that table whole.
+ * { ok: true, inTable }, or { ok: false, reason: 'unsupported' } for a place without an address.
+ */
+function gatherSelection(doc, seen, out) {
+  let known = null
+  const tablesNow = () => (known ??= tablesOf(doc).tables)
+  const tableAt = (sec, para, path) => {
+    const key = tableKey(sec, para, path)
+    return tablesNow().findIndex((table) => tableKey(table.sec, table.para, table.path) === key)
+  }
+  /** the cells a block between two corners covers, a merged cell by any of its places */
+  const within = (range, skip) => (cell) =>
+    cell.row <= range.endRow &&
+    cell.row + cell.rowSpan - 1 >= range.startRow &&
+    cell.col <= range.endCol &&
+    cell.col + cell.colSpan - 1 >= range.startCol &&
+    !skip.has(`${cell.row},${cell.col}`)
+  let inTable = false
+  if (seen.block) {
+    const { table, range, excluded } = seen.block
+    const path =
+      Array.isArray(table.cellPath) && table.cellPath.length > 0
+        ? asCellPath(table.cellPath)
+        : [{ controlIndex: table.ci, cellIndex: 0, cellParaIndex: 0 }]
+    const index = tableAt(table.sec, table.ppi, path)
+    if (index < 0) return { ok: false, reason: 'unsupported' }
+    collectTable(doc, tablesNow(), index, out, within(range, new Set(excluded)))
+    inTable = true
+  } else {
+    const start = endOf(seen.start)
+    const end = endOf(seen.end)
+    if (!start || !end) return { ok: false, reason: 'unsupported' }
+    if (start.path && end.path && sameTable(start, end, true)) {
+      // inside one cell or text box: its paragraphs
+      const box = containerOf(doc, {
+        sec: start.sec,
+        para: start.para,
+        cellPath: start.path,
+      })
+      for (let k = start.k; k <= end.k; k++) {
+        out.add(box, k, k === start.k ? start.offset : 0, k === end.k ? end.offset : Infinity)
+      }
+      inTable = true
+    } else if (start.path && end.path && sameTable(start, end, false)) {
+      // from one cell to another of the same table: the block of cells between them
+      const index = tableAt(start.sec, start.para, start.path)
+      if (index < 0) return { ok: false, reason: 'unsupported' }
+      const grid = gridOf(doc, tablesNow()[index])
+      const a = grid[start.path[start.path.length - 1].cellIndex]
+      const b = grid[end.path[end.path.length - 1].cellIndex]
+      if (!a || !b) return { ok: false, reason: 'unsupported' }
+      const range = {
+        startRow: Math.min(a.row, b.row),
+        endRow: Math.max(a.row + a.rowSpan - 1, b.row + b.rowSpan - 1),
+        startCol: Math.min(a.col, b.col),
+        endCol: Math.max(a.col + a.colSpan - 1, b.col + b.colSpan - 1),
+      }
+      collectTable(doc, tablesNow(), index, out, within(range, new Set()))
+      inTable = true
+    } else {
+      // across the body: an end inside a table takes that table whole
+      collectBody(
+        doc,
+        tablesNow,
+        start.path ? { sec: start.sec, k: start.para, offset: 0 } : start,
+        end.path ? { sec: end.sec, k: end.para, offset: Infinity } : end,
+        out,
+      )
+    }
+  }
+  return { ok: true, inTable }
+}
+
+/**
  * Whether the runs are paragraphs of one stretch: in order in the body of a section or in
  * one cell (a paragraph without text between two of them has no run, and does not break
  * the stretch). Only such a selection can be rewritten into more or fewer paragraphs than
@@ -834,17 +921,22 @@ function isContiguous(segments) {
 
 const WORD_CHARACTER = /[\p{L}\p{N}]/u
 
-/** The word around an offset of a text: a run of letters and digits. Null on a blank or a mark. */
+/**
+ * The word around an offset of a text: a run of letters and digits. Null on a blank or a mark.
+ * The offset and the word's ends are the engine's, which count characters: an emoji or a Han
+ * character outside the basic plane (𠀀) is one there and two units in a JavaScript string.
+ */
 function wordAt(text, offset) {
-  let at = Math.min(offset, text.length - 1)
+  const chars = engineChars(text)
+  let at = Math.min(offset, chars.length - 1)
   if (at < 0) return null
   // a click behind the last letter of a word still means that word
-  if (!WORD_CHARACTER.test(text[at]) && at > 0 && WORD_CHARACTER.test(text[at - 1])) at -= 1
-  if (!WORD_CHARACTER.test(text[at])) return null
+  if (!WORD_CHARACTER.test(chars[at]) && at > 0 && WORD_CHARACTER.test(chars[at - 1])) at -= 1
+  if (!WORD_CHARACTER.test(chars[at])) return null
   let start = at
   let end = at + 1
-  while (start > 0 && WORD_CHARACTER.test(text[start - 1])) start -= 1
-  while (end < text.length && WORD_CHARACTER.test(text[end])) end += 1
+  while (start > 0 && WORD_CHARACTER.test(chars[start - 1])) start -= 1
+  while (end < chars.length && WORD_CHARACTER.test(chars[end])) end += 1
   return { start, end }
 }
 
@@ -984,7 +1076,8 @@ function selectWord(services, readText) {
 function selectParagraph(services, readText) {
   const place = caretParagraph(services, readText)
   if (!place || place.text.length === 0) return false
-  return selectIn(place, 0, place.text.length)
+  // to the paragraph's end in the engine's characters
+  return selectIn(place, 0, engineLength(place.text))
 }
 
 /**
@@ -1057,7 +1150,7 @@ function segmentsStand(doc, segments) {
     try {
       const { box, k } = segmentBox(doc, segment)
       const whole = box.text(k, box.length(k))
-      return whole.slice(segment.offset, segment.offset + segment.length) === segment.text
+      return engineSlice(whole, segment.offset, segment.offset + segment.length) === segment.text
     } catch {
       return false
     }
@@ -2212,6 +2305,8 @@ const MAX_LOOK_PARAGRAPHS = 6000
 const MAX_LISTED_LOOKS = 40
 const LOOK_SAMPLES = 2
 const LOOK_SAMPLE_CHARS = 60
+/** Body paragraphs one paragraphLooks call lists; the next call goes on from where it stopped. */
+const MAX_LISTED_PARAGRAPH_LOOKS = 200
 
 /** A short, stable name for a look: it stays the same while the paragraphs keep that look. */
 function lookIdOf(key) {
@@ -2355,6 +2450,35 @@ function formattingOf(doc) {
       samples: group.samples,
     })),
     ...(looks.length > MAX_LISTED_LOOKS ? { otherLooks: looks.length - MAX_LISTED_LOOKS } : {}),
+    ...(truncated ? { truncated: true } : {}),
+  }
+}
+
+/**
+ * The body paragraphs in reading order with the look each has (looksOf: the ids
+ * formattingOf lists), from the `from`-th (1-based) on: which paragraphs are formatted
+ * alike and which one stands apart, such as a heading indented unlike the others. The look
+ * itself (indents, alignment, spacing, font) is in formattingOf. Empty paragraphs are left
+ * out, as there. Reads only.
+ */
+function paragraphLooksOf(doc, from) {
+  const { looks, truncated } = looksOf(doc)
+  const rows = []
+  for (const group of looks) {
+    for (const place of group.places) rows.push({ ...place, look: group.id })
+  }
+  rows.sort((a, b) => a.sec - b.sec || a.para - b.para)
+  const start = Number.isInteger(from) && from > 1 ? Math.min(from - 1, rows.length) : 0
+  const listed = rows.slice(start, start + MAX_LISTED_PARAGRAPH_LOOKS).map((row, index) => ({
+    paragraph: start + index + 1,
+    look: row.look,
+    text: clip(squash(paragraphTextOf(doc, row.sec, row.para)), LOOK_SAMPLE_CHARS),
+  }))
+  const next = start + listed.length
+  return {
+    count: rows.length,
+    paragraphs: listed,
+    ...(next < rows.length ? { next: next + 1 } : {}),
     ...(truncated ? { truncated: true } : {}),
   }
 }
@@ -3441,7 +3565,11 @@ function coveredCells(doc, table) {
   return covered
 }
 
-const clip = (text, max) => (text.length > max ? `${text.slice(0, max)}…` : text)
+/**
+ * A text cut to `max` characters with an ellipsis. Characters are the engine's (code points), so
+ * an emoji or a Han character outside the basic plane is never cut in half.
+ */
+const clip = (text, max) => (engineLength(text) > max ? `${engineSlice(text, 0, max)}…` : text)
 
 /**
  * The fields a form asks to be filled in: click-here fields and named table cells, in
@@ -3993,6 +4121,48 @@ function shiftMarks(marks, before, after, at) {
   })
 }
 
+/** What the studio tells a 'document-mutated' for that is no edit: a deferred layout finished. */
+const LAYOUT_ONLY_MUTATIONS = new Set(['input-handler-resumable-pagination'])
+
+/**
+ * Calls `fn` once for every edit of the document, whoever made it; answers the function that
+ * stops it. Everything in this plugin that follows the document listens here, not to one event:
+ * the studio tells of an edit as 'document-changed', but typing that redraws only its page
+ * (input-handler.ts afterPageLocalEdit) fires 'document-mutated' and 'document-page-invalidated'
+ * alone, and in a document of more than 30 pages no layout follows that would say it changed.
+ * Most edits fire both, the mutation first, in the same task: the 'document-changed' right after
+ * a mutation that was told is that same edit. The mutation a finished deferred layout fires is
+ * no edit (its 'document-changed' is told as before). `fn` runs while the event is told, so what
+ * it reads of the plugin's state (its own change running) is as it was then.
+ */
+function onDocumentEdit(host, fn) {
+  let told = false
+  const offMutated = host.events.on('document-mutated', (reason) => {
+    if (LAYOUT_ONLY_MUTATIONS.has(reason)) return
+    told = true
+    queueMicrotask(() => {
+      told = false
+    })
+    fn()
+  })
+  const offChanged = host.events.on('document-changed', () => {
+    if (told) {
+      told = false
+      return
+    }
+    fn()
+  })
+  return () => {
+    for (const off of [offMutated, offChanged]) {
+      try {
+        if (typeof off === 'function') off()
+      } catch {
+        // the host already took it off
+      }
+    }
+  }
+}
+
 /** Takes the plugin's double-click listener off the page again. */
 let stopListening = null
 /** A drag begun with a double click, kept on whole words (wordDrag); null when there is none. */
@@ -4007,6 +4177,8 @@ let stopMemoLock = null
 let stopMemoClipboard = null
 /** Closes the channel a copy of memo-bearing text is told on. */
 let stopMemoChannel = null
+/** Stops the status bar's character count (showCharCount). */
+let stopCharCount = null
 /** A redraw of the memo anchors after a change settles, and the probe for pasted memos. */
 let memoSettleTimer = null
 let memoProbeTimer = null
@@ -4043,6 +4215,8 @@ export const agentPlugin = {
     stopMemoClipboard = null
     if (stopMemoChannel) stopMemoChannel()
     stopMemoChannel = null
+    if (stopCharCount) stopCharCount()
+    stopCharCount = null
     if (memoSettleTimer) clearTimeout(memoSettleTimer)
     memoSettleTimer = null
     if (memoProbeTimer) clearTimeout(memoProbeTimer)
@@ -4280,10 +4454,12 @@ export const agentPlugin = {
             return { ok: false, reason: 'overlap' }
           }
           const text = box.text(start.k, length)
+          // the offsets are the engine's characters, not a JavaScript string's units
           const shown =
             from < to
-              ? text.slice(from, to)
-              : text.slice(
+              ? engineSlice(text, from, to)
+              : engineSlice(
+                  text,
                   Math.max(0, from - MEMO_CARET_CHARS),
                   Math.min(length, from + MEMO_CARET_CHARS),
                 )
@@ -4472,7 +4648,7 @@ export const agentPlugin = {
       }
     }
 
-    host.events.on('document-changed', () => {
+    onDocumentEdit(host, () => {
       text = null
       pictures = null
       if (!own) {
@@ -4514,7 +4690,7 @@ export const agentPlugin = {
         }
       }, STYLE_LIST_PAUSE_MS)
     }
-    host.events.on('document-changed', scheduleStyleList)
+    onDocumentEdit(host, scheduleStyleList)
 
     let layer = null
     let settle = null
@@ -4676,6 +4852,91 @@ export const agentPlugin = {
       })
     } catch {
       // as above
+    }
+
+    // the document's characters as the status bar counts them, read through the editor's own
+    // bridge as the 문서 정보 dialog reads them
+    let counted = null
+    try {
+      host.automation.registerCommand({
+        id: COUNT_COMMAND,
+        label: 'Count the characters',
+        execute: (services) => {
+          try {
+            const stats = documentStats(services.wasm, { textOnly: true })
+            counted = { chars: stats.chars, charsNoSpace: stats.charsNoSpace }
+          } catch {
+            counted = null
+          }
+        },
+      })
+    } catch {
+      // as above
+    }
+
+    /** The characters of what is selected now, or null when nothing (or no place) is. */
+    const selectedCharacters = () => {
+      picked = null
+      host.automation.execute(SELECTION_COMMAND)
+      const seen = picked
+      if (!seen) return null
+      return host.read((doc) => {
+        const out = countCollector()
+        return gatherSelection(doc, seen, out).ok ? out.counts() : null
+      })
+    }
+
+    // the status bar's count: put off until typing or the selection rests (char-count.mjs)
+    let charCountLabels = null
+    let charCount = null
+    const startCharCount = () => {
+      const page = globalThis.document
+      if (!charCountItem(page)) return false
+      if (charCount) {
+        charCount.refresh()
+        return true
+      }
+      const counter = charCounter({
+        readTotal: () => {
+          counted = null
+          host.automation.execute(COUNT_COMMAND)
+          return counted
+        },
+        readSelection: selectedCharacters,
+        render: (total, selected) => {
+          const item = charCountItem(page)
+          if (!item || !charCountLabels) return
+          const { text, title } = charCountText(charCountLabels, total, selected)
+          if (item.textContent !== text) item.textContent = text
+          if (item.title !== title) item.title = title
+        },
+      })
+      charCount = counter
+      const offEdit = onDocumentEdit(host, () => counter.documentChanged())
+      const offCaret = host.events.on('cursor-rect-updated', () => counter.selectionChanged())
+      // another document opened in the same editor (a restored copy, a file dropped in)
+      const offSwapped = host.events.on('document-swapped', () => counter.documentSwapped())
+      // a cell block grows with the keys or the mouse without the caret moving: a key or a
+      // button let go is when to look again
+      const onRest = () => counter.selectionChanged()
+      page.addEventListener('keyup', onRest, true)
+      page.addEventListener('mouseup', onRest, true)
+      stopCharCount = () => {
+        counter.stop()
+        page.removeEventListener('keyup', onRest, true)
+        page.removeEventListener('mouseup', onRest, true)
+        offEdit()
+        for (const off of [offCaret, offSwapped]) {
+          try {
+            off?.()
+          } catch {
+            // the host already took it off
+          }
+        }
+        charCount = null
+      }
+      counter.start()
+      return true
     }
 
     /** The text of a body or cell paragraph the caret is in, as the word commands read it. */
@@ -6889,6 +7150,25 @@ export const agentPlugin = {
        * selection() does and fires EASY_WORDS_EVENT with its text, a line per paragraph; it
        * changes nothing in the document. A later call gives the item its new name.
        */
+      /**
+       * Show the characters of the block and of the document in the editor's status bar,
+       * beside the insert/overwrite mode (issue #295), counted as the 문서 정보 dialog counts
+       * them. `labels` are the app's words: `total` ("{total}"), `selected` ("{selected}" and
+       * "{total}"), and the tooltips `hint` and `hintSelected` (those and "{totalNoSpace}",
+       * "{selectedNoSpace}", the counts without blanks), with the `locale` the numbers are
+       * written in. A later call changes the words.
+       */
+      showCharCount: guarded((labels) => {
+        const checked = checkCharCountLabels(labels)
+        if (!checked)
+          throw fail(
+            'BAD_ARGUMENT',
+            'total, selected, hint and hintSelected must be non-empty strings',
+          )
+        charCountLabels = checked
+        return { ok: startCharCount() }
+      }),
+
       installEasyWords: guarded((label) => {
         if (typeof label !== 'string' || !label.trim()) {
           throw fail('BAD_ARGUMENT', 'label must be a non-empty string')
@@ -6994,79 +7274,9 @@ export const agentPlugin = {
         if (!seen) return { ok: false, reason: 'none' }
         return host.read((doc) => {
           const out = runCollector()
-          let known = null
-          const tablesNow = () => (known ??= tablesOf(doc).tables)
-          const tableAt = (sec, para, path) => {
-            const key = tableKey(sec, para, path)
-            return tablesNow().findIndex(
-              (table) => tableKey(table.sec, table.para, table.path) === key,
-            )
-          }
-          /** the cells a block between two corners covers, a merged cell by any of its places */
-          const within = (range, skip) => (cell) =>
-            cell.row <= range.endRow &&
-            cell.row + cell.rowSpan - 1 >= range.startRow &&
-            cell.col <= range.endCol &&
-            cell.col + cell.colSpan - 1 >= range.startCol &&
-            !skip.has(`${cell.row},${cell.col}`)
-          let inTable = false
-          if (seen.block) {
-            const { table, range, excluded } = seen.block
-            const path =
-              Array.isArray(table.cellPath) && table.cellPath.length > 0
-                ? asCellPath(table.cellPath)
-                : [{ controlIndex: table.ci, cellIndex: 0, cellParaIndex: 0 }]
-            const index = tableAt(table.sec, table.ppi, path)
-            if (index < 0) return { ok: false, reason: 'unsupported' }
-            collectTable(doc, tablesNow(), index, out, within(range, new Set(excluded)))
-            inTable = true
-          } else {
-            const start = endOf(seen.start)
-            const end = endOf(seen.end)
-            if (!start || !end) return { ok: false, reason: 'unsupported' }
-            if (start.path && end.path && sameTable(start, end, true)) {
-              // inside one cell or text box: its paragraphs
-              const box = containerOf(doc, {
-                sec: start.sec,
-                para: start.para,
-                cellPath: start.path,
-              })
-              for (let k = start.k; k <= end.k; k++) {
-                out.add(
-                  box,
-                  k,
-                  k === start.k ? start.offset : 0,
-                  k === end.k ? end.offset : Infinity,
-                )
-              }
-              inTable = true
-            } else if (start.path && end.path && sameTable(start, end, false)) {
-              // from one cell to another of the same table: the block of cells between them
-              const index = tableAt(start.sec, start.para, start.path)
-              if (index < 0) return { ok: false, reason: 'unsupported' }
-              const grid = gridOf(doc, tablesNow()[index])
-              const a = grid[start.path[start.path.length - 1].cellIndex]
-              const b = grid[end.path[end.path.length - 1].cellIndex]
-              if (!a || !b) return { ok: false, reason: 'unsupported' }
-              const range = {
-                startRow: Math.min(a.row, b.row),
-                endRow: Math.max(a.row + a.rowSpan - 1, b.row + b.rowSpan - 1),
-                startCol: Math.min(a.col, b.col),
-                endCol: Math.max(a.col + a.colSpan - 1, b.col + b.colSpan - 1),
-              }
-              collectTable(doc, tablesNow(), index, out, within(range, new Set()))
-              inTable = true
-            } else {
-              // across the body: an end inside a table takes that table whole
-              collectBody(
-                doc,
-                tablesNow,
-                start.path ? { sec: start.sec, k: start.para, offset: 0 } : start,
-                end.path ? { sec: end.sec, k: end.para, offset: Infinity } : end,
-                out,
-              )
-            }
-          }
+          const gathered = gatherSelection(doc, seen, out)
+          if (!gathered.ok) return gathered
+          const { inTable } = gathered
           if (out.tooLong()) return { ok: false, reason: 'too_long' }
           if (out.segments.length === 0) return { ok: false, reason: 'none' }
           return {
@@ -7712,6 +7922,12 @@ export const agentPlugin = {
           options,
         )
       }),
+
+      /**
+       * The body paragraphs in reading order with their look ids (paragraphLooksOf), from
+       * the `from`-th on. Reads only.
+       */
+      paragraphLooks: guarded((from) => host.read((doc) => paragraphLooksOf(doc, from))),
 
       /**
        * What a document's formatting is made of (formattingOf): this document's, or that of

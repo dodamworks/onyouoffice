@@ -464,11 +464,10 @@ async function createDocx(
       reason: 'missing_argument',
     })
   const source = resolveInput(from, ctx)
-  const text = readFileSync(source, 'utf-8')
   const ext = extname(source).toLowerCase()
   if (ext === '.md' || ext === '.markdown') {
     return {
-      bytes: await markdownToDocx(text, { file: source, ctx }),
+      bytes: await markdownToDocx(stripBom(readTextFile(source)), { file: source, ctx }),
       detail: { source: 'markdown' },
     }
   }

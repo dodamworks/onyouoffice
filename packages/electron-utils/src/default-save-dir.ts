@@ -143,13 +143,39 @@ export function defaultSaveDirFallback(): { blocked: string; using: string } | n
   return saveDirState().fallback
 }
 
+/**
+ * `app.getPath(name)`, or null when the OS cannot report that folder. On
+ * Windows Electron throws "Failed to get 'documents' path" when the Documents
+ * known folder points nowhere (a broken registry entry, a OneDrive move that
+ * was undone, a redirected folder on a missing drive).
+ */
+function pathOrNull(app: PathProvider, name: 'documents' | 'home'): string | null {
+  try {
+    return app.getPath(name) || null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * The Documents folder, for dialogs that open there. When the OS cannot
+ * report it, the home folder and then userData, the same order the default
+ * save folder falls back in.
+ */
+export function documentsDirOrFallback(app: PathProvider): string {
+  return pathOrNull(app, 'documents') ?? pathOrNull(app, 'home') ?? app.getPath('userData')
+}
+
 /** convenience for the Electron mains: settings lookup + fallback in one call */
 export function configuredDefaultSaveDir(app: PathProvider): string {
   const settingsPath = join(app.getPath('userData'), 'app-settings.json')
+  const documents = pathOrNull(app, 'documents')
+  const home = pathOrNull(app, 'home')
   const fallbacks = [
-    join(app.getPath('documents'), DEFAULT_DOCUMENTS_DIR_NAME),
+    // an unreportable Documents folder is left out instead of failing every caller
+    ...(documents ? [join(documents, DEFAULT_DOCUMENTS_DIR_NAME)] : []),
     // outside the folders Controlled Folder Access protects by default
-    join(app.getPath('home'), DEFAULT_DOCUMENTS_DIR_NAME),
+    ...(home ? [join(home, DEFAULT_DOCUMENTS_DIR_NAME)] : []),
     // always writable for the app itself
     join(app.getPath('userData'), DEFAULT_DOCUMENTS_DIR_NAME),
   ]
@@ -158,17 +184,16 @@ export function configuredDefaultSaveDir(app: PathProvider): string {
 
 /** Keep existing Onyou documents reachable without renaming or moving their folders. */
 export function legacyDefaultSaveDirs(app: PathProvider): string[] {
+  const roots = [
+    pathOrNull(app, 'documents'),
+    pathOrNull(app, 'home'),
+    app.getPath('userData'),
+  ].filter((value): value is string => value !== null)
   const configured = readDefaultSaveDirSetting(join(app.getPath('userData'), 'app-settings.json'))
   if (
     configured !== null &&
-    !['documents', 'home', 'userData'].some(
-      (kind) =>
-        configured ===
-        join(app.getPath(kind as 'documents' | 'home' | 'userData'), DEFAULT_DOCUMENTS_DIR_NAME),
-    )
+    !roots.some((value) => configured === join(value, DEFAULT_DOCUMENTS_DIR_NAME))
   )
     return []
-  return ['documents', 'home', 'userData']
-    .map((kind) => join(app.getPath(kind as 'documents' | 'home' | 'userData'), PRODUCT_NAME))
-    .filter(isDirectory)
+  return roots.map((value) => join(value, PRODUCT_NAME)).filter(isDirectory)
 }

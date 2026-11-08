@@ -132,7 +132,7 @@ describe('the name in the shell UI', () => {
       }
     }
     // file names keep the Latin name whatever the language
-    expect(await helpBody('install', 'ko')).toContain('Onyou Office-Setup-<version>.exe')
+    expect(await helpBody('install', 'ko')).toContain('OnyouOffice-Setup-<version>.exe')
     expect(await helpBody('getting-started', 'ko')).toContain('온유오피스')
   })
 })

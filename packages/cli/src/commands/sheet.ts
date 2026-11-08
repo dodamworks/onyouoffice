@@ -1,7 +1,7 @@
 // Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { readFileSync } from 'node:fs'
 import { basename } from 'node:path'
-import { flagBool, flagString } from '../args'
+import { assertOptionValues, flagBool, flagString } from '../args'
 import {
   cellEditsFromInputs,
   READ_WHERE,
@@ -101,6 +101,7 @@ export const sheetCommand: CommandDef = {
     },
   ],
   async run(args, ctx) {
+    assertOptionValues(args, sheetCommand.options)
     const [verb, file] = args.positionals
     switch (verb) {
       case 'read':

@@ -105,6 +105,7 @@ export const de = {
   aiToolPageSetup: 'Seiteneinrichtung geprüft',
   aiToolPageSetupSet: 'Seiteneinrichtung geändert',
   aiToolFormatting: 'Formatierung geprüft',
+  aiToolParagraphLooks: 'Aussehen der Absätze geprüft · {count}',
   aiToolFormattingOf: 'Formatierung von {name} geprüft',
   aiToolFormatLook: '{count} Absätze eines Aussehens formatiert',
   aiLookParagraphs: '{count} Absätze eines Aussehens',
@@ -272,4 +273,10 @@ export const de = {
   easyWordsLabel: 'In einfachen Worten erklären',
   easyWordsPrompt:
     'Erkläre den unten ausgewählten Text auf Deutsch so, dass ihn auch jemand versteht, der leicht verständliche Texte braucht. Verwende Alltagswörter und kurze Sätze und lass keine Tatsache, Zahl oder Bedingung weg. Ändere das Dokument nicht.\n\nAusgewählter Text:\n{text}',
+  charCountTotal: 'Zeichen {total}',
+  charCountSelected: 'Zeichen {selected} / {total}',
+  charCountHint:
+    'Gezählt werden Zeichen mit Leerzeichen. Ohne Leerzeichen: gesamtes Dokument {totalNoSpace}. Wie in den Dokumentinformationen werden Kopf- und Fußzeilen, Fuß- und Endnoten nicht gezählt.',
+  charCountHintSelected:
+    'Mit Leerzeichen: markiert {selected} / gesamtes Dokument {total}. Ohne Leerzeichen: markiert {selectedNoSpace} / gesamtes Dokument {totalNoSpace}. Wie in den Dokumentinformationen werden Kopf- und Fußzeilen, Fuß- und Endnoten nicht gezählt.',
 } satisfies Record<keyof typeof zh, string>

@@ -1,37 +1,82 @@
-<!-- Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build. -->
+<!-- Modified by Onyou Office: product downloads and manual distribution guidance. -->
 
-# Installing GenOffice
+# Installing Onyou Office
 
-> This is an internal Onyou Office development build. Product download, update and support services are not configured. Installation and distribution instructions and links below describe the upstream project for reference.
-
-Every version is published on the [Releases page](https://github.com/pblsketch/openoffice/releases/latest) of the project on GitHub. This version is released for Windows.
+[Releases page](https://github.com/dodamworks/onyouoffice/releases/latest)
 
 ## Pick the file for your machine
 
-| Platform    | Requirements                          | File                            |
-| ----------- | ------------------------------------- | ------------------------------- |
-| **Windows** | Windows 10 or later, 64-bit Intel/AMD | `GenOffice-Setup-<version>.exe` |
-
-Older versions stay on the Releases page.
+| Platform                               | Requirements                          | File                               |
+| -------------------------------------- | ------------------------------------- | ---------------------------------- |
+| **Windows**                            | Windows 10 or later, 64-bit Intel/AMD | `OnyouOffice-Setup-<version>.exe`  |
+| **Mac (beta)**, Apple Silicon          | macOS 12 or later, M1 or newer chip   | `OnyouOffice-<version>-arm64.dmg`  |
+| **Mac (beta)**, Intel                  | macOS 12 or later, Intel processor    | `OnyouOffice-<version>-x64.dmg`    |
+| **Linux (beta)**, any distribution     | 64-bit (x86_64); glibc ≥ 2.35         | `OnyouOffice-<version>.AppImage`   |
+| **Linux (beta)**, Ubuntu/Debian family | 64-bit (x86_64); glibc ≥ 2.35         | `onyouoffice_<version>_amd64.deb`  |
+| **Linux (beta)**, Fedora/RHEL/openSUSE | 64-bit (x86_64); glibc ≥ 2.35         | `onyouoffice-<version>.x86_64.rpm` |
 
 ## On Windows
 
-1. Download `GenOffice-Setup-<version>.exe` from the Releases page.
+1. Download `OnyouOffice-Setup-<version>.exe` from the Releases page.
 2. Run it. The installer is not code-signed, so Windows may first show a blue "Windows protected your PC" window. Choose **More info**, then **Run anyway**. The exact wording depends on your Windows version.
 3. Follow the installer to the end.
 
-It puts GenOffice in the Start menu and registers `.docx`, `.xlsx`, `.pptx`, `.pdf` and friends so double-clicking a file opens it.
+It puts Onyou Office in the Start menu and registers `.docx`, `.xlsx`, `.pptx`, `.pdf` and friends so double-clicking a file opens it.
 
 Because the installer is not signed, only run one you downloaded from the Releases page above.
 
+## When Windows blocks the download or the install
+
+### Edge says the file "isn't commonly downloaded"
+
+Microsoft Defender SmartScreen warns this way about a file it has not seen many people download. Microsoft's guide to keep the file is:
+
+1. Open Edge's download list (**Ctrl+J**), press **…** next to the file and choose **Keep**.
+2. In the window that opens, press **Show more**, then **Keep anyway**. The file stays in your Downloads folder.
+
+That window also has a button that reports the file as safe. It only opens Microsoft's report page (`feedback.smartscreen.microsoft.com`) and does not keep the file. Close that page and press **Show more** in the window instead.
+
+If the window has no **Show more** or no **Keep anyway**:
+
+- On a PC that a school or company manages, the administrator can switch off skipping these warnings (an Edge policy). Then nobody on that PC can keep the file; ask the administrator to install it or to allow it.
+- Downloading from the Releases page in a different browser gives you the same file.
+
+### A "Windows protected your PC" window appears
+
+Microsoft Defender SmartScreen shows this window the first time it sees an unsigned installer. Press **More info** and a **Run anyway** button appears. On a PC that a school or company manages, an administrator setting can hide that button; ask the administrator.
+
+## On a Mac (beta)
+
+You need macOS 12 (Monterey) or later. The Mac build has no Apple developer signature, so the first time you open it macOS says it cannot verify the app is free of malware and does not open it. Allow it once, as below.
+
+1. Open the dmg and drag `Onyou Office.app` into the **Applications** folder.
+2. Open Onyou Office from the Applications folder. When the warning appears, press **Done**.
+3. Open **System Settings ▸ Privacy & Security**. Near the bottom, next to the line saying Onyou Office was blocked, press **Open Anyway** and enter your Mac password. The button shows for about an hour after you tried to open the app.
+4. In the window that appears again, press **Open**. From then on it opens without a warning.
+
+On macOS 12 the place is **System Preferences ▸ Security & Privacy ▸ General**, and the button is **Open Anyway** there.
+
+If macOS says the app is not supported on this Mac, check two things:
+
+- An Intel Mac cannot run the Apple Silicon file (`-arm64.dmg`). Check "Processor" under **About This Mac**, delete the app you installed, and install the `-x64.dmg` file instead.
+- macOS 11 or earlier cannot run Onyou Office. **About This Mac** also shows the macOS version.
+
+Also on a Mac:
+
+- The AI connection cards have no install button. Follow the card's official install guide link to install Claude Code or Codex.
+- Signing in finishes in the browser. If the browser asks you to paste a code, run `claude auth login` or `codex login` in Terminal yourself. See [Subscription connection](help://subscription).
+
+## On Linux (beta)
+
+- **AppImage**: make it executable (`chmod +x OnyouOffice-<version>.AppImage`) and run the file. There is no install step.
+- **deb**: install with `sudo apt install ./onyouoffice_<version>_amd64.deb`.
+- **rpm**: install with `sudo dnf install ./onyouoffice-<version>.x86_64.rpm`. On openSUSE, use `sudo zypper install ./onyouoffice-<version>.x86_64.rpm`.
+
+The deb and rpm packages install to `/opt/Onyou Office` and link the terminal command `/usr/bin/onyouoffice`. As on a Mac, the AI connection cards have no install button, and when a sign-in asks for a code you run `claude auth login` or `codex login` in a terminal yourself.
+
 ## Updates
 
-- GenOffice looks for a newer version on the same GitHub Releases page. When one is published, **Settings ▸ About** offers it: press **Update to …**, wait for the download, then press **Restart & install**. On Windows an installer window shows the progress; when it finishes, GenOffice opens again with the documents you had open. On a Mac the app closes, is swapped for the new version and opens again with the documents you had open. That works for an app in the Applications folder; one opened straight from the disk image points you to the download page instead. The update installs only when you press that button, never when you simply close the app.
-- **Menu (☰) ▸ Check for updates** checks whenever you ask. On a Mac it is **Help ▸ Check for updates**.
-- When the check fails — no network, or nothing published yet — nothing happens, and the app keeps working as before.
-- **Update Channel**, also under Settings ▸ About, is Stable or Beta. Changing it takes effect at once and checks for an update; it will not downgrade a Beta install back to Stable.
-- Updates are not code-signed either. Before installing one, the app checks the downloaded file against the checksum published with that release.
-- If **Restart & install** closes the app but the new version does not appear, the next launch says so and offers the update again. This time the installer opens in its own window, so you can follow it and answer an administrator prompt. If that does not work either, the update window points to the download page; installing from the file you get there keeps your settings and documents. What the updater did is written to `update-log.txt` in the app's data folder (type `%APPDATA%\GenOffice` into the File Explorer address bar to open it). Attach that file when you report the problem.
+[Releases page](https://github.com/dodamworks/onyouoffice/releases/latest)
 
 ## The build you are running
 
@@ -39,4 +84,4 @@ Because the installer is not signed, only run one you downloaded from the Releas
 
 ## The command line comes with it
 
-Every install ships an `ieumoffice` command that talks to the same engines the window does, so the two never disagree about a file. `ieumoffice install-cli` puts it on your `PATH`. See [Command line and agents](help://cli) for what it can do.
+Every install ships an `onyouoffice` command that talks to the same engines the window does, so the two never disagree about a file. `onyouoffice install-cli` puts it on your `PATH`. See [Command line and agents](help://cli) for what it can do.

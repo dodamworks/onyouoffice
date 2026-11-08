@@ -101,6 +101,7 @@ export const ms = {
   aiToolPageSetup: 'Menyemak persediaan halaman',
   aiToolPageSetupSet: 'Menukar persediaan halaman',
   aiToolFormatting: 'Menyemak format',
+  aiToolParagraphLooks: 'Format setiap perenggan disemak · {count}',
   aiToolFormattingOf: 'Menyemak format {name}',
   aiToolFormatLook: 'Memformat {count} perenggan yang serupa rupanya',
   aiLookParagraphs: '{count} perenggan yang serupa rupanya',
@@ -264,4 +265,10 @@ export const ms = {
   easyWordsLabel: 'Terangkan dengan kata mudah',
   easyWordsPrompt:
     'Terangkan teks yang dipilih di bawah dalam bahasa Melayu supaya orang yang memerlukan teks mudah dibaca juga boleh memahaminya. Gunakan perkataan harian dan ayat pendek, dan jangan tinggalkan sebarang fakta, nombor atau syarat. Jangan ubah dokumen.\n\nTeks yang dipilih:\n{text}',
+  charCountTotal: 'Aksara {total}',
+  charCountSelected: 'Aksara {selected} / {total}',
+  charCountHint:
+    'Aksara dikira termasuk ruang. Tanpa ruang: seluruh dokumen {totalNoSpace}. Seperti dalam Maklumat Dokumen, pengepala, pengaki, nota kaki dan nota akhir tidak dikira.',
+  charCountHintSelected:
+    'Dengan ruang: dipilih {selected} / seluruh dokumen {total}. Tanpa ruang: dipilih {selectedNoSpace} / seluruh dokumen {totalNoSpace}. Seperti dalam Maklumat Dokumen, pengepala, pengaki, nota kaki dan nota akhir tidak dikira.',
 } satisfies Record<keyof typeof zh, string>

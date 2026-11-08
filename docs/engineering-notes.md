@@ -72,6 +72,7 @@
 - **Codex 프로세스는 요청이 없어도 잠깐 떠 있다.** 상태 확인이 계정 종류를 읽으려고 `app-server`를 띄운다. Claude만 쓰는 사람의 PC에서도 Codex 프로세스가 보일 수 있다. 2분 동안 쓰지 않으면 끝나고, 앱을 끄면 함께 끝난다.
 - **사용자가 업데이트했다는데 카드는 계속 버전이 낮다고 한다.** 앱이 찾는 것은 Windows 쪽 사본뿐이다(PATH, `~\.local\bin`, `%APPDATA%\npm`, WinGet). WSL(Ubuntu) 터미널에서 `claude update`를 하면 리눅스 안의 사본만 바뀌고, 예전에 Windows에 깔아 둔 사본은 그대로다. 실제로 이런 신고가 있었다(WSL 2.1.305, Windows 2.1.114). → 카드에 보이는 경로의 사본을 Windows PowerShell에서 업데이트하게 안내한다. npm으로 깐 사본이면 `npm install -g @anthropic-ai/claude-code@latest`도 된다.
 - **껍데기 파일(`.cmd`)은 셸 없이 실행되지 않는다.** npm으로 설치한 프로그램은 `%APPDATA%\npm`의 `.cmd`다. 셸을 켜면 사용자 글이 명령으로 해석될 수 있다. → 껍데기 뒤의 실제 파일을 찾아 직접 실행한다. `%APPDATA%\npm`은 앱이 물려받은 PATH에 없을 수 있으므로 따로 찾아본다.
+- **npm으로 깐 Codex를 쓰면 PDF를 열 때마다 콘솔 창이 여러 개 열렸다 닫혔다(0.12.10, 의견 시트 250행).** npm 패키지가 실제 프로그램을 두는 곳은 판마다 다르다. 0.132까지는 `vendor/<triple>/codex/codex.exe`, 0.138부터는 `vendor/<triple>/bin/codex.exe`이고 그 사이 판의 실행기(`bin/codex.js`)는 둘 다 찾는다. 앱이 `bin/`만 보았기 때문에 예전 배치에서는 `codex.js`를 Electron(Node로)으로 띄웠고, `codex.js`가 창을 숨기지 않고 `codex.exe`를 띄워 상태 확인 한 번(`--version`, `login status`, `app-server` 둘)마다 콘솔 창이 떴다. → Windows에서는 `locate.ts`가 두 배치를 모두 찾아 실제 프로그램을 직접 띄운다. Mac·Linux에서는 예전 배치를 지금처럼 `codex.js`로 띄운다. 그 판의 실행기는 함께 든 `vendor/<triple>/path`(rg)를 PATH에 붙이는데 직접 띄우면 빠지고, 콘솔 창 문제는 Windows에만 있다(`docs/tracking/findings.md`). 새 배치가 생기면 공개된 `codex.js`의 찾는 경로와 맞춘다.
 - **표준 입력을 열어 둔 채 기다리게 하면 안 된다.** Claude는 3초를 버리고 Codex는 끝없이 기다린다.
 - **구독으로 받는 답은 몇 초 늦게 시작한다.** 프로그램이 먼저 켜져야 한다. 이 PC에서 Claude(가장 작은 모델)의 첫 글자까지 3.5초에서 4.5초 사이였다.
 - **앱의 프록시 설정은 구독 프로그램에 전달되지 않는다.** 프로그램은 물려받은 환경의 프록시 변수만 본다. Windows 설정에만 둔 프록시는 닿지 않는다.
@@ -84,6 +85,12 @@
 - **"받아들이고 저장"이 방금 받아들인 형광펜을 빠뜨린다.** 받아들이기는 markups를 state에 넣지만, 같은 클릭에서 `save()`를 부르면 그 `save`는 이전 렌더의 markups를 들고 있다. → 받아들이기 뒤 `acceptSaveRequest`를 올리고, 새 렌더가 끝난 뒤의 effect에서 `saveRef.current`로 저장한다. `accepted`는 그 저장이 성공한 뒤에만 쓴다.
 - **암호가 걸린 PDF가 "파일을 열지 못했습니다"로 끝난다(0.12.10).** `getDocument({ data })`는 그 버퍼를 PDF.js 워커로 **옮긴다**(transfer). 넘긴 뒤 같은 `Uint8Array`와 그 `ArrayBuffer`는 길이 0이 되고, 이것을 IPC로 보내면 `An object could not be cloned`가 난다. 0.12.10은 넘긴 바이트로 `decryptPdf`를 불러, 열기 암호가 없는 문서까지 모든 암호화 PDF가 열리지 않았다. → 넘기기 전에 필요한 값(크기, XFA 표식)을 먼저 꺼내 두고, 바이트가 다시 필요하면 파일을 한 번 더 읽는다. 단위 시험의 PDF.js는 가짜 워커라 옮기지 않으므로 이 결함은 e2e(`pdf-open-protected-damaged.spec.ts`)에서만 보인다.
 - **한 쪽이 망가진 PDF에서 그 뒤의 여러 쪽까지 열리지 않는다.** 디스크에서 쪽 객체 하나가 지워지면(0으로 덮인 구역 등) PDF.js는 쪽 나무를 따라가다 그 자식에서 예외를 내, 같은 가지의 뒤쪽 쪽들까지 잃는다. Acrobat·MuPDF는 그 쪽만 비운다. → 쪽을 읽다 실패하면 `page-tree-patch.ts`가 메모리의 사본 뒤에 빈 쪽을 정의하는 증분 갱신을 붙여 다시 연다. 디스크 파일은 그대로이고, 저장 쪽이 보는 쪽 번호가 화면과 어긋나므로 그 문서는 읽기 전용이다. 인쇄·AI 읽기처럼 파일을 다시 읽는 기능은 여전히 그 쪽들에서 실패한다.
+- **한국 프로그램이 만든 PDF에서 글꼴 이름이 깨진다.** PDFium의 `FPDFFont_GetBaseFontName`은 PDF 이름의 바이트를 그대로 돌려주고, 한국 프로그램은 이름을 CP949로 적는다(`/#B9#D9#C5#C1`). UTF-8로 읽으면 `�`만 남아 이름이 같은 글꼴도, 비슷한 글꼴도 찾지 못한다. → `src/shared/font-classes.ts`의 `decodeFontName`으로 UTF-8 → CP949 → Latin-1 순으로 푼다. PDF.js는 같은 이름을 바이트당 한 글자로 주므로 화면 쪽은 `redecodeByteString`을 거친다.
+- **글꼴이 들어 있지 않은 PDF에서 PDFium의 글꼴 정보 일부는 문서의 것이 아니다.** `FPDFFont_GetFamilyName`은 PDFium이 대신 그린 글꼴 이름(`Chrome Serif MM`, `Chrome Sans MM`)을 주고, `FPDFFont_GetWeight`는 글꼴 설명의 `FontWeight`를 반영하지 않는다(시험 2026-11-07, 700을 적어도 400). 글자 폭이 모두 같으면 Flags에 고정폭 비트가 더해진다. → 비슷한 글꼴은 이름, 넣어 둔 글꼴의 OS/2, Flags의 바탕·붓글씨 비트로 고르고, 고정폭 비트는 라틴 글자에만 믿는다.
+
+## 마크다운 인쇄
+
+- **인쇄하면 네 모서리가 조금씩 잘린다(0.12.9~0.12.11).** Chromium은 문서 CSS의 `@page { margin }`을 `printToPDF`·`print()`에 준 `margins`보다 먼저 쓴다. 인쇄용 HTML(`printHtml.ts`)에 `margin: 0`이 들어가 있어 미리보기·PDF 내보내기·인쇄 모두 0.6인치 여백 없이 글이 종이 끝에 붙었고, 프린터가 찍지 못하는 가장자리에서 잘렸다. → `@page` 여백을 `MARKDOWN_PRINT_OPTIONS.marginIn`에서 가져와 두 값이 같게 둔다. 여백을 바꾸려면 CSS가 아니라 그 값을 바꾼다. 쪽 크기와 여백을 직접 그리는 편집기(한글·다이어그램·마인드맵)의 `margin: 0`은 일부러 둔 것이다.
 
 ## ODT
 
@@ -172,10 +179,12 @@
 
 - **Windows에서 처음 켜면 응답없음이 되거나 회색 화면만 나온다(0.12.6까지).** Windows 보안의 '제어된 폴더 액세스'가 켜져 있으면 `문서\IeumOffice` 폴더 만들기가 막힌다. 기본 저장 폴더를 정하는 함수가 부를 때마다 폴더를 만들고 실패하면 예외를 던졌고, 홈 화면·검색 색인·첫 저장이 그 함수를 쉬지 않고 불렀다. → 있는 폴더는 만들지 않고, 실패한 폴더는 30초 동안 건너뛰고, 홈 폴더 아래로 내려간 뒤 한 번 알린다(결정 0078). 폴더가 이미 있고 쓰기만 막힌 경우는 쓰기 권한 검사로 알 수 없다.
 - **0.12.8에서도 '제어된 폴더 액세스'가 켜진 PC에서 처음 켜면 응답없음이 된다.** 막힌 폴더 만들기를 Windows가 `ENOENT`로 돌려주고, `mkdirSync(dir, { recursive: true })`가 그 오류에 끝없이 다시 시도한다. 인스펙터도 끼어들지 못한다. → 막힐 수 있는 폴더는 `recursive` 없이 한 단계씩 만든다(`default-save-dir.ts`의 `createDirLevels`, 결정 0078).
+- **저장하려니 "Failed to get 'documents' path"가 나고 저장 대화 상자가 뜨지 않는다(0.12.11까지).** Windows가 문서 폴더 위치를 알려 주지 못하면(레지스트리의 문서 폴더 항목이 깨졌거나, OneDrive로 옮겼다 되돌렸거나, 빠진 드라이브로 옮겨 둔 경우) Electron의 `app.getPath('documents')`가 예외를 던진다. 대체 폴더 목록을 만드는 순간 그 호출이 먼저 돌아, 저장 위치를 정해 둔 사용자도 막혔다. → `app.getPath('documents')`를 바로 부르지 않는다. 기본 저장 폴더는 `configuredDefaultSaveDir`, 대화 상자를 문서 폴더에서 열 때는 `documentsDirOrFallback`(홈 → userData)을 쓴다.
 
 ## Linux 패키지
 
 - **Ubuntu 24.04에서 deb 설치가 의존성 오류로 멈춘다.** 24.04와 Debian 13은 64비트 time_t 전환으로 여러 라이브러리를 `*t64` 이름으로 다시 지었다(24.04만 봐도 `libgtk-3-0`·`libatspi2.0-0`의 옛 이름은 없다). electron-builder의 기본 `depends`는 옛 이름만 적고, `deb.depends`를 설정하면 기본 목록이 통째로 바뀐다. → `electron-builder.cjs`의 `depends`가 기본 목록을 그대로 적고, 이름이 바뀐 것에는 `libgtk-3-0 | libgtk-3-0t64`처럼 대안을 붙인다. `tests/linux-deb-dependencies.test.ts`와 `linux-build.yml`의 검사가 지킨다.
+- **Ubuntu 20.04에서 앱은 뜨는데 엑셀·CSV 파일이 열리지 않는다(0.12.11까지).** 빌드 기계(Ubuntu 22.04, glibc 2.35)에서 그냥 `cargo build`한 엑셀 처리 프로그램이 그 기계의 glibc에 맞춰 `GLIBC_2.34`를 요구했다. 20.04의 glibc는 2.31이라 프로그램이 뜨지 못하고 모든 열기가 실패한다. Electron 본체는 2.25만 요구해 앱 창은 뜬다. → `linux-build.yml`이 `cargo zigbuild`로 프로그램을 glibc 2.28(`LINUX_GLIBC_FLOOR`) 기준으로 다시 링크해 `target/release`에 덮는다. 같은 워크플로가 묶음 안의 모든 ELF 파일이 기준을 넘지 않는지 보고, Ubuntu 20.04 컨테이너에 deb를 깔아 CSV를 내보내 본다. Linux에서 직접 `npm run build:all`로 만든 프로그램은 그 PC의 glibc를 따른다.
 - **"apt가 libnotify4를 못 찾는다"는 보고는 빈 24.04에서 재현되지 않는다.** 24.04의 t64 패키지가 옛 이름을 `Provides:`로 제공하고 `libnotify4`·`libxtst6`·`libsecret-1-0`은 24.04에 옛 이름 그대로 남아 있어, 지난 배포본도 `sudo apt install ./ieumoffice_버전_amd64.deb`로는 풀린다(`dpkg -i`는 의존성을 스스로 풀지 않으니 실패한다). → 그래도 대안 표기를 유지한다. 24.10 이후 배포판과 32비트 아키텍처에서는 옛 이름이 아예 없을 수 있다.
 
 ## 작업 사본을 여럿 둘 때
@@ -191,6 +200,7 @@
 - **워드 리본이 선택을 옮겨도 그대로다.** Tiptap 3의 `useEditor`는 거래마다 React를 다시 그리지 않는다(`shouldRerenderOnTransaction` 기본값). 워드 `App.tsx`에서는 거래마다 새 객체를 넣는 `setHistState`가 App을, 따라서 리본(글꼴 이름·크기, 굵게 등)을 다시 그리는 계기다. → 이 갱신을 "값이 같으면 건너뛰기"로 바꾸지 않는다. 다시 그리기를 줄이려면 리본이 쓰는 값을 따로 구독하게 바꾼 뒤에 한다(`docs-font-combos` e2e가 잡는다).
 
 - **슬라이드 글자의 띄어쓰기가 사라지고 간격·높이가 들쭉날쭉하다.** 글자 위치는 메인 프로세스가 실제 글꼴 파일로 재서 정하고, 캔버스는 같은 이름을 CSS로 찾아 그린다. Windows의 Chromium이 그 이름을 못 찾으면 맑은 고딕 같은 대체 글꼴로 그려 폭이 어긋난다. `나눔스퀘어 Bold`처럼 굵은 파일이 따로 붙인 이름(PowerPoint 글꼴 목록에 보이는 이름)이 그렇다. Chromium은 이름 끝의 Light·Medium·ExtraBold 등은 떼고 찾아 주지만 Bold는 떼지 않는다. → 그런 이름은 측정한 파일을 그 이름의 개인 글꼴(FontFace)로 등록해 그리게 한다(`fonts.ts`의 "Family Weight" 등록). 새 이름 유형을 의심할 때는 Electron 창에서 `measureText`로 `'<이름>', monospace`와 `monospace`의 폭이 다른지 보면 Chromium이 그 이름을 찾는지 알 수 있다.
+- **리본이나 대화 상자의 일부가 사용자의 화면 언어가 아닌 영어로 보인다.** 원본은 새 문구를 영어 기본값에 몇 개 언어만 덮어쓰는 방식으로 넣는다. PDF의 `fillFormStrings`·`certSignStrings`는 영어 객체를 먼저 펼치고 `localized…`의 언어 블록으로 덮고, 워드의 `strings-table.ts`는 번역이 없는 언어에 `en`을 그대로 넣었다. 형 검사는 키만 보므로 이런 빈칸을 잡지 못한다. → 원본을 받아온 뒤 `tests/korean-strings-not-english.test.ts`(편집기마다)와 `tests/translated-in-every-language.test.ts`(PDF·워드·마크다운)가 실패하면, 그 키를 언어 블록에 채운다. 그 언어에서도 영어와 같은 낱말이 맞으면 시험의 허용 목록에 더한다. 공용 색 고르기의 색 이름은 `colorSwatchName`(`packages/ui`)을 넘겨야 번역된다.
 - **첫 실행 안내의 두 번째 단계에서 첫 연결 안내가 겹쳐 뜬다.** 구독이 이미 연결된 PC에서는 연결 단계에 들어서는 순간 "처음 쓸 수 있게 된 때"가 되기 때문이다. 의도된 동작이다. 확인을 누르면 연결 카드가 보인다.
 - **편집기 화면은 껍데기 앱의 화면보다 위에 그려진다.** 편집기 탭이 켜져 있으면 껍데기 앱의 겹침 화면(첫 실행 안내 등)은 가려진다. 그래서 그런 화면은 홈 탭이 켜져 있을 때만 그린다.
 - **Electron은 잡히지 않은 예외로 꺼지지 않는다.** 대화 상자를 띄우고 계속 돈다. 그래서 동작을 바꾸는 예외 처리기를 두지 않았고, 프로그램 정리는 종료 경로(`will-quit`, 프로세스 `exit`)에 걸려 있다. 크래시 기록은 보기만 하는 `uncaughtExceptionMonitor`로 받는다. `uncaughtException`에 처리기를 붙이면 Electron의 대화 상자가 사라진다.
@@ -208,6 +218,7 @@
 - **불러오지 않은 탭은 저장 안 됨 계산·닫기 확인·저장 메뉴에서 빠진다.** 바뀐 것이 없는 탭으로 다루고, 닫아도 편집기 정리가 돌지 않아 사본이 그대로 남는다. 떼어 내기는 먼저 불러온다. 엑셀 탭을 `createPlainEditorView`로 열면 통합 문서 알림(`startQueuedWorkbookNudge`)이 시작되지 않으므로 그 일은 `index.ts`가 따로 한다.
 - **앱을 평소처럼 껐는데 다음에 탭이 되살아난다.** 정상 종료는 "종료 절차를 끝까지 지남(`will-quit`의 `markSessionCleanExit`)"과 "정하지 않음·되살리기로 정함 상태의 사본이 남지 않음"이 함께일 때다(`judgePreviousExit`). 앱을 끌 때 저장 질문 없이 사본에 맡기는 길(엑셀)이 정하지 않은 사본을 남기면 비정상으로 판정된다. 의도된 동작이다. 세션 기록이 아예 없으면(처음 실행, 이 기능이 든 버전으로 처음 업데이트) 정상으로 본다. 알림 영역에 남는 경우(`shouldKeepQuickLookInTray`)는 창이 닫힐 때 탭 목록을 비우고 정상 표시를 남긴다(`markSessionClosedToTray`). PC가 꺼질 때의 `markSessionOsEnd`는 그 뒤의 정상 표시를 막는다.
 - **메뉴로 앱을 껐는데 다음에 탭과 시작 목록이 돌아오고, 사본이 파일과 똑같다.** 고쳤다가 되돌리기로 처음 상태로 돌아온 탭은 "정하지 않음" 사본을 그대로 쥐고 있다. 메뉴로 끄면 `before-quit`에서 종료 래치가 탭이 닫히기 전에 서므로, 탭이 닫힐 때의 정리가 그 사본을 지우지 못한다(`'refused'`). 정하지 않은 사본이 남았으니 다음 실행은 비정상으로 판정되고, 탭과 시작 목록이 파일과 내용이 같은 사본을 들고 돌아온다. 알려진 동작이다. 시작 목록에서 "버리기"를 고르면 사본이 지워진다.
+- **창 없는 내보내기가 화면에 "되살릴까요" 창을 띄우거나 사본의 내용을 내보낸다.** 창 없는 내보내기(`--headless-export`, 명령어의 `convert`)는 편집기의 보통 열기 경로를 타고, 그 경로는 그 파일의 복구 사본이 남아 있으면 묻는다. 답할 사람이 없고, 묻는 창의 Esc·닫기는 "되살리기"다. 워드·엑셀·다이어그램이 그랬다(2026-11-08 고침). → 사본을 묻고 정하는 곳과 사본을 쓰는 곳 양쪽에서 `isHeadlessMode()`이면 디스크의 파일로 열고 사본을 쓰지 않는다. 새 편집기에 창 없는 내보내기를 붙이면 이 두 곳을 함께 막고, 사본을 남겨 둔 채 여는 시험을 둔다(`apps/docs/tests/docs-recovery.test.ts`의 "a headless export" 등).
 - **창 없는 PDF 내보내기 때문에 다음 실행이 비정상으로 판정된다.** 세션 기록은 `initSessionRecord`를 부른 실행만 읽고 쓴다. 껍데기 앱은 단일 실행 잠금을 얻고 창 없는 내보내기가 아님을 안 뒤에만 부른다. 두 번째 실행도 `will-quit`를 지나지만, 기록을 시작하지 않았으므로 도우미가 아무 일도 하지 않는다. 새 진입 경로를 만들면 이 순서를 지킨다.
 - **사본 폴더와 이름.** 데이터 폴더의 `<편집기>-autosave`이고(`recoveryFolderName`), 파일 사본은 편집기가 쥔 경로 문자열의 sha1 앞 16글자 + 확장자, 제목 없는 사본은 `untitled/<식별자><확장자>`다. 곁의 `<사본 이름>.meta.json`에 상태가 있다. 워드(`.docx`, ODT 탭은 `.odt`)·엑셀(`.xlsx`)·파워포인트(`.pptx`)의 폴더와 이름은 이전 버전 그대로라, 곁 정보 없는 이전 사본도 "나중에"로 읽혀 파일을 열 때 묻는다. 이름 규칙을 바꾸면 업데이트 전의 사본을 잃는다. 경로는 정규화하지 않고 편집기가 쥔 문자열 그대로 해시한다. 세션 기록은 `session-record.json`이다.
 - **편집기마다 이 패키지의 사본이 번들에 들어간다.** 종료 래치, 지우기 순번, 쓰기 줄, 실행 식별자, 편집기 약속 목록은 `Symbol.for(...)` 키에 있어, 껍데기 앱이 세운 래치를 편집기의 사본이 같은 것으로 읽는다. 모듈 변수로 옮기지 않는다.

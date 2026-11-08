@@ -100,6 +100,7 @@ export const en = {
   aiToolPageSetup: 'Checked the page setup',
   aiToolPageSetupSet: 'Changed the page setup',
   aiToolFormatting: 'Checked the formatting',
+  aiToolParagraphLooks: 'Checked the look of each paragraph · {count}',
   aiToolFormattingOf: 'Checked the formatting of {name}',
   aiToolFormatLook: 'Formatted {count} paragraphs of one look',
   aiLookParagraphs: '{count} paragraphs of one look',
@@ -261,4 +262,10 @@ export const en = {
   easyWordsLabel: 'Explain in plain words',
   easyWordsPrompt:
     'Explain the selected text below in English so that someone who needs easy-to-read text can understand it. Use everyday words and short sentences, and leave out no fact, number or condition. Do not change the document.\n\nSelected text:\n{text}',
+  charCountTotal: 'Characters {total}',
+  charCountSelected: 'Characters {selected} / {total}',
+  charCountHint:
+    'Characters are counted with spaces. Without spaces: whole document {totalNoSpace}. As in Document Information, headers, footers, footnotes and endnotes are not counted.',
+  charCountHintSelected:
+    'With spaces: selected {selected} / whole document {total}. Without spaces: selected {selectedNoSpace} / whole document {totalNoSpace}. As in Document Information, headers, footers, footnotes and endnotes are not counted.',
 } satisfies Record<keyof typeof zh, string>

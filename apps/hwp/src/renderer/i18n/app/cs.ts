@@ -102,6 +102,7 @@ export const cs = {
   aiToolPageSetup: 'Zkontrolován vzhled stránky',
   aiToolPageSetupSet: 'Změněn vzhled stránky',
   aiToolFormatting: 'Zkontrolováno formátování',
+  aiToolParagraphLooks: 'Vzhled odstavců zkontrolován · {count}',
   aiToolFormattingOf: 'Zkontrolováno formátování: {name}',
   aiToolFormatLook: 'Formátováno {count} odstavců stejného vzhledu',
   aiLookParagraphs: '{count} odstavců stejného vzhledu',
@@ -263,4 +264,10 @@ export const cs = {
   easyWordsLabel: 'Vysvětlit jednoduše',
   easyWordsPrompt:
     'Vysvětli česky níže vybraný text tak, aby mu porozuměl i člověk, který potřebuje snadno čitelný text. Používej běžná slova a krátké věty a nevynechej žádný fakt, číslo ani podmínku. Dokument neměň.\n\nVybraný text:\n{text}',
+  charCountTotal: 'Znaky {total}',
+  charCountSelected: 'Znaky {selected} / {total}',
+  charCountHint:
+    'Znaky se počítají včetně mezer. Bez mezer: celý dokument {totalNoSpace}. Stejně jako v informacích o dokumentu se nepočítají záhlaví, zápatí, poznámky pod čarou ani vysvětlivky.',
+  charCountHintSelected:
+    'Včetně mezer: výběr {selected} / celý dokument {total}. Bez mezer: výběr {selectedNoSpace} / celý dokument {totalNoSpace}. Stejně jako v informacích o dokumentu se nepočítají záhlaví, zápatí, poznámky pod čarou ani vysvětlivky.',
 } satisfies Record<keyof typeof zh, string>

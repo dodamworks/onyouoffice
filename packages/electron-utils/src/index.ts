@@ -62,6 +62,7 @@ export {
   configuredDefaultSaveDir,
   legacyDefaultSaveDirs,
   defaultSaveDirFallback,
+  documentsDirOrFallback,
   isUsableSaveDir,
   readDefaultSaveDirSetting,
   resolveDefaultSaveDir,

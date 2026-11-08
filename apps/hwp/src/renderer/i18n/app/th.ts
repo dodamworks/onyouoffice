@@ -100,6 +100,7 @@ export const th = {
   aiToolPageSetup: 'ตรวจการตั้งค่าหน้ากระดาษ',
   aiToolPageSetupSet: 'เปลี่ยนการตั้งค่าหน้ากระดาษ',
   aiToolFormatting: 'ตรวจรูปแบบเอกสาร',
+  aiToolParagraphLooks: 'ตรวจสอบรูปแบบของแต่ละย่อหน้าแล้ว · {count}',
   aiToolFormattingOf: 'ตรวจรูปแบบของ {name}',
   aiToolFormatLook: 'จัดรูปแบบย่อหน้าที่หน้าตาเหมือนกัน {count} ย่อหน้า',
   aiLookParagraphs: 'ย่อหน้าที่หน้าตาเหมือนกัน {count} ย่อหน้า',
@@ -259,4 +260,10 @@ export const th = {
   easyWordsLabel: 'อธิบายด้วยคำง่าย ๆ',
   easyWordsPrompt:
     'อธิบายข้อความที่เลือกด้านล่างเป็นภาษาไทย ให้คนที่ต้องการข้อความอ่านง่ายเข้าใจได้ด้วย ใช้คำที่ใช้ในชีวิตประจำวันและประโยคสั้น ๆ และอย่าตกหล่นข้อเท็จจริง ตัวเลข หรือเงื่อนไขใด ๆ เลย อย่าแก้ไขเอกสาร\n\nข้อความที่เลือก:\n{text}',
+  charCountTotal: 'อักขระ {total}',
+  charCountSelected: 'อักขระ {selected} / {total}',
+  charCountHint:
+    'นับอักขระรวมช่องว่าง ไม่รวมช่องว่าง: ทั้งเอกสาร {totalNoSpace} เช่นเดียวกับข้อมูลเอกสาร จะไม่นับหัวกระดาษ ท้ายกระดาษ เชิงอรรถ และอ้างอิงท้ายเรื่อง',
+  charCountHintSelected:
+    'รวมช่องว่าง: ที่เลือก {selected} / ทั้งเอกสาร {total} ไม่รวมช่องว่าง: ที่เลือก {selectedNoSpace} / ทั้งเอกสาร {totalNoSpace} เช่นเดียวกับข้อมูลเอกสาร จะไม่นับหัวกระดาษ ท้ายกระดาษ เชิงอรรถ และอ้างอิงท้ายเรื่อง',
 } satisfies Record<keyof typeof zh, string>

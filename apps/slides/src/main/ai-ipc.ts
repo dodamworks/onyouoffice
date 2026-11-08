@@ -15,6 +15,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { join } from 'node:path'
+import { readSlidesAiFonts } from './ai-default-fonts'
 import {
   sanitizeAiSettings,
   setAiUserAgent,
@@ -286,9 +287,21 @@ export function registerAiIpc(): void {
 // generic ai:* channels are registered by docs-main.registerAiIpc, and slides' registerAiIpc is
 // never called; docs does not have these channels, so putting them in the wrong place raises
 // "No handler registered".
+/** Same-named `.styleskill.json` beside a draft deck, or null when the path is not a pptx. */
+export function styleSkillSidecarPath(draftPath: string | null | undefined): string | null {
+  if (!draftPath || !/\.pptx$/i.test(draftPath)) return null
+  return draftPath.replace(/\.pptx$/i, '.styleskill.json')
+}
+
 export function registerSlidesOnlyAiIpc(): void {
   // The design template remembered per document (slides:ai-template-selection-get / -set)
   registerTemplateSelectionIpc()
+
+  // The fonts generation uses when the request names none (Settings › General); the
+  // renderer passes its UI language, which picks the default before a choice is stored
+  ipcMain.handle('slides:ai-default-fonts', (_event, lang: unknown) =>
+    readSlidesAiFonts(app, typeof lang === 'string' ? lang : ''),
+  )
 
   // What the search/image/media tools can do right now (settings + subscription connections):
   // the renderer offers the model only the tools that have a route.
@@ -521,9 +534,8 @@ export function registerSlidesOnlyAiIpc(): void {
     ): Promise<{ ok: boolean }> => {
       try {
         const session = sessions.get(event.sender.id)
-        const draftPath = session?.path
-        if (!draftPath || !draftPath.endsWith('.pptx')) return { ok: false }
-        const sidecarPath = draftPath.replace(/\.pptx$/i, '.styleskill.json')
+        const sidecarPath = styleSkillSidecarPath(session?.path)
+        if (!sidecarPath) return { ok: false }
         writeFileSync(sidecarPath, JSON.stringify(data, null, 2))
         return { ok: true }
       } catch {
