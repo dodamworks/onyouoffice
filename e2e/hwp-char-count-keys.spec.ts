@@ -423,7 +423,7 @@ test.describe('HWP Ctrl+PageUp/PageDown and the status bar character count', () 
     })
     const { app, page } = launched
     try {
-      await page.locator('.quick-card', { hasText: 'AI HWP' }).click()
+      await page.locator('.quick-card[data-format="hwp"]').click()
       const hwp = await hwpPage(app)
       const frame = await studioFrame(hwp)
       const canvas = hwp.frameLocator(STUDIO_IFRAME).locator('#scroll-content canvas').first()
