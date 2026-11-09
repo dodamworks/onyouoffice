@@ -15,6 +15,8 @@ export const zh = {
   cardErrNeedsUpdatePath: '此应用运行的文件：',
   cardErrNeedsUpdateWindows:
     '在 WSL（Ubuntu）或其他文件夹中更新 {provider} 不会更改此文件。请在 Windows PowerShell 中运行 {command}。',
+  claudeDesktopNote:
+    'Claude 桌面应用不是本应用运行的 Claude Code。Claude Code 是在终端中使用的独立程序，安装或更新桌面应用不会改变它。',
   cardErrTimeout: '{provider} 程序未及时响应。请稍后重新检查。',
   cardErrFailed: '检查 {provider} 时出现问题。请重新检查。',
   actionInstall: '安装',
@@ -147,4 +149,16 @@ export const zh = {
   browserPageDoneBody: '可以关闭此标签页并返回应用。',
   browserPageFailedTitle: '未能完成连接',
   browserPageFailedBody: '请返回应用后重试。',
+  cardOff: '已在本应用中关闭',
+  offNote:
+    '本应用不会运行 {provider} 程序，也不会检查它的状态。这台电脑上 {provider} 的登录以及在终端中的使用都保持不变。',
+  offElsewhereNote: '可以在“设置 → AI”中重新使用。',
+  offSwitchNote:
+    '“不在本应用中使用”会保留这台电脑上 {provider} 的登录，只在本应用中停用。退出登录则对整台电脑生效。',
+  actionTurnOff: '不在本应用中使用',
+  actionTurnOn: '重新使用',
+  connectOffTitle: '{provider} 已在本应用中关闭',
+  connectOffBody: '在“设置 → AI”的 {provider} 卡片上点击“重新使用”，或选择其他 AI。',
+  errOffInApp: '{provider} 已在本应用中关闭，因此没有运行。可以在“设置 → AI”中重新使用。',
+  guideBadgeOff: '已关闭',
 }

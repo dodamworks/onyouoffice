@@ -34,7 +34,7 @@ onyouoffice slides replace deck.pptx --slide 2 --spec deck/pages/03.json   # reb
 onyouoffice slides apply deck.pptx --ops edit.json [--dry-run] [--out copy.pptx]
 onyouoffice slides audit deck.pptx [--slide 0] --json            # out_of_bounds / off_slide / text_overflow / text_overflow_width / overlap / picture_distorted: typed issues with durable ids and a setTransform `suggest` where geometry fixes it
 onyouoffice slides render deck.pptx --out shots/ [--scale 2]     # one PNG per slide through the app's PDF export
-onyouoffice render report.docx|book.xlsx|page.html|file.pdf --out shots/ [--page 3] [--scale 2]   # one PNG per page of any document, to look at what was made
+onyouoffice render report.docx|book.xlsx|page.html|form.hwp|file.pdf --out shots/ [--page 3] [--scale 2]   # one PNG per page of any document, to look at what was made
 onyouoffice render deck.pptx --out shots/ --el e_12 [--pad 16]   # plus the page cropped to that element (<stem>-NN-e_12.png)
 onyouoffice render deck.pptx --out shots/ --grid [--cols 4] [--tile 320]   # plus <stem>-grid.png: every page on one contact sheet
 onyouoffice create --type xlsx --from table.json --out book.xlsx   # 2-D array or {sheets:[{name,rows}]}; "=..." cells are formulas

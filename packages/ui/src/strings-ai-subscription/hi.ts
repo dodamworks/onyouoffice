@@ -18,6 +18,8 @@ export const hi = {
   cardErrNeedsUpdatePath: 'यह ऐप जो फ़ाइल चलाता है:',
   cardErrNeedsUpdateWindows:
     'WSL (Ubuntu) में या किसी दूसरे फ़ोल्डर में {provider} अपडेट करने से यह फ़ाइल नहीं बदलती। Windows PowerShell में {command} चलाएँ।',
+  claudeDesktopNote:
+    'Claude डेस्कटॉप ऐप वह Claude Code नहीं है जिसे यह ऐप चलाता है। Claude Code टर्मिनल में चलने वाला अलग प्रोग्राम है, इसलिए डेस्कटॉप ऐप इंस्टॉल या अपडेट करने से वह नहीं बदलता।',
   cardErrTimeout: '{provider} प्रोग्राम ने समय पर जवाब नहीं दिया। थोड़ी देर बाद फिर से जाँचें।',
   cardErrFailed: '{provider} की जाँच करते समय कोई समस्या हुई। फिर से जाँचें।',
   actionInstall: 'इंस्टॉल करें',
@@ -169,4 +171,18 @@ export const hi = {
   browserPageDoneBody: 'आप यह टैब बंद करके ऐप पर लौट सकते हैं।',
   browserPageFailedTitle: 'कनेक्शन नहीं हो सका',
   browserPageFailedBody: 'ऐप पर लौटें और फिर से कोशिश करें।',
+  cardOff: 'इस ऐप में बंद',
+  offNote:
+    'यह ऐप {provider} प्रोग्राम को न चलाता है, न उसकी स्थिति जाँचता है। इस PC पर {provider} का साइन-इन और टर्मिनल में उसका उपयोग जैसा है वैसा ही रहता है।',
+  offElsewhereNote: 'सेटिंग्स → AI में इसे फिर से उपयोग के लिए चालू कर सकते हैं।',
+  offSwitchNote:
+    '"इस ऐप में उपयोग न करें" इस PC पर {provider} का साइन-इन बना रहने देता है और सिर्फ़ इस ऐप में रोकता है। साइन आउट पूरे PC पर लागू होता है।',
+  actionTurnOff: 'इस ऐप में उपयोग न करें',
+  actionTurnOn: 'फिर से उपयोग करें',
+  connectOffTitle: '{provider} इस ऐप में बंद है',
+  connectOffBody:
+    'सेटिंग्स → AI में {provider} कार्ड पर "फिर से उपयोग करें" दबाएँ, या कोई दूसरा AI चुनें।',
+  errOffInApp:
+    '{provider} इस ऐप में बंद है, इसलिए कुछ नहीं चलाया गया। सेटिंग्स → AI में इसे फिर से उपयोग के लिए चालू कर सकते हैं।',
+  guideBadgeOff: 'बंद',
 } satisfies Record<keyof typeof zh, string>

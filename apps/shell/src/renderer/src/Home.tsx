@@ -108,6 +108,7 @@ const FILE_ICONS: Record<string, string> = {
   html: iconHtml,
   htm: iconHtml,
   xmind: iconMindmap,
+  mm: iconMindmap,
   hwp: iconHwp,
   hwpx: iconHwp,
   epub: iconEpub,
@@ -127,7 +128,7 @@ const OPEN_LOCAL_FORMATS: readonly { label: StringKey; extensions: readonly stri
   { label: 'filterPdf', extensions: ['pdf'] },
   { label: 'formatText', extensions: ['md', 'markdown', 'txt', 'json'] },
   { label: 'filterHtml', extensions: ['html', 'htm'] },
-  { label: 'filterMindmap', extensions: ['xmind'] },
+  { label: 'filterMindmap', extensions: ['xmind', 'mm'] },
   { label: 'filterHwp', extensions: ['hwp', 'hwpx'] },
   { label: 'filterEpub', extensions: ['epub'] },
   { label: 'newDiagram', extensions: ['drawio', 'dio', 'drawio.svg', 'drawio.png', 'vsdx'] },
@@ -431,6 +432,7 @@ const FILTER_FAMILY: Record<string, readonly string[]> = {
   md: ['md', 'markdown', 'txt', 'json'],
   html: ['html', 'htm'],
   hwp: ['hwp', 'hwpx'],
+  xmind: ['xmind', 'mm'],
   drawio: ['drawio', 'dio', 'drawio.svg', 'drawio.png', 'vsdx'],
 }
 
@@ -1040,8 +1042,11 @@ function AccountEntry({
           : aiSubscriptionText(lang, 'cardReady')
       : summary.state === 'needs-connection'
         ? t('homeAiNeedsConnection')
-        : null
-  const named = summary.state === 'connected' || summary.state === 'needs-connection'
+        : summary.state === 'off'
+          ? aiSubscriptionText(lang, 'cardOff')
+          : null
+  const named =
+    summary.state === 'connected' || summary.state === 'needs-connection' || summary.state === 'off'
   const label = named
     ? names
     : summary.state === 'checking'

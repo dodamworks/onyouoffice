@@ -18,6 +18,8 @@ export const fr = {
   cardErrNeedsUpdatePath: 'Fichier exécuté par cette application :',
   cardErrNeedsUpdateWindows:
     'Mettre à jour {provider} dans WSL (Ubuntu) ou dans un autre dossier ne modifie pas ce fichier. Exécutez {command} dans Windows PowerShell.',
+  claudeDesktopNote:
+    "L'application de bureau Claude n'est pas Claude Code, que cette application exécute. Claude Code est un programme distinct utilisé dans un terminal, donc installer ou mettre à jour l'application de bureau ne le modifie pas.",
   cardErrTimeout:
     "Le programme {provider} n'a pas répondu à temps. Vérifiez à nouveau dans un instant.",
   cardErrFailed:
@@ -177,4 +179,18 @@ export const fr = {
   browserPageDoneBody: "Vous pouvez fermer cet onglet et revenir à l'application.",
   browserPageFailedTitle: "La connexion n'a pas abouti",
   browserPageFailedBody: "Revenez à l'application et réessayez.",
+  cardOff: 'Désactivé dans cette application',
+  offNote:
+    'Cette application ne lance pas le programme {provider} et ne vérifie pas son état. La connexion de {provider} sur ce PC et son utilisation dans un terminal restent inchangées.',
+  offElsewhereNote: 'Vous pouvez le réactiver dans Paramètres → IA.',
+  offSwitchNote:
+    '« Ne pas utiliser dans cette application » garde la connexion de {provider} sur ce PC et n’arrête que cette application. Se déconnecter s’applique à tout le PC.',
+  actionTurnOff: 'Ne pas utiliser dans cette application',
+  actionTurnOn: 'Utiliser à nouveau',
+  connectOffTitle: '{provider} est désactivé dans cette application',
+  connectOffBody:
+    'Cliquez sur « Utiliser à nouveau » sur la carte {provider} dans Paramètres → IA, ou choisissez une autre IA.',
+  errOffInApp:
+    '{provider} est désactivé dans cette application : rien n’a été lancé. Vous pouvez le réactiver dans Paramètres → IA.',
+  guideBadgeOff: 'Désactivé',
 } satisfies Record<keyof typeof zh, string>

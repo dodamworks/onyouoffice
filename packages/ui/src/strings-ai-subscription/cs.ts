@@ -18,6 +18,8 @@ export const cs = {
   cardErrNeedsUpdatePath: 'Soubor, který tato aplikace spouští:',
   cardErrNeedsUpdateWindows:
     'Aktualizace programu {provider} ve WSL (Ubuntu) nebo v jiné složce tento soubor nezmění. Spusťte {command} ve Windows PowerShellu.',
+  claudeDesktopNote:
+    'Desktopová aplikace Claude není Claude Code, který tato aplikace spouští. Claude Code je samostatný program pro terminál, takže instalace ani aktualizace desktopové aplikace ho nezmění.',
   cardErrTimeout: 'Program {provider} neodpověděl včas. Zkontrolujte to za chvíli znovu.',
   cardErrFailed: 'Při kontrole {provider} došlo k potížím. Zkontrolujte to znovu.',
   actionInstall: 'Nainstalovat',
@@ -168,4 +170,18 @@ export const cs = {
   browserPageDoneBody: 'Tuto kartu můžete zavřít a vrátit se do aplikace.',
   browserPageFailedTitle: 'Připojení se nezdařilo',
   browserPageFailedBody: 'Vraťte se do aplikace a zkuste to znovu.',
+  cardOff: 'V této aplikaci vypnuto',
+  offNote:
+    'Tato aplikace program {provider} nespouští ani nezjišťuje jeho stav. Přihlášení {provider} v tomto počítači a jeho používání v terminálu zůstávají beze změny.',
+  offElsewhereNote: 'Znovu ho můžete zapnout v Nastavení → AI.',
+  offSwitchNote:
+    '„Nepoužívat v této aplikaci“ ponechá přihlášení {provider} v tomto počítači a zastaví jen tuto aplikaci. Odhlášení platí pro celý počítač.',
+  actionTurnOff: 'Nepoužívat v této aplikaci',
+  actionTurnOn: 'Znovu používat',
+  connectOffTitle: '{provider} je v této aplikaci vypnutý',
+  connectOffBody:
+    'Klikněte na „Znovu používat“ na kartě {provider} v Nastavení → AI, nebo zvolte jinou AI.',
+  errOffInApp:
+    '{provider} je v této aplikaci vypnutý, proto se nic nespustilo. Znovu ho můžete zapnout v Nastavení → AI.',
+  guideBadgeOff: 'Vypnuto',
 } satisfies Record<keyof typeof zh, string>

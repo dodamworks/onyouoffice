@@ -18,6 +18,8 @@ export const vi = {
   cardErrNeedsUpdatePath: 'Tệp mà ứng dụng này chạy:',
   cardErrNeedsUpdateWindows:
     'Cập nhật {provider} trong WSL (Ubuntu) hoặc ở thư mục khác không làm thay đổi tệp này. Hãy chạy {command} trong Windows PowerShell.',
+  claudeDesktopNote:
+    'Ứng dụng Claude cho máy tính không phải là Claude Code mà ứng dụng này chạy. Claude Code là một chương trình riêng dùng trong terminal, nên cài đặt hay cập nhật ứng dụng máy tính không làm thay đổi nó.',
   cardErrTimeout: 'Chương trình {provider} không trả lời kịp thời. Hãy kiểm tra lại sau giây lát.',
   cardErrFailed: 'Đã xảy ra sự cố khi kiểm tra {provider}. Hãy kiểm tra lại.',
   actionInstall: 'Cài đặt',
@@ -170,4 +172,17 @@ export const vi = {
   browserPageDoneBody: 'Bạn có thể đóng thẻ này và quay lại ứng dụng.',
   browserPageFailedTitle: 'Không kết nối được',
   browserPageFailedBody: 'Hãy quay lại ứng dụng và thử lại.',
+  cardOff: 'Đã tắt trong ứng dụng này',
+  offNote:
+    'Ứng dụng này không chạy chương trình {provider} và cũng không kiểm tra trạng thái của nó. Đăng nhập {provider} trên máy tính này và việc dùng nó trong terminal vẫn giữ nguyên.',
+  offElsewhereNote: 'Bạn có thể dùng lại trong Cài đặt → AI.',
+  offSwitchNote:
+    '"Không dùng trong ứng dụng này" giữ nguyên đăng nhập {provider} trên máy tính này và chỉ dừng trong ứng dụng này. Đăng xuất áp dụng cho cả máy tính.',
+  actionTurnOff: 'Không dùng trong ứng dụng này',
+  actionTurnOn: 'Dùng lại',
+  connectOffTitle: '{provider} đang tắt trong ứng dụng này',
+  connectOffBody: 'Nhấn "Dùng lại" trên thẻ {provider} trong Cài đặt → AI, hoặc chọn AI khác.',
+  errOffInApp:
+    '{provider} đang tắt trong ứng dụng này nên không có gì được chạy. Bạn có thể dùng lại trong Cài đặt → AI.',
+  guideBadgeOff: 'Đã tắt',
 } satisfies Record<keyof typeof zh, string>

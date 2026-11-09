@@ -66,6 +66,7 @@ import {
   type AgentLogEntry,
   type AgentLogState,
 } from './agent-log'
+import { agentStartErrorView, runErrorKey } from './start-error'
 
 const PROVIDER_LABEL: Record<AgentProvider, AgentStringKey> = {
   'claude-code': 'providerClaude',
@@ -85,6 +86,7 @@ const CONNECTION_NOTE: Partial<Record<AgentConnection, AgentStringKey>> = {
   unavailable: 'connUnavailable',
   'metered-accepted': 'connMetered',
   blocked: 'providerBlocked',
+  off: 'connOff',
 }
 const ACTION_LABEL: Record<
   Exclude<AgentActionView['kind'], 'web-search' | 'web-fetch' | 'mcp-tool'>,
@@ -111,25 +113,6 @@ const STATUS_LABEL: Record<'running' | 'done' | 'failed' | 'denied', AgentString
   done: 'toolDone',
   failed: 'toolFailed',
   denied: 'toolDenied',
-}
-const START_ERROR: Record<string, AgentStringKey> = {
-  'bad-folder': 'errBadFolder',
-  'not-connected': 'errNotConnected',
-  'not-accepted': 'errNotAccepted',
-  'provider-blocked': 'providerBlocked',
-}
-const RUN_ERROR: Record<string, AgentStringKey> = {
-  'unsafe-tools': 'errUnsafeTools',
-  'sandbox-unavailable': 'errSandboxUnavailable',
-  'rate-limit': 'errRateLimit',
-  'signed-out': 'errSignedOut',
-  'metered-not-accepted': 'errMetered',
-  'needs-update': 'errNeedsUpdate',
-  'not-installed': 'errNotInstalled',
-}
-
-function runErrorKey(kind: string | undefined): AgentStringKey {
-  return (kind && RUN_ERROR[kind]) || 'errGeneric'
 }
 
 /** The app's own tools that only read (`read_sheet`, `open_documents`, …), as either program names them */
@@ -170,7 +153,7 @@ export function AgentWindow() {
   const [init, setInit] = useState<AgentInit | null>(null)
   const [prefs, setPrefs] = useState<AgentPrefs | null>(null)
   const [folder, setFolder] = useState('')
-  const [startError, setStartError] = useState<AgentStringKey | null>(null)
+  const [startError, setStartError] = useState<ReturnType<typeof agentStartErrorView> | null>(null)
   const [starting, setStarting] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [log, setLog] = useState<AgentLogState>(EMPTY_AGENT_LOG)
@@ -273,6 +256,12 @@ export function AgentWindow() {
     textareaRef: inputRef,
   })
 
+  // a program turned off or on in Settings while the window is open shows as such at once
+  useEffect(
+    () => api.onStatusesChanged(() => void api.getInit().then((value) => setInit(value))),
+    [api],
+  )
+
   // the connection check may still be running when the window opens; ask again until it settles
   const checking = init ? Object.values(init.connections).includes('checking') : false
   useEffect(() => {
@@ -354,7 +343,14 @@ export function AgentWindow() {
     const result = await api.start({ provider: prefs.provider, mode: prefs.mode, folder })
     setStarting(false)
     if (!result.ok) {
-      setStartError(START_ERROR[result.reason] ?? runErrorKey(result.kind))
+      setStartError(agentStartErrorView(result.failure))
+      // the main process refuses a program turned off since the window last looked as not
+      // connected: look again, so the choice and the message say it is off in this app
+      if (result.failure.reason === 'not-connected') {
+        const fresh = await api.getInit()
+        setInit(fresh)
+        if (fresh.connections[prefs.provider] === 'off') setStartError({ key: 'errOffInApp' })
+      }
       return
     }
     sessionRef.current = result.sessionId
@@ -891,7 +887,8 @@ export function AgentWindow() {
 
         {startError ? (
           <div className="agent-error" role="alert">
-            {t(startError)}
+            {t(startError.key)}
+            {startError.code ? <div>{t('errCode', { code: startError.code })}</div> : null}
           </div>
         ) : null}
       </div>

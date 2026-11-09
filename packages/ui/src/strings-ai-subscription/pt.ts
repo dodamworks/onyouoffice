@@ -18,6 +18,8 @@ export const pt = {
   cardErrNeedsUpdatePath: 'Arquivo que este aplicativo executa:',
   cardErrNeedsUpdateWindows:
     'Atualizar o {provider} dentro do WSL (Ubuntu) ou em outra pasta não altera este arquivo. Execute {command} no Windows PowerShell.',
+  claudeDesktopNote:
+    'O aplicativo de desktop do Claude não é o Claude Code, que é o que este aplicativo executa. O Claude Code é um programa separado usado no terminal, então instalar ou atualizar o aplicativo de desktop não o altera.',
   cardErrTimeout: 'O programa {provider} não respondeu a tempo. Verifique novamente em instantes.',
   cardErrFailed: 'Algo deu errado ao verificar {provider}. Verifique novamente.',
   actionInstall: 'Instalar',
@@ -172,4 +174,18 @@ export const pt = {
   browserPageDoneBody: 'Você pode fechar esta aba e voltar ao aplicativo.',
   browserPageFailedTitle: 'A conexão não foi concluída',
   browserPageFailedBody: 'Volte ao aplicativo e tente novamente.',
+  cardOff: 'Desativado neste aplicativo',
+  offNote:
+    'Este aplicativo não executa o programa {provider} nem verifica o estado dele. O login do {provider} neste PC e o uso no terminal continuam como estão.',
+  offElsewhereNote: 'Você pode voltar a usá-lo em Configurações → IA.',
+  offSwitchNote:
+    '“Não usar neste aplicativo” mantém o login do {provider} neste PC e só para este aplicativo. Sair vale para o PC inteiro.',
+  actionTurnOff: 'Não usar neste aplicativo',
+  actionTurnOn: 'Usar novamente',
+  connectOffTitle: '{provider} está desativado neste aplicativo',
+  connectOffBody:
+    'Clique em “Usar novamente” no cartão do {provider} em Configurações → IA ou escolha outra IA.',
+  errOffInApp:
+    'O {provider} está desativado neste aplicativo, então nada foi executado. Você pode voltar a usá-lo em Configurações → IA.',
+  guideBadgeOff: 'Desativado',
 } satisfies Record<keyof typeof zh, string>

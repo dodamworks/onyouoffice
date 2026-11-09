@@ -17,6 +17,8 @@ export const en = {
   cardErrNeedsUpdatePath: 'The file this app runs:',
   cardErrNeedsUpdateWindows:
     'Updating {provider} inside WSL (Ubuntu) or in another folder does not change this file. Run {command} in Windows PowerShell.',
+  claudeDesktopNote:
+    'The Claude desktop app is not Claude Code, which this app runs. Claude Code is a separate program used in a terminal, so installing or updating the desktop app does not change it.',
   cardErrTimeout: 'The {provider} program did not answer in time. Check again in a moment.',
   cardErrFailed: 'Something went wrong while checking {provider}. Check again.',
   actionInstall: 'Install',
@@ -167,4 +169,18 @@ export const en = {
   browserPageDoneBody: 'You can close this tab and go back to the app.',
   browserPageFailedTitle: 'The connection was not made',
   browserPageFailedBody: 'Go back to the app and try again.',
+  cardOff: 'Off in this app',
+  offNote:
+    'This app neither runs the {provider} program nor checks on it. The {provider} sign-in on this PC, and its use in a terminal, stay as they are.',
+  offElsewhereNote: 'You can turn it back on in Settings → AI.',
+  offSwitchNote:
+    '"Don\'t use in this app" keeps the {provider} sign-in on this PC and stops only this app. Sign out applies to the whole PC.',
+  actionTurnOff: "Don't use in this app",
+  actionTurnOn: 'Use again',
+  connectOffTitle: '{provider} is turned off in this app',
+  connectOffBody:
+    'Press "Use again" on the {provider} card in Settings → AI, or choose another AI.',
+  errOffInApp:
+    '{provider} is turned off in this app, so nothing was run. You can turn it back on in Settings → AI.',
+  guideBadgeOff: 'Off',
 } satisfies Record<keyof typeof zh, string>

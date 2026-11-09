@@ -192,20 +192,23 @@ paragraph-property and slide-background matching. Preserve each engine's
 the unchanged-save and edited-save contracts; no new public package export or
 engine dependency is needed for these internal adaptations.
 
-## November 8 maintenance source
+## November maintenance source
 
-Onyou 1.0.1 incorporates compatible source changes through IeumOffice
-[`02e266758445f307ae0417227a11046a9c9cdaeb`](https://github.com/pblsketch/openoffice/commit/02e266758445f307ae0417227a11046a9c9cdaeb),
-following the previously accepted source
+The Onyou 1.0.1 candidate incorporates compatible changes through IeumOffice
+[v0.12.12](https://github.com/pblsketch/ieumoffice/releases/tag/v0.12.12),
+commit [`9bd6ccffb2ae2b79a13bb89fbf631a3b8fc81c36`](https://github.com/pblsketch/ieumoffice/commit/9bd6ccffb2ae2b79a13bb89fbf631a3b8fc81c36).
+The previous Onyou release used upstream
 `4a34c6124ca7787c860e9ebb1350bbc73872b69c`.
-The separately observed upstream public release remains `v0.12.11`.
 Onyou version numbers follow its own release sequence.
 
 The update includes HWP/HWPX PDF export and paragraph-format inspection,
 merged-table and character-navigation corrections, PDF link selection and font
 preservation, resizable slide notes and configurable AI slide fonts, CSV decoding,
 spreadsheet style and sheet-name preservation, and CLI argument and text-encoding
-corrections. Original engines, authorship and license notices remain intact.
+corrections. The candidate also adds FreeMind/Freeplane import, PDF-to-HWP
+conversion, PDF job provider selection, and Markdown diagram improvements.
+The HWP engine uses upstream's rhwp 0.9.0 integration. Original authorship and
+license notices remain intact.
 
 Onyou branding, nickname, document order, project controls, storage and installed
 identifiers, download destinations and existing document-input work bounds are

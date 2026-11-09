@@ -18,6 +18,8 @@ export const nl = {
   cardErrNeedsUpdatePath: 'Bestand dat deze app uitvoert:',
   cardErrNeedsUpdateWindows:
     'Als je {provider} in WSL (Ubuntu) of in een andere map bijwerkt, verandert dit bestand niet. Voer {command} uit in Windows PowerShell.',
+  claudeDesktopNote:
+    'De Claude-desktopapp is niet Claude Code, dat deze app uitvoert. Claude Code is een apart programma voor de terminal, dus de desktopapp installeren of bijwerken verandert het niet.',
   cardErrTimeout:
     'Het programma {provider} heeft niet op tijd gereageerd. Controleer het zo dadelijk opnieuw.',
   cardErrFailed: 'Er ging iets mis bij het controleren van {provider}. Controleer het opnieuw.',
@@ -173,4 +175,18 @@ export const nl = {
   browserPageDoneBody: 'Je kunt dit tabblad sluiten en teruggaan naar de app.',
   browserPageFailedTitle: 'De verbinding is niet gelukt',
   browserPageFailedBody: 'Ga terug naar de app en probeer het opnieuw.',
+  cardOff: 'Uit in deze app',
+  offNote:
+    'Deze app start het programma {provider} niet en controleert de status niet. De aanmelding van {provider} op deze pc en het gebruik in een terminal blijven zoals ze zijn.',
+  offElsewhereNote: 'Je kunt het weer gebruiken via Instellingen → AI.',
+  offSwitchNote:
+    '"Niet gebruiken in deze app" laat de aanmelding van {provider} op deze pc staan en stopt alleen deze app. Afmelden geldt voor de hele pc.',
+  actionTurnOff: 'Niet gebruiken in deze app',
+  actionTurnOn: 'Weer gebruiken',
+  connectOffTitle: '{provider} staat uit in deze app',
+  connectOffBody:
+    'Klik op "Weer gebruiken" bij {provider} in Instellingen → AI, of kies een andere AI.',
+  errOffInApp:
+    '{provider} staat uit in deze app, dus er is niets uitgevoerd. Je kunt het weer gebruiken via Instellingen → AI.',
+  guideBadgeOff: 'Uit',
 } satisfies Record<keyof typeof zh, string>

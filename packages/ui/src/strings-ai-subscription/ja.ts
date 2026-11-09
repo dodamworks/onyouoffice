@@ -18,6 +18,8 @@ export const ja = {
   cardErrNeedsUpdatePath: 'このアプリが実行するファイル:',
   cardErrNeedsUpdateWindows:
     'WSL（Ubuntu）や別のフォルダーにある {provider} を更新しても、このファイルは変わりません。Windows PowerShell で {command} を実行してください。',
+  claudeDesktopNote:
+    'Claude デスクトップアプリは、このアプリが実行する Claude Code ではありません。Claude Code はターミナルで使う別のプログラムなので、デスクトップアプリをインストールまたは更新しても変わりません。',
   cardErrTimeout:
     '{provider} のプログラムから時間内に応答がありませんでした。しばらくしてから、もう一度確認してください。',
   cardErrFailed: '{provider} の確認中に問題が発生しました。もう一度確認してください。',
@@ -171,4 +173,18 @@ export const ja = {
   browserPageDoneBody: 'このタブを閉じてアプリに戻ってください。',
   browserPageFailedTitle: '接続できませんでした',
   browserPageFailedBody: 'アプリに戻ってもう一度お試しください。',
+  cardOff: 'このアプリではオフ',
+  offNote:
+    'このアプリは {provider} のプログラムを実行せず、状態の確認もしません。この PC の {provider} のサインインと、ターミナルでの利用はそのままです。',
+  offElsewhereNote: '設定 → AI で再び使えるようにできます。',
+  offSwitchNote:
+    '「このアプリでは使わない」は、この PC の {provider} のサインインをそのままにして、このアプリでだけ止めます。ログアウトは PC 全体に適用されます。',
+  actionTurnOff: 'このアプリでは使わない',
+  actionTurnOn: '再び使う',
+  connectOffTitle: '{provider} はこのアプリではオフになっています',
+  connectOffBody:
+    '設定 → AI の {provider} のカードで「再び使う」を押すか、別の AI を選んでください。',
+  errOffInApp:
+    '{provider} はこのアプリでオフになっているため、実行しませんでした。設定 → AI で再び使えるようにできます。',
+  guideBadgeOff: 'オフ',
 } satisfies Record<keyof typeof zh, string>

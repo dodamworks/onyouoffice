@@ -18,6 +18,8 @@ export const ms = {
   cardErrNeedsUpdatePath: 'Fail yang dijalankan oleh aplikasi ini:',
   cardErrNeedsUpdateWindows:
     'Mengemas kini {provider} di dalam WSL (Ubuntu) atau dalam folder lain tidak mengubah fail ini. Jalankan {command} dalam Windows PowerShell.',
+  claudeDesktopNote:
+    'Aplikasi desktop Claude bukan Claude Code yang dijalankan oleh aplikasi ini. Claude Code ialah program berasingan yang digunakan dalam terminal, jadi memasang atau mengemas kini aplikasi desktop tidak mengubahnya.',
   cardErrTimeout:
     'Program {provider} tidak menjawab dalam masa yang ditetapkan. Semak semula sebentar lagi.',
   cardErrFailed: 'Masalah berlaku semasa menyemak {provider}. Semak semula.',
@@ -172,4 +174,17 @@ export const ms = {
   browserPageDoneBody: 'Anda boleh menutup tab ini dan kembali ke aplikasi.',
   browserPageFailedTitle: 'Sambungan tidak berjaya',
   browserPageFailedBody: 'Kembali ke aplikasi dan cuba lagi.',
+  cardOff: 'Dimatikan dalam aplikasi ini',
+  offNote:
+    'Aplikasi ini tidak menjalankan program {provider} dan tidak menyemak statusnya. Log masuk {provider} pada PC ini dan penggunaannya dalam terminal kekal seperti biasa.',
+  offElsewhereNote: 'Anda boleh menggunakannya semula di Tetapan → AI.',
+  offSwitchNote:
+    '"Jangan guna dalam aplikasi ini" mengekalkan log masuk {provider} pada PC ini dan hanya menghentikan aplikasi ini. Log keluar terpakai pada seluruh PC.',
+  actionTurnOff: 'Jangan guna dalam aplikasi ini',
+  actionTurnOn: 'Guna semula',
+  connectOffTitle: '{provider} dimatikan dalam aplikasi ini',
+  connectOffBody: 'Tekan "Guna semula" pada kad {provider} di Tetapan → AI, atau pilih AI lain.',
+  errOffInApp:
+    '{provider} dimatikan dalam aplikasi ini, jadi tiada apa yang dijalankan. Anda boleh menggunakannya semula di Tetapan → AI.',
+  guideBadgeOff: 'Dimatikan',
 } satisfies Record<keyof typeof zh, string>
