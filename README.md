@@ -6,7 +6,12 @@
 
 <h1 align="center">Onyou Office</h1>
 
-<p align="center"><strong>An AI agent office, built for you.</strong></p>
+<p align="center"><strong>Onyou Office is a free, open-source desktop app for editing documents, spreadsheets, and presentations, with optional AI assistance.</strong></p>
+
+<p align="center">
+  <strong><a href="https://github.com/dodamworks/onyouoffice/releases/latest">Download Onyou Office</a></strong><br>
+  Windows x64 · macOS Apple Silicon and Intel (beta) · Linux x64 (beta)
+</p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
@@ -14,14 +19,10 @@
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
 </p>
 
-Start with a document. Ask AI for a first draft, a clearer paragraph or an answer
-from your files. Keep reading and editing in the same workspace.
-
-Onyou Office is a free, open-source desktop office with AI agents alongside your
-editors. Connect the AI service you choose, or work without AI.
+Draft and revise in the editor with your chosen AI service, or work without AI.
+Open and edit Word, Excel, PowerPoint, and Hangul (HWP/HWPX) files in one workspace.
 
 <p align="center">
-  <a href="https://github.com/dodamworks/onyouoffice/releases/latest">Download</a> ·
   <a href="#get-started">Get started</a> ·
   <a href="https://github.com/dodamworks/onyouoffice/issues">Report a bug</a> ·
   <a href="CONTRIBUTING.md">Contribute</a>
@@ -76,7 +77,7 @@ editors. Connect the AI service you choose, or work without AI.
 
 Download installers from [Releases](https://github.com/dodamworks/onyouoffice/releases/latest): **Windows x64**,
 **macOS Apple Silicon / Intel (beta)** and **Linux x64 (beta)**.
-Updates are installed manually for this first release.
+Updates are installed manually.
 
 To build from source, install Node.js 24, npm, Rust (`cargo`) and your platform's native build tools.
 
