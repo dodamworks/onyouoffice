@@ -52,8 +52,6 @@ editors. Connect the AI service you choose, or work without AI.
 
 [![AI mind map creation and editing](docs/readme/demos/mindmap.gif)](docs/readme/demos/mindmap.mp4)
 
-_10-second demos of the real app. Playback is sped up and waiting time is removed._
-
 ## One workspace for your documents
 
 - **Write and edit:** documents, spreadsheets, presentations and Hangul (HWP/HWPX).
