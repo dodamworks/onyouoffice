@@ -28,6 +28,10 @@ export type {
   AiProviderSelection,
   AiReadUrlSettings,
   AiRunErrorKind,
+  AiSubscriptionCliId,
+  AiSubscriptionLoginFailure,
+  AiSubscriptionLoginFailureReason,
+  AiSubscriptionLoginFailureStep,
   AiSubscriptionLoginMethod,
   AiSubscriptionSigningIn,
   AiSubscriptionModel,
@@ -46,6 +50,7 @@ export {
   providerSelectionOf,
   selectAiProvider,
   subscriptionConnection,
+  subscriptionOffIn,
   subscriptionStateOf,
 } from './provider-selection'
 export type { AiNotConnectedReason, AiProviderChoice } from './provider-selection'
@@ -98,10 +103,13 @@ export {
   checkingSubscriptionStatus,
   checkingSubscriptionStatuses,
   isSubscriptionProviderId,
+  offSubscriptionStatus,
   subscriptionLaunchResultOf,
   subscriptionMeteredResultOf,
+  subscriptionOffResultOf,
   subscriptionNeedsUpdate,
   subscriptionStatusErrorKind,
+  subscriptionLoginFailureOf,
   subscriptionStatusMapOf,
 } from './subscription/contract'
 export type {
@@ -111,6 +119,8 @@ export type {
   SubscriptionLaunchResult,
   SubscriptionMeteredRequest,
   SubscriptionMeteredResult,
+  SubscriptionOffRequest,
+  SubscriptionOffResult,
   SubscriptionProviderRequest,
   SubscriptionRecheckRequest,
   SubscriptionStatusErrorKind,
@@ -132,6 +142,8 @@ export {
   resolveAiSettings,
   subscriptionNoticeVersionOf,
   withMigratedSubscriptionNoticeVersion,
+  withStoredSubscriptionOff,
+  withStoredUnknownFields,
 } from './providers'
 export {
   activeCustomEndpoint,

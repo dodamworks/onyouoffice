@@ -46,6 +46,7 @@ import type {
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
 import { normalizeNickname } from '../shared/nickname'
+import { normalizeSlidesAiFonts } from '@genoffice/ui/slides-ai-fonts'
 import { RECOVERY_LIST_CHANNELS } from '../shared/recovery-list-api'
 import type {
   RecoveryListApi,
@@ -90,6 +91,7 @@ import type { SubscriptionApi } from '../shared/subscription-api'
 import {
   SHELL_SUBSCRIPTION_CHANNELS,
   subscriptionLaunchResultOf,
+  subscriptionOffResultOf,
   subscriptionStatusMapOf,
 } from '../shared/subscription-api'
 
@@ -387,7 +389,8 @@ const homeApi: HomeApi = {
     await ipcRenderer.invoke(HOME_CHANNELS.setAutoUpdateCheck, on)
   },
   onOpenSettings(handler) {
-    const listener = (_event: IpcRendererEvent, target: { section: string }) => handler(target)
+    const listener = (_event: IpcRendererEvent, target: { section: string; field?: string }) =>
+      handler(target)
     ipcRenderer.on(HOME_CHANNELS.openSettings, listener)
     return () => ipcRenderer.removeListener(HOME_CHANNELS.openSettings, listener)
   },
@@ -563,6 +566,17 @@ const homeApi: HomeApi = {
     const result: unknown = await ipcRenderer.invoke(HOME_CHANNELS.setHwpDefaultFormat, format)
     return (result === 'hwpx' ? 'hwpx' : 'hwp') satisfies HwpDefaultFormat
   },
+  async getSlidesAiFonts() {
+    return normalizeSlidesAiFonts(await ipcRenderer.invoke(HOME_CHANNELS.getSlidesAiFonts), '')
+  },
+  async setSlidesAiFonts(fonts) {
+    return normalizeSlidesAiFonts(
+      await ipcRenderer.invoke(HOME_CHANNELS.setSlidesAiFonts, fonts),
+      '',
+    )
+  },
+  // the app-wide handler the docs module registers (the editors' font pickers use it too)
+  fontFamilyInfo: (families) => ipcRenderer.invoke('app:font-family-info', families),
   onThemeChanged(handler) {
     const listener = (_event: Electron.IpcRendererEvent, theme: unknown) => {
       if (theme === 'light' || theme === 'dark' || theme === 'system') handler(theme)
@@ -863,6 +877,11 @@ const subscriptionApi: SubscriptionApi = {
     })
     const raw = (result ?? {}) as { ok?: unknown; statuses?: unknown }
     return { ok: raw.ok === true, statuses: subscriptionStatusMapOf(raw.statuses) }
+  },
+  async setSubscriptionOff(provider, off) {
+    return subscriptionOffResultOf(
+      await ipcRenderer.invoke(SUBSCRIPTION_IPC_CHANNELS.off, { provider, off }),
+    )
   },
   async codexImageAvailable() {
     return (await ipcRenderer.invoke(SUBSCRIPTION_IPC_CHANNELS.codexImage)) === true

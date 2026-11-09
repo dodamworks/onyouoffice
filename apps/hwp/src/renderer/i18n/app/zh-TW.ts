@@ -4,6 +4,7 @@ export const zhTW = {
   loading: '正在開啟文件…',
   editorFailed: '編輯器無法啟動。',
   openFailed: '無法開啟文件。',
+  pdfImportCancelled: '已取消 PDF 匯入。可以關閉此分頁。',
   saveFailed: '無法儲存文件。',
   fileSave: '儲存',
   fileSaveAs: '另存新檔…',
@@ -96,6 +97,7 @@ export const zhTW = {
   aiToolPageSetup: '檢視了版面設定',
   aiToolPageSetupSet: '變更了版面設定',
   aiToolFormatting: '檢視了文件格式',
+  aiToolParagraphLooks: '已檢視各段落格式 · {count} 段',
   aiToolFormattingOf: '檢視了 {name} 的格式',
   aiToolFormatLook: '變更了 {count} 個相同外觀段落的格式',
   aiLookParagraphs: '{count} 個相同外觀段落',
@@ -142,6 +144,7 @@ export const zhTW = {
   aiToolMergeCells: '表 {table} · 合併儲存格',
   aiToolSplitCell: '表 {table} · 分割儲存格',
   aiToolTables: '已檢視表格 · {count} 個',
+  aiToolLayout: '已檢查儲存格溢出 · {count} 個',
   aiToolReadTable: '已讀取表格 {table}',
   aiToolFillCells: '表格 {table} · 已填寫 {count} 個儲存格',
   aiToolCheckBoxes: '表格 {table} · 已勾選 {count} 個選框',
@@ -251,4 +254,10 @@ export const zhTW = {
   easyWordsLabel: '用簡單的話解釋',
   easyWordsPrompt:
     '請用中文解釋下面選取的文字，讓需要淺顯文字的人也能看懂。用日常詞語和短句，不要漏掉任何事實、數字或條件。不要修改文件。\n\n選取的文字：\n{text}',
+  charCountTotal: '字數 {total}',
+  charCountSelected: '字數 {selected} / {total}',
+  charCountHint:
+    '字數含空格。不含空格：全文 {totalNoSpace}。 與文件資訊相同，不計頁首、頁尾、註腳和章節附註。',
+  charCountHintSelected:
+    '含空格：選取 {selected} / 全文 {total}。不含空格：選取 {selectedNoSpace} / 全文 {totalNoSpace}。 與文件資訊相同，不計頁首、頁尾、註腳和章節附註。',
 } satisfies Record<keyof typeof zh, string>

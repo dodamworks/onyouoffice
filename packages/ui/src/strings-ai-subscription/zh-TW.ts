@@ -17,6 +17,8 @@ export const zhTW = {
   cardErrNeedsUpdatePath: '此應用程式執行的檔案：',
   cardErrNeedsUpdateWindows:
     '在 WSL（Ubuntu）或其他資料夾中更新 {provider} 不會變更此檔案。請在 Windows PowerShell 中執行 {command}。',
+  claudeDesktopNote:
+    'Claude 桌面應用程式不是本應用程式執行的 Claude Code。Claude Code 是在終端機中使用的獨立程式，安裝或更新桌面應用程式不會改變它。',
   cardErrTimeout: '{provider} 程式未及時回應。請稍後重新檢查。',
   cardErrFailed: '檢查 {provider} 時發生問題。請重新檢查。',
   actionInstall: '安裝',
@@ -133,6 +135,14 @@ export const zhTW = {
     '瀏覽器中會開啟 ChatGPT 登入頁面。登入後允許此應用程式使用你的 ChatGPT 方案，就會自動完成連線。',
   chatgptLoginUnfinishedNote:
     '登入沒有完成。再按一次會重新開始。必須允許使用你的 ChatGPT 方案才能連線。',
+  chatgptLoginNoPlanNote:
+    '已登入 ChatGPT，但這個應用程式沒有取得使用方案的許可。請再按一次，並在授權頁面允許使用方案。如果已經允許，可能是 OpenAI 沒有對這個帳號（例如公司或學校管理的帳號）或這個方案開放這項使用。這時可以改用 Codex 程式連線。',
+  chatgptLoginDeniedNote:
+    '已在瀏覽器中登入，但 OpenAI 沒有接受這個連線，或傳回的回應沒有通過檢查。請確認這台電腦的日期和時間正確，再按一次重新開始。',
+  chatgptLoginNetworkNote:
+    '無法連上 OpenAI 或沒能開啟瀏覽器，登入沒有完成。請檢查網路連線（包括公司網路、VPN 或 Proxy），再按一次。',
+  chatgptLoginNotAllowedNote:
+    '你沒有允許這個應用程式使用 ChatGPT 方案，或瀏覽器帶著登入失敗回來了。請再按一次，登入後在授權頁面允許。',
   chatgptSigningInNote:
     '請在開啟的瀏覽器中用 ChatGPT 帳戶登入，並允許此應用程式使用你的方案。完成後會自動連線。',
   chatgptPlanNote:
@@ -142,4 +152,16 @@ export const zhTW = {
   browserPageDoneBody: '可以關閉此分頁並返回應用程式。',
   browserPageFailedTitle: '未能完成連線',
   browserPageFailedBody: '請返回應用程式後再試一次。',
+  cardOff: '已在本應用程式中關閉',
+  offNote:
+    '本應用程式不會執行 {provider} 程式，也不會檢查它的狀態。這台電腦上 {provider} 的登入以及在終端機中的使用都維持不變。',
+  offElsewhereNote: '可以在「設定 → AI」中重新使用。',
+  offSwitchNote:
+    '「不在本應用程式中使用」會保留這台電腦上 {provider} 的登入，只在本應用程式中停用。登出則對整台電腦生效。',
+  actionTurnOff: '不在本應用程式中使用',
+  actionTurnOn: '重新使用',
+  connectOffTitle: '{provider} 已在本應用程式中關閉',
+  connectOffBody: '在「設定 → AI」的 {provider} 卡片上按「重新使用」，或選擇其他 AI。',
+  errOffInApp: '{provider} 已在本應用程式中關閉，因此沒有執行。可以在「設定 → AI」中重新使用。',
+  guideBadgeOff: '已關閉',
 } satisfies Record<keyof typeof zh, string>

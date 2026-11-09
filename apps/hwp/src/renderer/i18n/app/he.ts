@@ -4,6 +4,7 @@ export const he = {
   loading: 'פותח את המסמך…',
   editorFailed: 'לא ניתן היה להפעיל את העורך.',
   openFailed: 'לא ניתן היה לפתוח את המסמך.',
+  pdfImportCancelled: 'ייבוא ה-PDF בוטל. אפשר לסגור את הכרטיסייה הזו.',
   saveFailed: 'לא ניתן היה לשמור את המסמך.',
   fileSave: 'שמירה',
   fileSaveAs: 'שמירה בשם…',
@@ -98,6 +99,7 @@ export const he = {
   aiToolPageSetup: 'נבדקה הגדרת העמוד',
   aiToolPageSetupSet: 'שונתה הגדרת העמוד',
   aiToolFormatting: 'העיצוב נבדק',
+  aiToolParagraphLooks: 'עיצוב כל פסקה נבדק · {count}',
   aiToolFormattingOf: 'נבדק העיצוב של {name}',
   aiToolFormatLook: 'עוצבו {count} פסקאות במראה אחד',
   aiLookParagraphs: '{count} פסקאות במראה אחד',
@@ -144,6 +146,7 @@ export const he = {
   aiToolMergeCells: 'טבלה {table} · מיזוג תאים',
   aiToolSplitCell: 'טבלה {table} · פיצול תא',
   aiToolTables: 'הטבלאות נבדקו · {count}',
+  aiToolLayout: 'נבדקה גלישת תאים · {count}',
   aiToolReadTable: 'טבלה {table} נקראה',
   aiToolFillCells: 'טבלה {table} · מולאו {count} תאים',
   aiToolCheckBoxes: 'טבלה {table} · סומנו {count} תיבות',
@@ -257,4 +260,10 @@ export const he = {
   easyWordsLabel: 'הסבר במילים פשוטות',
   easyWordsPrompt:
     'הסבר בעברית את הטקסט שנבחר למטה כך שגם מי שזקוק לטקסט קל לקריאה יבין אותו. השתמש במילים יומיומיות ובמשפטים קצרים, ואל תשמיט אף עובדה, מספר או תנאי. אל תשנה את המסמך.\n\nהטקסט שנבחר:\n{text}',
+  charCountTotal: 'תווים {total}',
+  charCountSelected: 'תווים {selected} / {total}',
+  charCountHint:
+    'התווים נספרים כולל רווחים. ללא רווחים: כל המסמך {totalNoSpace}. כמו במידע על המסמך, כותרות עליונות ותחתונות, הערות שוליים והערות סיום אינן נספרות.',
+  charCountHintSelected:
+    'כולל רווחים: נבחר {selected} / כל המסמך {total}. ללא רווחים: נבחר {selectedNoSpace} / כל המסמך {totalNoSpace}. כמו במידע על המסמך, כותרות עליונות ותחתונות, הערות שוליים והערות סיום אינן נספרות.',
 } satisfies Record<keyof typeof zh, string>

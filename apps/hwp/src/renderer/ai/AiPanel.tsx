@@ -15,7 +15,7 @@ import {
   type AiScopeQuoteData,
   AiSubscriptionUsageLine,
   AiToolsUnsupportedNotice,
-  AiTypingIndicator,
+  AiReplyProgress,
   Markdown,
   aiPanelWidthAtPointer,
   aiSubscriptionText,
@@ -1411,11 +1411,7 @@ export function AiPanel({
               key={i}
               className={`ai-msg ai-msg-assistant${entry.isError && !blocked ? ' ai-msg-error' : ''}${entry.streaming ? ' ai-msg-streaming' : ''}`}
             >
-              {!entry.text && entry.streaming ? (
-                <span className="ai-typing-row">
-                  <AiTypingIndicator label={hasTools ? t('aiWorking') : t('aiThinking')} />
-                </span>
-              ) : blocked ? (
+              {blocked ? (
                 <AiBlockedNotice
                   kind={blocked.kind}
                   provider={blocked.provider}
@@ -1448,6 +1444,7 @@ export function AiPanel({
                   onShow={(place) => void bridgeRef.current.reveal(place).catch(() => {})}
                 />
               )}
+              <AiReplyProgress reply={entry} thinking={t('aiThinking')} working={t('aiWorking')} />
               {showToolbar && (
                 <div className="ai-msg-toolbar">
                   <button

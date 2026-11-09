@@ -4,6 +4,7 @@ export const ar = {
   loading: 'جارٍ فتح المستند…',
   editorFailed: 'تعذّر بدء المحرر.',
   openFailed: 'تعذّر فتح المستند.',
+  pdfImportCancelled: 'تم إلغاء استيراد PDF. يمكنك إغلاق علامة التبويب هذه.',
   saveFailed: 'تعذّر حفظ المستند.',
   fileSave: 'حفظ',
   fileSaveAs: 'حفظ باسم…',
@@ -99,6 +100,7 @@ export const ar = {
   aiToolPageSetup: 'تم التحقق من إعداد الصفحة',
   aiToolPageSetupSet: 'تم تغيير إعداد الصفحة',
   aiToolFormatting: 'تم التحقق من التنسيق',
+  aiToolParagraphLooks: 'تم فحص تنسيق كل فقرة · {count}',
   aiToolFormattingOf: 'تم التحقق من تنسيق {name}',
   aiToolFormatLook: 'تم تنسيق {count} فقرة بمظهر واحد',
   aiLookParagraphs: '{count} فقرة بمظهر واحد',
@@ -145,6 +147,7 @@ export const ar = {
   aiToolMergeCells: 'الجدول {table} · دمج الخلايا',
   aiToolSplitCell: 'الجدول {table} · تقسيم خلية',
   aiToolTables: 'تم فحص الجداول · {count}',
+  aiToolLayout: 'تم فحص تجاوز الخلايا · {count}',
   aiToolReadTable: 'تمت قراءة الجدول {table}',
   aiToolFillCells: 'الجدول {table} · تم ملء {count} خلية',
   aiToolCheckBoxes: 'الجدول {table} · تم تحديد {count} مربع اختيار',
@@ -257,4 +260,10 @@ export const ar = {
   easyWordsLabel: 'اشرح بكلمات بسيطة',
   easyWordsPrompt:
     'اشرح النص المحدد أدناه باللغة العربية بحيث يفهمه أيضًا من يحتاج إلى نص سهل القراءة. استخدم كلمات يومية وجملًا قصيرة، ولا تُسقط أي حقيقة أو رقم أو شرط. لا تعدّل المستند.\n\nالنص المحدد:\n{text}',
+  charCountTotal: 'الأحرف {total}',
+  charCountSelected: 'الأحرف {selected} / {total}',
+  charCountHint:
+    'تُعدّ الأحرف مع المسافات. بدون مسافات: المستند كله {totalNoSpace}. كما في معلومات المستند، لا تُحسب الرؤوس والتذييلات والحواشي السفلية والختامية.',
+  charCountHintSelected:
+    'مع المسافات: المحدد {selected} / المستند كله {total}. بدون مسافات: المحدد {selectedNoSpace} / المستند كله {totalNoSpace}. كما في معلومات المستند، لا تُحسب الرؤوس والتذييلات والحواشي السفلية والختامية.',
 } satisfies Record<keyof typeof zh, string>

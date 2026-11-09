@@ -4,6 +4,7 @@ export const fr = {
   loading: 'Ouverture du document…',
   editorFailed: 'L’éditeur n’a pas pu démarrer.',
   openFailed: 'Le document n’a pas pu être ouvert.',
+  pdfImportCancelled: "L'importation du PDF a été annulée. Vous pouvez fermer cet onglet.",
   saveFailed: 'Le document n’a pas pu être enregistré.',
   fileSave: 'Enregistrer',
   fileSaveAs: 'Enregistrer sous…',
@@ -104,6 +105,7 @@ export const fr = {
   aiToolPageSetup: 'Mise en page vérifiée',
   aiToolPageSetupSet: 'Mise en page modifiée',
   aiToolFormatting: 'Mise en forme vérifiée',
+  aiToolParagraphLooks: 'Mise en forme des paragraphes vérifiée · {count}',
   aiToolFormattingOf: 'Mise en forme de {name} vérifiée',
   aiToolFormatLook: '{count} paragraphes d’un même aspect mis en forme',
   aiLookParagraphs: '{count} paragraphes d’un même aspect',
@@ -150,6 +152,7 @@ export const fr = {
   aiToolMergeCells: 'Tableau {table} · cellules fusionnées',
   aiToolSplitCell: 'Tableau {table} · cellule divisée',
   aiToolTables: 'Tableaux vérifiés · {count}',
+  aiToolLayout: 'Débordement des cellules vérifié · {count}',
   aiToolReadTable: 'Tableau {table} lu',
   aiToolFillCells: 'Tableau {table} · {count} cellule(s) remplie(s)',
   aiToolCheckBoxes: 'Tableau {table} · {count} case(s) cochée(s)',
@@ -271,4 +274,10 @@ export const fr = {
   easyWordsLabel: 'Expliquer simplement',
   easyWordsPrompt:
     "Explique en français le texte sélectionné ci-dessous pour qu'une personne qui a besoin d'un texte facile à lire puisse le comprendre. Utilise des mots de tous les jours et des phrases courtes, et n'oublie aucun fait, chiffre ou condition. Ne modifie pas le document.\n\nTexte sélectionné :\n{text}",
+  charCountTotal: 'Caractères {total}',
+  charCountSelected: 'Caractères {selected} / {total}',
+  charCountHint:
+    'Les caractères sont comptés espaces compris. Sans les espaces : document entier {totalNoSpace}. Comme dans les informations du document, les en-têtes, pieds de page, notes de bas de page et notes de fin ne sont pas comptés.',
+  charCountHintSelected:
+    'Espaces compris : sélection {selected} / document entier {total}. Sans les espaces : sélection {selectedNoSpace} / document entier {totalNoSpace}. Comme dans les informations du document, les en-têtes, pieds de page, notes de bas de page et notes de fin ne sont pas comptés.',
 } satisfies Record<keyof typeof zh, string>

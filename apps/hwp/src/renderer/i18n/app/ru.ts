@@ -4,6 +4,7 @@ export const ru = {
   loading: 'Открытие документа…',
   editorFailed: 'Не удалось запустить редактор.',
   openFailed: 'Не удалось открыть документ.',
+  pdfImportCancelled: 'Импорт PDF отменён. Эту вкладку можно закрыть.',
   saveFailed: 'Не удалось сохранить документ.',
   fileSave: 'Сохранить',
   fileSaveAs: 'Сохранить как…',
@@ -102,6 +103,7 @@ export const ru = {
   aiToolPageSetup: 'Проверены параметры страницы',
   aiToolPageSetupSet: 'Изменены параметры страницы',
   aiToolFormatting: 'Проверено оформление',
+  aiToolParagraphLooks: 'Оформление абзацев проверено · {count}',
   aiToolFormattingOf: 'Проверено оформление: {name}',
   aiToolFormatLook: 'Оформлено абзацев одного вида: {count}',
   aiLookParagraphs: 'Абзацев одного вида: {count}',
@@ -148,6 +150,7 @@ export const ru = {
   aiToolMergeCells: 'Таблица {table} · объединение ячеек',
   aiToolSplitCell: 'Таблица {table} · разделение ячейки',
   aiToolTables: 'Таблицы проверены · {count}',
+  aiToolLayout: 'Переполнение ячеек проверено · {count}',
   aiToolReadTable: 'Таблица {table} прочитана',
   aiToolFillCells: 'Таблица {table} · заполнено ячеек: {count}',
   aiToolCheckBoxes: 'Таблица {table} · отмечено флажков: {count}',
@@ -264,4 +267,10 @@ export const ru = {
   easyWordsLabel: 'Объяснить простыми словами',
   easyWordsPrompt:
     'Объясни на русском языке выделенный ниже текст так, чтобы его понял и тот, кому нужен простой для чтения текст. Используй повседневные слова и короткие предложения и не упускай ни одного факта, числа или условия. Не изменяй документ.\n\nВыделенный текст:\n{text}',
+  charCountTotal: 'Символы {total}',
+  charCountSelected: 'Символы {selected} / {total}',
+  charCountHint:
+    'Символы считаются с пробелами. Без пробелов: весь документ {totalNoSpace}. Как и в сведениях о документе, колонтитулы, сноски и концевые сноски не учитываются.',
+  charCountHintSelected:
+    'С пробелами: выделено {selected} / весь документ {total}. Без пробелов: выделено {selectedNoSpace} / весь документ {totalNoSpace}. Как и в сведениях о документе, колонтитулы, сноски и концевые сноски не учитываются.',
 } satisfies Record<keyof typeof zh, string>

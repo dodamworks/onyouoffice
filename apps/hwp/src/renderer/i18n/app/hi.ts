@@ -4,6 +4,7 @@ export const hi = {
   loading: 'दस्तावेज़ खोला जा रहा है…',
   editorFailed: 'संपादक शुरू नहीं हो सका।',
   openFailed: 'दस्तावेज़ खोला नहीं जा सका।',
+  pdfImportCancelled: 'PDF आयात रद्द कर दिया गया। आप यह टैब बंद कर सकते हैं।',
   saveFailed: 'दस्तावेज़ सहेजा नहीं जा सका।',
   fileSave: 'सहेजें',
   fileSaveAs: 'इस रूप में सहेजें…',
@@ -101,6 +102,7 @@ export const hi = {
   aiToolPageSetup: 'पृष्ठ सेटअप देखा',
   aiToolPageSetupSet: 'पृष्ठ सेटअप बदला',
   aiToolFormatting: 'फ़ॉर्मैटिंग देखी',
+  aiToolParagraphLooks: 'हर अनुच्छेद का स्वरूप जाँचा गया · {count}',
   aiToolFormattingOf: '{name} की फ़ॉर्मैटिंग देखी',
   aiToolFormatLook: 'एक जैसे दिखने वाले {count} अनुच्छेद फ़ॉर्मैट किए',
   aiLookParagraphs: 'एक जैसे दिखने वाले {count} अनुच्छेद',
@@ -147,6 +149,7 @@ export const hi = {
   aiToolMergeCells: 'तालिका {table} · सेल मिलाए',
   aiToolSplitCell: 'तालिका {table} · सेल बाँटा',
   aiToolTables: 'तालिकाएँ देखी गईं · {count}',
+  aiToolLayout: 'सेल से बाहर जाता पाठ जाँचा गया · {count}',
   aiToolReadTable: 'तालिका {table} पढ़ी गई',
   aiToolFillCells: 'तालिका {table} · {count} सेल भरे गए',
   aiToolCheckBoxes: 'तालिका {table} · {count} बॉक्स चुने गए',
@@ -264,4 +267,10 @@ export const hi = {
   easyWordsLabel: 'आसान शब्दों में समझाएँ',
   easyWordsPrompt:
     'नीचे चुने गए पाठ को हिंदी में ऐसे समझाएँ कि आसान पाठ की ज़रूरत वाला व्यक्ति भी उसे समझ सके। रोज़मर्रा के शब्दों और छोटे वाक्यों का प्रयोग करें, और कोई भी तथ्य, संख्या या शर्त न छोड़ें। दस्तावेज़ में बदलाव न करें।\n\nचुना गया पाठ:\n{text}',
+  charCountTotal: 'अक्षर {total}',
+  charCountSelected: 'अक्षर {selected} / {total}',
+  charCountHint:
+    'अक्षर रिक्त स्थान सहित गिने जाते हैं। रिक्त स्थान के बिना: पूरा दस्तावेज़ {totalNoSpace}। दस्तावेज़ जानकारी की तरह, हेडर, फ़ुटर, फ़ुटनोट और एंडनोट नहीं गिने जाते।',
+  charCountHintSelected:
+    'रिक्त स्थान सहित: चुने गए {selected} / पूरा दस्तावेज़ {total}। रिक्त स्थान के बिना: चुने गए {selectedNoSpace} / पूरा दस्तावेज़ {totalNoSpace}। दस्तावेज़ जानकारी की तरह, हेडर, फ़ुटर, फ़ुटनोट और एंडनोट नहीं गिने जाते।',
 } satisfies Record<keyof typeof zh, string>

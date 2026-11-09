@@ -106,3 +106,8 @@
 | [0104](0104-translation-style-rules.md)                       | 번역 지시문에 문체 규칙을 두고, 한국어는 문장 끝을 원문 성격에 맞춘다                                | 2026-11-03 |
 
 | [0107](0107-hwp-engine-on-rhwp-devel.md) | Pin the HWP engine and studio to the accepted rhwp development revision. | 2026-11-04 |
+| [0108](0108-easy-explanation.md) | 번역에 두 번째 방식 "쉬운 풀이"를 두고, 워드와 한글에는 오른쪽 클릭 "쉬운 말로 풀기"를 둔다 | 2026-11-03 |
+| [0110](0110-save-as-all-formats.md) | "다른 이름으로 저장"에서 편집기가 내보낼 수 있는 형식을 모두 고르고, 내보내기 형식은 사본만 쓴다 | 2026-11-05 |
+| [0111](0111-xls-import-print-settings.md) | 옛 형식 `.xls`를 열 때 셀 서식과 인쇄 설정을 함께 옮긴다 | 2026-11-05 |
+| [0112](0112-hancom-styles-alternate-content.md) | 한셀 `styles.xml`의 호환 블록을 그대로 두고 한 항목으로 센다(원본보다 먼저) | 2026-11-06 |
+| [0115](0115-slides-ai-default-fonts.md) | AI로 만드는 슬라이드의 기본 글꼴(고딕·명조·제목만 명조)을 사용자가 설정에서 고른다 | 2026-11-08 |

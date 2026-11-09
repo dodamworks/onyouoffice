@@ -17,6 +17,8 @@ export const he = {
   cardErrNeedsUpdatePath: 'הקובץ שהאפליקציה הזו מריצה:',
   cardErrNeedsUpdateWindows:
     'עדכון {provider} בתוך WSL (Ubuntu) או בתיקייה אחרת לא משנה את הקובץ הזה. הריצו {command} ב-Windows PowerShell.',
+  claudeDesktopNote:
+    'אפליקציית Claude לשולחן העבודה אינה Claude Code, שהאפליקציה הזו מפעילה. Claude Code היא תוכנה נפרדת שמשתמשים בה בטרמינל, ולכן התקנה או עדכון של אפליקציית שולחן העבודה לא משנים אותה.',
   cardErrTimeout: 'התוכנה {provider} לא ענתה בזמן. בדקו שוב בעוד רגע.',
   cardErrFailed: 'משהו השתבש במהלך הבדיקה של {provider}. בדקו שוב.',
   actionInstall: 'התקנה',
@@ -144,6 +146,14 @@ export const he = {
     'דף כניסה של ChatGPT ייפתח בדפדפן. היכנסו ואשרו לאפליקציה הזו להשתמש בתוכנית ה-ChatGPT שלכם; החיבור יושלם מעצמו.',
   chatgptLoginUnfinishedNote:
     'הכניסה לא הושלמה. לחצו שוב כדי להתחיל מחדש. כדי להתחבר צריך לאשר שימוש בתוכנית ה-ChatGPT שלכם.',
+  chatgptLoginNoPlanNote:
+    'נכנסתם ל-ChatGPT, אבל האפליקציה הזו לא קיבלה הרשאה להשתמש בתוכנית שלכם. לחצו שוב ואשרו שימוש בתוכנית בדף ההרשאה. אם כבר אישרתם, ייתכן ש-OpenAI לא מציעה שימוש כזה לחשבון שלכם (למשל חשבון שמנוהל על ידי חברה או בית ספר) או לתוכנית שלכם. במקרה כזה אפשר להתחבר דרך התוכנה Codex.',
+  chatgptLoginDeniedNote:
+    'נכנסתם בדפדפן, אבל OpenAI לא קיבלה את החיבור הזה, או שלא ניתן היה לאמת את התשובה שלה. ודאו שהתאריך והשעה במחשב הזה נכונים, ולחצו שוב כדי להתחיל מחדש.',
+  chatgptLoginNetworkNote:
+    'לא ניתן היה להשלים את הכניסה: לא הייתה גישה ל-OpenAI או שלא נפתח דפדפן. בדקו את החיבור לאינטרנט (כולל רשת ארגונית, VPN או פרוקסי) ולחצו שוב.',
+  chatgptLoginNotAllowedNote:
+    'לא אישרתם לאפליקציה הזו להשתמש בתוכנית ה-ChatGPT שלכם, או שהדפדפן חזר מהכניסה עם כישלון. לחצו שוב, היכנסו ואשרו בדף ההרשאה.',
   chatgptSigningInNote:
     'היכנסו עם חשבון ChatGPT בדפדפן שנפתח ואשרו לאפליקציה הזו להשתמש בתוכנית שלכם. החיבור יושלם מעצמו.',
   chatgptPlanNote:
@@ -153,4 +163,17 @@ export const he = {
   browserPageDoneBody: 'אפשר לסגור את הכרטיסייה הזו ולחזור לאפליקציה.',
   browserPageFailedTitle: 'החיבור לא הושלם',
   browserPageFailedBody: 'חזרו לאפליקציה ונסו שוב.',
+  cardOff: 'כבוי באפליקציה הזו',
+  offNote:
+    'האפליקציה לא מפעילה את התוכנה {provider} ולא בודקת את מצבה. ההתחברות ל-{provider} במחשב הזה והשימוש בה בטרמינל נשארים כפי שהם.',
+  offElsewhereNote: 'אפשר להשתמש בו שוב בהגדרות → AI.',
+  offSwitchNote:
+    '"לא להשתמש באפליקציה הזו" משאיר את ההתחברות ל-{provider} במחשב הזה ועוצר רק את האפליקציה. יציאה מהחשבון חלה על המחשב כולו.',
+  actionTurnOff: 'לא להשתמש באפליקציה הזו',
+  actionTurnOn: 'להשתמש שוב',
+  connectOffTitle: '{provider} כבוי באפליקציה הזו',
+  connectOffBody: 'יש ללחוץ על "להשתמש שוב" בכרטיס {provider} בהגדרות → AI, או לבחור AI אחר.',
+  errOffInApp:
+    '{provider} כבוי באפליקציה הזו, ולכן שום דבר לא הופעל. אפשר להשתמש בו שוב בהגדרות → AI.',
+  guideBadgeOff: 'כבוי',
 } satisfies Record<keyof typeof zh, string>

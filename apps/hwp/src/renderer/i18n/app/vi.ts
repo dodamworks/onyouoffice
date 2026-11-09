@@ -4,6 +4,7 @@ export const vi = {
   loading: 'Đang mở tài liệu…',
   editorFailed: 'Không thể khởi động trình soạn thảo.',
   openFailed: 'Không thể mở tài liệu.',
+  pdfImportCancelled: 'Đã hủy nhập PDF. Bạn có thể đóng thẻ này.',
   saveFailed: 'Không thể lưu tài liệu.',
   fileSave: 'Lưu',
   fileSaveAs: 'Lưu dưới dạng…',
@@ -100,6 +101,7 @@ export const vi = {
   aiToolPageSetup: 'Đã xem thiết lập trang',
   aiToolPageSetupSet: 'Đã đổi thiết lập trang',
   aiToolFormatting: 'Đã xem định dạng',
+  aiToolParagraphLooks: 'Đã kiểm tra định dạng từng đoạn · {count}',
   aiToolFormattingOf: 'Đã xem định dạng của {name}',
   aiToolFormatLook: 'Đã định dạng {count} đoạn cùng kiểu',
   aiLookParagraphs: '{count} đoạn cùng kiểu',
@@ -146,6 +148,7 @@ export const vi = {
   aiToolMergeCells: 'Bảng {table} · gộp ô',
   aiToolSplitCell: 'Bảng {table} · tách ô',
   aiToolTables: 'Đã kiểm tra bảng · {count}',
+  aiToolLayout: 'Đã kiểm tra ô bị tràn · {count}',
   aiToolReadTable: 'Đã đọc bảng {table}',
   aiToolFillCells: 'Bảng {table} · đã điền {count} ô',
   aiToolCheckBoxes: 'Bảng {table} · đã đánh dấu {count} ô',
@@ -261,4 +264,10 @@ export const vi = {
   easyWordsLabel: 'Giải thích bằng lời dễ hiểu',
   easyWordsPrompt:
     'Hãy giải thích đoạn văn được chọn dưới đây bằng tiếng Việt để cả người cần văn bản dễ đọc cũng hiểu được. Dùng từ ngữ hằng ngày và câu ngắn, không bỏ sót bất kỳ sự kiện, con số hay điều kiện nào. Không sửa tài liệu.\n\nĐoạn văn được chọn:\n{text}',
+  charCountTotal: 'Ký tự {total}',
+  charCountSelected: 'Ký tự {selected} / {total}',
+  charCountHint:
+    'Ký tự được đếm kể cả khoảng trắng. Không tính khoảng trắng: toàn bộ tài liệu {totalNoSpace}. Giống như Thông tin tài liệu, đầu trang, chân trang, chú thích cuối trang và chú thích cuối tài liệu không được tính.',
+  charCountHintSelected:
+    'Kể cả khoảng trắng: đã chọn {selected} / toàn bộ tài liệu {total}. Không tính khoảng trắng: đã chọn {selectedNoSpace} / toàn bộ tài liệu {totalNoSpace}. Giống như Thông tin tài liệu, đầu trang, chân trang, chú thích cuối trang và chú thích cuối tài liệu không được tính.',
 } satisfies Record<keyof typeof zh, string>

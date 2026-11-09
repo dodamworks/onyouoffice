@@ -4,6 +4,7 @@ export const de = {
   loading: 'Dokument wird geöffnet…',
   editorFailed: 'Der Editor konnte nicht gestartet werden.',
   openFailed: 'Das Dokument konnte nicht geöffnet werden.',
+  pdfImportCancelled: 'Der PDF-Import wurde abgebrochen. Sie können diesen Tab schließen.',
   saveFailed: 'Das Dokument konnte nicht gespeichert werden.',
   fileSave: 'Speichern',
   fileSaveAs: 'Speichern unter…',
@@ -105,6 +106,7 @@ export const de = {
   aiToolPageSetup: 'Seiteneinrichtung geprüft',
   aiToolPageSetupSet: 'Seiteneinrichtung geändert',
   aiToolFormatting: 'Formatierung geprüft',
+  aiToolParagraphLooks: 'Aussehen der Absätze geprüft · {count}',
   aiToolFormattingOf: 'Formatierung von {name} geprüft',
   aiToolFormatLook: '{count} Absätze eines Aussehens formatiert',
   aiLookParagraphs: '{count} Absätze eines Aussehens',
@@ -151,6 +153,7 @@ export const de = {
   aiToolMergeCells: 'Tabelle {table} · Zellen verbunden',
   aiToolSplitCell: 'Tabelle {table} · Zelle geteilt',
   aiToolTables: 'Tabellen geprüft · {count}',
+  aiToolLayout: 'Zellenüberlauf geprüft · {count}',
   aiToolReadTable: 'Tabelle {table} gelesen',
   aiToolFillCells: 'Tabelle {table} · {count} Zelle(n) ausgefüllt',
   aiToolCheckBoxes: 'Tabelle {table} · {count} Kästchen angekreuzt',
@@ -272,4 +275,10 @@ export const de = {
   easyWordsLabel: 'In einfachen Worten erklären',
   easyWordsPrompt:
     'Erkläre den unten ausgewählten Text auf Deutsch so, dass ihn auch jemand versteht, der leicht verständliche Texte braucht. Verwende Alltagswörter und kurze Sätze und lass keine Tatsache, Zahl oder Bedingung weg. Ändere das Dokument nicht.\n\nAusgewählter Text:\n{text}',
+  charCountTotal: 'Zeichen {total}',
+  charCountSelected: 'Zeichen {selected} / {total}',
+  charCountHint:
+    'Gezählt werden Zeichen mit Leerzeichen. Ohne Leerzeichen: gesamtes Dokument {totalNoSpace}. Wie in den Dokumentinformationen werden Kopf- und Fußzeilen, Fuß- und Endnoten nicht gezählt.',
+  charCountHintSelected:
+    'Mit Leerzeichen: markiert {selected} / gesamtes Dokument {total}. Ohne Leerzeichen: markiert {selectedNoSpace} / gesamtes Dokument {totalNoSpace}. Wie in den Dokumentinformationen werden Kopf- und Fußzeilen, Fuß- und Endnoten nicht gezählt.',
 } satisfies Record<keyof typeof zh, string>

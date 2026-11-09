@@ -4,6 +4,7 @@ export const ms = {
   loading: 'Membuka dokumen…',
   editorFailed: 'Editor tidak dapat dimulakan.',
   openFailed: 'Dokumen tidak dapat dibuka.',
+  pdfImportCancelled: 'Import PDF dibatalkan. Anda boleh menutup tab ini.',
   saveFailed: 'Dokumen tidak dapat disimpan.',
   fileSave: 'Simpan',
   fileSaveAs: 'Simpan Sebagai…',
@@ -101,6 +102,7 @@ export const ms = {
   aiToolPageSetup: 'Menyemak persediaan halaman',
   aiToolPageSetupSet: 'Menukar persediaan halaman',
   aiToolFormatting: 'Menyemak format',
+  aiToolParagraphLooks: 'Format setiap perenggan disemak · {count}',
   aiToolFormattingOf: 'Menyemak format {name}',
   aiToolFormatLook: 'Memformat {count} perenggan yang serupa rupanya',
   aiLookParagraphs: '{count} perenggan yang serupa rupanya',
@@ -147,6 +149,7 @@ export const ms = {
   aiToolMergeCells: 'Jadual {table} · sel digabungkan',
   aiToolSplitCell: 'Jadual {table} · sel dipecah',
   aiToolTables: 'Jadual disemak · {count}',
+  aiToolLayout: 'Sel yang melimpah disemak · {count}',
   aiToolReadTable: 'Jadual {table} dibaca',
   aiToolFillCells: 'Jadual {table} · {count} sel diisi',
   aiToolCheckBoxes: 'Jadual {table} · {count} kotak ditanda',
@@ -264,4 +267,10 @@ export const ms = {
   easyWordsLabel: 'Terangkan dengan kata mudah',
   easyWordsPrompt:
     'Terangkan teks yang dipilih di bawah dalam bahasa Melayu supaya orang yang memerlukan teks mudah dibaca juga boleh memahaminya. Gunakan perkataan harian dan ayat pendek, dan jangan tinggalkan sebarang fakta, nombor atau syarat. Jangan ubah dokumen.\n\nTeks yang dipilih:\n{text}',
+  charCountTotal: 'Aksara {total}',
+  charCountSelected: 'Aksara {selected} / {total}',
+  charCountHint:
+    'Aksara dikira termasuk ruang. Tanpa ruang: seluruh dokumen {totalNoSpace}. Seperti dalam Maklumat Dokumen, pengepala, pengaki, nota kaki dan nota akhir tidak dikira.',
+  charCountHintSelected:
+    'Dengan ruang: dipilih {selected} / seluruh dokumen {total}. Tanpa ruang: dipilih {selectedNoSpace} / seluruh dokumen {totalNoSpace}. Seperti dalam Maklumat Dokumen, pengepala, pengaki, nota kaki dan nota akhir tidak dikira.',
 } satisfies Record<keyof typeof zh, string>

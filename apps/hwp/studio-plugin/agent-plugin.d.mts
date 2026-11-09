@@ -267,6 +267,42 @@ export type AgentFormatParagraphResult =
   | AgentPlaceRefusal
   | AgentNoSuchStyle
 
+/** A table cell whose text does not fit where it is drawn, as checkLayout lists it. */
+export interface AgentLayoutOverflow {
+  /** the table, as listTables numbers tables */
+  table: number
+  /** 1-based row and column of the cell */
+  row: number
+  col: number
+  /** 1-based page the cut-off text is on */
+  page: number
+  /** how far the text runs past the cell's bottom edge, in mm */
+  over: number
+  /** the cell's text, cut short */
+  text: string
+}
+
+/** A place in the tables to measure from: 1-based table (as listTables) and row. */
+export interface AgentLayoutPlace {
+  table: number
+  row: number
+}
+
+export interface AgentLayoutCheck {
+  /** tables in the document, as listTables numbers them */
+  tables: number
+  /** where this call started */
+  from: AgentLayoutPlace
+  /** the cells from `from` up to `next` (or the end) whose text does not fit */
+  cells: AgentLayoutOverflow[]
+  /** cells this call measured */
+  measured: number
+  /** where the next call goes on; absent when the last table was measured */
+  next?: AgentLayoutPlace
+  /** the document is large: tables inside cells may be missing from the end of the list */
+  partial?: boolean
+}
+
 /** One table of the document, as listTables lists it. */
 export interface AgentTableSummary {
   /** 1-based position among all tables in reading order; what readTable and fillCells take */
@@ -531,6 +567,20 @@ export interface AgentMissingFontsDetail {
   fonts: string[]
 }
 
+/** The words of the status bar's character count (showCharCount), in the app's language. */
+export interface AgentCharCountLabels {
+  /** shown while nothing is selected; {total} is the document's characters */
+  total: string
+  /** shown while a block is selected; {selected} and {total} */
+  selected: string
+  /** the tooltip without a block; {total} and {totalNoSpace} (without blanks) */
+  hint: string
+  /** the tooltip with a block; {selected}, {total}, {selectedNoSpace} and {totalNoSpace} */
+  hintSelected: string
+  /** the language the numbers are written in (BCP 47) */
+  locale?: string
+}
+
 /** The words the editor marks a font that is not on this PC with. */
 export interface AgentMissingFontLabels {
   /** shown beside the font's entry in the font menu */
@@ -702,6 +752,26 @@ export interface AgentFormatting {
   otherLooks?: number
   /** the document has more paragraphs than were looked at */
   truncated?: true
+}
+
+/** One body paragraph and its look, as paragraphLooks lists them. */
+export interface AgentParagraphLook {
+  /** 1-based position among the body paragraphs that hold text */
+  paragraph: number
+  /** the look id, as formatting lists looks */
+  look: string
+  /** the start of its text */
+  text: string
+}
+
+export interface AgentParagraphLooks {
+  /** body paragraphs that hold text; `paragraphs` holds one part of them */
+  count: number
+  paragraphs: AgentParagraphLook[]
+  /** where the next call goes on, when more paragraphs follow */
+  next?: number
+  /** the document is very long: the last paragraphs were not looked at */
+  truncated?: boolean
 }
 
 export type AgentFormattingResult =
@@ -1034,6 +1104,8 @@ export interface AgentPluginSurface {
     options?: AgentChangeOptions,
   ): AgentFormatParagraphResult
   listTables(): AgentTableList
+  /** the table cells whose text is cut off on the page; reads only */
+  checkLayout(fromTable?: number | null, fromRow?: number | null): AgentLayoutCheck
   readTable(table: number, fromRow?: number | null): AgentReadTableResult
   fillCells(
     table: number,
@@ -1065,6 +1137,7 @@ export interface AgentPluginSurface {
   installDocumentCheckMenu(label: string): { ok: boolean }
   installFileMenu(labels: Record<AgentFileCommand, string>): { ok: boolean }
   installEasyWords(label: string): { ok: boolean }
+  showCharCount(labels: AgentCharCountLabels): { ok: boolean }
   watchMissingFonts(labels: AgentMissingFontLabels): { ok: boolean }
   reveal(place: AgentPlace): { ok: boolean }
   selection(): AgentSelectionResult
@@ -1117,6 +1190,8 @@ export interface AgentPluginSurface {
   ): AgentPageSetupResult
   /** this document's formatting, or that of another HWP / HWPX document given as base64 */
   formatting(base64?: string | null): AgentFormattingResult
+  /** the body paragraphs in reading order with their look ids, from the `from`-th (1-based) */
+  paragraphLooks(from?: number | null): AgentParagraphLooks
   formatLook(
     look: string,
     format: AgentParagraphFormat,

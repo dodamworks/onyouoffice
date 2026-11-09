@@ -283,6 +283,9 @@ export function AiSection({
               onManageUsage={
                 provider === 'chatgpt' ? () => connection.openInstallHelp('chatgpt') : undefined
               }
+              // this app alone, and undone with one press: nothing to confirm (decision 0114)
+              onTurnOff={(id) => connection.setOff(id, true)}
+              onTurnOn={(id) => connection.setOff(id, false)}
             />
             {accountAsked?.provider === provider && (
               <div
@@ -311,9 +314,11 @@ export function AiSection({
                 </div>
               </div>
             )}
-            {failed[provider] === 'logout' ? (
+            {failed[provider] === 'logout' || failed[provider] === 'switch' ? (
               <div className="set-sub-failed" role="alert" data-provider={provider}>
-                <span>{t('setSubLogoutFailed')}</span>
+                <span>
+                  {t(failed[provider] === 'logout' ? 'setSubLogoutFailed' : 'setSubSwitchFailed')}
+                </span>
               </div>
             ) : (
               failed[provider] && (

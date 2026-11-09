@@ -13,6 +13,14 @@
  * Everything returned crosses to the app renderer by structured clone.
  */
 
+import {
+  charCountItem,
+  charCountText,
+  charCounter,
+  checkCharCountLabels,
+  countCollector,
+} from './char-count.mjs'
+import { documentStats, engineChars, engineLength, engineSlice } from './document-info.mjs'
 import { installDialogTheme } from './dialog-theme.mjs'
 import { missingFonts, setMissingFontLabels, whenPcFontsSettled } from './pc-fonts.mjs'
 
@@ -50,6 +58,16 @@ const MAX_TABLE_CELLS = 400
 const MAX_REPORTED_CHARS = 200
 /** Tables one listTables call lists. */
 const MAX_LISTED_TABLES = 200
+/** Cells that do not fit one checkLayout call lists before it stops at the end of a row. */
+const MAX_LISTED_OVERFLOWS = 100
+/** How long one checkLayout call measures for; it is called again from where it stopped. */
+const LAYOUT_BATCH_MS = 2000
+/**
+ * How much of its height a line may pass the cell's bottom edge and still read whole: the
+ * line box is the font's em box, and the glyphs stop short of its bottom, so text that only
+ * touches the border (a tight row) is not reported.
+ */
+const LAYOUT_SLACK_LINE = 0.2
 /** Cells one readTable call returns; a longer table is read on from the row it names. */
 const MAX_READ_CELLS = 600
 /** Characters of one cell handed back by readTable. */
@@ -110,6 +128,8 @@ const FILE_MENU = [
 ]
 /** The command that reads what the user has selected in the editor. */
 const SELECTION_COMMAND = 'ext:ieum-selection'
+/** The command that counts the document's characters for the status bar (char-count.mjs). */
+const COUNT_COMMAND = 'ext:ieum-count-characters'
 /**
  * The command behind the editor's right-click item 쉬운 말로 풀기, which the
  * studio-easy-words-context-menu patch puts into the body and table cell menus. The menu
@@ -747,7 +767,8 @@ function runCollector() {
       segments.push({
         ...box.place(k, end - start),
         offset: start,
-        text: box.text(k, length).slice(start, end),
+        // the engine's offsets count characters, not a JavaScript string's units
+        text: engineSlice(box.text(k, length), start, end),
       })
     },
     tooLong: () => segments.length > MAX_SELECTED_RUNS || chars > MAX_SELECTED_CHARS,
@@ -810,6 +831,82 @@ function collectBody(doc, tablesNow, start, end, out) {
 }
 
 /**
+ * The runs of what the selection command saw (`seen`) put into `out` (runCollector, or the
+ * status bar's count): a block of cells, a stretch inside one cell, from cell to cell of one
+ * table, or across the body, where an end inside a table takes that table whole.
+ * { ok: true, inTable }, or { ok: false, reason: 'unsupported' } for a place without an address.
+ */
+function gatherSelection(doc, seen, out) {
+  let known = null
+  const tablesNow = () => (known ??= tablesOf(doc).tables)
+  const tableAt = (sec, para, path) => {
+    const key = tableKey(sec, para, path)
+    return tablesNow().findIndex((table) => tableKey(table.sec, table.para, table.path) === key)
+  }
+  /** the cells a block between two corners covers, a merged cell by any of its places */
+  const within = (range, skip) => (cell) =>
+    cell.row <= range.endRow &&
+    cell.row + cell.rowSpan - 1 >= range.startRow &&
+    cell.col <= range.endCol &&
+    cell.col + cell.colSpan - 1 >= range.startCol &&
+    !skip.has(`${cell.row},${cell.col}`)
+  let inTable = false
+  if (seen.block) {
+    const { table, range, excluded } = seen.block
+    const path =
+      Array.isArray(table.cellPath) && table.cellPath.length > 0
+        ? asCellPath(table.cellPath)
+        : [{ controlIndex: table.ci, cellIndex: 0, cellParaIndex: 0 }]
+    const index = tableAt(table.sec, table.ppi, path)
+    if (index < 0) return { ok: false, reason: 'unsupported' }
+    collectTable(doc, tablesNow(), index, out, within(range, new Set(excluded)))
+    inTable = true
+  } else {
+    const start = endOf(seen.start)
+    const end = endOf(seen.end)
+    if (!start || !end) return { ok: false, reason: 'unsupported' }
+    if (start.path && end.path && sameTable(start, end, true)) {
+      // inside one cell or text box: its paragraphs
+      const box = containerOf(doc, {
+        sec: start.sec,
+        para: start.para,
+        cellPath: start.path,
+      })
+      for (let k = start.k; k <= end.k; k++) {
+        out.add(box, k, k === start.k ? start.offset : 0, k === end.k ? end.offset : Infinity)
+      }
+      inTable = true
+    } else if (start.path && end.path && sameTable(start, end, false)) {
+      // from one cell to another of the same table: the block of cells between them
+      const index = tableAt(start.sec, start.para, start.path)
+      if (index < 0) return { ok: false, reason: 'unsupported' }
+      const grid = gridOf(doc, tablesNow()[index])
+      const a = grid[start.path[start.path.length - 1].cellIndex]
+      const b = grid[end.path[end.path.length - 1].cellIndex]
+      if (!a || !b) return { ok: false, reason: 'unsupported' }
+      const range = {
+        startRow: Math.min(a.row, b.row),
+        endRow: Math.max(a.row + a.rowSpan - 1, b.row + b.rowSpan - 1),
+        startCol: Math.min(a.col, b.col),
+        endCol: Math.max(a.col + a.colSpan - 1, b.col + b.colSpan - 1),
+      }
+      collectTable(doc, tablesNow(), index, out, within(range, new Set()))
+      inTable = true
+    } else {
+      // across the body: an end inside a table takes that table whole
+      collectBody(
+        doc,
+        tablesNow,
+        start.path ? { sec: start.sec, k: start.para, offset: 0 } : start,
+        end.path ? { sec: end.sec, k: end.para, offset: Infinity } : end,
+        out,
+      )
+    }
+  }
+  return { ok: true, inTable }
+}
+
+/**
  * Whether the runs are paragraphs of one stretch: in order in the body of a section or in
  * one cell (a paragraph without text between two of them has no run, and does not break
  * the stretch). Only such a selection can be rewritten into more or fewer paragraphs than
@@ -834,17 +931,22 @@ function isContiguous(segments) {
 
 const WORD_CHARACTER = /[\p{L}\p{N}]/u
 
-/** The word around an offset of a text: a run of letters and digits. Null on a blank or a mark. */
+/**
+ * The word around an offset of a text: a run of letters and digits. Null on a blank or a mark.
+ * The offset and the word's ends are the engine's, which count characters: an emoji or a Han
+ * character outside the basic plane (𠀀) is one there and two units in a JavaScript string.
+ */
 function wordAt(text, offset) {
-  let at = Math.min(offset, text.length - 1)
+  const chars = engineChars(text)
+  let at = Math.min(offset, chars.length - 1)
   if (at < 0) return null
   // a click behind the last letter of a word still means that word
-  if (!WORD_CHARACTER.test(text[at]) && at > 0 && WORD_CHARACTER.test(text[at - 1])) at -= 1
-  if (!WORD_CHARACTER.test(text[at])) return null
+  if (!WORD_CHARACTER.test(chars[at]) && at > 0 && WORD_CHARACTER.test(chars[at - 1])) at -= 1
+  if (!WORD_CHARACTER.test(chars[at])) return null
   let start = at
   let end = at + 1
-  while (start > 0 && WORD_CHARACTER.test(text[start - 1])) start -= 1
-  while (end < text.length && WORD_CHARACTER.test(text[end])) end += 1
+  while (start > 0 && WORD_CHARACTER.test(chars[start - 1])) start -= 1
+  while (end < chars.length && WORD_CHARACTER.test(chars[end])) end += 1
   return { start, end }
 }
 
@@ -984,7 +1086,8 @@ function selectWord(services, readText) {
 function selectParagraph(services, readText) {
   const place = caretParagraph(services, readText)
   if (!place || place.text.length === 0) return false
-  return selectIn(place, 0, place.text.length)
+  // to the paragraph's end in the engine's characters
+  return selectIn(place, 0, engineLength(place.text))
 }
 
 /**
@@ -1057,7 +1160,7 @@ function segmentsStand(doc, segments) {
     try {
       const { box, k } = segmentBox(doc, segment)
       const whole = box.text(k, box.length(k))
-      return whole.slice(segment.offset, segment.offset + segment.length) === segment.text
+      return engineSlice(whole, segment.offset, segment.offset + segment.length) === segment.text
     } catch {
       return false
     }
@@ -2212,6 +2315,8 @@ const MAX_LOOK_PARAGRAPHS = 6000
 const MAX_LISTED_LOOKS = 40
 const LOOK_SAMPLES = 2
 const LOOK_SAMPLE_CHARS = 60
+/** Body paragraphs one paragraphLooks call lists; the next call goes on from where it stopped. */
+const MAX_LISTED_PARAGRAPH_LOOKS = 200
 
 /** A short, stable name for a look: it stays the same while the paragraphs keep that look. */
 function lookIdOf(key) {
@@ -2355,6 +2460,35 @@ function formattingOf(doc) {
       samples: group.samples,
     })),
     ...(looks.length > MAX_LISTED_LOOKS ? { otherLooks: looks.length - MAX_LISTED_LOOKS } : {}),
+    ...(truncated ? { truncated: true } : {}),
+  }
+}
+
+/**
+ * The body paragraphs in reading order with the look each has (looksOf: the ids
+ * formattingOf lists), from the `from`-th (1-based) on: which paragraphs are formatted
+ * alike and which one stands apart, such as a heading indented unlike the others. The look
+ * itself (indents, alignment, spacing, font) is in formattingOf. Empty paragraphs are left
+ * out, as there. Reads only.
+ */
+function paragraphLooksOf(doc, from) {
+  const { looks, truncated } = looksOf(doc)
+  const rows = []
+  for (const group of looks) {
+    for (const place of group.places) rows.push({ ...place, look: group.id })
+  }
+  rows.sort((a, b) => a.sec - b.sec || a.para - b.para)
+  const start = Number.isInteger(from) && from > 1 ? Math.min(from - 1, rows.length) : 0
+  const listed = rows.slice(start, start + MAX_LISTED_PARAGRAPH_LOOKS).map((row, index) => ({
+    paragraph: start + index + 1,
+    look: row.look,
+    text: clip(squash(paragraphTextOf(doc, row.sec, row.para)), LOOK_SAMPLE_CHARS),
+  }))
+  const next = start + listed.length
+  return {
+    count: rows.length,
+    paragraphs: listed,
+    ...(next < rows.length ? { next: next + 1 } : {}),
     ...(truncated ? { truncated: true } : {}),
   }
 }
@@ -2886,6 +3020,183 @@ function tablesOf(doc) {
     }
   }
   return { tables, partial: lookups <= 0 }
+}
+
+/**
+ * The text lines of each table cell on page `page`, from one layout read of the page
+ * (getPageTextLayout): for every cell, keyed as `tableKey` + `/` + cell index, its runs of
+ * visible text as boxes in CSS px, each with the cell paragraph (`para`), the character it
+ * starts at (`start`) and its text, so that whose text a run draws can be checked.
+ */
+function cellLinesOn(doc, page) {
+  const lines = new Map()
+  let layout
+  try {
+    layout = parse(doc.getPageTextLayout(page))
+  } catch {
+    return lines
+  }
+  for (const run of Array.isArray(layout?.runs) ? layout.runs : []) {
+    const path = run.cellPath
+    if (!Array.isArray(path) || path.length === 0 || !(run.w > 0)) continue
+    // an empty paragraph is laid out as a blank run as wide as the cell: nothing to cut off
+    if (!/\S/.test(run.displayText ?? run.text ?? '')) continue
+    const last = path[path.length - 1]
+    const key = [
+      run.secIdx,
+      run.parentParaIdx,
+      ...path.slice(0, -1).map((e) => `${e.controlIndex}.${e.cellIndex}.${e.cellParaIndex}`),
+      last.controlIndex,
+      last.cellIndex,
+    ].join('/')
+    const box = {
+      x: run.x,
+      y: run.y,
+      h: run.h,
+      para: last.cellParaIndex,
+      start: run.charStart,
+      text: run.text,
+    }
+    const seen = lines.get(key)
+    if (seen) seen.push(box)
+    else lines.set(key, [box])
+  }
+  return lines
+}
+
+/**
+ * Whether `run` draws the text of the cell whose paragraphs are `paragraphs`: its text is
+ * the paragraph's from the character it starts at. The text layout of a page also holds the
+ * header's, the footer's and the master page's text, and their cells are addressed like the
+ * body's (the same paragraph, object and cell numbers), wherever on the page they stand. A
+ * run with no character of its own (a bullet) is not the cell's text.
+ */
+function drawsTextOf(run, paragraphs) {
+  if (!Number.isInteger(run.start) || typeof run.text !== 'string') return false
+  const paragraph = paragraphs[run.para]
+  if (typeof paragraph !== 'string') return false
+  return engineSlice(paragraph, run.start, run.start + engineLength(run.text)) === run.text
+}
+
+/**
+ * How far below the cell's bottom edge, in CSS px, the cell's lowest cut-off line of `runs`
+ * ends, or null when every line reads whole. Only the runs drawn in the cell's column that
+ * draw the cell's own text (`paragraphs()`, read only for a cell with a line past its edge)
+ * count, and a line passes the edge by more than LAYOUT_SLACK_LINE of its height to be cut
+ * off. The box must hold the start of one of those lines: the engine can hand back a master
+ * page's table for a body table's address, and the body cell's text then stands elsewhere.
+ */
+function overflowIn(runs, box, paragraphs) {
+  const edge = box.y + box.h
+  const own = (run) => drawsTextOf(run, paragraphs())
+  const inColumn = runs.filter((run) => run.x >= box.x - 1 && run.x < box.x + box.w)
+  const past = inColumn
+    .filter((run) => run.y + run.h - edge > run.h * LAYOUT_SLACK_LINE)
+    .sort((a, b) => b.y + b.h - (a.y + a.h))
+  const lowest = past.find(own)
+  if (!lowest) return null
+  if (!inColumn.some((run) => run.y >= box.y - 1 && run.y < edge && own(run))) return null
+  return lowest.y + lowest.h - edge
+}
+
+/**
+ * The table cells whose text does not fit, as the pages are laid out (checkLayout lays them
+ * out with the widths print and export use): a row keeps the height the file gives it, so a
+ * line drawn past the cell's bottom edge is cut off on the page and in print. The cells'
+ * boxes come from one read per table (getTableCellBboxesByPath) and their lines from one
+ * read per page (cellLinesOn); a cell that runs on to the next page is measured page by
+ * page. `over` is how far the text goes past the edge, in mm.
+ *
+ * Starts at table `fromTable`, row `fromRow` (1-based, as listTables and readTable number
+ * them) and goes on for about two seconds or until MAX_LISTED_OVERFLOWS cells are listed,
+ * always ending on a whole row; `next` names where the next call starts. Reads only.
+ */
+function overflowsOf(doc, fromTable, fromRow) {
+  const { tables, partial } = tablesOf(doc)
+  const start = Number.isInteger(fromTable) && fromTable >= 1 ? fromTable - 1 : 0
+  const firstRow = Number.isInteger(fromRow) && fromRow >= 1 ? fromRow - 1 : 0
+  const began = Date.now()
+  const pages = new Map()
+  const linesOn = (page) => {
+    if (!pages.has(page)) pages.set(page, cellLinesOn(doc, page))
+    return pages.get(page)
+  }
+  const toMm = (px) => Math.round(((px * 25.4) / 96) * 10) / 10
+  const cells = []
+  let measured = 0
+  let next = null
+  for (let index = start; index < tables.length && !next; index++) {
+    const table = tables[index]
+    let boxes
+    try {
+      boxes = parse(doc.getTableCellBboxesByPath(table.sec, table.para, JSON.stringify(table.path)))
+    } catch {
+      continue
+    }
+    if (!Array.isArray(boxes)) continue
+    // the boxes number cells as the layout does, which can differ from the document's own
+    // cell numbers (a table with a caption): the box's row and column name the cell
+    let grid
+    try {
+      grid = gridOf(doc, table)
+    } catch {
+      continue
+    }
+    const cellAtPlace = new Map(grid.map((g) => [`${g.row}/${g.col}`, g.cell]))
+    const key = tableKey(table.sec, table.para, table.path)
+    const texts = new Map()
+    const textOf = (cell) => {
+      if (!texts.has(cell)) texts.set(cell, paragraphsOf(cellBox(doc, table, cell)))
+      return texts.get(cell)
+    }
+    const rows = new Map()
+    for (const box of boxes) {
+      if (index === start && box.row < firstRow) continue
+      if (!rows.has(box.row)) rows.set(box.row, [])
+      rows.get(box.row).push(box)
+    }
+    for (const row of [...rows.keys()].sort((a, b) => a - b)) {
+      if (
+        measured > 0 &&
+        (cells.length >= MAX_LISTED_OVERFLOWS || Date.now() - began > LAYOUT_BATCH_MS)
+      ) {
+        next = { table: index + 1, row: row + 1 }
+        break
+      }
+      const listed = new Set()
+      const counted = new Set()
+      for (const box of rows.get(row)) {
+        const cell = cellAtPlace.get(`${box.row}/${box.col}`)
+        if (cell === undefined) continue
+        if (!counted.has(cell)) {
+          counted.add(cell)
+          measured += 1
+        }
+        if (listed.has(cell)) continue
+        const below = overflowIn(linesOn(box.pageIndex).get(`${key}/${cell}`) ?? [], box, () =>
+          textOf(cell),
+        )
+        if (below === null) continue
+        listed.add(cell)
+        cells.push({
+          table: index + 1,
+          row: box.row + 1,
+          col: box.col + 1,
+          page: box.pageIndex + 1,
+          over: toMm(below),
+          text: clip(textOf(cell).join(' ').trim(), PREVIEW_CHARS),
+        })
+      }
+    }
+  }
+  return {
+    tables: tables.length,
+    from: { table: start + 1, row: firstRow + 1 },
+    cells,
+    measured,
+    ...(next ? { next } : {}),
+    ...(partial ? { partial: true } : {}),
+  }
 }
 
 /**
@@ -3441,7 +3752,11 @@ function coveredCells(doc, table) {
   return covered
 }
 
-const clip = (text, max) => (text.length > max ? `${text.slice(0, max)}…` : text)
+/**
+ * A text cut to `max` characters with an ellipsis. Characters are the engine's (code points), so
+ * an emoji or a Han character outside the basic plane is never cut in half.
+ */
+const clip = (text, max) => (engineLength(text) > max ? `${engineSlice(text, 0, max)}…` : text)
 
 /**
  * The fields a form asks to be filled in: click-here fields and named table cells, in
@@ -3993,6 +4308,48 @@ function shiftMarks(marks, before, after, at) {
   })
 }
 
+/** What the studio tells a 'document-mutated' for that is no edit: a deferred layout finished. */
+const LAYOUT_ONLY_MUTATIONS = new Set(['input-handler-resumable-pagination'])
+
+/**
+ * Calls `fn` once for every edit of the document, whoever made it; answers the function that
+ * stops it. Everything in this plugin that follows the document listens here, not to one event:
+ * the studio tells of an edit as 'document-changed', but typing that redraws only its page
+ * (input-handler.ts afterPageLocalEdit) fires 'document-mutated' and 'document-page-invalidated'
+ * alone, and in a document of more than 30 pages no layout follows that would say it changed.
+ * Most edits fire both, the mutation first, in the same task: the 'document-changed' right after
+ * a mutation that was told is that same edit. The mutation a finished deferred layout fires is
+ * no edit (its 'document-changed' is told as before). `fn` runs while the event is told, so what
+ * it reads of the plugin's state (its own change running) is as it was then.
+ */
+function onDocumentEdit(host, fn) {
+  let told = false
+  const offMutated = host.events.on('document-mutated', (reason) => {
+    if (LAYOUT_ONLY_MUTATIONS.has(reason)) return
+    told = true
+    queueMicrotask(() => {
+      told = false
+    })
+    fn()
+  })
+  const offChanged = host.events.on('document-changed', () => {
+    if (told) {
+      told = false
+      return
+    }
+    fn()
+  })
+  return () => {
+    for (const off of [offMutated, offChanged]) {
+      try {
+        if (typeof off === 'function') off()
+      } catch {
+        // the host already took it off
+      }
+    }
+  }
+}
+
 /** Takes the plugin's double-click listener off the page again. */
 let stopListening = null
 /** A drag begun with a double click, kept on whole words (wordDrag); null when there is none. */
@@ -4007,6 +4364,8 @@ let stopMemoLock = null
 let stopMemoClipboard = null
 /** Closes the channel a copy of memo-bearing text is told on. */
 let stopMemoChannel = null
+/** Stops the status bar's character count (showCharCount). */
+let stopCharCount = null
 /** A redraw of the memo anchors after a change settles, and the probe for pasted memos. */
 let memoSettleTimer = null
 let memoProbeTimer = null
@@ -4043,6 +4402,8 @@ export const agentPlugin = {
     stopMemoClipboard = null
     if (stopMemoChannel) stopMemoChannel()
     stopMemoChannel = null
+    if (stopCharCount) stopCharCount()
+    stopCharCount = null
     if (memoSettleTimer) clearTimeout(memoSettleTimer)
     memoSettleTimer = null
     if (memoProbeTimer) clearTimeout(memoProbeTimer)
@@ -4280,10 +4641,12 @@ export const agentPlugin = {
             return { ok: false, reason: 'overlap' }
           }
           const text = box.text(start.k, length)
+          // the offsets are the engine's characters, not a JavaScript string's units
           const shown =
             from < to
-              ? text.slice(from, to)
-              : text.slice(
+              ? engineSlice(text, from, to)
+              : engineSlice(
+                  text,
                   Math.max(0, from - MEMO_CARET_CHARS),
                   Math.min(length, from + MEMO_CARET_CHARS),
                 )
@@ -4472,7 +4835,7 @@ export const agentPlugin = {
       }
     }
 
-    host.events.on('document-changed', () => {
+    onDocumentEdit(host, () => {
       text = null
       pictures = null
       if (!own) {
@@ -4514,7 +4877,7 @@ export const agentPlugin = {
         }
       }, STYLE_LIST_PAUSE_MS)
     }
-    host.events.on('document-changed', scheduleStyleList)
+    onDocumentEdit(host, scheduleStyleList)
 
     let layer = null
     let settle = null
@@ -4676,6 +5039,91 @@ export const agentPlugin = {
       })
     } catch {
       // as above
+    }
+
+    // the document's characters as the status bar counts them, read through the editor's own
+    // bridge as the 문서 정보 dialog reads them
+    let counted = null
+    try {
+      host.automation.registerCommand({
+        id: COUNT_COMMAND,
+        label: 'Count the characters',
+        execute: (services) => {
+          try {
+            const stats = documentStats(services.wasm, { textOnly: true })
+            counted = { chars: stats.chars, charsNoSpace: stats.charsNoSpace }
+          } catch {
+            counted = null
+          }
+        },
+      })
+    } catch {
+      // as above
+    }
+
+    /** The characters of what is selected now, or null when nothing (or no place) is. */
+    const selectedCharacters = () => {
+      picked = null
+      host.automation.execute(SELECTION_COMMAND)
+      const seen = picked
+      if (!seen) return null
+      return host.read((doc) => {
+        const out = countCollector()
+        return gatherSelection(doc, seen, out).ok ? out.counts() : null
+      })
+    }
+
+    // the status bar's count: put off until typing or the selection rests (char-count.mjs)
+    let charCountLabels = null
+    let charCount = null
+    const startCharCount = () => {
+      const page = globalThis.document
+      if (!charCountItem(page)) return false
+      if (charCount) {
+        charCount.refresh()
+        return true
+      }
+      const counter = charCounter({
+        readTotal: () => {
+          counted = null
+          host.automation.execute(COUNT_COMMAND)
+          return counted
+        },
+        readSelection: selectedCharacters,
+        render: (total, selected) => {
+          const item = charCountItem(page)
+          if (!item || !charCountLabels) return
+          const { text, title } = charCountText(charCountLabels, total, selected)
+          if (item.textContent !== text) item.textContent = text
+          if (item.title !== title) item.title = title
+        },
+      })
+      charCount = counter
+      const offEdit = onDocumentEdit(host, () => counter.documentChanged())
+      const offCaret = host.events.on('cursor-rect-updated', () => counter.selectionChanged())
+      // another document opened in the same editor (a restored copy, a file dropped in)
+      const offSwapped = host.events.on('document-swapped', () => counter.documentSwapped())
+      // a cell block grows with the keys or the mouse without the caret moving: a key or a
+      // button let go is when to look again
+      const onRest = () => counter.selectionChanged()
+      page.addEventListener('keyup', onRest, true)
+      page.addEventListener('mouseup', onRest, true)
+      stopCharCount = () => {
+        counter.stop()
+        page.removeEventListener('keyup', onRest, true)
+        page.removeEventListener('mouseup', onRest, true)
+        offEdit()
+        for (const off of [offCaret, offSwapped]) {
+          try {
+            off?.()
+          } catch {
+            // the host already took it off
+          }
+        }
+        charCount = null
+      }
+      counter.start()
+      return true
     }
 
     /** The text of a body or cell paragraph the caret is in, as the word commands read it. */
@@ -5689,6 +6137,18 @@ export const agentPlugin = {
           ),
         )
       }),
+
+      /**
+       * The table cells whose text does not fit where it is drawn (cut off on the page and
+       * in print), with the table number listTables gives, the 1-based row and column, the
+       * page and how far past the edge in mm. Starts at table `fromTable`, row `fromRow`
+       * (1-based, default the first) and measures for about two seconds; `next` is where
+       * the next call goes on. The pages are laid out with the widths printPages and the
+       * PDF export use, so a listed cell is the one cut off in print. Reads only.
+       */
+      checkLayout: guarded((fromTable, fromRow) =>
+        host.read((doc) => withPortableWidths(doc, () => overflowsOf(doc, fromTable, fromRow))),
+      ),
 
       /**
        * The tables of the document in reading order, numbered from 1; a table inside a cell
@@ -6889,6 +7349,25 @@ export const agentPlugin = {
        * selection() does and fires EASY_WORDS_EVENT with its text, a line per paragraph; it
        * changes nothing in the document. A later call gives the item its new name.
        */
+      /**
+       * Show the characters of the block and of the document in the editor's status bar,
+       * beside the insert/overwrite mode (issue #295), counted as the 문서 정보 dialog counts
+       * them. `labels` are the app's words: `total` ("{total}"), `selected` ("{selected}" and
+       * "{total}"), and the tooltips `hint` and `hintSelected` (those and "{totalNoSpace}",
+       * "{selectedNoSpace}", the counts without blanks), with the `locale` the numbers are
+       * written in. A later call changes the words.
+       */
+      showCharCount: guarded((labels) => {
+        const checked = checkCharCountLabels(labels)
+        if (!checked)
+          throw fail(
+            'BAD_ARGUMENT',
+            'total, selected, hint and hintSelected must be non-empty strings',
+          )
+        charCountLabels = checked
+        return { ok: startCharCount() }
+      }),
+
       installEasyWords: guarded((label) => {
         if (typeof label !== 'string' || !label.trim()) {
           throw fail('BAD_ARGUMENT', 'label must be a non-empty string')
@@ -6994,79 +7473,9 @@ export const agentPlugin = {
         if (!seen) return { ok: false, reason: 'none' }
         return host.read((doc) => {
           const out = runCollector()
-          let known = null
-          const tablesNow = () => (known ??= tablesOf(doc).tables)
-          const tableAt = (sec, para, path) => {
-            const key = tableKey(sec, para, path)
-            return tablesNow().findIndex(
-              (table) => tableKey(table.sec, table.para, table.path) === key,
-            )
-          }
-          /** the cells a block between two corners covers, a merged cell by any of its places */
-          const within = (range, skip) => (cell) =>
-            cell.row <= range.endRow &&
-            cell.row + cell.rowSpan - 1 >= range.startRow &&
-            cell.col <= range.endCol &&
-            cell.col + cell.colSpan - 1 >= range.startCol &&
-            !skip.has(`${cell.row},${cell.col}`)
-          let inTable = false
-          if (seen.block) {
-            const { table, range, excluded } = seen.block
-            const path =
-              Array.isArray(table.cellPath) && table.cellPath.length > 0
-                ? asCellPath(table.cellPath)
-                : [{ controlIndex: table.ci, cellIndex: 0, cellParaIndex: 0 }]
-            const index = tableAt(table.sec, table.ppi, path)
-            if (index < 0) return { ok: false, reason: 'unsupported' }
-            collectTable(doc, tablesNow(), index, out, within(range, new Set(excluded)))
-            inTable = true
-          } else {
-            const start = endOf(seen.start)
-            const end = endOf(seen.end)
-            if (!start || !end) return { ok: false, reason: 'unsupported' }
-            if (start.path && end.path && sameTable(start, end, true)) {
-              // inside one cell or text box: its paragraphs
-              const box = containerOf(doc, {
-                sec: start.sec,
-                para: start.para,
-                cellPath: start.path,
-              })
-              for (let k = start.k; k <= end.k; k++) {
-                out.add(
-                  box,
-                  k,
-                  k === start.k ? start.offset : 0,
-                  k === end.k ? end.offset : Infinity,
-                )
-              }
-              inTable = true
-            } else if (start.path && end.path && sameTable(start, end, false)) {
-              // from one cell to another of the same table: the block of cells between them
-              const index = tableAt(start.sec, start.para, start.path)
-              if (index < 0) return { ok: false, reason: 'unsupported' }
-              const grid = gridOf(doc, tablesNow()[index])
-              const a = grid[start.path[start.path.length - 1].cellIndex]
-              const b = grid[end.path[end.path.length - 1].cellIndex]
-              if (!a || !b) return { ok: false, reason: 'unsupported' }
-              const range = {
-                startRow: Math.min(a.row, b.row),
-                endRow: Math.max(a.row + a.rowSpan - 1, b.row + b.rowSpan - 1),
-                startCol: Math.min(a.col, b.col),
-                endCol: Math.max(a.col + a.colSpan - 1, b.col + b.colSpan - 1),
-              }
-              collectTable(doc, tablesNow(), index, out, within(range, new Set()))
-              inTable = true
-            } else {
-              // across the body: an end inside a table takes that table whole
-              collectBody(
-                doc,
-                tablesNow,
-                start.path ? { sec: start.sec, k: start.para, offset: 0 } : start,
-                end.path ? { sec: end.sec, k: end.para, offset: Infinity } : end,
-                out,
-              )
-            }
-          }
+          const gathered = gatherSelection(doc, seen, out)
+          if (!gathered.ok) return gathered
+          const { inTable } = gathered
           if (out.tooLong()) return { ok: false, reason: 'too_long' }
           if (out.segments.length === 0) return { ok: false, reason: 'none' }
           return {
@@ -7712,6 +8121,12 @@ export const agentPlugin = {
           options,
         )
       }),
+
+      /**
+       * The body paragraphs in reading order with their look ids (paragraphLooksOf), from
+       * the `from`-th on. Reads only.
+       */
+      paragraphLooks: guarded((from) => host.read((doc) => paragraphLooksOf(doc, from))),
 
       /**
        * What a document's formatting is made of (formattingOf): this document's, or that of

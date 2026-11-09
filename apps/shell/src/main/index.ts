@@ -2,6 +2,7 @@ import { readNickname, writeNickname } from './nickname'
 // Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { execSync, spawn } from 'node:child_process'
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -318,6 +319,7 @@ import {
 import {
   configureHwpRuntime,
   editorTakes,
+  exportHwpPdfHeadless,
   hwpFileRenamed,
   hwpReadText,
   requestHwpPreview,
@@ -330,6 +332,7 @@ import {
   normalizeHwpDefaultFormat,
   readHwpDefaultFormat,
 } from '../../../hwp/src/main/default-format'
+import { SLIDES_AI_FONTS_KEY, normalizeSlidesAiFonts } from '@genoffice/ui/slides-ai-fonts'
 import {
   configureHtmlRuntime,
   exportHtmlHeadless,
@@ -572,6 +575,7 @@ import {
   stopAgentSessions,
 } from './agent/agent-window'
 import { startAgentMcpServer } from './agent/agent-mcp'
+import { sweepAgentSessionFolders } from './agent/agent-session-folders'
 import { userSkillsManageGate } from './agent/agent-skills'
 import {
   buildAgentSkillBundle,
@@ -1152,6 +1156,7 @@ const tMain = createI18n({
       '“{title}” 已持续数分钟占用大量内存或 CPU（内存 {memory} MB，CPU {cpu}%）。可以继续等待，或关闭这个文档（有未保存的改动会先询问是否保存）。诊断信息已记录。', // public-hygiene: allow
     watchdogWait: '继续等待',
     watchdogClose: '关闭文档',
+    watchdogIgnore: '本次不再提醒',
     crashTitle: '文档意外停止',
     crashBody: '“{title}” 意外停止。上次保存后的改动可能已丢失。',
     crashReopen: '重新打开',
@@ -1217,7 +1222,7 @@ const tMain = createI18n({
     filterPpt: 'PowerPoint 演示文稿',
     filterMarkdown: '文本文件 (Markdown, TXT, JSON)',
     filterHtml: 'HTML 文档',
-    filterMindmap: '思维导图 (XMind 文件)',
+    filterMindmap: '思维导图 (XMind, FreeMind, Freeplane)',
     filterHwp: 'HWP 文档 (HWP, HWPX)',
     filterEpub: '电子书 (EPUB)',
     filterDiagram: '图表 (draw.io, VSDX)',
@@ -1306,6 +1311,7 @@ const tMain = createI18n({
       '"{title}" has been using a lot of memory or CPU for several minutes ({memory} MB, {cpu}% CPU). You can keep waiting, or close the document (you will be asked to save unsaved changes first). Diagnostics have been recorded.',
     watchdogWait: 'Keep Waiting',
     watchdogClose: 'Close Document',
+    watchdogIgnore: "Don't Remind Again",
     crashTitle: 'A document stopped unexpectedly',
     crashBody: '"{title}" stopped unexpectedly. Changes made since it was last saved may be lost.',
     crashReopen: 'Reopen',
@@ -1371,7 +1377,7 @@ const tMain = createI18n({
     filterPpt: 'PowerPoint Presentations',
     filterMarkdown: 'Text Files (Markdown, TXT, JSON)',
     filterHtml: 'HTML Documents',
-    filterMindmap: 'Mind Maps (XMind files)',
+    filterMindmap: 'Mind Maps (XMind, FreeMind, Freeplane)',
     filterHwp: 'HWP Documents (HWP, HWPX)',
     filterEpub: 'E-books (EPUB)',
     filterDiagram: 'Diagrams (draw.io, VSDX)',
@@ -1468,6 +1474,7 @@ const tMain = createI18n({
       '"{title}" đã dùng nhiều bộ nhớ hoặc CPU trong vài phút ({memory} MB, {cpu}% CPU). Bạn có thể tiếp tục chờ hoặc đóng tài liệu này (sẽ hỏi lưu các thay đổi chưa lưu trước). Thông tin chẩn đoán đã được ghi lại.',
     watchdogWait: 'Tiếp tục chờ',
     watchdogClose: 'Đóng tài liệu',
+    watchdogIgnore: 'Không nhắc lại nữa',
     crashTitle: 'Tài liệu dừng đột ngột',
     crashBody: '"{title}" đã dừng đột ngột. Những thay đổi sau lần lưu gần nhất có thể đã bị mất.',
     crashReopen: 'Mở lại',
@@ -1533,7 +1540,7 @@ const tMain = createI18n({
     filterPpt: 'Bản trình bày PowerPoint',
     filterMarkdown: 'Tệp văn bản (Markdown, TXT, JSON)',
     filterHtml: 'Tài liệu HTML',
-    filterMindmap: 'Sơ đồ tư duy (tệp XMind)',
+    filterMindmap: 'Sơ đồ tư duy (XMind, FreeMind, Freeplane)',
     filterHwp: 'Tài liệu HWP (HWP, HWPX)',
     filterEpub: 'Sách điện tử (EPUB)',
     filterDiagram: 'Sơ đồ (draw.io, VSDX)',
@@ -1630,6 +1637,7 @@ const tMain = createI18n({
       '「{title}」が数分間にわたり大量のメモリまたは CPU を使用しています（メモリ {memory} MB、CPU {cpu}%）。そのまま待つか、このドキュメントを閉じることができます（未保存の変更がある場合は保存を確認します）。診断情報を記録しました。',
     watchdogWait: '待つ',
     watchdogClose: 'ドキュメントを閉じる',
+    watchdogIgnore: '今回は再通知しない',
     crashTitle: 'ドキュメントが予期せず停止しました',
     crashBody:
       '「{title}」が予期せず停止しました。最後に保存した後の変更は失われた可能性があります。',
@@ -1696,7 +1704,7 @@ const tMain = createI18n({
     filterPpt: 'PowerPoint プレゼンテーション',
     filterMarkdown: 'テキストファイル (Markdown, TXT, JSON)',
     filterHtml: 'HTML ドキュメント',
-    filterMindmap: 'マインドマップ (XMind ファイル)',
+    filterMindmap: 'マインドマップ (XMind, FreeMind, Freeplane)',
     filterHwp: 'HWP ドキュメント (HWP, HWPX)',
     filterEpub: '電子書籍 (EPUB)',
     filterDiagram: 'ダイアグラム (draw.io, VSDX)',
@@ -1794,6 +1802,7 @@ const tMain = createI18n({
       '"{title}"이(가) 몇 분 동안 많은 메모리 또는 CPU를 사용하고 있습니다(메모리 {memory} MB, CPU {cpu}%). 계속 기다리거나 이 문서를 닫을 수 있습니다(저장되지 않은 변경 사항이 있으면 먼저 저장 여부를 묻습니다). 진단 정보가 기록되었습니다.',
     watchdogWait: '계속 기다리기',
     watchdogClose: '문서 닫기',
+    watchdogIgnore: '다시 알리지 않기',
     crashTitle: '문서가 예기치 않게 멈췄습니다',
     crashBody:
       '"{title}" 화면이 예기치 않게 꺼졌습니다. 마지막으로 저장한 뒤의 변경은 사라졌을 수 있습니다.',
@@ -1860,7 +1869,7 @@ const tMain = createI18n({
     filterPpt: 'PowerPoint 프레젠테이션',
     filterMarkdown: '텍스트 파일 (Markdown, TXT, JSON)',
     filterHtml: 'HTML 문서',
-    filterMindmap: '마인드맵 (XMind 파일)',
+    filterMindmap: '마인드맵 (XMind, FreeMind, Freeplane)',
     filterHwp: '한글 문서 (HWP, HWPX)',
     filterEpub: '전자책 (EPUB)',
     filterDiagram: '다이어그램 (draw.io, VSDX)',
@@ -1956,6 +1965,7 @@ const tMain = createI18n({
       '« {title} » utilise beaucoup de mémoire ou de processeur depuis plusieurs minutes ({memory} Mo, {cpu} % CPU). Vous pouvez continuer à attendre ou fermer ce document (il vous sera d’abord demandé d’enregistrer les modifications non sauvegardées). Les diagnostics ont été enregistrés.',
     watchdogWait: 'Continuer d’attendre',
     watchdogClose: 'Fermer le document',
+    watchdogIgnore: 'Ne plus rappeler',
     crashTitle: 'Un document s’est arrêté de façon inattendue',
     crashBody:
       '« {title} » s’est arrêté de façon inattendue. Les modifications faites depuis le dernier enregistrement ont peut-être été perdues.',
@@ -2022,7 +2032,7 @@ const tMain = createI18n({
     filterPpt: 'Présentations PowerPoint',
     filterMarkdown: 'Fichiers texte (Markdown, TXT, JSON)',
     filterHtml: 'Documents HTML',
-    filterMindmap: 'Cartes mentales (fichiers XMind)',
+    filterMindmap: 'Cartes mentales (XMind, FreeMind, Freeplane)',
     filterHwp: 'Documents HWP (HWP, HWPX)',
     filterEpub: 'Livres numériques (EPUB)',
     filterDiagram: 'Diagrammes (draw.io, VSDX)',
@@ -2121,6 +2131,7 @@ const tMain = createI18n({
       '„{title}“ belegt seit mehreren Minuten viel Arbeitsspeicher oder CPU ({memory} MB, {cpu} % CPU). Sie können weiter warten oder das Dokument schließen (bei ungespeicherten Änderungen werden Sie zuerst zum Speichern gefragt). Diagnosedaten wurden aufgezeichnet.',
     watchdogWait: 'Weiter warten',
     watchdogClose: 'Dokument schließen',
+    watchdogIgnore: 'Nicht mehr erinnern',
     crashTitle: 'Ein Dokument wurde unerwartet beendet',
     crashBody:
       '„{title}“ wurde unerwartet beendet. Änderungen seit dem letzten Speichern sind möglicherweise verloren.',
@@ -2187,7 +2198,7 @@ const tMain = createI18n({
     filterPpt: 'PowerPoint-Präsentationen',
     filterMarkdown: 'Textdateien (Markdown, TXT, JSON)',
     filterHtml: 'HTML-Dokumente',
-    filterMindmap: 'Mindmaps (XMind-Dateien)',
+    filterMindmap: 'Mindmaps (XMind, FreeMind, Freeplane)',
     filterHwp: 'HWP-Dokumente (HWP, HWPX)',
     filterEpub: 'E-Books (EPUB)',
     filterDiagram: 'Diagramme (draw.io, VSDX)',
@@ -2286,6 +2297,7 @@ const tMain = createI18n({
       '«{title}» lleva varios minutos usando mucha memoria o CPU ({memory} MB, {cpu} % de CPU). Puedes seguir esperando o cerrar el documento (antes se te pedirá guardar los cambios sin guardar). Se ha registrado el diagnóstico.',
     watchdogWait: 'Seguir esperando',
     watchdogClose: 'Cerrar documento',
+    watchdogIgnore: 'No recordar de nuevo',
     crashTitle: 'Un documento se detuvo inesperadamente',
     crashBody:
       '«{title}» se detuvo inesperadamente. Es posible que se hayan perdido los cambios hechos desde la última vez que se guardó.',
@@ -2352,7 +2364,7 @@ const tMain = createI18n({
     filterPpt: 'Presentaciones de PowerPoint',
     filterMarkdown: 'Archivos de texto (Markdown, TXT, JSON)',
     filterHtml: 'Documentos HTML',
-    filterMindmap: 'Mapas mentales (archivos XMind)',
+    filterMindmap: 'Mapas mentales (XMind, FreeMind, Freeplane)',
     filterHwp: 'Documentos HWP (HWP, HWPX)',
     filterEpub: 'Libros electrónicos (EPUB)',
     filterDiagram: 'Diagramas (draw.io, VSDX)',
@@ -2451,6 +2463,7 @@ const tMain = createI18n({
       '"{title}" ใช้หน่วยความจำหรือ CPU จำนวนมากติดต่อกันหลายนาที (หน่วยความจำ {memory} MB, CPU {cpu}%) คุณสามารถรอต่อไปหรือปิดเอกสารนี้ได้ (หากมีการเปลี่ยนแปลงที่ยังไม่บันทึกจะถามให้บันทึกก่อน) บันทึกข้อมูลวินิจฉัยแล้ว',
     watchdogWait: 'รอต่อไป',
     watchdogClose: 'ปิดเอกสาร',
+    watchdogIgnore: 'ไม่ต้องเตือนอีก',
     crashTitle: 'เอกสารหยุดทำงานโดยไม่คาดคิด',
     crashBody: '"{title}" หยุดทำงานโดยไม่คาดคิด การเปลี่ยนแปลงหลังการบันทึกครั้งล่าสุดอาจสูญหาย',
     crashReopen: 'เปิดอีกครั้ง',
@@ -2516,7 +2529,7 @@ const tMain = createI18n({
     filterPpt: 'งานนำเสนอ PowerPoint',
     filterMarkdown: 'ไฟล์ข้อความ (Markdown, TXT, JSON)',
     filterHtml: 'เอกสาร HTML',
-    filterMindmap: 'แผนที่ความคิด (ไฟล์ XMind)',
+    filterMindmap: 'แผนที่ความคิด (XMind, FreeMind, Freeplane)',
     filterHwp: 'เอกสาร HWP (HWP, HWPX)',
     filterEpub: 'หนังสืออิเล็กทรอนิกส์ (EPUB)',
     filterDiagram: 'ไดอะแกรม (draw.io, VSDX)',
@@ -2610,6 +2623,7 @@ const tMain = createI18n({
       '"{title}" telah menggunakan banyak memori atau CPU selama beberapa menit ({memory} MB, CPU {cpu}%). Anda dapat terus menunggu atau menutup dokumen ini (perubahan yang belum disimpan akan ditanyakan lebih dulu). Diagnostik telah dicatat.',
     watchdogWait: 'Terus Menunggu',
     watchdogClose: 'Tutup Dokumen',
+    watchdogIgnore: 'Jangan ingatkan lagi',
     crashTitle: 'Dokumen berhenti secara tak terduga',
     crashBody:
       '"{title}" berhenti secara tak terduga. Perubahan sejak terakhir disimpan mungkin hilang.',
@@ -2676,7 +2690,7 @@ const tMain = createI18n({
     filterPpt: 'Presentasi PowerPoint',
     filterMarkdown: 'File teks (Markdown, TXT, JSON)',
     filterHtml: 'Dokumen HTML',
-    filterMindmap: 'Peta pikiran (file XMind)',
+    filterMindmap: 'Peta pikiran (XMind, FreeMind, Freeplane)',
     filterHwp: 'Dokumen HWP (HWP, HWPX)',
     filterEpub: 'Buku elektronik (EPUB)',
     filterDiagram: 'Diagram (draw.io, VSDX)',
@@ -2774,6 +2788,7 @@ const tMain = createI18n({
       '«{title}» уже несколько минут использует много памяти или процессора ({memory} МБ, {cpu}% CPU). Можно подождать ещё или закрыть документ (при несохранённых изменениях сначала будет предложено сохранить). Диагностика записана.',
     watchdogWait: 'Подождать',
     watchdogClose: 'Закрыть документ',
+    watchdogIgnore: 'Больше не напоминать',
     crashTitle: 'Документ неожиданно остановился',
     crashBody:
       '«{title}» неожиданно остановился. Изменения после последнего сохранения могли быть потеряны.',
@@ -2840,7 +2855,7 @@ const tMain = createI18n({
     filterPpt: 'Презентации PowerPoint',
     filterMarkdown: 'Текстовые файлы (Markdown, TXT, JSON)',
     filterHtml: 'Документы HTML',
-    filterMindmap: 'Интеллект-карты (файлы XMind)',
+    filterMindmap: 'Интеллект-карты (XMind, FreeMind, Freeplane)',
     filterHwp: 'Документы HWP (HWP, HWPX)',
     filterEpub: 'Электронные книги (EPUB)',
     filterDiagram: 'Диаграммы (draw.io, VSDX)',
@@ -2938,6 +2953,7 @@ const tMain = createI18n({
       'يستهلك "{title}" قدرًا كبيرًا من الذاكرة أو المعالج منذ عدة دقائق (الذاكرة {memory} م.ب، المعالج {cpu}%). يمكنك مواصلة الانتظار أو إغلاق هذا المستند (سيُطلب حفظ التغييرات غير المحفوظة أولًا). تم تسجيل بيانات التشخيص.',
     watchdogWait: 'مواصلة الانتظار',
     watchdogClose: 'إغلاق المستند',
+    watchdogIgnore: 'عدم التذكير مجددًا',
     crashTitle: 'توقف مستند بشكل غير متوقع',
     crashBody: 'توقف "{title}" بشكل غير متوقع. ربما فُقدت التغييرات التي أُجريت منذ آخر حفظ.',
     crashReopen: 'إعادة الفتح',
@@ -3003,7 +3019,7 @@ const tMain = createI18n({
     filterPpt: 'عروض PowerPoint التقديمية',
     filterMarkdown: 'ملفات نصية (Markdown, TXT, JSON)',
     filterHtml: 'مستندات HTML',
-    filterMindmap: 'خرائط ذهنية (ملفات XMind)',
+    filterMindmap: 'خرائط ذهنية (XMind, FreeMind, Freeplane)',
     filterHwp: 'مستندات HWP (HWP, HWPX)',
     filterEpub: 'كتب إلكترونية (EPUB)',
     filterDiagram: 'مخططات (draw.io, VSDX)',
@@ -3097,6 +3113,7 @@ const tMain = createI18n({
       '"{title}" está a usar muita memória ou CPU há vários minutos ({memory} MB, {cpu}% de CPU). Pode continuar a aguardar ou fechar o documento (será pedido para guardar alterações não guardadas primeiro). O diagnóstico foi registado.',
     watchdogWait: 'Continuar a aguardar',
     watchdogClose: 'Fechar documento',
+    watchdogIgnore: 'Não voltar a lembrar',
     crashTitle: 'Um documento parou inesperadamente',
     crashBody:
       '"{title}" parou inesperadamente. As alterações feitas desde a última gravação podem ter-se perdido.',
@@ -3163,7 +3180,7 @@ const tMain = createI18n({
     filterPpt: 'Apresentações do PowerPoint',
     filterMarkdown: 'Arquivos de texto (Markdown, TXT, JSON)',
     filterHtml: 'Documentos HTML',
-    filterMindmap: 'Mapas mentais (arquivos XMind)',
+    filterMindmap: 'Mapas mentais (XMind, FreeMind, Freeplane)',
     filterHwp: 'Documentos HWP (HWP, HWPX)',
     filterEpub: 'Livros digitais (EPUB)',
     filterDiagram: 'Diagramas (draw.io, VSDX)',
@@ -3261,6 +3278,7 @@ const tMain = createI18n({
       '"{title}" sta usando molta memoria o CPU da diversi minuti ({memory} MB, {cpu}% CPU). Puoi continuare ad attendere o chiudere il documento (ti verrà chiesto prima di salvare le modifiche non salvate). La diagnostica è stata registrata.',
     watchdogWait: 'Continua ad attendere',
     watchdogClose: 'Chiudi documento',
+    watchdogIgnore: 'Non ricordare più',
     crashTitle: 'Un documento si è interrotto inaspettatamente',
     crashBody:
       '"{title}" si è interrotto inaspettatamente. Le modifiche successive all’ultimo salvataggio potrebbero essere andate perse.',
@@ -3327,7 +3345,7 @@ const tMain = createI18n({
     filterPpt: 'Presentazioni PowerPoint',
     filterMarkdown: 'File di testo (Markdown, TXT, JSON)',
     filterHtml: 'Documenti HTML',
-    filterMindmap: 'Mappe mentali (file XMind)',
+    filterMindmap: 'Mappe mentali (XMind, FreeMind, Freeplane)',
     filterHwp: 'Documenti HWP (HWP, HWPX)',
     filterEpub: 'Libri digitali (EPUB)',
     filterDiagram: 'Diagrammi (draw.io, VSDX)',
@@ -3425,6 +3443,7 @@ const tMain = createI18n({
       '„{title}” od kilku minut zużywa dużo pamięci lub procesora ({memory} MB, {cpu}% CPU). Możesz dalej czekać albo zamknąć dokument (najpierw pojawi się pytanie o zapisanie niezapisanych zmian). Dane diagnostyczne zostały zapisane.',
     watchdogWait: 'Czekaj dalej',
     watchdogClose: 'Zamknij dokument',
+    watchdogIgnore: 'Nie przypominaj ponownie',
     crashTitle: 'Dokument nieoczekiwanie przestał działać',
     crashBody:
       '„{title}” nieoczekiwanie przestał działać. Zmiany wprowadzone od ostatniego zapisu mogły zostać utracone.',
@@ -3491,7 +3510,7 @@ const tMain = createI18n({
     filterPpt: 'Prezentacje programu PowerPoint',
     filterMarkdown: 'Pliki tekstowe (Markdown, TXT, JSON)',
     filterHtml: 'Dokumenty HTML',
-    filterMindmap: 'Mapy myśli (pliki XMind)',
+    filterMindmap: 'Mapy myśli (XMind, FreeMind, Freeplane)',
     filterHwp: 'Dokumenty HWP (HWP, HWPX)',
     filterEpub: 'E-booki (EPUB)',
     filterDiagram: 'Diagramy (draw.io, VSDX)',
@@ -3589,6 +3608,7 @@ const tMain = createI18n({
       '„{title}“ už několik minut využívá hodně paměti nebo procesoru ({memory} MB, {cpu} % CPU). Můžete dál čekat, nebo dokument zavřít (u neuložených změn se nejdřív zeptáme na uložení). Diagnostika byla zaznamenána.',
     watchdogWait: 'Dál čekat',
     watchdogClose: 'Zavřít dokument',
+    watchdogIgnore: 'Znovu nepřipomínat',
     crashTitle: 'Dokument se neočekávaně zastavil',
     crashBody: '„{title}“ se neočekávaně zastavil. Změny od posledního uložení mohly být ztraceny.',
     crashReopen: 'Znovu otevřít',
@@ -3654,7 +3674,7 @@ const tMain = createI18n({
     filterPpt: 'Prezentace PowerPoint',
     filterMarkdown: 'Textové soubory (Markdown, TXT, JSON)',
     filterHtml: 'Dokumenty HTML',
-    filterMindmap: 'Myšlenkové mapy (soubory XMind)',
+    filterMindmap: 'Myšlenkové mapy (XMind, FreeMind, Freeplane)',
     filterHwp: 'Dokumenty HWP (HWP, HWPX)',
     filterEpub: 'E-knihy (EPUB)',
     filterDiagram: 'Diagramy (draw.io, VSDX)',
@@ -3750,6 +3770,7 @@ const tMain = createI18n({
       '"{title}" gebruikt al enkele minuten veel geheugen of CPU ({memory} MB, {cpu}% CPU). U kunt blijven wachten of het document sluiten (bij niet-opgeslagen wijzigingen wordt eerst gevraagd of u wilt opslaan). Diagnostische gegevens zijn vastgelegd.',
     watchdogWait: 'Blijven wachten',
     watchdogClose: 'Document sluiten',
+    watchdogIgnore: 'Niet opnieuw herinneren',
     crashTitle: 'Een document is onverwacht gestopt',
     crashBody:
       '"{title}" is onverwacht gestopt. Wijzigingen sinds de laatste keer opslaan zijn mogelijk verloren gegaan.',
@@ -3816,7 +3837,7 @@ const tMain = createI18n({
     filterPpt: 'PowerPoint-presentaties',
     filterMarkdown: 'Tekstbestanden (Markdown, TXT, JSON)',
     filterHtml: 'HTML-documenten',
-    filterMindmap: 'Mindmaps (XMind-bestanden)',
+    filterMindmap: 'Mindmaps (XMind, FreeMind, Freeplane)',
     filterHwp: 'HWP-documenten (HWP, HWPX)',
     filterEpub: 'E-boeken (EPUB)',
     filterDiagram: 'Diagrammen (draw.io, VSDX)',
@@ -3915,6 +3936,7 @@ const tMain = createI18n({
       '"{title}" telah menggunakan banyak memori atau CPU selama beberapa minit ({memory} MB, CPU {cpu}%). Anda boleh terus menunggu atau menutup dokumen ini (perubahan yang belum disimpan akan ditanya dahulu). Diagnostik telah direkodkan.',
     watchdogWait: 'Terus Menunggu',
     watchdogClose: 'Tutup Dokumen',
+    watchdogIgnore: 'Jangan ingatkan lagi',
     crashTitle: 'Dokumen berhenti secara tidak dijangka',
     crashBody:
       '"{title}" berhenti secara tidak dijangka. Perubahan sejak simpanan terakhir mungkin telah hilang.',
@@ -3981,7 +4003,7 @@ const tMain = createI18n({
     filterPpt: 'Persembahan PowerPoint',
     filterMarkdown: 'Fail teks (Markdown, TXT, JSON)',
     filterHtml: 'Dokumen HTML',
-    filterMindmap: 'Peta minda (fail XMind)',
+    filterMindmap: 'Peta minda (XMind, FreeMind, Freeplane)',
     filterHwp: 'Dokumen HWP (HWP, HWPX)',
     filterEpub: 'Buku elektronik (EPUB)',
     filterDiagram: 'Rajah (draw.io, VSDX)',
@@ -4078,6 +4100,7 @@ const tMain = createI18n({
       '"{title}" משתמש בהרבה זיכרון או מעבד כבר כמה דקות (זיכרון {memory} MB, מעבד {cpu}%). אפשר להמשיך לחכות או לסגור את המסמך (אם יש שינויים שלא נשמרו, תתבקשו לשמור קודם). נתוני האבחון נרשמו.',
     watchdogWait: 'להמשיך לחכות',
     watchdogClose: 'סגירת המסמך',
+    watchdogIgnore: 'לא להזכיר שוב',
     crashTitle: 'מסמך נעצר באופן בלתי צפוי',
     crashBody: '"{title}" נעצר באופן בלתי צפוי. ייתכן ששינויים שנעשו מאז השמירה האחרונה אבדו.',
     crashReopen: 'פתיחה מחדש',
@@ -4143,7 +4166,7 @@ const tMain = createI18n({
     filterPpt: 'מצגות PowerPoint',
     filterMarkdown: 'קובצי טקסט (Markdown, TXT, JSON)',
     filterHtml: 'מסמכי HTML',
-    filterMindmap: 'מפות חשיבה (קובצי XMind)',
+    filterMindmap: 'מפות חשיבה (XMind, FreeMind, Freeplane)',
     filterHwp: 'מסמכי HWP (HWP, HWPX)',
     filterEpub: 'ספרים אלקטרוניים (EPUB)',
     filterDiagram: 'תרשימים (draw.io, VSDX)',
@@ -4238,6 +4261,7 @@ const tMain = createI18n({
       '"{title}" कई मिनटों से बहुत अधिक मेमोरी या CPU इस्तेमाल कर रहा है (मेमोरी {memory} MB, CPU {cpu}%)। आप इंतज़ार जारी रख सकते हैं या यह दस्तावेज़ बंद कर सकते हैं (बिना सहेजे बदलाव होने पर पहले सहेजने के लिए पूछा जाएगा)। निदान जानकारी दर्ज कर ली गई है।',
     watchdogWait: 'इंतज़ार जारी रखें',
     watchdogClose: 'दस्तावेज़ बंद करें',
+    watchdogIgnore: 'दोबारा याद न दिलाएँ',
     crashTitle: 'दस्तावेज़ अचानक बंद हो गया',
     crashBody:
       '"{title}" अचानक बंद हो गया। पिछली बार सहेजने के बाद किए गए बदलाव खो गए हो सकते हैं।',
@@ -4304,7 +4328,7 @@ const tMain = createI18n({
     filterPpt: 'PowerPoint प्रस्तुतियाँ',
     filterMarkdown: 'पाठ फ़ाइलें (Markdown, TXT, JSON)',
     filterHtml: 'HTML दस्तावेज़',
-    filterMindmap: 'माइंड मैप (XMind फ़ाइलें)',
+    filterMindmap: 'माइंड मैप (XMind, FreeMind, Freeplane)',
     filterHwp: 'HWP दस्तावेज़ (HWP, HWPX)',
     filterEpub: 'ई-बुक (EPUB)',
     filterDiagram: 'आरेख (draw.io, VSDX)',
@@ -4402,6 +4426,7 @@ const tMain = createI18n({
       '「{title}」已持續數分鐘佔用大量記憶體或 CPU（記憶體 {memory} MB，CPU {cpu}%）。可以繼續等待，或關閉這個文件（有未儲存的變更會先詢問是否儲存）。診斷資訊已記錄。', // public-hygiene: allow
     watchdogWait: '繼續等待',
     watchdogClose: '關閉文件',
+    watchdogIgnore: '本次不再提醒',
     crashTitle: '文件意外停止',
     crashBody: '「{title}」意外停止。上次儲存後的變更可能已遺失。',
     crashReopen: '重新開啟',
@@ -4467,7 +4492,7 @@ const tMain = createI18n({
     filterPpt: 'PowerPoint 簡報',
     filterMarkdown: '文字檔 (Markdown, TXT, JSON)',
     filterHtml: 'HTML 文件',
-    filterMindmap: '心智圖 (XMind 檔案)',
+    filterMindmap: '心智圖 (XMind, FreeMind, Freeplane)',
     filterHwp: 'HWP 文件 (HWP, HWPX)',
     filterEpub: '電子書 (EPUB)',
     filterDiagram: '圖表 (draw.io, VSDX)',
@@ -4776,6 +4801,7 @@ const SEARCH_EXT_FAMILY: Record<string, readonly string[]> = {
   md: ['md', 'markdown', 'txt', 'json'],
   html: ['html', 'htm'],
   hwp: ['hwp', 'hwpx'],
+  xmind: ['xmind', 'mm'],
   drawio: ['drawio', 'dio', 'drawio.svg', 'drawio.png', 'vsdx'],
 }
 
@@ -5516,6 +5542,7 @@ const OPEN_DIALOG_EXTENSIONS = [
   'html',
   'htm',
   'xmind',
+  'mm',
   'hwp',
   'hwpx',
   'epub',
@@ -6528,7 +6555,7 @@ function registerHomeIpc(): void {
         { name: tm('filterPdf'), extensions: ['pdf'] },
         { name: tm('filterMarkdown'), extensions: ['md', 'markdown', 'txt', 'json'] },
         { name: tm('filterHtml'), extensions: ['html', 'htm'] },
-        { name: tm('filterMindmap'), extensions: ['xmind'] },
+        { name: tm('filterMindmap'), extensions: ['xmind', 'mm'] },
         { name: tm('filterHwp'), extensions: ['hwp', 'hwpx'] },
         { name: tm('filterEpub'), extensions: ['epub'] },
         {
@@ -7093,6 +7120,19 @@ function registerHomeIpc(): void {
   ipcMain.handle(HOME_CHANNELS.setHwpDefaultFormat, (_event, format: unknown) => {
     const next = normalizeHwpDefaultFormat(format)
     writeAppSetting(APP_SETTINGS_PATH(), HWP_DEFAULT_FORMAT_KEY, next)
+    return next
+  })
+
+  // the slides editor reads the same key for each generation (apps/slides/src/main/ai-default-fonts.ts)
+  ipcMain.handle(HOME_CHANNELS.getSlidesAiFonts, () =>
+    normalizeSlidesAiFonts(
+      readAppSettings(APP_SETTINGS_PATH())[SLIDES_AI_FONTS_KEY],
+      currentLang(),
+    ),
+  )
+  ipcMain.handle(HOME_CHANNELS.setSlidesAiFonts, (_event, fonts: unknown) => {
+    const next = normalizeSlidesAiFonts(fonts, currentLang())
+    writeAppSetting(APP_SETTINGS_PATH(), SLIDES_AI_FONTS_KEY, next)
     return next
   })
 
@@ -9333,7 +9373,34 @@ ipcMain.handle(PDF_CHANNELS.convertOffice, async (e, format: unknown) => {
   if (format === 'docx') await exportPdfAsDocxLocal()
   else if (format === 'xlsx') await exportPdfAsXlsxLocal()
   else if (format === 'pptx') await exportPdfAsPptxLocal()
+  else if (format === 'hwp') await openPdfAsHwp()
 })
+
+/**
+ * Converter › HWP (decision 0116): the PDF opens in a new, untitled Hangul tab, where
+ * the editor's own PDF import asks how to lay it out and converts it in the tab. The
+ * PDF is copied first (pending edits flushed) so the tab reads a file of its own; the
+ * copy goes with the tab, and the first save asks where to put the .hwp/.hwpx.
+ */
+async function openPdfAsHwp(): Promise<void> {
+  const tab = activePdfTarget()
+  if (!tab?.filePath || !tabManager) return
+  if (!(await flushPdfSave(tab.webContents, true))) return
+  const dir = mkdtempSync(join(app.getPath('temp'), 'onyou-pdf-import-'))
+  const baseName = basename(tab.filePath).replace(/\.pdf$/i, '')
+  let tabId: string
+  try {
+    const copy = join(dir, basename(tab.filePath))
+    copyFileSync(tab.filePath, copy)
+    tabId = tabManager.openHwpTab(copy, { untitledCopy: { title: baseName, importedPdf: true } })
+  } catch (err) {
+    rmSync(dir, { recursive: true, force: true })
+    throw err
+  }
+  const contents = tabManager.webContentsForTab(tabId)
+  if (contents) contents.once('destroyed', () => rmSync(dir, { recursive: true, force: true }))
+  else rmSync(dir, { recursive: true, force: true })
+}
 
 function openThirdPartyNotices(): Promise<string> {
   const path = app.isPackaged
@@ -9463,6 +9530,16 @@ ipcMain.handle('ai:open-model-settings', () => {
   win.focus()
   tabManager?.openHomeTab()
   win.webContents.send(HOME_CHANNELS.openSettings, { section: 'aiModel' })
+})
+// the slides template gallery's "Change" beside the default fonts (decision 0115)
+ipcMain.handle('slides:open-font-settings', () => {
+  const win = shellWindow
+  if (!win || win.isDestroyed()) return
+  if (win.isMinimized()) win.restore()
+  win.show()
+  win.focus()
+  tabManager?.openHomeTab()
+  win.webContents.send(HOME_CHANNELS.openSettings, { section: 'general', field: 'slidesAiFonts' })
 })
 registerProjectIpc()
 registerDocsIpc()
@@ -9618,6 +9695,7 @@ const headlessExporters: HeadlessExporters = {
   slides: (input, outPath) => exportSlidesPdfHeadless(input, outPath),
   markdown: (input, outPath) => exportMarkdownPdfHeadless(input, outPath),
   html: (input, outPath, format) => exportHtmlHeadless(input, outPath, format),
+  hwp: (input, outPath) => exportHwpPdfHeadless(input, outPath),
   diagram: exportDiagramHeadless,
 }
 
@@ -10133,6 +10211,8 @@ app.whenReady().then(async () => {
         setProjectSkills(APP_SETTINGS_PATH(), folder, await userSkills.enabledForAgent(folder), on),
     },
   })
+  // session folders a run that did not quit normally left; after the start, so it never slows it
+  setTimeout(() => void sweepAgentSessionFolders(), 10_000).unref()
   void startMcpFromSettings(currentMcpSettings()).catch((error) => {
     console.error('[mcp] failed to start on boot:', error)
   })

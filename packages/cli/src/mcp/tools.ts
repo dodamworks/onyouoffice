@@ -102,7 +102,7 @@ export const TOOLS: ToolSpec[] = [
     name: 'convert',
     command: 'convert',
     description:
-      'Convert a document to another format with the GenOffice engines (pdf, docx, odt, xlsx, pptx, md, html, csv, epub; the `to` description lists the routes). Targets that need layout (to pdf, docx to html, html to docx) start a hidden GenOffice process for 1-6 s. pdf to md/epub reflows the text (pictures in assets/ beside the .md) and uses pages read by pdf_ai_read. Output defaults to the input name with the new extension.',
+      'Convert a document to another format with the GenOffice engines (pdf, docx, odt, xlsx, pptx, md, html, csv, epub, hwp; `to` lists routes). Targets that need layout (to pdf, docx to html, html to docx, diagram to pdf/png/svg) start a hidden Onyou Office process for 1-6 s. pdf to md/epub reflows the text (pictures in assets/ beside the .md) and uses pages read by pdf_ai_read. A diagram makes one PDF, or a PNG/SVG per page (<name>-p<n>, out is a folder) unless page picks one. Output uses the input stem unless `out` is set.',
     positionals: [{ key: 'file', description: 'path of the source document' }],
     options: [
       'to',
@@ -652,7 +652,7 @@ export const TOOLS: ToolSpec[] = [
     readOnly: true,
     images: true,
     description:
-      'One PNG per page of a document (docx, xlsx, pptx, pdf, md, html) as the GenOffice renderer lays it out, written to a directory and returned as images. Starts a hidden GenOffice process. page renders one page; grid adds a contact sheet of every page.',
+      'One PNG per page of a document (docx, xlsx, pptx, pdf, md, html, hwp, hwpx) as the app prints it, written to a directory and returned as images. Starts a hidden GenOffice process. page renders one page; grid adds a contact sheet of every page.',
     positionals: [{ key: 'file', description: 'path of the document' }],
     options: [
       { key: 'out', description: 'directory for the PNGs (required)', required: true },

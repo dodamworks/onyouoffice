@@ -191,3 +191,34 @@ paragraph-property and slide-background matching. Preserve each engine's
 `tests/raw-xml-generation.test.ts` and its `src/xml-slices.ts` helper alongside
 the unchanged-save and edited-save contracts; no new public package export or
 engine dependency is needed for these internal adaptations.
+
+## November maintenance source
+
+The Onyou 1.0.1 candidate incorporates compatible changes through IeumOffice
+[v0.12.12](https://github.com/pblsketch/ieumoffice/releases/tag/v0.12.12),
+commit [`9bd6ccffb2ae2b79a13bb89fbf631a3b8fc81c36`](https://github.com/pblsketch/ieumoffice/commit/9bd6ccffb2ae2b79a13bb89fbf631a3b8fc81c36).
+The previous Onyou release used upstream
+`4a34c6124ca7787c860e9ebb1350bbc73872b69c`.
+Onyou version numbers follow its own release sequence.
+
+The update includes HWP/HWPX PDF export and paragraph-format inspection,
+merged-table and character-navigation corrections, PDF link selection and font
+preservation, resizable slide notes and configurable AI slide fonts, CSV decoding,
+spreadsheet style and sheet-name preservation, and CLI argument and text-encoding
+corrections. The candidate also adds FreeMind/Freeplane import, PDF-to-HWP
+conversion, PDF job provider selection, and Markdown diagram improvements.
+The HWP engine uses upstream's rhwp 0.9.0 integration. Original authorship and
+license notices remain intact.
+
+Onyou branding, nickname, document order, project controls, storage and installed
+identifiers, download destinations and existing document-input work bounds are
+preserved. Installation help in all 21 languages uses Onyou downloads and manual
+updates. It does not instruct users to disable system-wide security protections.
+Existing login registrations and saved-account matching remain unchanged.
+
+Upstream growth snapshots are excluded. Its product-named skill is adapted into
+`skills/onyouoffice` rather than installed alongside it. The upstream Linux
+build-container change is deferred to preserve the validated Onyou platform
+pipeline; the current Linux packages continue to require glibc 2.35 or newer.
+Passing source checks, accepted code and published installers remain separate
+milestones; consult the matching release provenance for the shipped source.

@@ -1051,6 +1051,48 @@ describe('what the user selected', () => {
     })
   })
 
+  // the engine's offsets count characters: 😀 and 𠀀 are one each there, two units in a string
+  const ASTRAL = '웃음😀😀😀 끝𠀀말'
+  const withAstral = () =>
+    openForm((doc) => {
+      doc.insertText(0, 2, 0, ASTRAL)
+      doc.insertTextInCell(0, 1, 0, 7, 0, 0, '𠀀😀')
+    })
+
+  it('hands out the text of a run with emoji and astral Han characters as it is', () => {
+    const { plugin, select, doc } = withAstral()
+    expect(doc().getParagraphLength(0, 2)).toBe([...ASTRAL].length + 2)
+    // 😀😀😀 끝 in the body: characters 2 to 7
+    select(inBody(2, 2), inBody(2, 7))
+    expect(plugin.selection()).toMatchObject({
+      ok: true,
+      segments: [{ sec: 0, para: 2, offset: 2, length: 5, text: '😀😀😀 끝' }],
+    })
+    // the whole paragraph, and 𠀀😀기존 in the cell
+    select(inBody(2, 0), inBody(2, doc().getParagraphLength(0, 2)))
+    expect(texts(plugin.selection())).toEqual([`${ASTRAL}끝.`])
+    select(inCell(7, 0), inCell(7, 4))
+    expect(texts(plugin.selection())).toEqual(['𠀀😀기존'])
+  })
+
+  it('replaces a run with emoji and astral Han characters where it was read', () => {
+    const { plugin, select, doc, cells } = withAstral()
+    select(inBody(2, 2), inBody(2, 6))
+    const body = plugin.selection()
+    if (!body.ok) throw new Error('expected a selection')
+    expect(body.segments[0].text).toBe('😀😀😀 ')
+    // it stands as read, so it is replaced, and only those characters go
+    expect(plugin.replaceSelection(body.segments, ['X'])).toMatchObject({ ok: true })
+    const length = doc().getParagraphLength(0, 2)
+    expect(doc().getTextRange(0, 2, 0, length)).toBe('웃음X끝𠀀말끝.')
+    select(inCell(7, 1), inCell(7, 2))
+    const cell = plugin.selection()
+    if (!cell.ok) throw new Error('expected a selection')
+    expect(cell.segments[0].text).toBe('😀')
+    expect(plugin.replaceSelection(cell.segments, ['웃음'])).toMatchObject({ ok: true })
+    expect(cells()['2.4']).toBe('𠀀웃음기존 내용')
+  })
+
   it('takes a table whole when the selection runs over the paragraph it sits in', () => {
     const { plugin, select } = openForm()
     // from inside the title, over the table, into the last line
@@ -1146,6 +1188,44 @@ describe('a double click on a word', () => {
     expect(plugin.selection()).toMatchObject({ ok: true, segments: [{ text: '기존' }] })
     doubleClick(inCell(1, 0))
     expect(plugin.selection()).toEqual({ ok: false, reason: 'none' })
+  })
+
+  // the engine's offsets count characters: 😀 and 𠀀 are one each there, two units in a string
+  const withAstral = () =>
+    openForm((doc) => {
+      doc.insertText(0, 2, 0, '웃음😀😀😀 끝𠀀말')
+      doc.insertTextInCell(0, 1, 0, 7, 0, 0, '😀가나')
+    })
+
+  it('selects the word under the click where emoji and 𠀀 come before it or in it', () => {
+    const { plugin, doubleClick, selected } = withAstral()
+    // 말 in 웃음😀😀😀 끝𠀀말끝.: the word 끝𠀀말끝 is characters 6 to 10
+    doubleClick(inBody(2, 8))
+    expect(selected()).toMatchObject({ start: { charOffset: 6 }, end: { charOffset: 10 } })
+    expect(plugin.selection()).toMatchObject({
+      ok: true,
+      segments: [{ para: 2, offset: 6, length: 4, text: '끝𠀀말끝' }],
+    })
+    // 나 in the cell's 😀가나기존 내용: 가나기존 is characters 1 to 5
+    doubleClick(inCell(7, 2))
+    expect(selected()).toMatchObject({ start: { charOffset: 1 }, end: { charOffset: 5 } })
+    expect(plugin.selection()).toMatchObject({ ok: true, segments: [{ text: '가나기존' }] })
+    // an emoji is no letter: a click on it selects nothing
+    doubleClick(inBody(2, 3))
+    expect(plugin.selection()).toEqual({ ok: false, reason: 'none' })
+  })
+
+  it('selects a paragraph with emoji and 𠀀 to its end on a triple click', () => {
+    const { plugin, tripleClick, selected, doc } = withAstral()
+    tripleClick(inBody(2, 1))
+    expect(selected()).toMatchObject({
+      start: { charOffset: 0 },
+      end: { charOffset: doc().getParagraphLength(0, 2) },
+    })
+    expect(plugin.selection()).toMatchObject({
+      ok: true,
+      segments: [{ para: 2, text: '웃음😀😀😀 끝𠀀말끝.' }],
+    })
   })
 
   it('selects the paragraph on a triple click, in the body and in a cell', () => {

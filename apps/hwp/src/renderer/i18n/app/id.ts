@@ -4,6 +4,7 @@ export const id = {
   loading: 'Membuka dokumen…',
   editorFailed: 'Editor tidak dapat dimulai.',
   openFailed: 'Dokumen tidak dapat dibuka.',
+  pdfImportCancelled: 'Impor PDF dibatalkan. Anda dapat menutup tab ini.',
   saveFailed: 'Dokumen tidak dapat disimpan.',
   fileSave: 'Simpan',
   fileSaveAs: 'Simpan Sebagai…',
@@ -101,6 +102,7 @@ export const id = {
   aiToolPageSetup: 'Memeriksa pengaturan halaman',
   aiToolPageSetupSet: 'Mengubah pengaturan halaman',
   aiToolFormatting: 'Memeriksa format',
+  aiToolParagraphLooks: 'Format tiap paragraf diperiksa · {count}',
   aiToolFormattingOf: 'Memeriksa format {name}',
   aiToolFormatLook: 'Memformat {count} paragraf dengan tampilan yang sama',
   aiLookParagraphs: '{count} paragraf dengan tampilan yang sama',
@@ -147,6 +149,7 @@ export const id = {
   aiToolMergeCells: 'Tabel {table} · sel digabung',
   aiToolSplitCell: 'Tabel {table} · sel dibagi',
   aiToolTables: 'Tabel diperiksa · {count}',
+  aiToolLayout: 'Sel yang meluap diperiksa · {count}',
   aiToolReadTable: 'Tabel {table} dibaca',
   aiToolFillCells: 'Tabel {table} · {count} sel diisi',
   aiToolCheckBoxes: 'Tabel {table} · {count} kotak dicentang',
@@ -264,4 +267,10 @@ export const id = {
   easyWordsLabel: 'Jelaskan dengan kata sederhana',
   easyWordsPrompt:
     'Jelaskan teks yang dipilih di bawah ini dalam bahasa Indonesia agar orang yang membutuhkan teks mudah dibaca juga bisa memahaminya. Gunakan kata sehari-hari dan kalimat pendek, dan jangan lewatkan satu pun fakta, angka, atau syarat. Jangan ubah dokumen.\n\nTeks yang dipilih:\n{text}',
+  charCountTotal: 'Karakter {total}',
+  charCountSelected: 'Karakter {selected} / {total}',
+  charCountHint:
+    'Karakter dihitung termasuk spasi. Tanpa spasi: seluruh dokumen {totalNoSpace}. Seperti di Informasi Dokumen, header, footer, catatan kaki, dan catatan akhir tidak dihitung.',
+  charCountHintSelected:
+    'Dengan spasi: dipilih {selected} / seluruh dokumen {total}. Tanpa spasi: dipilih {selectedNoSpace} / seluruh dokumen {totalNoSpace}. Seperti di Informasi Dokumen, header, footer, catatan kaki, dan catatan akhir tidak dihitung.',
 } satisfies Record<keyof typeof zh, string>

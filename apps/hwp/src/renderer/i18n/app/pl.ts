@@ -4,6 +4,7 @@ export const pl = {
   loading: 'Otwieranie dokumentu…',
   editorFailed: 'Nie udało się uruchomić edytora.',
   openFailed: 'Nie udało się otworzyć dokumentu.',
+  pdfImportCancelled: 'Import PDF został anulowany. Możesz zamknąć tę kartę.',
   saveFailed: 'Nie udało się zapisać dokumentu.',
   fileSave: 'Zapisz',
   fileSaveAs: 'Zapisz jako…',
@@ -101,6 +102,7 @@ export const pl = {
   aiToolPageSetup: 'Sprawdzono ustawienia strony',
   aiToolPageSetupSet: 'Zmieniono ustawienia strony',
   aiToolFormatting: 'Sprawdzono formatowanie',
+  aiToolParagraphLooks: 'Sprawdzono wygląd akapitów · {count}',
   aiToolFormattingOf: 'Sprawdzono formatowanie: {name}',
   aiToolFormatLook: 'Sformatowano {count} akapitów o jednym wyglądzie',
   aiLookParagraphs: '{count} akapitów o jednym wyglądzie',
@@ -147,6 +149,7 @@ export const pl = {
   aiToolMergeCells: 'Tabela {table} · scalanie komórek',
   aiToolSplitCell: 'Tabela {table} · podział komórki',
   aiToolTables: 'Sprawdzono tabele · {count}',
+  aiToolLayout: 'Sprawdzono przepełnienie komórek · {count}',
   aiToolReadTable: 'Odczytano tabelę {table}',
   aiToolFillCells: 'Tabela {table} · wypełniono komórek: {count}',
   aiToolCheckBoxes: 'Tabela {table} · zaznaczono pól: {count}',
@@ -265,4 +268,10 @@ export const pl = {
   easyWordsLabel: 'Wyjaśnij prostymi słowami',
   easyWordsPrompt:
     'Wyjaśnij po polsku zaznaczony poniżej tekst tak, aby zrozumiała go także osoba, która potrzebuje tekstu łatwego do czytania. Używaj codziennych słów i krótkich zdań i nie pomijaj żadnego faktu, liczby ani warunku. Nie zmieniaj dokumentu.\n\nZaznaczony tekst:\n{text}',
+  charCountTotal: 'Znaki {total}',
+  charCountSelected: 'Znaki {selected} / {total}',
+  charCountHint:
+    'Znaki są liczone ze spacjami. Bez spacji: cały dokument {totalNoSpace}. Tak jak w informacjach o dokumencie, nagłówki, stopki, przypisy dolne i końcowe nie są liczone.',
+  charCountHintSelected:
+    'Ze spacjami: zaznaczenie {selected} / cały dokument {total}. Bez spacji: zaznaczenie {selectedNoSpace} / cały dokument {totalNoSpace}. Tak jak w informacjach o dokumencie, nagłówki, stopki, przypisy dolne i końcowe nie są liczone.',
 } satisfies Record<keyof typeof zh, string>

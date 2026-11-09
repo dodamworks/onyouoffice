@@ -18,6 +18,8 @@ export const pl = {
   cardErrNeedsUpdatePath: 'Plik uruchamiany przez tę aplikację:',
   cardErrNeedsUpdateWindows:
     'Aktualizacja {provider} w WSL (Ubuntu) lub w innym folderze nie zmienia tego pliku. Uruchom {command} w Windows PowerShell.',
+  claudeDesktopNote:
+    'Aplikacja desktopowa Claude to nie Claude Code, który uruchamia ta aplikacja. Claude Code to osobny program używany w terminalu, więc instalacja lub aktualizacja aplikacji desktopowej go nie zmienia.',
   cardErrTimeout: 'Program {provider} nie odpowiedział na czas. Sprawdź ponownie za chwilę.',
   cardErrFailed: 'Podczas sprawdzania {provider} wystąpił problem. Sprawdź ponownie.',
   actionInstall: 'Zainstaluj',
@@ -155,6 +157,14 @@ export const pl = {
     'W przeglądarce otworzy się strona logowania ChatGPT. Zaloguj się i zezwól tej aplikacji na korzystanie z Twojego planu ChatGPT; połączenie nastąpi samo.',
   chatgptLoginUnfinishedNote:
     'Logowanie nie zostało ukończone. Naciśnij ponownie, aby zacząć od nowa. Do połączenia potrzebna jest Twoja zgoda na korzystanie z planu ChatGPT.',
+  chatgptLoginNoPlanNote:
+    'Logowanie do ChatGPT się udało, ale ta aplikacja nie dostała zgody na korzystanie z Twojego planu. Naciśnij ponownie i na stronie zgody zezwól na korzystanie z planu. Jeśli już to zrobiłeś, OpenAI może nie udostępniać tego dla Twojego konta (np. zarządzanego przez firmę lub szkołę) albo planu. Wtedy możesz połączyć się przez program Codex.',
+  chatgptLoginDeniedNote:
+    'Zalogowano się w przeglądarce, ale OpenAI nie przyjęło tego połączenia albo nie udało się sprawdzić jego odpowiedzi. Sprawdź, czy data i godzina na tym komputerze są prawidłowe, a potem naciśnij ponownie, aby zacząć od nowa.',
+  chatgptLoginNetworkNote:
+    'Nie udało się dokończyć logowania: nie można połączyć się z OpenAI albo nie otworzyła się przeglądarka. Sprawdź połączenie z internetem (także sieć firmową, VPN lub proxy), a potem naciśnij ponownie.',
+  chatgptLoginNotAllowedNote:
+    'Ta aplikacja nie dostała zgody na korzystanie z Twojego planu ChatGPT albo przeglądarka wróciła z logowania z błędem. Naciśnij ponownie, zaloguj się i wyraź zgodę na stronie zgody.',
   chatgptSigningInNote:
     'Zaloguj się kontem ChatGPT w otwartej przeglądarce i zezwól tej aplikacji na korzystanie z Twojego planu. Połączenie nastąpi samo.',
   chatgptPlanNote:
@@ -164,4 +174,18 @@ export const pl = {
   browserPageDoneBody: 'Możesz zamknąć tę kartę i wrócić do aplikacji.',
   browserPageFailedTitle: 'Nie udało się połączyć',
   browserPageFailedBody: 'Wróć do aplikacji i spróbuj ponownie.',
+  cardOff: 'Wyłączone w tej aplikacji',
+  offNote:
+    'Ta aplikacja nie uruchamia programu {provider} ani nie sprawdza jego stanu. Logowanie {provider} na tym komputerze i korzystanie z niego w terminalu pozostają bez zmian.',
+  offElsewhereNote: 'Możesz ponownie z niego korzystać w Ustawienia → AI.',
+  offSwitchNote:
+    '„Nie używaj w tej aplikacji” zostawia logowanie {provider} na tym komputerze i zatrzymuje tylko tę aplikację. Wylogowanie dotyczy całego komputera.',
+  actionTurnOff: 'Nie używaj w tej aplikacji',
+  actionTurnOn: 'Używaj ponownie',
+  connectOffTitle: '{provider} jest wyłączony w tej aplikacji',
+  connectOffBody:
+    'Kliknij „Używaj ponownie” na karcie {provider} w Ustawienia → AI albo wybierz inną AI.',
+  errOffInApp:
+    '{provider} jest wyłączony w tej aplikacji, więc nic nie zostało uruchomione. Możesz ponownie z niego korzystać w Ustawienia → AI.',
+  guideBadgeOff: 'Wyłączone',
 } satisfies Record<keyof typeof zh, string>

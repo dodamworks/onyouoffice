@@ -34,7 +34,7 @@ onyouoffice slides replace deck.pptx --slide 2 --spec deck/pages/03.json   # reb
 onyouoffice slides apply deck.pptx --ops edit.json [--dry-run] [--out copy.pptx]
 onyouoffice slides audit deck.pptx [--slide 0] --json            # out_of_bounds / off_slide / text_overflow / text_overflow_width / overlap / picture_distorted: typed issues with durable ids and a setTransform `suggest` where geometry fixes it
 onyouoffice slides render deck.pptx --out shots/ [--scale 2]     # one PNG per slide through the app's PDF export
-onyouoffice render report.docx|book.xlsx|page.html|file.pdf --out shots/ [--page 3] [--scale 2]   # one PNG per page of any document, to look at what was made
+onyouoffice render report.docx|book.xlsx|page.html|form.hwp|file.pdf --out shots/ [--page 3] [--scale 2]   # one PNG per page of any document, to look at what was made
 onyouoffice render deck.pptx --out shots/ --el e_12 [--pad 16]   # plus the page cropped to that element (<stem>-NN-e_12.png)
 onyouoffice render deck.pptx --out shots/ --grid [--cols 4] [--tile 320]   # plus <stem>-grid.png: every page on one contact sheet
 onyouoffice create --type xlsx --from table.json --out book.xlsx   # 2-D array or {sheets:[{name,rows}]}; "=..." cells are formulas
@@ -46,7 +46,6 @@ onyouoffice sheet check book.xlsx --json                # formula errors, missin
 onyouoffice sheet links book.xlsx                       # external [n] links: stored path, resolved path, reachable, source sheets
 onyouoffice sheet links book.xlsx --update              # re-read reachable sources and write the computed values as the formulas' cached <v> (formulas untouched; unreachable links keep their cache)
 onyouoffice sheet links book.xlsx --break 1,2           # break links: formulas become their cached values, the links' parts are removed and surviving links renumber
-onyouoffice convert letter.doc --to docx                # Word 97-2003 .doc/.dot through the in-process doc2docx importer
 onyouoffice create --type docx --from report.md --out report.docx      # or --from fragment.html (restricted HTML)
 onyouoffice convert notes.md --to docx|html
 onyouoffice convert report.docx --to html               # the Word editor's standalone-HTML export
@@ -54,13 +53,14 @@ onyouoffice convert page.html --to docx                 # html2docx, same as the
 onyouoffice convert report.docx --to md                 # GFM via the markdown editor's serializer; nested tables become cell text with a nested_tables_flattened warning
 onyouoffice convert book.xlsx --to csv [--sheet Data]   # one sheet, cell text as displayed, UTF-8 BOM, CRLF
 onyouoffice convert form.odt --to docx|pdf|md|html      # through the ODT bridge docx (pdf/html: a temporary docx the app exports, always deleted)
+onyouoffice convert letter.doc --to docx                # Word 97-2003 .doc/.dot through the in-process doc2docx importer
 onyouoffice convert report.docx --to odt                # also md→odt and html→odt; warnings[] odt_converted / odt_dropped + detail.odt_report
 onyouoffice capabilities --json                        # which of search, image generation, image/video analysis and the PDF AI jobs work here and by which route (free, key, subscription); no model call
 onyouoffice search "electron headless export" [--images] [--max 6] --json
 onyouoffice read-url https://example.com/guide.md [--offset 50000] --json   # the readable text of an http(s) page (article, document, skill); the address goes to that site; private GitHub files use the app's read-only token
 onyouoffice image "isometric office, soft light" --aspect 16:9 --out hero.png
 onyouoffice media photo.jpg --ask "What text is in this picture?" --json
-onyouoffice docs read report.docx [--range 0-9] [--html] [--full] [--comments] [--revisions] [--header-footer] --json   # blocks (--full: whole text), comment threads, tracked changes, header/footer text
+onyouoffice docs read report.docx [--range 0-9] [--html] [--full] [--comments] [--revisions] [--header-footer] --json   # blocks (--full: whole text; contentControls chain + inlineContentControls for w:sdt controls), comment threads, tracked changes, header/footer text
 onyouoffice docs apply report.docx --ops ops.json [--dry-run]           # apply_ops entries + insert_content / replace_blocks / insert_image / insert_chart / edit_chart / set_header_footer / reply_comment / resolve_comment
 onyouoffice docs check report.docx --json                               # fields without results, broken bookmark references, stale TOC, missing images, empty charts/headings, heading level skips, placeholder text, pending revisions, open comments; exit 0
 onyouoffice docs compare original.docx revised.docx --out redline.docx [--author name] [--date iso] [--granularity word|char] [--ignore formatting,case,whitespace]   # redline: the revised document with the differences marked as tracked insertions and deletions; --json reports the counts
@@ -83,6 +83,12 @@ onyouoffice hwp read notice.hwp [--offset 20000] [--full] --json           # tex
 onyouoffice hwp apply form.hwp --ops ops.json [--out filled.hwpx] [--dry-run] [--force] --json   # the in-app AI's tools as ops (replace_text, insert_paragraphs, fill_cells, fill_field ...; `guide hwp`); written back in its own format, the replaced file kept as form.hwp.bak
 onyouoffice create --type hwp --ops ops.json --out minutes.hwp             # a new Hangul document: the same ops on a blank A4 page (--type hwpx for .hwpx)
 onyouoffice guide hwp                                                    # the hwp apply ops, built from the in-app AI's tool definitions
+onyouoffice convert notice.hwp --to pdf                                  # .hwp/.hwpx → PDF: the Hangul editor's own PDF export in a hidden app, pages as the editor draws them, with a text layer
+onyouoffice diagram read flow.drawio [--page Two] --json               # shapes and edges of each page of a draw.io diagram (.drawio, .dio, .drawio.svg, .drawio.png); no app process
+onyouoffice diagram apply flow.drawio --ops '[{"op":"add_shape","label":"Check","x":40,"y":200}]' [--page Two] [--out flow.dio] [--force] --json   # the in-app AI's diagram ops (`guide diagram`); .drawio/.dio keep untouched pages byte for byte
+onyouoffice create --type drawio --mermaid flow.mmd [--ops @more.json] --out flow.drawio   # Mermaid drawn by draw.io (a hidden Onyou Office), then the ops; --out x.drawio.png writes that format
+onyouoffice convert flow.drawio --to png [--page Two] [--out pictures]  # one PNG per page (flow-p1.png ...) into the folder, or one file with --page; --to svg the same, --to pdf one file
+onyouoffice guide diagram                                                # the diagram ops, built from the same definitions as the in-app AI's tools
 onyouoffice guide docs                                                   # op signatures + restricted-HTML rules (`guide <domain> --json` = the catalog with each op's schema and a fingerprint)
 onyouoffice selection report.docx --json   # what the user has selected in the editor showing the file
 onyouoffice skill list   # coding agents found on this machine and the skill version each has

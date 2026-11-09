@@ -18,6 +18,8 @@ export const ms = {
   cardErrNeedsUpdatePath: 'Fail yang dijalankan oleh aplikasi ini:',
   cardErrNeedsUpdateWindows:
     'Mengemas kini {provider} di dalam WSL (Ubuntu) atau dalam folder lain tidak mengubah fail ini. Jalankan {command} dalam Windows PowerShell.',
+  claudeDesktopNote:
+    'Aplikasi desktop Claude bukan Claude Code yang dijalankan oleh aplikasi ini. Claude Code ialah program berasingan yang digunakan dalam terminal, jadi memasang atau mengemas kini aplikasi desktop tidak mengubahnya.',
   cardErrTimeout:
     'Program {provider} tidak menjawab dalam masa yang ditetapkan. Semak semula sebentar lagi.',
   cardErrFailed: 'Masalah berlaku semasa menyemak {provider}. Semak semula.',
@@ -155,6 +157,14 @@ export const ms = {
     'Halaman log masuk ChatGPT akan dibuka dalam pelayar anda. Log masuk dan benarkan aplikasi ini menggunakan pelan ChatGPT anda; sambungan akan dibuat sendiri.',
   chatgptLoginUnfinishedNote:
     'Log masuk tidak selesai. Tekan sekali lagi untuk bermula semula. Untuk menyambung, anda perlu membenarkan penggunaan pelan ChatGPT anda.',
+  chatgptLoginNoPlanNote:
+    'Anda sudah log masuk ke ChatGPT, tetapi aplikasi ini tidak mendapat kebenaran untuk menggunakan pelan anda. Tekan sekali lagi dan benarkan penggunaan pelan di halaman kebenaran. Jika anda sudah membenarkannya, mungkin OpenAI tidak menawarkan penggunaan ini untuk akaun anda (contohnya akaun yang diurus oleh syarikat atau sekolah) atau pelan anda. Dalam hal itu, anda boleh menyambung dengan program Codex.',
+  chatgptLoginDeniedNote:
+    'Anda sudah log masuk dalam pelayar, tetapi OpenAI tidak menerima sambungan ini, atau jawapannya tidak dapat disemak. Pastikan tarikh dan masa PC ini betul, kemudian tekan sekali lagi untuk bermula semula.',
+  chatgptLoginNetworkNote:
+    'Log masuk tidak dapat diselesaikan: OpenAI tidak dapat dihubungi atau tiada pelayar dibuka. Semak sambungan internet (termasuk rangkaian syarikat, VPN atau proksi), kemudian tekan sekali lagi.',
+  chatgptLoginNotAllowedNote:
+    'Anda tidak membenarkan aplikasi ini menggunakan pelan ChatGPT anda, atau pelayar kembali daripada log masuk dengan kegagalan. Tekan sekali lagi, log masuk dan benarkan di halaman kebenaran.',
   chatgptSigningInNote:
     'Log masuk dengan akaun ChatGPT anda dalam pelayar yang dibuka, kemudian benarkan aplikasi ini menggunakan pelan anda. Sambungan akan dibuat sendiri.',
   chatgptPlanNote:
@@ -164,4 +174,17 @@ export const ms = {
   browserPageDoneBody: 'Anda boleh menutup tab ini dan kembali ke aplikasi.',
   browserPageFailedTitle: 'Sambungan tidak berjaya',
   browserPageFailedBody: 'Kembali ke aplikasi dan cuba lagi.',
+  cardOff: 'Dimatikan dalam aplikasi ini',
+  offNote:
+    'Aplikasi ini tidak menjalankan program {provider} dan tidak menyemak statusnya. Log masuk {provider} pada PC ini dan penggunaannya dalam terminal kekal seperti biasa.',
+  offElsewhereNote: 'Anda boleh menggunakannya semula di Tetapan → AI.',
+  offSwitchNote:
+    '"Jangan guna dalam aplikasi ini" mengekalkan log masuk {provider} pada PC ini dan hanya menghentikan aplikasi ini. Log keluar terpakai pada seluruh PC.',
+  actionTurnOff: 'Jangan guna dalam aplikasi ini',
+  actionTurnOn: 'Guna semula',
+  connectOffTitle: '{provider} dimatikan dalam aplikasi ini',
+  connectOffBody: 'Tekan "Guna semula" pada kad {provider} di Tetapan → AI, atau pilih AI lain.',
+  errOffInApp:
+    '{provider} dimatikan dalam aplikasi ini, jadi tiada apa yang dijalankan. Anda boleh menggunakannya semula di Tetapan → AI.',
+  guideBadgeOff: 'Dimatikan',
 } satisfies Record<keyof typeof zh, string>

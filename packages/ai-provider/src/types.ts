@@ -51,8 +51,12 @@ export type AiSubscriptionCliId = 'claude-code' | 'codex'
 /** What the provider setting holds: `auto` (first ready subscription) or one provider id */
 export type AiProviderSelection = 'auto' | AiProviderId
 
+/**
+ * `off`: the person turned the program off in this app (decision 0114). The
+ * app then asks the program nothing, so there is nothing detected to report.
+ */
 export type AiSubscriptionState =
-  'checking' | 'not-installed' | 'signed-out' | 'ready' | 'metered' | 'error'
+  'checking' | 'not-installed' | 'signed-out' | 'ready' | 'metered' | 'error' | 'off'
 
 /** how the CLI is signed in; `unknown` is handled as `metered` */
 export type AiSubscriptionLoginMethod = 'subscription' | 'metered' | 'unknown'
@@ -126,6 +130,67 @@ export interface AiSubscriptionStatus {
    * a sign-in.
    */
   loginUnfinished?: boolean | undefined
+  /**
+   * Why the app's own ChatGPT sign-in ended without a connection (decision
+   * 0081), beside `loginUnfinished`. Fixed names only: no token, code or text
+   * OpenAI sent. In memory only, like `loginUnfinished`.
+   */
+  loginFailure?: AiSubscriptionLoginFailure | undefined
+}
+
+/** timeout: nobody finished in time; denied: OpenAI refused or its answer did not check out; no-plan: signed in without allowing the plan; network: OpenAI could not be reached */
+export const AI_SUBSCRIPTION_LOGIN_FAILURE_REASONS = [
+  'timeout',
+  'denied',
+  'no-plan',
+  'network',
+] as const
+
+export type AiSubscriptionLoginFailureReason =
+  (typeof AI_SUBSCRIPTION_LOGIN_FAILURE_REASONS)[number]
+
+/**
+ * Which step of the app's ChatGPT sign-in failed, for the help text a user
+ * copies: fixed names, never anything OpenAI or the browser sent.
+ */
+export const AI_SUBSCRIPTION_LOGIN_FAILURE_STEPS = [
+  /** no browser took the sign-in page */
+  'browser',
+  /** the waiting server could not start */
+  'loopback',
+  /** the browser came back with an `error` */
+  'callback-error',
+  /** the browser came back without a code or a client id */
+  'callback-incomplete',
+  /** the token endpoint refused the code (400, 401, 403) */
+  'token-refused',
+  /** the token endpoint answered another failing status */
+  'token-http',
+  /** the token endpoint could not be reached */
+  'token-unreachable',
+  /** the token answer lacked the access or refresh token, or was no JSON */
+  'token-unreadable',
+  /** the token answer had no ID token */
+  'id-token-missing',
+  /** OpenAI's signing keys could not be read */
+  'signing-keys',
+  /** the ID token failed a check: signature, issuer, audience, expiry or nonce */
+  'id-token-invalid',
+  /** the token answer named no scope at all */
+  'scope-missing',
+  /** the token answer named scopes, without the plan's */
+  'plan-scope-missing',
+] as const
+
+export type AiSubscriptionLoginFailureStep = (typeof AI_SUBSCRIPTION_LOGIN_FAILURE_STEPS)[number]
+
+export interface AiSubscriptionLoginFailure {
+  reason: AiSubscriptionLoginFailureReason
+  step?: AiSubscriptionLoginFailureStep | undefined
+  /** the token endpoint's HTTP status, when it answered with a failure */
+  httpStatus?: number | undefined
+  /** the token endpoint's OAuth error code, identifier-shaped */
+  oauthError?: string | undefined
 }
 
 export type AiSubscriptionStatuses = Partial<Record<AiSubscriptionProviderId, AiSubscriptionStatus>>
@@ -353,6 +418,12 @@ export interface AiSettings {
   maxOutputTokens?: number | undefined
   /** per subscription provider: the user accepted a metered (pay-as-you-go) CLI login; absent = false */
   meteredAccepted?: Partial<Record<AiSubscriptionProviderId, boolean>> | undefined
+  /**
+   * The vendor CLIs the person turned off in this app (decision 0114): the app
+   * neither checks nor runs them, and the program stays signed in for the rest
+   * of the PC. Absent or no entry = on. Only the main process writes it.
+   */
+  subscriptionOff?: Partial<Record<AiSubscriptionCliId, true>> | undefined
   /**
    * headless callers (terminal commands, MCP) may use subscription providers; absent = false.
    * Reads as false unless `headlessSubscriptionConsentVersion` is the current consent version.

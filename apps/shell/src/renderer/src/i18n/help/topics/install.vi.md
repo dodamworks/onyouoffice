@@ -1,37 +1,82 @@
-<!-- Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build. -->
+<!-- Modified by Onyou Office: product downloads and manual distribution guidance. -->
 
-# Cài đặt GenOffice
+# Cài đặt Onyou Office
 
-> Đây là bản phát triển nội bộ của Onyou Office. Dịch vụ tải xuống, cập nhật và hỗ trợ chưa được cấu hình. Hướng dẫn và liên kết bên dưới mô tả dự án gốc để tham khảo.
-
-Mọi phiên bản đều được công bố trên [trang phát hành (Releases)](https://github.com/pblsketch/openoffice/releases/latest) của dự án trên GitHub. Phiên bản này được phát hành cho Windows.
+[trang phát hành (Releases)](https://github.com/dodamworks/onyouoffice/releases/latest)
 
 ## Chọn tệp cho máy của bạn
 
-| Nền tảng    | Yêu cầu                              | Tệp                             |
-| ----------- | ------------------------------------ | ------------------------------- |
-| **Windows** | Windows 10 trở lên, Intel/AMD 64-bit | `GenOffice-Setup-<version>.exe` |
-
-Các bản cũ hơn vẫn nằm trên trang phát hành.
+| Nền tảng                               | Yêu cầu                                | Tệp                                |
+| -------------------------------------- | -------------------------------------- | ---------------------------------- |
+| **Windows**                            | Windows 10 trở lên, Intel/AMD 64-bit   | `OnyouOffice-Setup-<version>.exe`  |
+| **Mac (beta)**, Apple Silicon          | macOS 12 trở lên, chip M1 hoặc mới hơn | `OnyouOffice-<version>-arm64.dmg`  |
+| **Mac (beta)**, Intel                  | macOS 12 trở lên, bộ xử lý Intel       | `OnyouOffice-<version>-x64.dmg`    |
+| **Linux (beta)**, bản phân phối bất kỳ | 64-bit (x86_64); glibc ≥ 2.35          | `OnyouOffice-<version>.AppImage`   |
+| **Linux (beta)**, họ Ubuntu/Debian     | 64-bit (x86_64); glibc ≥ 2.35          | `onyouoffice_<version>_amd64.deb`  |
+| **Linux (beta)**, Fedora/RHEL/openSUSE | 64-bit (x86_64); glibc ≥ 2.35          | `onyouoffice-<version>.x86_64.rpm` |
 
 ## Trên Windows
 
-1. Tải `GenOffice-Setup-<version>.exe` về từ trang phát hành.
+1. Tải `OnyouOffice-Setup-<version>.exe` về từ trang phát hành.
 2. Chạy tệp đó. Trình cài đặt chưa được ký mã, nên trước tiên Windows có thể hiện một cửa sổ màu xanh "Windows đã bảo vệ PC của bạn". Chọn **Thông tin thêm**, rồi chọn **Vẫn chạy**. Câu chữ cụ thể tùy vào phiên bản Windows của bạn.
 3. Làm theo trình cài đặt cho đến hết.
 
-Nó đưa GenOffice vào menu Start và đăng ký `.docx`, `.xlsx`, `.pptx`, `.pdf` cùng các định dạng tương tự, để nhấp đúp vào một tệp là mở được tệp đó.
+Nó đưa Onyou Office vào menu Start và đăng ký `.docx`, `.xlsx`, `.pptx`, `.pdf` cùng các định dạng tương tự, để nhấp đúp vào một tệp là mở được tệp đó.
 
 Vì trình cài đặt chưa được ký, bạn chỉ nên chạy tệp đã tải về từ trang phát hành nói trên.
 
+## Khi Windows chặn việc tải xuống hoặc cài đặt
+
+### Edge báo tệp "isn't commonly downloaded"
+
+Microsoft Defender SmartScreen cảnh báo như vậy với tệp mà nó chưa thấy nhiều người tải về. Hướng dẫn của Microsoft để giữ tệp như sau:
+
+1. Mở danh sách tải xuống của Edge (**Ctrl+J**), nhấn **…** cạnh tệp rồi chọn **Keep**.
+2. Trong cửa sổ hiện ra, nhấn **Show more**, rồi nhấn **Keep anyway**. Tệp sẽ được giữ trong thư mục Tải xuống của bạn.
+
+Cửa sổ đó còn có một nút để báo cáo tệp là an toàn. Nút này chỉ mở trang báo cáo của Microsoft (`feedback.smartscreen.microsoft.com`) và không giữ tệp. Hãy đóng trang đó và nhấn **Show more** trong cửa sổ.
+
+Nếu cửa sổ không có **Show more** hoặc không có **Keep anyway**:
+
+- Trên PC do trường học hoặc công ty quản lý, quản trị viên có thể tắt khả năng bỏ qua các cảnh báo này (một chính sách của Edge). Khi đó không ai trên PC đó giữ được tệp; hãy nhờ quản trị viên cài đặt hoặc cho phép tệp.
+- Tải từ trang phát hành bằng một trình duyệt khác cũng cho bạn đúng tệp đó.
+
+### Cửa sổ "Windows đã bảo vệ PC của bạn" xuất hiện
+
+Microsoft Defender SmartScreen hiện cửa sổ này lần đầu tiên nó thấy một trình cài đặt chưa được ký. Nhấn **Thông tin thêm** rồi nút **Vẫn chạy** sẽ xuất hiện. Trên PC do trường học hoặc công ty quản lý, một thiết lập của quản trị viên có thể ẩn nút đó; hãy hỏi quản trị viên.
+
+## Trên Mac (beta)
+
+Bạn cần macOS 12 (Monterey) trở lên. Bản Mac không có chữ ký nhà phát triển của Apple, nên lần đầu mở, macOS báo rằng không thể xác minh ứng dụng không chứa phần mềm độc hại và không mở nó. Bạn cho phép một lần, như dưới đây.
+
+1. Mở tệp dmg và kéo `Onyou Office.app` vào thư mục **Ứng dụng**.
+2. Mở Onyou Office từ thư mục Ứng dụng. Khi cảnh báo xuất hiện, nhấn **Xong**.
+3. Mở **Cài đặt hệ thống ▸ Quyền riêng tư & Bảo mật**. Gần cuối trang, cạnh dòng cho biết Onyou Office đã bị chặn, nhấn **Vẫn mở** rồi nhập mật khẩu Mac của bạn. Nút này hiện trong khoảng một giờ sau khi bạn thử mở ứng dụng.
+4. Trong cửa sổ hiện ra lần nữa, nhấn **Mở**. Từ đó trở đi ứng dụng mở mà không có cảnh báo.
+
+Trên macOS 12, vị trí đó là **Tùy chọn hệ thống ▸ Bảo mật & Quyền riêng tư ▸ Cài đặt chung**, và nút ở đó là **Vẫn mở**.
+
+Nếu macOS báo ứng dụng không được hỗ trợ trên máy Mac này, hãy kiểm tra hai điều:
+
+- Máy Mac Intel không chạy được tệp dành cho Apple Silicon (`-arm64.dmg`). Hãy xem mục "Bộ xử lý" trong **Giới thiệu về máy Mac này**, xóa ứng dụng đã cài và cài tệp `-x64.dmg` thay vào.
+- macOS 11 trở về trước không chạy được Onyou Office. **Giới thiệu về máy Mac này** cũng cho biết phiên bản macOS.
+
+Ngoài ra trên Mac:
+
+- Các thẻ kết nối AI không có nút cài đặt. Hãy theo liên kết hướng dẫn cài đặt chính thức trên thẻ để cài Claude Code hoặc Codex. Ứng dụng Claude cho máy tính không phải là Claude Code, nên vẫn phải cài Claude Code riêng dù đã có ứng dụng máy tính.
+- Việc đăng nhập hoàn tất trong trình duyệt. Nếu trình duyệt yêu cầu bạn dán một mã, hãy tự chạy `claude auth login` hoặc `codex login` trong Terminal. Xem [Kết nối gói đăng ký](help://subscription).
+
+## Trên Linux (beta)
+
+- **AppImage**: cho tệp quyền thực thi (`chmod +x OnyouOffice-<version>.AppImage`) rồi chạy tệp đó. Không có bước cài đặt.
+- **deb**: cài bằng `sudo apt install ./onyouoffice_<version>_amd64.deb`.
+- **rpm**: cài bằng `sudo dnf install ./onyouoffice-<version>.x86_64.rpm`. Trên openSUSE, dùng `sudo zypper install ./onyouoffice-<version>.x86_64.rpm`.
+
+Gói deb và rpm cài vào `/opt/Onyou Office` và liên kết lệnh terminal `/usr/bin/onyouoffice`. Giống như trên Mac, các thẻ kết nối AI không có nút cài đặt, và khi việc đăng nhập yêu cầu một mã, bạn tự chạy `claude auth login` hoặc `codex login` trong terminal.
+
 ## Cập nhật
 
-- GenOffice tìm phiên bản mới hơn trên chính trang phát hành đó của GitHub. Khi có bản mới được công bố, **Cài đặt ▸ Giới thiệu** sẽ đề nghị cập nhật: nhấn **Cập nhật lên …**, chờ tải xong, rồi nhấn **Khởi động lại và cài đặt**. Trên Windows, một cửa sổ hiển thị tiến trình cài đặt; khi xong, GenOffice mở lại cùng các tài liệu bạn đang mở. Trên Mac, ứng dụng sẽ đóng, được thay bằng phiên bản mới rồi mở lại cùng các tài liệu bạn đang mở. Điều này áp dụng cho ứng dụng trong thư mục Ứng dụng; ứng dụng mở trực tiếp từ ảnh đĩa sẽ chỉ bạn tới trang tải xuống. Bản cập nhật chỉ được cài khi bạn nhấn nút đó, không phải khi bạn chỉ đóng ứng dụng.
-- **Menu (☰) ▸ Kiểm tra bản cập nhật** sẽ kiểm tra bất cứ khi nào bạn yêu cầu. Trên Mac là **Trợ giúp ▸ Kiểm tra bản cập nhật**.
-- Khi việc kiểm tra thất bại — không có mạng, hoặc chưa có bản nào được công bố — thì không có gì xảy ra, và ứng dụng vẫn hoạt động như trước.
-- **Kênh cập nhật**, cũng nằm trong Cài đặt ▸ Giới thiệu, là Ổn định hoặc Beta. Đổi kênh sẽ có hiệu lực ngay và kiểm tra bản cập nhật; nó sẽ không hạ bản cài đặt Beta về lại Ổn định.
-- Các bản cập nhật cũng chưa được ký mã. Trước khi cài một bản, ứng dụng đối chiếu tệp đã tải về với mã kiểm tra (checksum) được công bố cùng bản phát hành đó.
-- Nếu bấm **Khởi động lại và cài đặt** mà ứng dụng đóng lại nhưng phiên bản mới không xuất hiện, lần mở tiếp theo ứng dụng sẽ báo điều đó và đề nghị cập nhật lại. Lần này trình cài đặt mở trong cửa sổ riêng, nên bạn theo dõi được và trả lời yêu cầu quyền quản trị viên. Nếu vẫn không được, cửa sổ cập nhật sẽ chỉ đến trang tải xuống; cài bằng tệp tải từ đó vẫn giữ nguyên cài đặt và tài liệu của bạn. Quá trình cập nhật được ghi vào `update-log.txt` trong thư mục dữ liệu của ứng dụng (gõ `%APPDATA%\GenOffice` vào thanh địa chỉ của File Explorer để mở). Hãy đính kèm tệp này khi báo lỗi.
+[trang phát hành (Releases)](https://github.com/dodamworks/onyouoffice/releases/latest)
 
 ## Bản dựng bạn đang chạy
 
@@ -39,4 +84,4 @@ Vì trình cài đặt chưa được ký, bạn chỉ nên chạy tệp đã t�
 
 ## Dòng lệnh đi kèm luôn
 
-Mọi bản cài đặt đều kèm lệnh `ieumoffice` nói chuyện với đúng những engine mà cửa sổ dùng, nên cả hai không bao giờ bất đồng về một tệp. `ieumoffice install-cli` đưa nó vào `PATH` của bạn. Xem [Dòng lệnh và tác nhân](help://cli) để biết nó làm được gì.
+Mọi bản cài đặt đều kèm lệnh `onyouoffice` nói chuyện với đúng những engine mà cửa sổ dùng, nên cả hai không bao giờ bất đồng về một tệp. `onyouoffice install-cli` đưa nó vào `PATH` của bạn. Xem [Dòng lệnh và tác nhân](help://cli) để biết nó làm được gì.

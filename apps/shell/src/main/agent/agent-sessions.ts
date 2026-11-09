@@ -1,9 +1,9 @@
 // Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
 import { randomUUID } from 'node:crypto'
 import { existsSync, rmSync, statSync } from 'node:fs'
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
-import { homedir, tmpdir } from 'node:os'
-import { dirname, isAbsolute, join, parse, resolve } from 'node:path'
+import { readFile, realpath, rm } from 'node:fs/promises'
+import { homedir } from 'node:os'
+import { dirname, isAbsolute, join, parse, relative, resolve, sep } from 'node:path'
 import type {
   AgentCodexWebSearch,
   AgentPermissionAnswer,
@@ -14,16 +14,29 @@ import type {
   AgentSkillBundle,
   AgentSkillEntry,
 } from '@genoffice/ai-provider/agent-session'
-import { comparablePath, isInsidePath } from '@genoffice/ai-provider/agent-session'
+import {
+  AgentProgramError,
+  comparablePath,
+  isInsidePath,
+} from '@genoffice/ai-provider/agent-session'
 import { SKILL_SKIPPED_STEPS_SENTENCE } from '@genoffice/agent-core/skill-mcp-refs'
 import type {
   AiSettings,
   AiSubscriptionProviderId,
   AiSubscriptionStatus,
 } from '@genoffice/ai-provider'
-import { subscriptionConnection } from '@genoffice/ai-provider'
-import type { AgentSessionSkill } from '../../shared/agent-api'
+import { subscriptionConnection, subscriptionOffIn } from '@genoffice/ai-provider'
+import {
+  AGENT_RUN_ERROR_KINDS,
+  type AgentPrepareStep,
+  type AgentRunErrorKind,
+  type AgentSessionSkill,
+  type AgentStartFailure,
+} from '../../shared/agent-api'
+import { errorReason } from '../crash-log'
+import { cutAt } from '../projects/context'
 import { agentSessionSkillsOf } from './agent-skills'
+import { makeAgentSessionFolder } from './agent-session-folders'
 import type { AgentMcpRelays, AgentRelayAnswer, AgentRelayAsk } from './agent-mcp-relay'
 
 /**
@@ -34,14 +47,6 @@ import type { AgentMcpRelays, AgentRelayAnswer, AgentRelayAsk } from './agent-mc
  * runners, the app's MCP server, the subscription statuses and settings, the
  * open tabs, and the event sink.
  */
-
-export type AgentStartFailure =
-  /** the folder is missing, not a folder, a drive root, the home folder, or a protected place */
-  | 'bad-folder'
-  /** the program is not signed in on a subscription, and no metered login was accepted */
-  | 'not-connected'
-  /** the program could not be started or refused the session (see `message`) */
-  | 'start-failed'
 
 export interface AgentStartRequest {
   provider: AiSubscriptionProviderId
@@ -65,13 +70,62 @@ export type AgentStartResult =
        * Absent when there are none
        */
       mcpKeepInside?: string[] | undefined
+      /**
+       * the project notes (CLAUDE.md, AGENTS.md) the instructions carry only the start of, by
+       * file name; the window says so as the AI window does. Absent when none was cut
+       */
+      instructionsTruncated?: string[] | undefined
     }
   | {
       ok: false
-      reason: AgentStartFailure
-      kind?: string | undefined
-      message?: string | undefined
+      failure: AgentStartFailure
+      cause?: string | undefined
     }
+
+/** the window closed, or the app quit, before the session was running */
+const STOPPED_WHILE_STARTING: AgentStartResult = { ok: false, failure: { reason: 'stopped' } }
+
+class AgentPrepareError extends Error {
+  readonly step: AgentPrepareStep
+  readonly thrown: unknown
+
+  constructor(step: AgentPrepareStep, thrown: unknown) {
+    super(`The agent session could not be prepared: ${step}`)
+    this.name = 'AgentPrepareError'
+    this.step = step
+    this.thrown = thrown
+  }
+}
+
+async function prepared<T>(step: AgentPrepareStep, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run()
+  } catch (error) {
+    throw new AgentPrepareError(step, error)
+  }
+}
+
+function isAgentRunErrorKind(value: unknown): value is AgentRunErrorKind {
+  return (AGENT_RUN_ERROR_KINDS as readonly unknown[]).includes(value)
+}
+
+export function agentStartFailed(error: unknown): Extract<AgentStartResult, { ok: false }> {
+  if (error instanceof AgentPrepareError) {
+    return {
+      ok: false,
+      failure: { reason: 'prepare-failed', step: error.step },
+      cause: errorReason(error.thrown),
+    }
+  }
+  const kind = (error as { kind?: unknown } | null)?.kind
+  const failure: AgentStartFailure =
+    error instanceof AgentProgramError
+      ? { reason: 'program-problem', problem: error.problem }
+      : isAgentRunErrorKind(kind)
+        ? { reason: 'run-error', kind }
+        : { reason: 'unknown' }
+  return { ok: false, failure, cause: errorReason(error) }
+}
 
 export interface AgentRunners {
   claude: (
@@ -224,6 +278,35 @@ export function codexSkillInstructions(skills: readonly AgentSkillEntry[]): stri
   return lines
 }
 
+/** The line after a project note cut at the limit: where the rest is, and how to read it */
+function truncatedNoteLine(provider: AiSubscriptionProviderId, path: string): string {
+  const how = provider === 'claude-code' ? ' with the Read tool' : ''
+  return `(Only the first ${MAX_PROJECT_NOTES_CHARS} characters of ${path} are given above. When the task needs the rest, read the file${how}.)`
+}
+
+/**
+ * Whether a project note really lies in the project folder: a CLAUDE.md or
+ * AGENTS.md that is a link to a file elsewhere gets no "read the rest" line,
+ * so the instructions never point the program outside the folder.
+ */
+async function noteInsideProject(path: string, projectRoot: string): Promise<boolean> {
+  const [real, realRoot] = await Promise.all([
+    realpath(path).catch(() => undefined),
+    realpath(projectRoot).catch(() => undefined),
+  ])
+  if (real === undefined || realRoot === undefined) return false
+  const rel = relative(comparablePath(realRoot, realRoot), comparablePath(real, real))
+  // a folder named "..x" inside the project is inside: only ".." itself leads out
+  return !(rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel))
+}
+
+/** The instructions, and the project notes they carry only the start of */
+export interface AgentInstructions {
+  text: string
+  /** file names of the project notes cut at the limit, in the order they appear */
+  truncated: string[]
+}
+
 /**
  * What the app adds to the program's own instructions. English, as all model
  * prompts in this app; the reply language follows the screen. `relayServers`
@@ -237,6 +320,27 @@ export async function agentInstructions(
   skills: readonly AgentSkillEntry[] = [],
   relayServers: readonly string[] = [],
 ): Promise<string> {
+  return (
+    await agentInstructionsAndCuts(
+      provider,
+      projectRoot,
+      language,
+      withAppTools,
+      skills,
+      relayServers,
+    )
+  ).text
+}
+
+/** `agentInstructions`, with which project notes were cut at the limit */
+export async function agentInstructionsAndCuts(
+  provider: AiSubscriptionProviderId,
+  projectRoot: string,
+  language: string,
+  withAppTools: boolean,
+  skills: readonly AgentSkillEntry[] = [],
+  relayServers: readonly string[] = [],
+): Promise<AgentInstructions> {
   const lines = [
     'You are working for the person inside an office app, in the project folder they chose.',
     `Reply in the language with code "${language}" unless the person writes in another language.`,
@@ -264,10 +368,20 @@ export async function agentInstructions(
   // reads AGENTS.md on its own, so only CLAUDE.md is added for it
   const files = provider === 'claude-code' ? PROJECT_NOTE_FILES : ['CLAUDE.md']
   const notes: string[] = []
+  const truncated: string[] = []
   for (const name of files) {
     try {
-      const text = await readFile(join(projectRoot, name), 'utf8')
-      if (text.trim()) notes.push(`## ${name}\n${text.slice(0, MAX_PROJECT_NOTES_CHARS)}`)
+      const path = join(projectRoot, name)
+      const text = await readFile(path, 'utf8')
+      if (!text.trim()) continue
+      let note = `## ${name}\n${cutAt(text, MAX_PROJECT_NOTES_CHARS)}`
+      if (text.length > MAX_PROJECT_NOTES_CHARS) {
+        if (await noteInsideProject(path, projectRoot)) {
+          note += `\n\n${truncatedNoteLine(provider, path)}`
+        }
+        truncated.push(name)
+      }
+      notes.push(note)
     } catch {
       // no such file
     }
@@ -275,14 +389,16 @@ export async function agentInstructions(
   if (notes.length > 0) {
     lines.push('', 'The project folder has its own notes for you:', '', ...notes)
   }
-  return lines.join('\n')
+  return { text: lines.join('\n'), truncated }
 }
 
 interface LiveSession {
   id: string
   ownerId: number
+  provider: AgentStartRequest['provider']
   session: AgentSession | undefined
-  sessionDir: string
+  /** undefined until the session folder is made */
+  sessionDir: string | undefined
   appMcp?: { stop(): Promise<void> } | undefined
   /** the relays of the person's MCP servers (user MCP spec 9) */
   relays?: AgentMcpRelays | undefined
@@ -318,26 +434,33 @@ export function createAgentManager(deps: AgentManagerDeps): AgentManager {
   const protectedPaths = agentProtectedPaths(homeDir, deps.userData)
   const live = new Map<string, LiveSession>()
 
-  const cleanup = (entry: LiveSession, { quitting = false } = {}): void => {
-    if (!live.has(entry.id)) return
-    live.delete(entry.id)
-    void entry.appMcp?.stop().catch(() => undefined)
+  /** session folders being removed; one still here when the app quits is removed before it exits */
+  const removing = new Set<string>()
+  // the folder is the program's working directory: Windows refuses to remove it until the ended
+  // process is gone, which can take a moment
+  const removeOptions = { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }
+
+  /** let go of what the session holds now; a part let go of once is not stopped again */
+  const release = (entry: LiveSession): void => {
+    const { appMcp, relays, sessionDir } = entry
+    entry.appMcp = undefined
+    entry.relays = undefined
+    entry.sessionDir = undefined
+    void appMcp?.stop().catch(() => undefined)
     // a question still waiting is a refusal; the relays and their calls end with the session
     for (const settle of [...entry.relayAsks.values()]) settle({ allow: false })
-    void entry.relays?.stop().catch(() => undefined)
-    // the folder is the program's working directory: Windows refuses to remove it until the
-    // ended process is gone, which can take a moment
-    const options = { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }
-    if (!quitting) {
-      void rm(entry.sessionDir, options).catch(() => undefined)
-      return
-    }
-    // the app is going away and would not wait for an asynchronous removal
-    try {
-      rmSync(entry.sessionDir, options)
-    } catch {
-      // left for the system's temporary-file cleanup
-    }
+    void relays?.stop().catch(() => undefined)
+    if (sessionDir === undefined) return
+    removing.add(sessionDir)
+    void rm(sessionDir, removeOptions).then(
+      () => removing.delete(sessionDir),
+      () => undefined,
+    )
+  }
+
+  const cleanup = (entry: LiveSession): void => {
+    if (!live.delete(entry.id)) return
+    release(entry)
   }
 
   const own = (ownerId: number, sessionId: string): LiveSession | undefined => {
@@ -377,24 +500,33 @@ export function createAgentManager(deps: AgentManagerDeps): AgentManager {
         })
       })
 
+  /** turned off in this app (decision 0114), by the setting or by the status the window saw */
+  const offInApp = (provider: AiSubscriptionProviderId): boolean =>
+    subscriptionOffIn(deps.aiSettings(), provider) || deps.statuses()[provider]?.state === 'off'
+  const OFF_IN_APP_MESSAGE = 'The program is turned off in this app'
+  const offInAppFailure = (): AgentStartResult => ({
+    ok: false,
+    failure: { reason: 'run-error', kind: 'off-in-app' },
+  })
+
   return {
     async start(ownerId, request) {
       const projectRoot = resolve(request.projectRoot)
       if (projectFolderProblem(projectRoot, homeDir, protectedPaths, platform)) {
-        return { ok: false, reason: 'bad-folder' }
+        return { ok: false, failure: { reason: 'bad-folder' } }
       }
       const settings = deps.aiSettings()
       const connection = subscriptionConnection(settings, deps.statuses()[request.provider])
-      if (!connection) return { ok: false, reason: 'not-connected' }
+      if (!connection) return { ok: false, failure: { reason: 'not-connected' } }
 
       const id = randomUUID()
-      const sessionDir = await mkdtemp(join(tmpdir(), 'ieum-agent-'))
       const openAtStart = deps.openDocuments()
       const entry: LiveSession = {
         id,
         ownerId,
+        provider: request.provider,
         session: undefined,
-        sessionDir,
+        sessionDir: undefined,
         projectRoot,
         protectedDocuments: new Set(
           openAtStart.map((path) => comparablePath(path, path, platform)),
@@ -402,32 +534,47 @@ export function createAgentManager(deps: AgentManagerDeps): AgentManager {
         warnedDocuments: new Set(),
         relayAsks: new Map(),
       }
+      // live while it is prepared: its window closing or the app quitting stops it here too
       live.set(id, entry)
+      /** stopped meanwhile: what came after the stop, a program the runner gave included, ends */
+      const stopped = (): boolean => {
+        if (live.has(id)) return false
+        entry.session?.stop()
+        release(entry)
+        return true
+      }
       try {
-        const appMcp = deps.startAppMcp
-          ? await deps.startAppMcp(projectRoot, { ownerId, sessionId: id })
+        const sessionDir = await prepared('session-folder', () => makeAgentSessionFolder())
+        entry.sessionDir = sessionDir
+        if (stopped()) return STOPPED_WHILE_STARTING
+        const startAppMcp = deps.startAppMcp
+        const appMcp = startAppMcp
+          ? await prepared('app-tools', () => startAppMcp(projectRoot, { ownerId, sessionId: id }))
           : undefined
         entry.appMcp = appMcp
+        if (stopped()) return STOPPED_WHILE_STARTING
         // the person's MCP servers as they are set now: a change applies to the next session
-        const relays = deps.startRelays
-          ? await deps.startRelays(
-              { ownerId, sessionId: id },
-              relayAskOf(entry, request.provider === 'claude-code' ? 'claude-code' : 'codex'),
+        const startRelays = deps.startRelays
+        const relays = startRelays
+          ? await prepared('user-mcp', () =>
+              startRelays(
+                { ownerId, sessionId: id },
+                relayAskOf(entry, request.provider === 'claude-code' ? 'claude-code' : 'codex'),
+              ),
             )
           : undefined
         entry.relays = relays
+        if (stopped()) return STOPPED_WHILE_STARTING
         const relayList = relays?.relays ?? []
         // the skills as they are now: a change made during the session applies to the next one
-        const skills = deps.buildSkills ? await deps.buildSkills(projectRoot) : undefined
+        const buildSkills = deps.buildSkills
+        const skills = buildSkills
+          ? await prepared('skills', () => buildSkills(projectRoot))
+          : undefined
         entry.skills = skills?.skills
         const config = settings.providers[request.provider]
-        const options: AgentSessionOptions = {
-          projectRoot,
-          mode: request.mode,
-          model: config?.model ?? '',
-          effort: config?.effort,
-          cliPath: config?.cliPath,
-          instructions: await agentInstructions(
+        const instructions = await prepared('instructions', () =>
+          agentInstructionsAndCuts(
             request.provider,
             projectRoot,
             deps.language(),
@@ -435,6 +582,15 @@ export function createAgentManager(deps: AgentManagerDeps): AgentManager {
             skills?.skills,
             relayList.map((relay) => relay.name),
           ),
+        )
+        if (stopped()) return STOPPED_WHILE_STARTING
+        const options: AgentSessionOptions = {
+          projectRoot,
+          mode: request.mode,
+          model: config?.model ?? '',
+          effort: config?.effort,
+          cliPath: config?.cliPath,
+          instructions: instructions.text,
           openDocuments: openAtStart,
           protectedPaths,
           skillBundleDir: skills?.dir,
@@ -445,6 +601,12 @@ export function createAgentManager(deps: AgentManagerDeps): AgentManager {
         const onEvent = (event: AgentSessionEvent): void => {
           deps.emit(ownerId, id, event)
           if (event.type === 'ended') cleanup(entry)
+        }
+        // the servers, relays and skills above can take seconds: turned off meanwhile, the
+        // program is not started
+        if (offInApp(request.provider)) {
+          cleanup(entry)
+          return offInAppFailure()
         }
         entry.session =
           request.provider === 'claude-code'
@@ -458,6 +620,13 @@ export function createAgentManager(deps: AgentManagerDeps): AgentManager {
                 },
                 onEvent,
               )
+        if (stopped()) return STOPPED_WHILE_STARTING
+        // turned off while the runner prepared its files and found the program: it ends now
+        if (offInApp(request.provider)) {
+          entry.session.stop()
+          cleanup(entry)
+          return offInAppFailure()
+        }
         return {
           ok: true,
           sessionId: id,
@@ -466,21 +635,30 @@ export function createAgentManager(deps: AgentManagerDeps): AgentManager {
           ...(relays && relays.keepResultsInside.length > 0
             ? { mcpKeepInside: [...relays.keepResultsInside] }
             : {}),
+          ...(instructions.truncated.length > 0
+            ? { instructionsTruncated: instructions.truncated }
+            : {}),
         }
       } catch (error) {
         cleanup(entry)
-        return {
-          ok: false,
-          reason: 'start-failed',
-          kind: (error as { kind?: unknown } | null)?.kind as string | undefined,
-          message: error instanceof Error ? error.message : String(error),
-        }
+        return agentStartFailed(error)
       }
     },
 
     async send(ownerId, sessionId, text) {
       const entry = own(ownerId, sessionId)
       if (!entry?.session) throw new Error('No such agent session')
+      // turned off in this app since the session started: the program is sent nothing more
+      if (offInApp(entry.provider)) {
+        deps.emit(ownerId, sessionId, {
+          type: 'error',
+          kind: 'off-in-app',
+          message: OFF_IN_APP_MESSAGE,
+        })
+        entry.session.stop()
+        cleanup(entry)
+        return
+      }
       // documents opened since the session started were not in its program-level rules
       const current = deps.openDocuments()
       const added: string[] = []
@@ -535,7 +713,17 @@ export function createAgentManager(deps: AgentManagerDeps): AgentManager {
     stopAll() {
       for (const entry of [...live.values()]) {
         entry.session?.stop()
-        cleanup(entry, { quitting: true })
+        cleanup(entry)
+      }
+      // the app exits without waiting for an asynchronous removal, such as that of a session
+      // whose window the quit has just closed
+      for (const dir of removing) {
+        try {
+          rmSync(dir, removeOptions)
+        } catch {
+          // left for the next start's sweep (`sweepAgentSessionFolders`)
+        }
+        removing.delete(dir)
       }
     },
 

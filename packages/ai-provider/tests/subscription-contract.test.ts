@@ -18,6 +18,7 @@ import { AI_PROVIDER_ADAPTERS, getProviderAdapter } from '../src/registry'
 import { AiRunError, aiStreamErrorFields } from '../src/run-error'
 import { AiCreditsError } from '../src/stream'
 import { AiTimeoutError } from '../src/watchdog'
+import { subscriptionVersionOf } from '../src/subscription/contract'
 
 describe('claude-code provider', () => {
   it('is a subscription provider on its own CLI bridge protocol', () => {
@@ -205,5 +206,13 @@ describe('run errors', () => {
     expect(aiStreamErrorFields(new Error('something else'))).toEqual({})
     expect(aiStreamErrorFields('a string')).toEqual({})
     expect(aiStreamErrorFields(undefined)).toEqual({})
+  })
+})
+
+describe('CLI version parsing', () => {
+  it('finds the first complete version without rescanning long runs of digits', () => {
+    const started = performance.now()
+    expect(subscriptionVersionOf(`${'0'.repeat(50_000)} build-v01.2.3.4`)).toBe('01.2.3')
+    expect(performance.now() - started).toBeLessThan(250)
   })
 })

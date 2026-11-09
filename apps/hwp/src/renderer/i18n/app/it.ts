@@ -4,6 +4,7 @@ export const it = {
   loading: 'Apertura del documento…',
   editorFailed: 'Impossibile avviare l’editor.',
   openFailed: 'Impossibile aprire il documento.',
+  pdfImportCancelled: "L'importazione del PDF è stata annullata. Puoi chiudere questa scheda.",
   saveFailed: 'Impossibile salvare il documento.',
   fileSave: 'Salva',
   fileSaveAs: 'Salva con nome…',
@@ -104,6 +105,7 @@ export const it = {
   aiToolPageSetup: 'Controllata l’impostazione della pagina',
   aiToolPageSetupSet: 'Cambiata l’impostazione della pagina',
   aiToolFormatting: 'Controllata la formattazione',
+  aiToolParagraphLooks: 'Aspetto dei paragrafi controllato · {count}',
   aiToolFormattingOf: 'Controllata la formattazione di {name}',
   aiToolFormatLook: 'Formattati {count} paragrafi con lo stesso aspetto',
   aiLookParagraphs: '{count} paragrafi con lo stesso aspetto',
@@ -150,6 +152,7 @@ export const it = {
   aiToolMergeCells: 'Tabella {table} · celle unite',
   aiToolSplitCell: 'Tabella {table} · cella divisa',
   aiToolTables: 'Tabelle controllate · {count}',
+  aiToolLayout: 'Controllo celle che traboccano · {count}',
   aiToolReadTable: 'Tabella {table} letta',
   aiToolFillCells: 'Tabella {table} · {count} cella/e compilata/e',
   aiToolCheckBoxes: 'Tabella {table} · {count} casella/e spuntata/e',
@@ -270,4 +273,10 @@ export const it = {
   easyWordsLabel: 'Spiega con parole semplici',
   easyWordsPrompt:
     'Spiega in italiano il testo selezionato qui sotto in modo che lo capisca anche chi ha bisogno di testi facili da leggere. Usa parole di tutti i giorni e frasi brevi, e non tralasciare nessun fatto, numero o condizione. Non modificare il documento.\n\nTesto selezionato:\n{text}',
+  charCountTotal: 'Caratteri {total}',
+  charCountSelected: 'Caratteri {selected} / {total}',
+  charCountHint:
+    'I caratteri sono contati spazi inclusi. Senza spazi: intero documento {totalNoSpace}. Come nelle informazioni sul documento, intestazioni, piè di pagina, note a piè di pagina e note di chiusura non vengono contati.',
+  charCountHintSelected:
+    'Spazi inclusi: selezione {selected} / intero documento {total}. Senza spazi: selezione {selectedNoSpace} / intero documento {totalNoSpace}. Come nelle informazioni sul documento, intestazioni, piè di pagina, note a piè di pagina e note di chiusura non vengono contati.',
 } satisfies Record<keyof typeof zh, string>

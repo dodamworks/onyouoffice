@@ -4,6 +4,7 @@ export const nl = {
   loading: 'Document wordt geopend…',
   editorFailed: 'De editor kon niet worden gestart.',
   openFailed: 'Het document kon niet worden geopend.',
+  pdfImportCancelled: 'Het importeren van de PDF is geannuleerd. U kunt dit tabblad sluiten.',
   saveFailed: 'Het document kon niet worden opgeslagen.',
   fileSave: 'Opslaan',
   fileSaveAs: 'Opslaan als…',
@@ -101,6 +102,7 @@ export const nl = {
   aiToolPageSetup: 'Pagina-instelling gecontroleerd',
   aiToolPageSetupSet: 'Pagina-instelling gewijzigd',
   aiToolFormatting: 'Opmaak gecontroleerd',
+  aiToolParagraphLooks: 'Opmaak per alinea bekeken · {count}',
   aiToolFormattingOf: 'Opmaak van {name} gecontroleerd',
   aiToolFormatLook: '{count} alinea’s met één uiterlijk opgemaakt',
   aiLookParagraphs: '{count} alinea’s met één uiterlijk',
@@ -147,6 +149,7 @@ export const nl = {
   aiToolMergeCells: 'Tabel {table} · cellen samengevoegd',
   aiToolSplitCell: 'Tabel {table} · cel gesplitst',
   aiToolTables: 'Tabellen bekeken · {count}',
+  aiToolLayout: 'Overlopende cellen bekeken · {count}',
   aiToolReadTable: 'Tabel {table} gelezen',
   aiToolFillCells: 'Tabel {table} · {count} cel(len) ingevuld',
   aiToolCheckBoxes: 'Tabel {table} · {count} vakje(s) aangevinkt',
@@ -270,4 +273,10 @@ export const nl = {
   easyWordsLabel: 'Uitleggen in eenvoudige woorden',
   easyWordsPrompt:
     'Leg de hieronder geselecteerde tekst in het Nederlands uit, zodat ook iemand die makkelijk leesbare tekst nodig heeft hem begrijpt. Gebruik gewone woorden en korte zinnen en laat geen feit, getal of voorwaarde weg. Wijzig het document niet.\n\nGeselecteerde tekst:\n{text}',
+  charCountTotal: 'Tekens {total}',
+  charCountSelected: 'Tekens {selected} / {total}',
+  charCountHint:
+    'Tekens worden met spaties geteld. Zonder spaties: heel document {totalNoSpace}. Net als bij Documentinformatie worden kop- en voetteksten, voetnoten en eindnoten niet geteld.',
+  charCountHintSelected:
+    'Met spaties: selectie {selected} / heel document {total}. Zonder spaties: selectie {selectedNoSpace} / heel document {totalNoSpace}. Net als bij Documentinformatie worden kop- en voetteksten, voetnoten en eindnoten niet geteld.',
 } satisfies Record<keyof typeof zh, string>

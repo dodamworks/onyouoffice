@@ -32,7 +32,7 @@ import {
   AiScopeQuote,
   AiSubscriptionUsageLine,
   AiToolsUnsupportedNotice,
-  AiTypingIndicator,
+  AiReplyProgress,
   AiUsageChip,
   type AiScopeQuoteData,
   type AiSubscriptionCardActions,
@@ -871,17 +871,11 @@ export function AiChatPanel({
                     lang={lang}
                     onContinueWith={(provider) => subscription.onContinueWith(provider, index)}
                   />
-                ) : entry.text ? (
-                  <div dir="auto">
-                    <Markdown text={entry.text} navs={[citationNav, fileNav]} />
-                  </div>
                 ) : (
-                  entry.streaming && (
-                    <span className="ai-typing-row">
-                      <AiTypingIndicator
-                        label={entry.tools.length > 0 ? t('aiWorking') : t('aiThinking')}
-                      />
-                    </span>
+                  entry.text && (
+                    <div dir="auto">
+                      <Markdown text={entry.text} navs={[citationNav, fileNav]} />
+                    </div>
                   )
                 )}
                 {entry.autoApplied && (
@@ -903,6 +897,11 @@ export function AiChatPanel({
                     )}
                   </div>
                 )}
+                <AiReplyProgress
+                  reply={entry}
+                  thinking={t('aiThinking')}
+                  working={t('aiWorking')}
+                />
               </>
             )}
           </div>

@@ -4,6 +4,7 @@ export const ja = {
   loading: '文書を開いています…',
   editorFailed: 'エディターを起動できませんでした。',
   openFailed: '文書を開けませんでした。',
+  pdfImportCancelled: 'PDF の取り込みを取り消しました。このタブは閉じてかまいません。',
   saveFailed: '文書を保存できませんでした。',
   fileSave: '保存',
   fileSaveAs: '名前を付けて保存…',
@@ -101,6 +102,7 @@ export const ja = {
   aiToolPageSetup: 'ページ設定を確認',
   aiToolPageSetupSet: 'ページ設定を変更',
   aiToolFormatting: '文書の書式を確認',
+  aiToolParagraphLooks: '段落ごとの書式を確認 · {count} 個',
   aiToolFormattingOf: '{name} の書式を確認',
   aiToolFormatLook: '同じ見た目の段落 {count} 個の書式を変更',
   aiLookParagraphs: '同じ見た目の段落 {count} 個',
@@ -147,6 +149,7 @@ export const ja = {
   aiToolMergeCells: '表 {table} · セル結合',
   aiToolSplitCell: '表 {table} · セル分割',
   aiToolTables: '表を確認 · {count} 個',
+  aiToolLayout: 'セルのはみ出しを確認 · {count} 個',
   aiToolReadTable: '表 {table} を読み取り',
   aiToolFillCells: '表 {table} · セル {count} 個に入力',
   aiToolCheckBoxes: '表 {table} · チェックボックス {count} 個を選択',
@@ -262,4 +265,10 @@ export const ja = {
   easyWordsLabel: 'やさしい言葉で説明',
   easyWordsPrompt:
     '下の選んだ文章を、やさしい文章が必要な人にもわかるように日本語で説明してください。ふだん使う言葉と短い文で書き、事実・数字・条件はひとつも落とさないでください。文書は変更しないでください。\n\n選んだ文章:\n{text}',
+  charCountTotal: '文字数 {total}',
+  charCountSelected: '文字数 {selected} / {total}',
+  charCountHint:
+    'スペースを含めて数えます。スペース除く：全体 {totalNoSpace}。 文書情報と同じく、ヘッダー・フッター・脚注・文末脚注は数えません。',
+  charCountHintSelected:
+    'スペース含む：選択 {selected} / 全体 {total}。スペース除く：選択 {selectedNoSpace} / 全体 {totalNoSpace}。 文書情報と同じく、ヘッダー・フッター・脚注・文末脚注は数えません。',
 } satisfies Record<keyof typeof zh, string>

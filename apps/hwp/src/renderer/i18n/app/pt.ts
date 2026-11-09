@@ -4,6 +4,7 @@ export const pt = {
   loading: 'Abrindo o documento…',
   editorFailed: 'Não foi possível iniciar o editor.',
   openFailed: 'Não foi possível abrir o documento.',
+  pdfImportCancelled: 'A importação do PDF foi cancelada. Você pode fechar esta aba.',
   saveFailed: 'Não foi possível salvar o documento.',
   fileSave: 'Salvar',
   fileSaveAs: 'Salvar Como…',
@@ -103,6 +104,7 @@ export const pt = {
   aiToolPageSetup: 'Verificada a configuração da página',
   aiToolPageSetupSet: 'Alterada a configuração da página',
   aiToolFormatting: 'Verificada a formatação',
+  aiToolParagraphLooks: 'Formatação de cada parágrafo verificada · {count}',
   aiToolFormattingOf: 'Verificada a formatação de {name}',
   aiToolFormatLook: 'Formatados {count} parágrafos de uma mesma aparência',
   aiLookParagraphs: '{count} parágrafos de uma mesma aparência',
@@ -149,6 +151,7 @@ export const pt = {
   aiToolMergeCells: 'Tabela {table} · células mescladas',
   aiToolSplitCell: 'Tabela {table} · célula dividida',
   aiToolTables: 'Tabelas verificadas · {count}',
+  aiToolLayout: 'Transbordamento de células verificado · {count}',
   aiToolReadTable: 'Tabela {table} lida',
   aiToolFillCells: 'Tabela {table} · {count} célula(s) preenchida(s)',
   aiToolCheckBoxes: 'Tabela {table} · {count} caixa(s) marcada(s)',
@@ -267,4 +270,10 @@ export const pt = {
   easyWordsLabel: 'Explicar com palavras simples',
   easyWordsPrompt:
     'Explique em português o texto selecionado abaixo para que alguém que precisa de textos fáceis de ler também entenda. Use palavras do dia a dia e frases curtas, e não deixe de fora nenhum fato, número ou condição. Não altere o documento.\n\nTexto selecionado:\n{text}',
+  charCountTotal: 'Caracteres {total}',
+  charCountSelected: 'Caracteres {selected} / {total}',
+  charCountHint:
+    'Os caracteres são contados com espaços. Sem espaços: documento inteiro {totalNoSpace}. Como nas informações do documento, cabeçalhos, rodapés, notas de rodapé e notas de fim não são contados.',
+  charCountHintSelected:
+    'Com espaços: seleção {selected} / documento inteiro {total}. Sem espaços: seleção {selectedNoSpace} / documento inteiro {totalNoSpace}. Como nas informações do documento, cabeçalhos, rodapés, notas de rodapé e notas de fim não são contados.',
 } satisfies Record<keyof typeof zh, string>

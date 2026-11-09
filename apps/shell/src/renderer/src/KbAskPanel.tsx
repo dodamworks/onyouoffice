@@ -23,7 +23,7 @@ import {
   AiMark,
   AiConnectPrompt,
   AiToolsUnsupportedNotice,
-  AiTypingIndicator,
+  AiReplyProgress,
   AiUsageChip,
   addTokenUsage,
   aiContextConfirmText,
@@ -1116,20 +1116,14 @@ export function KbAskPanel({
               />
             ))}
             {m.skillProposals?.map((key) => skillCards.render(key))}
-            {m.text ? (
-              m.role === 'assistant' ? (
-                <Markdown text={m.text} navs={[fileNav]} />
-              ) : (
-                m.text
-              )
-            ) : m.streaming ? (
-              <AiTypingIndicator label={t('askHintBusy')} />
-            ) : null}
+            {m.text &&
+              (m.role === 'assistant' ? <Markdown text={m.text} navs={[fileNav]} /> : m.text)}
             {m.role === 'assistant' && m.usage && (
               <div className="ai-message-usage">
                 <AiUsageChip usage={m.usage} lang={lang} />
               </div>
             )}
+            <AiReplyProgress reply={m} thinking={t('askHintBusy')} working={t('askHintBusy')} />
             {m.role === 'assistant' &&
               m.text &&
               !m.streaming &&

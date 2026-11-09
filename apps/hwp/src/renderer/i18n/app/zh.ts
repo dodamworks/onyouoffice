@@ -3,6 +3,7 @@ export const zh = {
   loading: '正在打开文档…',
   editorFailed: '编辑器无法启动。',
   openFailed: '无法打开文档。',
+  pdfImportCancelled: '已取消 PDF 导入。可以关闭此标签页。',
   saveFailed: '无法保存文档。',
   fileSave: '保存',
   fileSaveAs: '另存为…',
@@ -95,6 +96,7 @@ export const zh = {
   aiToolPageSetup: '查看了页面设置',
   aiToolPageSetupSet: '更改了页面设置',
   aiToolFormatting: '查看了文档格式',
+  aiToolParagraphLooks: '已查看各段落格式 · {count} 段',
   aiToolFormattingOf: '查看了 {name} 的格式',
   aiToolFormatLook: '更改了 {count} 个同样式段落的格式',
   aiLookParagraphs: '{count} 个同样式段落',
@@ -141,6 +143,7 @@ export const zh = {
   aiToolMergeCells: '表 {table} · 合并单元格',
   aiToolSplitCell: '表 {table} · 拆分单元格',
   aiToolTables: '已查看表格 · {count} 个',
+  aiToolLayout: '已检查单元格溢出 · {count} 个',
   aiToolReadTable: '已读取表格 {table}',
   aiToolFillCells: '表格 {table} · 已填写 {count} 个单元格',
   aiToolCheckBoxes: '表格 {table} · 已勾选 {count} 个选框',
@@ -250,4 +253,10 @@ export const zh = {
   easyWordsLabel: '用简单的话解释',
   easyWordsPrompt:
     '请用中文解释下面选中的文字，让需要浅显文字的人也能看懂。用日常词语和短句，不要漏掉任何事实、数字或条件。不要修改文档。\n\n选中的文字：\n{text}',
+  charCountTotal: '字数 {total}',
+  charCountSelected: '字数 {selected} / {total}',
+  charCountHint:
+    '字数含空格。不含空格：全文 {totalNoSpace}。 与文档信息相同，不计页眉、页脚、脚注和尾注。',
+  charCountHintSelected:
+    '含空格：所选 {selected} / 全文 {total}。不含空格：所选 {selectedNoSpace} / 全文 {totalNoSpace}。 与文档信息相同，不计页眉、页脚、脚注和尾注。',
 }

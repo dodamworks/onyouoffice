@@ -28,7 +28,7 @@ import {
   AI_QUEUE_LABELS,
   AiSubscriptionUsageLine,
   aiSubscriptionText,
-  AiTypingIndicator,
+  AiReplyProgress,
   AiUsageChip,
   addTokenUsage,
   type AiTokenUsageView,
@@ -1226,11 +1226,7 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
               key={i}
               className={`ai-msg ai-msg-assistant${entry.isError ? ' ai-msg-error' : ''}${entry.streaming ? ' ai-msg-streaming' : ''}`}
             >
-              {!entry.text && entry.streaming ? (
-                <span className="ai-typing-row">
-                  <AiTypingIndicator label={hasTools ? t('aiWorking') : t('aiThinking')} />
-                </span>
-              ) : entry.blocked ? (
+              {entry.blocked ? (
                 <AiBlockedNotice
                   kind={entry.blocked.kind}
                   provider={entry.blocked.provider}
@@ -1257,6 +1253,7 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
                   <AiUsageChip usage={entry.usage} lang={lang} />
                 </div>
               )}
+              <AiReplyProgress reply={entry} thinking={t('aiThinking')} working={t('aiWorking')} />
               {showToolbar && (
                 <div className="ai-msg-toolbar">
                   <button
