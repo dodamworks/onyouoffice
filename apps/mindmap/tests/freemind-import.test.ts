@@ -161,6 +161,15 @@ describe('a file that is not a readable map', () => {
     expect(await importedMap(file, 'x', PICTURE)).toEqual({ status: 'unreadable' })
   })
 
+  it('keeps literal declaration text inside CDATA', () => {
+    const read = parseFreeMind(
+      bytes(
+        '<map><node><richcontent TYPE="NODE"><![CDATA[<!DOCTYPE example>]]></richcontent></node></map>',
+      ),
+    )
+    expect(read).toMatchObject({ ok: true, root: { text: '<!DOCTYPE example>' } })
+  })
+
   it('nested deeper than the engine accepts opens as unreadable; at the limit it opens', async () => {
     const nested = (levels: number): Uint8Array =>
       bytes(

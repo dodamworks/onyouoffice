@@ -2,9 +2,9 @@
  * FreeMind and Freeplane maps (`.mm`): read once into a new map, never written.
  *
  * The file is XML another program wrote, so it is untrusted. It is parsed with
- * the browser's `DOMParser`, and a document type declaration is refused before
- * parsing: neither program writes one, and without it there is no entity to
- * expand. Topics deeper than the engine accepts make the file unreadable.
+ * a strict XML parser that rejects document type declarations and never loads
+ * external resources. Embedded HTML is parsed into a data tree. Topics deeper
+ * than the engine accepts make the file unreadable.
  *
  * What comes over: each node's text, its children in order, its note, its web
  * link, whether it is folded, and which side of the central topic its main
@@ -22,6 +22,8 @@
  * colours, edges, clouds, arrow links, attributes, details and links to other
  * nodes are left behind too.
  */
+import { parse, defaultTreeAdapter, type DefaultTreeAdapterTypes } from 'parse5'
+import { SaxesParser } from 'saxes'
 import {
   MAX_TOPIC_DEPTH,
   createXmindDocumentFromSheets,
@@ -110,12 +112,10 @@ function fileName(address: string): string {
 }
 
 /** A picture's alt text, else its title, else the file name its `src` ends in. */
-function pictureName(img: Element): string {
+function pictureName(attribute: (name: string) => string | null): string {
   const named = (name: string | null): string => readable(name ?? '').trim()
   return (
-    named(img.getAttribute('alt')) ||
-    named(img.getAttribute('title')) ||
-    fileName(img.getAttribute('src')?.trim() ?? '')
+    named(attribute('alt')) || named(attribute('title')) || fileName(attribute('src')?.trim() ?? '')
   )
 }
 
@@ -124,7 +124,9 @@ function pictureName(img: Element): string {
  * table row is one line: blocks inside it do not break it, and its cells are
  * set apart by " | ".
  */
-function htmlText(content: Node): RichText {
+type RichNode = Node | DefaultTreeAdapterTypes.Node
+
+function htmlText(content: RichNode): RichText {
   const lines: string[] = []
   let line = ''
   const breakLine = (): void => {
@@ -135,7 +137,7 @@ function htmlText(content: Node): RichText {
   let rows = 0
   let cellStarts = false
   let picture: string | undefined
-  const pending: (Node | 'break' | 'row' | 'row-end' | 'cell')[] = [content]
+  const pending: (RichNode | 'break' | 'row' | 'row-end' | 'cell')[] = [content]
   for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
     if (next === 'break') {
       if (rows === 0) breakLine()
@@ -154,8 +156,16 @@ function htmlText(content: Node): RichText {
       cellStarts = true
       continue
     }
-    if (next.nodeType === Node.TEXT_NODE || next.nodeType === Node.CDATA_SECTION_NODE) {
-      const text = readable(next.nodeValue ?? '')
+    const value =
+      'nodeType' in next
+        ? next.nodeType === Node.TEXT_NODE || next.nodeType === Node.CDATA_SECTION_NODE
+          ? (next.nodeValue ?? '')
+          : undefined
+        : defaultTreeAdapter.isTextNode(next)
+          ? next.value
+          : undefined
+    if (value !== undefined) {
+      const text = readable(value)
       if (cellStarts && text.trim()) {
         if (line.trim()) line = `${line.trimEnd()} | `
         cellStarts = false
@@ -163,16 +173,31 @@ function htmlText(content: Node): RichText {
       line += text
       continue
     }
-    if (next.nodeType !== Node.ELEMENT_NODE) continue
-    const name = (next as Element).localName?.toLowerCase() ?? ''
+    const element =
+      'nodeType' in next
+        ? next.nodeType === Node.ELEMENT_NODE
+          ? (next as Element)
+          : undefined
+        : defaultTreeAdapter.isElementNode(next)
+          ? next
+          : undefined
+    if (!element) continue
+    const name = ('localName' in element ? element.localName : element.tagName).toLowerCase()
     if (SKIPPED.has(name)) continue
     if (name === 'img') {
-      if (!picture) picture = pictureName(next as Element)
+      if (!picture) {
+        picture = pictureName((attr) =>
+          'getAttribute' in element
+            ? element.getAttribute(attr)
+            : (element.attrs.find(({ name }) => name === attr)?.value ?? null),
+        )
+      }
       continue
     }
     if (name === 'tr') pending.push('break', 'row-end')
     else if (BLOCKS.has(name)) pending.push('break')
-    const children = Array.from(next.childNodes)
+    const children: RichNode[] =
+      'localName' in element ? Array.from(element.childNodes) : element.childNodes
     for (let at = children.length - 1; at >= 0; at--) pending.push(children[at]!)
     if (name === 'tr') pending.push('row', 'break')
     else if (CELLS.has(name)) pending.push('cell')
@@ -202,12 +227,14 @@ function richText(content: Element): RichText {
 
 /**
  * Text kept in an attribute or a plain element. Both programs show it as HTML
- * when it starts with `<html`. A document from `DOMParser` is inert: nothing in
- * it runs or loads.
+ * when it starts with `<html`. The parsed tree has no browser resource loader.
  */
 function markupText(text: string): RichText {
   if (!/^\s*<html/i.test(text)) return { text: visible(text).trim() }
-  return htmlText(new DOMParser().parseFromString(text, 'text/html').documentElement)
+  const root = parse(text, { scriptingEnabled: false }).childNodes.find(
+    (node) => defaultTreeAdapter.isElementNode(node) && node.tagName === 'html',
+  )
+  return root ? htmlText(root) : { text: '' }
 }
 
 function elementChildren(parent: Element, name: string): Element[] {
@@ -266,16 +293,44 @@ const SIDES: ReadonlyMap<string, 'left' | 'right'> = new Map([
   ['bottom_or_right', 'right'],
 ])
 
+/** Build a detached XML tree from validated tokens. Saxes has no entity resolver. */
+function parseMapXml(xml: string): Element | null {
+  const tree = document.implementation.createDocument(null, null)
+  const parser = new SaxesParser({ xmlns: true })
+  let parent: Document | Element = tree
+  parser.on('doctype', () => {
+    throw new Error('FreeMind does not support a document type declaration')
+  })
+  parser.on('opentag', (tag) => {
+    const element = tree.createElementNS(tag.uri || null, tag.name)
+    for (const attr of Object.values(tag.attributes)) {
+      element.setAttributeNS(attr.uri || null, attr.name, attr.value)
+    }
+    parent.appendChild(element)
+    parent = element
+  })
+  parser.on('closetag', () => {
+    parent = parent.parentNode as Document | Element
+  })
+  const appendText = (value: string): void => {
+    if (parent.nodeType === Node.ELEMENT_NODE) parent.appendChild(tree.createTextNode(value))
+  }
+  parser.on('text', appendText)
+  parser.on('cdata', appendText)
+  try {
+    parser.write(xml).close()
+    return tree.documentElement
+  } catch {
+    return null
+  }
+}
+
 /** Reads a `.mm` file: the central topic and everything below it, or why it cannot be read. */
 export function parseFreeMind(bytes: Uint8Array): FreeMindRead {
   const xml = decode(bytes)
   if (xml === null) return { ok: false, problem: 'not-text' }
-  if (/<!DOCTYPE/i.test(xml)) return { ok: false, problem: 'not-xml' }
-  const document = new DOMParser().parseFromString(xml, 'application/xml')
-  if (document.getElementsByTagName('parsererror').length > 0) {
-    return { ok: false, problem: 'not-xml' }
-  }
-  const map = document.documentElement
+  const map = parseMapXml(xml)
+  if (!map) return { ok: false, problem: 'not-xml' }
   const top = map.localName === 'map' ? elementChildren(map, 'node')[0] : undefined
   if (!top) return { ok: false, problem: 'not-a-map' }
 
