@@ -198,7 +198,19 @@ export const SUBSCRIPTION_UPDATE_COMMANDS: Record<AiSubscriptionProviderId, stri
 
 /** The dotted version number in what a CLI printed for `--version` */
 export function subscriptionVersionOf(output: string): string | undefined {
-  return /\d+\.\d+\.\d+/.exec(output)?.[0]
+  let start = 0
+  let previousEnd = -2
+  let parts = 0
+  for (const digits of output.matchAll(/\d+/g)) {
+    const index = digits.index
+    if (index !== previousEnd + 1 || output[previousEnd] !== '.') {
+      start = index
+      parts = 0
+    }
+    previousEnd = index + digits[0].length
+    if (++parts === 3) return output.slice(start, previousEnd)
+  }
+  return undefined
 }
 
 /** Whether a dotted version number is at least `minimum` */
