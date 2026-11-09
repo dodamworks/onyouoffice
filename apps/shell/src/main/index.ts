@@ -9386,11 +9386,10 @@ async function openPdfAsHwp(): Promise<void> {
   const tab = activePdfTarget()
   if (!tab?.filePath || !tabManager) return
   if (!(await flushPdfSave(tab.webContents, true))) return
-  const dir = join(app.getPath('temp'), 'ieumoffice-pdf-imports', randomUUID())
+  const dir = mkdtempSync(join(app.getPath('temp'), 'onyou-pdf-import-'))
   const baseName = basename(tab.filePath).replace(/\.pdf$/i, '')
   let tabId: string
   try {
-    mkdirSync(dir, { recursive: true })
     const copy = join(dir, basename(tab.filePath))
     copyFileSync(tab.filePath, copy)
     tabId = tabManager.openHwpTab(copy, { untitledCopy: { title: baseName, importedPdf: true } })
