@@ -33,7 +33,7 @@ const placeholders = (text: string): string[] => (text.match(/\{\w+\}/g) ?? []).
 const keys = Object.keys(strings.zh) as (keyof typeof strings.zh)[]
 
 describe('the editor dictionaries', () => {
-  it('cover all 21 languages with the same keys and no empty text', () => {
+  it('cover all 22 languages with the same keys and no empty text', () => {
     expect(Object.keys(strings).sort()).toEqual([...LANGS].sort())
     for (const lang of LANGS) {
       expect(Object.keys(strings[lang]).sort(), lang).toEqual([...keys].sort())

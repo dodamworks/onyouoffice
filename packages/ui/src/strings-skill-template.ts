@@ -546,6 +546,23 @@ export const SKILL_TEMPLATE_STRINGS = defineStrings({
       'Trình soạn thảo mở mẫu này không nhận tệp đính kèm nên tài liệu này chưa được đính kèm',
     attachFailed: 'Không đính kèm được tài liệu được chuyển sang nên yêu cầu chưa được gửi',
   },
+  tr: {
+    takenOver: 'Şablonla yeni sekmede çalışılıyor',
+    goToTab: 'Sekmeye git',
+    firstTemplateOnly: '{title} becerisinin şablonu kullanılıyor',
+    templateMissing: '{title} becerisinin şablon dosyası yok',
+    openWithTemplate: 'Bu şablonla yeni belge aç',
+    openFailed: 'Şablon yeni sekmede açılamadı',
+    previewTabTitle: 'Şablon önizlemesi - {title}',
+    previewContinues: 'Şablon önizleme sekmesinde devam edilir',
+    saveThisTab: 'Bu sekmeyi şablon olarak kaydet',
+    asIsRedacted: 'Belgede gizlenmiş bölümler var, bu yüzden olduğu gibi kaydedilemez',
+    clearRequest:
+      'Bu belgeyi yeniden kullanılabilir bir şablona dönüştür. Doldurulmuş değerleri (adlar, tarihler, kişisel bilgiler, yalnızca bu kez kullanılan içerikler) boşalt ve şablonun biçimini (başlıklar, tablolar, maddeler ve biçimlendirme) olduğu gibi bırak.',
+    handoffNotSent: 'Devredilen beceri okunamadı, bu yüzden istek gönderilmedi',
+    documentUnreadable: 'Geçerli belge okunamadı',
+    untitled: 'Başlıksız',
+  },
 })
 
 export type SkillTemplateStringKey = keyof typeof zh

@@ -55,6 +55,9 @@ describe('normalizeLang', () => {
     expect(normalizeLang('he-IL')).toBe('he')
     expect(normalizeLang('iw-IL')).toBe('he')
     expect(normalizeLang('hi-IN')).toBe('hi')
+    expect(normalizeLang('tr')).toBe('tr')
+    expect(normalizeLang('tr-TR')).toBe('tr')
+    expect(normalizeLang('TR-tr')).toBe('tr')
   })
 
   it('maps everything else (and missing) to en', () => {
@@ -222,6 +225,7 @@ describe('createI18n', () => {
     hi: { hello: 'नमस्ते {name}', plain: 'फ़ाइलें' },
     'zh-TW': { hello: '你好 {name}', plain: '檔案' },
     vi: { hello: 'Xin chao {name}', plain: 'Tep' },
+    tr: { hello: 'Merhaba {name}', plain: 'Dosyalar' },
   })
 
   it('translates per language with interpolation', () => {

@@ -19,7 +19,7 @@ const MANIFEST = join(__dirname, '../../../apps/shell/resources/builtin-skills/b
 
 describe('BUILTIN_SKILL_STRINGS', () => {
   it('covers all 21 ui languages', () => {
-    expect(LANGS).toHaveLength(21)
+    expect(LANGS).toHaveLength(22)
     expect(Object.keys(BUILTIN_SKILL_STRINGS).sort()).toEqual([...LANGS].sort())
   })
 

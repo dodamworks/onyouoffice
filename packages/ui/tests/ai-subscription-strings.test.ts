@@ -15,7 +15,7 @@ const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) 
 
 describe('AI_SUBSCRIPTION_STRINGS', () => {
   it('covers all 21 ui languages', () => {
-    expect(LANGS).toHaveLength(21)
+    expect(LANGS).toHaveLength(22)
     expect(Object.keys(AI_SUBSCRIPTION_STRINGS).sort()).toEqual([...LANGS].sort())
   })
 
@@ -96,7 +96,7 @@ describe('the AI entry label', () => {
     expect(aiSubscriptionText('ko', 'aiAssistant')).toBe('AI 도우미')
   })
 
-  it('is a short label in all 21 languages: no placeholder, no sentence', () => {
+  it('is a short label in all 22 languages: no placeholder, no sentence', () => {
     for (const lang of LANGS) {
       const label = AI_SUBSCRIPTION_STRINGS[lang].aiAssistant
       expect(label.length, lang).toBeLessThanOrEqual(24)

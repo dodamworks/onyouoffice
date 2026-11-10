@@ -348,6 +348,18 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
     'builtinSkillDesc.administration-report-draft':
       'Viết báo cáo hành chính từ đầu theo định dạng của bộ: các phần, đánh số Ⅰ·1·가, câu diễn đạt, tiêu đề bảng và phông chữ phổ dụng.',
   },
+  tr: {
+    'builtinSkillDesc.meeting-minutes':
+      'Toplantı notlarını, kararları ve yapılacakları gösteren bir tutanağa dönüştürür.',
+    'builtinSkillDesc.internal-comms':
+      'Duyurular, bültenler, ilerleme raporları, SSS ve diğer kurum içi yazıları yazar.',
+    'builtinSkillDesc.humanizer':
+      'Metinde AI tarafından yazılmış gibi duran ifadeleri bulur ve içeriğini değiştirmeden doğal hale getirir.',
+    'builtinSkillDesc.copy-editing':
+      'Zaten yazılmış İngilizce metni birkaç kez gözden geçirip daha açık ve daha kısa hale getirir.',
+    'builtinSkillDesc.find-skills':
+      'Yalnızca ajan penceresinde çalışır ve beceri bulup yüklemeyi önermek için internet bağlantısı gerektirir.',
+  },
 })
 
 export type BuiltinSkillStringKey = keyof typeof zh

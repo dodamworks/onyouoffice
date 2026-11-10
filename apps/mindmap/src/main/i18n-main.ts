@@ -48,6 +48,16 @@ const tDlg = createI18n({
     btnDontSave: 'Không lưu',
     btnCancel: 'Hủy',
   },
+  tr: {
+    dlgSaveTitle: 'Zihin Haritasını Kaydet',
+    filterMindmap: 'Zihin Haritaları',
+    untitledFile: 'Adsız',
+    closeUnsavedMsg: 'Bu belgede kaydedilmemiş değişiklikler var.',
+    closeUnsavedDetail: 'Kapatmadan önce kaydedilsin mi?',
+    btnSave: 'Kaydet',
+    btnDontSave: 'Kaydetme',
+    btnCancel: 'İptal',
+  },
   ja: {
     dlgSaveTitle: 'マインドマップを保存',
     filterMindmap: 'マインドマップ',

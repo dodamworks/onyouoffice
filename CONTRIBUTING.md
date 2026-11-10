@@ -219,7 +219,7 @@ default (Parallel's free Search MCP, then DuckDuckGo).
   for Korean readers, [README.md](README.md) and
   [docs/releasing.ko.md](docs/releasing.ko.md), are the exception;
   [README.en.md](README.en.md) is the English README.
-- The UI has 21 languages (`LANGS` in `packages/i18n/src/index.ts`). A new or
+- The UI has 22 languages (`LANGS` in `packages/i18n/src/index.ts`). A new or
   changed UI string has to exist in all of them, as a real translation rather
   than a copy of the English text.
 - Never read, copy or store subscription login material (`~/.codex/auth.json`,

@@ -141,8 +141,8 @@ describe('recovery strings', () => {
     RECOVERY_PROMPT_STRINGS.zh,
   ) as (keyof typeof RECOVERY_PROMPT_STRINGS.zh)[]
 
-  it('covers all 21 UI languages with every key filled', () => {
-    expect(LANGS).toHaveLength(21)
+  it('covers all 22 UI languages with every key filled', () => {
+    expect(LANGS).toHaveLength(22)
     for (const lang of LANGS) {
       const dict = RECOVERY_PROMPT_STRINGS[lang] as Record<string, string>
       expect(Object.keys(dict).sort(), lang).toEqual([...keys].sort())

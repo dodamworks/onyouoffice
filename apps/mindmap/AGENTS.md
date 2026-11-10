@@ -21,7 +21,7 @@
     - `link-preview.ts`: 링크 미리보기(결정 0099). 메인이 읽어 온 페이지의 그림과 제목을 토픽에 넣는 일, 그림을 지도에 둘 꼴로 바꾸는 일, 제목을 바꿔도 되는지의 판단.
   - `export/`: 내보내기(PNG, SVG, PDF, 마크다운 개요), 인쇄, 저장 때 넣는 미리보기 그림. 아래 "내보내기와 인쇄"를 본다.
   - `components/`: 도구 줄, 시트 탭, 대화 상자와 안내, 테마 패널(`ThemePanel.tsx`), 서식 칸(`FormatPanel.tsx`: 고른 것이 토픽이면 맨 위 "글자 | 선" 전환으로 둘 중 하나만 보이고 마지막 고른 쪽을 `mindmapapp.formatTab`에 기억, 연결선·요약·경계면 그 서식 한 묶음, 서식 복사·서식 지우기 단추는 전환 위. 색은 지금 값을 보여 주는 한 줄이고 누르면 색상표가 그 아래에 열린다(`ColorField.tsx`. 고르면 닫히고, "다른 색" 창이 떠 있는 동안에는 닫지 않는다). 그림 단추는 여덟 칸 격자에 놓는다. 보일 값은 `format-model.ts`, 글꼴 목록은 `system-fonts.ts`), 경계 오른쪽 클릭 메뉴(`BoundaryMenu.tsx`), 컨트롤러의 이유 코드를 상태 줄 문구로 바꾸는 `map-notices.ts`, 선택한 토픽의 메모를 지도 옆에서 고치는 메모 패널(`NotePanel.tsx`), 내보내기 단추(`ExportMenu.tsx`), 직접 그린 그림(`icons.tsx`).
-  - `i18n/`: 21개 언어 문구(`app/<언어>.ts`)와 mind-elixir 메뉴 문구(`map-strings.ts`).
+  - `i18n/`: 22개 언어 문구(`app/<언어>.ts`)와 mind-elixir 메뉴 문구(`map-strings.ts`).
   - `ai/`: AI 창(`AiPanel.tsx`), 창을 지도 옆(설정한 쪽)에 붙이는 자리와 AI가 지도를 보는 창구(`AiDock.tsx`의 `useMindmapAi`·`MindmapAiDock`), 도구가 지도에 하는 일(`map-tools.ts`), 지도 skill과 지시문(`mindmap-skill.ts`), 첨부·검색 skill, 전송과 연결 상태. 문구는 `i18n/ai/<언어>.ts`.
 - 메인 프로세스(`src/main/mindmap-main.ts`): 파일 읽기·쓰기, 뷰마다 허용된 경로, 닫기 전 저장 확인, 이름 바뀜 따라가기, 링크 열기, 단독 실행. 링크 미리보기의 페이지 읽기는 `src/main/link-preview.ts`(`mindmap:read-link-preview`). 내보내기·인쇄 창구는 `src/main/export-main.ts`.
 - AI 첨부와 제목 없는 지도의 임시 이름(`src/main/ai-attachments.ts`): `mindmap:files-*`, `mindmap:provisional-title`.
@@ -88,7 +88,7 @@
 - **요약 제목은 토픽 상자처럼 그린다**(`map.css`). 지도의 테두리·바탕 색으로 그린 상자이고, 토픽과 같은 최대 폭(30em)에서 줄을 바꾸며 입력한 줄바꿈을 지킨다. 아래로 향한 괄호에서는 상자가 괄호 끝에 매달린다.
 - **메모는 팝업이 아니라 지도 옆의 패널에서 고친다.** 도구 줄·토픽의 메모 꼬리표·오른쪽 클릭 메뉴가 모두 `NotePanel`을 연다. 패널은 마지막으로 고른 토픽의 메모를 보여 주고, 입력 중인 초안은 포커스를 잃을 때·선택이나 시트가 바뀔 때·패널을 닫을 때·저장할 때 한 번에 지도에 넣는다(`setNote` 한 번 = 되돌리기 한 단계). 그래서 저장은 아직 입력 중인 글을 빠뜨리지 않고, 한 글자마다 되돌리기 단계가 생기지 않는다. 열림 여부는 `mindmapapp.showNotes`에 기억하고, 테마·서식·AI 패널과 번갈아 하나만 연다.
 - 메인 코드는 shell 번들에 들어간다. `src/main`을 고친 뒤에는 shell을 다시 빌드한다.
-- 문자열은 `src/renderer/i18n/app/`의 언어별 조각이고 `zh.ts`가 키 집합을 정한다. 21개 언어 모두에 넣는다.
+- 문자열은 `src/renderer/i18n/app/`의 언어별 조각이고 `zh.ts`가 키 집합을 정한다. 22개 언어 모두에 넣는다.
 
 ## AI
 
@@ -136,6 +136,6 @@
 - 바꾸면 반드시 테스트하는 것(모양): 스타일 값 거름망의 표(`tests/style-values.test.ts`), 바깥 그림이 출처 있는 요소를 만들지 않는 것과 표식·그림 규칙(`tests/markers-images.test.ts`, `tests/decorate.test.ts`), 96개 테마를 고르면 파일에 적히고 다시 열면 같은 모양인 것, 앱이 밝든 어둡든 지도 색이 같은 것, 세 단계 아래의 글자 크기를 한 단계씩 줄이고 더 깊으면 마지막 크기를 쓰는 것(`tests/look.test.ts`, `tests/decorate.test.ts`), 지도 CSS·그리는 코드가 화면 틀 토큰을 쓰지 않는 것(`tests/look.test.ts`), 테마 패널(`tests/app.test.ts`).
 - 바꾸면 반드시 테스트하는 것(AI): 도구마다(`tests/ai-tools.test.ts`: 편집 하나씩의 검사, 50개 상한, 보이지 않는 요소가 딸린 토픽의 지우기 거절, 새 시트·빈 새 지도 채우기·덮어쓰지 않기, 묶음 하나가 되돌리기 한 단계, 차례 되돌리기가 더한 시트를 지우는 것, 꺾쇠가 든 글, 그림 넣기·되돌리기·없는 토픽이면 항목을 도로 빼기, 생성 도구 문지기), 창(`tests/ai-panel.test.ts`: 대본으로 쓴 모델의 답으로 지도가 바뀌고 Ctrl+Z로 물러나는 것, 밖에서 시작한 실행이 막히면 글과 첨부가 남는 것, 그림 채널·가용성 문구), 첨부(`tests/ai-attachments.test.ts`), 그림 채널(`tests/ai-image-ipc.test.ts`: 두 채널 이름, 화면 경로·상태·문서 폴더·붙여 넣기 폴더). 제공자가 구독으로 정해지는 테스트는 전송 창구(`aiStream`)를 가짜로 바꾼다. 실제 `claude`·`codex`에 닿는 테스트를 두지 않는다.
 - 바꾸면 반드시 테스트하는 것(내보내기): 적대적인 글·스타일·바깥 그림을 가진 지도의 페이지와 SVG에 글에서 온 요소, 바깥 주소, 거르지 않은 스타일이 없는 것, 앱이 밝든 어둡든 결과가 같은 것(`tests/export.test.ts`), 마크다운 개요가 `sheetsToOutline`과 글자 그대로 같은 것과 미리보기 그림을 못 만들 때 예전 그림이 남는 것(`tests/app-export.test.ts`), 파일 이름과 확장자, SVG가 아닌 것과 스크립트가 든 것의 거절(`tests/export-main.test.ts`), 다른 이름으로 저장의 형식 목록과 내보내기를 골랐을 때 지도의 파일·상태가 그대로이고 고른 경로만 한 번 쓰이는 것(`tests/save-as-formats.test.ts`, `tests/main.test.ts`, `tests/app-export.test.ts`).
-- 바꾸면 반드시 테스트하는 것(껍데기와 잇는 곳): 넘겨받은 요청을 한 번만 가져가고 파일로 연 뷰는 가져가지 않는 것(`tests/handoff.test.ts`), 바꾸기로 맡겨 둔 내용이 저장하지 않은 새 지도로 열리는 것(`tests/seed.test.ts`), 도구 줄의 만들기 단추(`tests/toolbar-make-from.test.ts`), 21개 언어 문구의 키(`tests/i18n.test.ts`).
+- 바꾸면 반드시 테스트하는 것(껍데기와 잇는 곳): 넘겨받은 요청을 한 번만 가져가고 파일로 연 뷰는 가져가지 않는 것(`tests/handoff.test.ts`), 바꾸기로 맡겨 둔 내용이 저장하지 않은 새 지도로 열리는 것(`tests/seed.test.ts`), 도구 줄의 만들기 단추(`tests/toolbar-make-from.test.ts`), 22개 언어 문구의 키(`tests/i18n.test.ts`).
 - 바꾸면 반드시 테스트하는 것(`.mm` 가져오기): 손으로 짠 FreeMind·Freeplane 시험 파일(`tests/fixtures/*.mm`)의 구조·메모·링크·접힘·한쪽 배치·서식 있는 글(FreeMind 0.8의 `TEXT` 안 HTML과 메모 훅 포함)이 지도에 오고, 그림만 있는 노드가 그림 이름이나 "(그림)"으로, 제목·메모·그림 이름에 제어 문자와 글 방향 문자가 남지 않고 RLM·ZWJ 같은 표시는 남는 것, 표의 행이 칸을 " | "로 나눈 한 줄로 오며 목록·문단·줄바꿈은 줄마다 오고 버리는 것은 오지 않는 것, 깨진 파일·다른 XML·문서 형식 선언·너무 깊은 파일이 "읽을 수 없음"인 것, 저장한 `.xmind`가 엔진으로 `ok`로 열리는 것(`tests/freemind-import.test.ts`), 메인이 `.mm`을 쓰지 않고 첫 저장이 그 폴더의 `.xmind`를 제안하는 것(`tests/main.test.ts`), 화면의 알림과 저장 안 됨 상태(`tests/app.test.ts`).
 - 빌드한 앱을 실제로 몰아 보는 확인은 `tests/real-run/driver.ts`다. `npm test`에는 들어 있지 않다. 한글 조합 입력, 끌어 옮기기, 저장 후 다시 열기, 큰 지도의 속도를 본다. 모양은 `tests/real-run/look-run.ts`가 본다. 네 뼈대, 여덟 색 띠, 세 바탕, 테마 패널, 도구 줄 확대, 앱과 지도의 밝기 조합, 표식·그림의 화면을 찍고, 단계마다 글자 크기가 작아지는지 계산된 크기로 확인하며, "선" 뼈대의 이음매를 재고, 바깥 주소로 나가는 요청이 없는지 세션의 요청 기록과 작은 웹 서버로 확인한다. `MINDMAP_REAL_RUN_ONLY=look`이면 이것만 돈다. 내보내기는 `tests/real-run/export-run.ts`가 본다(`MINDMAP_REAL_RUN_ONLY=export`). 밝은 앱과 어두운 앱의 PNG·미리보기 그림을 픽셀로 견주고, PDF와 인쇄가 가로 A4 한 쪽인지 읽어 보고, 바깥으로 나간 요청을 센다. 인쇄는 그 창의 `print`를 같은 창의 `printToPDF`로 바꿔 확인한다.

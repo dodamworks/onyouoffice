@@ -4,7 +4,7 @@
 
 ## 맡은 범위
 
-- 언어: `Lang`·`LANGS`(21개), 로캘 문자열을 지원 언어로 옮기는 `normalizeLang`, `<html lang>` 값 `htmlLang`, 오른쪽에서 왼쪽으로 쓰는 언어 판정 `isRtlLang`·`htmlDir`(`src/index.ts`).
+- 언어: `Lang`·`LANGS`(22개), 로캘 문자열을 지원 언어로 옮기는 `normalizeLang`, `<html lang>` 값 `htmlLang`, 오른쪽에서 왼쪽으로 쓰는 언어 판정 `isRtlLang`·`htmlDir`(`src/index.ts`).
 - 사전 규칙과 번역기: `LangDicts`, `defineStrings`, `createI18n`, 자리 표시 채우기 `format`.
 - 단축키 표기 변환: 사전에 Mac 표기로 적힌 단축키를 Windows/Linux에서 `Ctrl+…` 형태로 바꾸는 `macShortcutsToWin`·`platformShortcuts`.
 - 메인 프로세스용 현재 언어 보관소: `getUiLang`·`setUiLang`·`onUiLangChange`.

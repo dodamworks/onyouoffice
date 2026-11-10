@@ -175,7 +175,7 @@ describe('pdf conversion screen: wiring', () => {
   })
 
   it('labels the new menu items in every language', () => {
-    expect(index.match(/^ {4}menuExportMd: '.+',$/gm)).toHaveLength(21)
-    expect(index.match(/^ {4}menuExportEpub: '.+',$/gm)).toHaveLength(21)
+    expect(index.match(/^ {4}menuExportMd: '.+',$/gm)).toHaveLength(22)
+    expect(index.match(/^ {4}menuExportEpub: '.+',$/gm)).toHaveLength(22)
   })
 })

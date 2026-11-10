@@ -45,6 +45,7 @@ const LOCALES = [
   'ms',
   'he',
   'hi',
+  'tr',
   "'zh-TW'",
 ]
 

@@ -203,6 +203,15 @@ const LABELS: Record<string, ContextMenuLabels> = {
     copyImage: 'Sao chép ảnh',
     saveImageAs: 'Lưu ảnh thành…',
   },
+  tr: {
+    cut: 'Kes',
+    copy: 'Kopyala',
+    paste: 'Yapıştır',
+    selectAll: 'Tümünü seç',
+    viewImage: 'Resmi görüntüle',
+    copyImage: 'Resmi kopyala',
+    saveImageAs: 'Resmi farklı kaydet…',
+  },
   'zh-TW': {
     cut: '剪下',
     copy: '複製',

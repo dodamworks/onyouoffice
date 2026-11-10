@@ -152,7 +152,7 @@ describe('Settings → About', () => {
   })
 
   it('has the link label in every UI language, none of them about stars', () => {
-    expect(LANGS).toHaveLength(21)
+    expect(LANGS).toHaveLength(22)
     for (const lang of LANGS) {
       const label = strings[lang].viewOnGitHub
       expect(label, lang).toContain('GitHub')
