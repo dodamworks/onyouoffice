@@ -101,6 +101,8 @@ const FILE_ICONS: Record<string, string> = {
   odt: iconDocx,
   xlsx: iconXlsx,
   xlsm: iconXlsx,
+  // ODS opens as a converted .xlsx copy in the spreadsheet tab, so it wears that tile
+  ods: iconXlsx,
   pptx: iconPptx,
   pdf: iconPdf,
   md: iconMd,
@@ -123,7 +125,7 @@ const FILE_ICONS: Record<string, string> = {
 /* Keep the advertised groups aligned with OPEN_DIALOG_EXTENSIONS in Shell main. */
 const OPEN_LOCAL_FORMATS: readonly { label: StringKey; extensions: readonly string[] }[] = [
   { label: 'filterDocs', extensions: ['docx', 'doc', 'odt'] },
-  { label: 'filterSheets', extensions: ['xlsx', 'xlsm', 'xls', 'csv', 'tsv'] },
+  { label: 'filterSheets', extensions: ['xlsx', 'xlsm', 'xls', 'csv', 'tsv', 'ods'] },
   { label: 'filterSlides', extensions: ['pptx', 'ppt'] },
   { label: 'filterPdf', extensions: ['pdf'] },
   { label: 'formatText', extensions: ['md', 'markdown', 'txt', 'json'] },
@@ -427,7 +429,7 @@ const FILTERS: { key: string; label: StringKey }[] = [
 /** sidebar filter keys that stand for a family of extensions (mirrors recent-files.ts) */
 const FILTER_FAMILY: Record<string, readonly string[]> = {
   docx: ['docx', 'doc', 'odt'],
-  xlsx: ['xlsx', 'xlsm', 'xls', 'csv', 'tsv'],
+  xlsx: ['xlsx', 'xlsm', 'xls', 'csv', 'tsv', 'ods'],
   pptx: ['pptx', 'ppt'],
   md: ['md', 'markdown', 'txt', 'json'],
   html: ['html', 'htm'],

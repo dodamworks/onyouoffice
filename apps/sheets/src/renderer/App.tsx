@@ -420,6 +420,7 @@ import { installFilteredCopyHook } from './filtered-copy'
 import { installFilterRangeOutlineSuppression } from './filter-range-outline'
 import { createSheetTabActions } from './sheet-tab-actions'
 import { installVeryHiddenSheetGuard } from './very-hidden-sheets'
+import { installNewSheetNaming } from './new-sheet-name'
 import { installFormulaBarAutosize } from './formula-bar-autosize'
 import { createFunctionArgumentsHost, installFxButtonHook } from './function-arguments-runtime'
 import {
@@ -473,6 +474,7 @@ import { installCopyAnimationIdle } from './copy-animation-idle'
 import { installNumberAsTextAlertSeverity } from './number-as-text-alert'
 import { installFormulaStreamHold } from './formula-stream-hold'
 import { installRichTextBidiFix } from './rich-text-bidi-fix'
+import { installHanjaCompositionRestart } from './hanja-composition-restart'
 import { installRtlTextDirectionFix } from './rtl-text-fix'
 import { installRtlGridMirror } from './rtl-grid-mirror'
 import { installVertAlignRender } from './vert-align-render'
@@ -589,6 +591,7 @@ import { planStillMatches } from './lazy-plan'
 import { lastSurvivingScreenLine, netAxisDelta, screenToFile } from './view-transform'
 import { selectionFormatEquals, toSelectionFormat, type SelectionFormat } from './selection-format'
 import { ExcelShell, type SelectedShapeRibbon } from './ExcelShell'
+import { odsConversionNoticeOf, type OdsConversionNotice } from './ods-import'
 import { ToastHost } from './toast'
 import { showToast } from './toast-bus'
 import { AdvancedFilterDialog, type AdvancedFilterColumn } from './AdvancedFilterDialog'
@@ -862,6 +865,10 @@ export function App({
       new URLSearchParams(window.location.search).get('openingWorkbook') === '1',
   )
   const [emptyCsvNotice, setEmptyCsvNotice] = useState(false)
+  /// A document opened from an .ods copy keeps this line for its life: saving
+  /// writes an .xlsx. Separate from `message`, so a command's transient status
+  /// never clears it; only opening another document replaces it.
+  const [odsNotice, setOdsNotice] = useState<OdsConversionNotice | null>(null)
   /// Zoom of the active sheet in percent, echoed by the status-bar slider.
   const [zoomPercent, setZoomPercent] = useState(100)
   /** F5: the grid alone in fullscreen (presentation) */
@@ -1356,6 +1363,14 @@ export function App({
     ready: !!workbookFile,
     send: (text, use) => {
       handleSend(text, undefined, undefined, use)
+    },
+    // a template skill called in a workbook with content asks where to run
+    hasContent: () => sheetHasContent,
+    // a template copy that brought the asking document: it goes in as an attachment
+    attach: async (paths) => {
+      const added = await window.desktopApi.addAttachmentPaths([...paths])
+      mergeAttachments(added)
+      return (added?.accepted.length ?? 0) > 0
     },
     onTaken: () => setOpenAiRequest((n) => n + 1),
     setComposer: setPrompt,
@@ -2201,6 +2216,8 @@ export function App({
     installFilterRangeOutlineSuppression(runtime)
     const selectionAppearance = installSelectionAppearance(runtime)
     installVeryHiddenSheetGuard(runtime, lazyWorkbookRef)
+    // Sheet2, Sheet3 after Sheet1 whatever the UI language (issue #389)
+    installNewSheetNaming(runtime)
     loadSnapshotIntoUniver(runtime, initialSnapshot, 'new-workbook', 'Untitled')
     univerRef.current = runtime
     // The hidden spare can have a canvas/editor before Univer finishes booting.
@@ -2278,6 +2295,8 @@ export function App({
     // registers it; without this the View tab's toggle would silently no-op.
     installRightToLeftCommand(runtime)
     installRichTextBidiFix()
+    // The Hanja key on a composing letter (ㅁ → ※) must replace it, not type it twice (#443).
+    installHanjaCompositionRestart()
     // Excel's "Center Across Selection": center anchor text over its run of
     // blank same-format neighbors instead of folding it inside one cell.
     installCenterContinuousRender()
@@ -5049,6 +5068,7 @@ export function App({
         return
       }
       setEmptyCsvNotice(selected.emptyCsv === true)
+      setOdsNotice(odsConversionNoticeOf(selected))
       setMessage(selected.emptyCsv ? '' : t('appOpened', { name: selected.name }))
     } catch (error: unknown) {
       setMessage(error instanceof Error ? stripIpcErrorWrapper(error.message) : t('appOpenFailed'))
@@ -5545,6 +5565,7 @@ export function App({
         formatPainterActive={formatPainterActive}
         statusMessage={openingWorkbook ? t('appOpeningWorkbook') : message}
         emptyCsvNotice={emptyCsvNotice}
+        odsNotice={odsNotice}
         onOpenWorkbook={() => void handleInspectWorkbook()}
         onDismissEmptyCsvNotice={() => setEmptyCsvNotice(false)}
         recoveryNotice={recoveryNotice}

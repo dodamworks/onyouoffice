@@ -99,6 +99,7 @@ import {
   parseHeadlessExportArgv,
   setHeadlessMode,
   setOpenFilesSource,
+  fileHasUnsavedChanges,
   setOpenPathProbe,
   type HeadlessArgvParse,
   showOpenDialogWithMemory,
@@ -446,7 +447,8 @@ import {
 } from '@genoffice/ai-provider/subscription'
 import { showErrorDialog } from './error-dialog'
 import { startRendererWatchdog } from './renderer-watchdog'
-import { memoryFigures, startCrashWatch, startLowMemoryWatch } from './crash-watch'
+import { crashLogPath, memoryFigures, startCrashWatch, startLowMemoryWatch } from './crash-watch'
+import { startHeartbeat, type HeartbeatHandle } from './crash-heartbeat'
 import {
   capStatPaths,
   matchesExtFamily,
@@ -984,13 +986,19 @@ function liveDocumentContents(tabId: string): Promise<WebContents | undefined> {
  * no save prompt, every editor writes its copies now, nothing deletes them,
  * and the next run treats this exit as abnormal (spec 4).
  */
+/** the main process's heartbeat (crash-heartbeat.ts); normal runs only */
+let mainHeartbeat: HeartbeatHandle | null = null
+
 const endForOsSession = createOsSessionEnd({
   markShuttingDown: () => {
     appQuitting = true
     markSheetsShuttingDown()
     markAppShuttingDown()
   },
-  markSessionOsEnd,
+  markSessionOsEnd: () => {
+    markSessionOsEnd()
+    mainHeartbeat?.markEnded('os')
+  },
   editors: () => recoveryEditors(),
   finish: () => {
     stopSheetsSidecar()
@@ -4796,7 +4804,7 @@ function ensureFileIndexer(): FileIndexer | null {
 
 const SEARCH_EXT_FAMILY: Record<string, readonly string[]> = {
   docx: ['docx', 'doc', 'odt'],
-  xlsx: ['xlsx', 'xlsm', 'xls', 'csv', 'tsv'],
+  xlsx: ['xlsx', 'xlsm', 'xls', 'csv', 'tsv', 'ods'],
   pptx: ['pptx', 'ppt'],
   md: ['md', 'markdown', 'txt', 'json'],
   html: ['html', 'htm'],
@@ -5532,6 +5540,7 @@ const OPEN_DIALOG_EXTENSIONS = [
   'xls',
   'csv',
   'tsv',
+  'ods',
   'pptx',
   'ppt',
   'pdf',
@@ -6550,7 +6559,7 @@ function registerHomeIpc(): void {
         { name: tm('filterSupported'), extensions: OPEN_DIALOG_EXTENSIONS },
         { name: tm('filterWord'), extensions: ['docx', 'doc'] },
         { name: tm('filterOdt'), extensions: ['odt'] },
-        { name: tm('filterExcel'), extensions: ['xlsx', 'xlsm', 'xls', 'csv', 'tsv'] },
+        { name: tm('filterExcel'), extensions: ['xlsx', 'xlsm', 'xls', 'csv', 'tsv', 'ods'] },
         { name: tm('filterPpt'), extensions: ['pptx', 'ppt'] },
         { name: tm('filterPdf'), extensions: ['pdf'] },
         { name: tm('filterMarkdown'), extensions: ['md', 'markdown', 'txt', 'json'] },
@@ -9632,6 +9641,15 @@ const templateTabs = createTemplateTabs({
   // a skill template's copy follows the project of the panel that asked (spec 6)
   copyOpenedFor: (contents, openerId) =>
     followOpenerProject(contents, { kind: 'window', webContentsId: openerId }),
+  // "Open a new document from the template" in a document with content: the
+  // asking tab's file goes along only when it is saved without unsaved changes
+  // (docs/security.md "저장하지 않은 파일은 읽지 않는다")
+  currentDocumentOf: async (openerId) => {
+    const filePath =
+      tabManager?.describeWebContents(openerId)?.filePath ?? detachedDocumentFor(openerId)?.filePath
+    if (!filePath) return 'unsaved'
+    return (await fileHasUnsavedChanges(filePath)) ? 'unsaved' : { path: filePath }
+  },
   focusTab: (tabId) => {
     const manager = tabManager
     if (!manager || !manager.list().some((tab) => tab.id === tabId)) return false
@@ -10277,8 +10295,17 @@ app.whenReady().then(async () => {
     },
     t: (key, params) => tm(key, params),
   })
-  // a PC that runs short of memory during an AI request leaves a line too
-  startLowMemoryWatch({ aiStreams: activeAiStreamCount, memory: crashMemory })
+  // a PC (or the main process's heap) that runs short of memory leaves a line too
+  startLowMemoryWatch({ memory: crashMemory })
+  // a main process that dies leaves no line of its own: its last heartbeat
+  // is reported at the next launch (headless exports are short and unattended)
+  if (headlessArgv.kind === 'none') {
+    mainHeartbeat = startHeartbeat({
+      userDataDir: app.getPath('userData'),
+      logPath: crashLogPath(),
+      memory: crashMemory,
+    })
+  }
   // resource watchdog: a renderer that stays hot for minutes gets diagnostics
   // recorded and the user an offer to close the document (headless exports
   // are short-lived and unattended)
@@ -10382,6 +10409,7 @@ app.on('will-quit', () => {
   // reads the same request to start the installer.
   if (updateRestartRequested()) markSessionUpdateRestart()
   else markSessionCleanExit()
+  mainHeartbeat?.markEnded('quit')
   releaseAppResources()
 })
 

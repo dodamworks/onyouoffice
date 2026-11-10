@@ -57,6 +57,8 @@ export const ja = {
   errRateLimit: '{provider} のサブスクリプションの上限に達しました。',
   errRateLimitReset:
     '{provider} のサブスクリプションの上限に達しました。{time} にリセットされます。',
+  errChatGptAppLimit:
+    'このアプリが使える ChatGPT の利用量を使い切りました。プラン全体の上限か、このアプリ用に設定した上限の可能性があります。ChatGPT の「設定 → 利用状況」で確認してください。',
   errUnsafeTools:
     '{provider} のプログラムが独自のツールを有効にしたまま起動したため、安全のため実行を停止しました。',
   errMeteredNotAccepted:
@@ -162,6 +164,8 @@ export const ja = {
     'ブラウザーではログインしましたが、OpenAI がこの接続を受け付けなかったか、返ってきた応答を確認できませんでした。この PC の日付と時刻が正しいか確かめてから、もう一度押して最初からやり直してください。',
   chatgptLoginNetworkNote:
     'OpenAI に接続できなかったか、ブラウザーを開けなかったため、ログインを完了できませんでした。インターネット接続（社内ネットワーク、VPN、プロキシを含む）を確認してから、もう一度押してください。',
+  chatgptLoginWorkspacePolicyNote:
+    'この ChatGPT アカウントは会社や学校が管理するワークスペースに属しているため、OpenAI はこのアプリでワークスペースの ChatGPT プランを使うことを許可していません。ワークスペースの管理者がこのアプリを許可する設定はないため、もう一度ログインしても結果は同じです。個人の ChatGPT アカウント(Go、Plus、Pro)でログインするか、Codex カードから接続してください。',
   chatgptLoginNotAllowedNote:
     'このアプリに ChatGPT のプランの使用を許可しなかったか、ブラウザーがログイン失敗として戻ってきました。もう一度押してログインし、許可の画面で許可してください。',
   chatgptSigningInNote:

@@ -50,6 +50,8 @@ export const zhTW = {
   errSignedOut: '{provider} 的登入已失效。請重新登入後繼續。',
   errRateLimit: '{provider} 的訂閱額度已用完。',
   errRateLimitReset: '{provider} 的訂閱額度已用完，將於 {time} 重設。',
+  errChatGptAppLimit:
+    '本應用程式可用的 ChatGPT 用量已用完。這可能是整個方案的額度，也可能是為本應用程式設定的額度。請在 ChatGPT 的「設定 → 用量」中查看。',
   errUnsafeTools: '{provider} 程式啟動時帶有自身的工具，為了安全已停止這次執行。',
   errMeteredNotAccepted:
     '{provider} 連線是依用量付費的登入，你尚未允許使用。請在連線設定中選擇「仍要使用」。',
@@ -141,6 +143,8 @@ export const zhTW = {
     '已在瀏覽器中登入，但 OpenAI 沒有接受這個連線，或傳回的回應沒有通過檢查。請確認這台電腦的日期和時間正確，再按一次重新開始。',
   chatgptLoginNetworkNote:
     '無法連上 OpenAI 或沒能開啟瀏覽器，登入沒有完成。請檢查網路連線（包括公司網路、VPN 或 Proxy），再按一次。',
+  chatgptLoginWorkspacePolicyNote:
+    '此 ChatGPT 帳戶屬於公司或學校管理的工作區，OpenAI 不允許應用程式使用工作區的 ChatGPT 方案。工作區管理員沒有可以允許此應用程式的設定，因此重新登入也不會有幫助。請使用個人 ChatGPT 帳戶（Go、Plus 或 Pro）登入，或改用 Codex 卡片連接。',
   chatgptLoginNotAllowedNote:
     '你沒有允許這個應用程式使用 ChatGPT 方案，或瀏覽器帶著登入失敗回來了。請再按一次，登入後在授權頁面允許。',
   chatgptSigningInNote:
