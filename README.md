@@ -9,7 +9,8 @@
 <p align="center"><strong>Onyou Office is a free, open-source desktop app for editing documents, spreadsheets, and presentations, with optional AI assistance.</strong></p>
 
 <p align="center">
-  <strong><a href="https://github.com/dodamworks/onyouoffice/releases/latest">Download Onyou Office</a></strong><br>
+  <strong><a href="https://github.com/dodamworks/onyouoffice/releases/latest">Download Onyou Office</a></strong> ·
+  <a href="https://onyouoffice.com/">Official website</a><br>
   Windows x64 · macOS Apple Silicon and Intel (beta) · Linux x64 (beta)
 </p>
 
