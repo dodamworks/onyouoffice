@@ -3,10 +3,9 @@ import { createRequire } from 'node:module'
 import JSZip from 'jszip'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { parseDocx } from '@genoffice/docx-engine'
-import { convert } from '../src/convert'
 import { withOpenedDocument } from '../src/engine'
-import { Docx2HwpError, HwpEngine, docxToHwp, type HwpFormat } from '../src/index'
-import { hangulLook } from '../src/look'
+import { HwpEngine, docxToHwp, type HwpFormat } from '../src/index'
+import { hangulLook, wordLook } from '../src/look'
 import { LossLedger } from '../src/losses'
 import { lowerDocument } from '../src/lower'
 import type { Block, Cell, HwpPlan, Para, Table } from '../src/model'
@@ -137,6 +136,76 @@ describe('the Hangul look of a plan', async () => {
   })
 })
 
+describe('the Word look of a plan', async () => {
+  const word = await lowered(MARKDOWN_DOCX)
+  const plan = wordLook(word)
+  const before = tables(word.body)
+  const after = tables(plan.body)
+
+  it('puts every body table between the paragraphs with no margin of its own above', () => {
+    expect(after.every((t) => t.flow.kind === 'block')).toBe(true)
+    plan.body.forEach((block, i) => {
+      if (block.kind !== 'table' || block.flow.kind !== 'block') return
+      expect(block.flow.above).toBe(0)
+      // 1 mm at least (283 HWPUNIT), and what the next paragraph asks above itself
+      expect(block.flow.below).toBeGreaterThanOrEqual(283)
+      const next = plan.body[i + 1]
+      if (next?.kind === 'para') {
+        expect(block.flow.below).toBeGreaterThanOrEqual(Math.min(next.shape.before / 2, 2400))
+      }
+    })
+  })
+
+  it('keeps the text of a cell off its top and bottom borders and changes nothing else', () => {
+    after.forEach((table, t) => {
+      const was = before[t]!
+      expect(table.colWidths).toEqual(was.colWidths)
+      expect(table.rowHeights).toEqual(was.rowHeights)
+      expect(table.repeatHeader).toBe(was.repeatHeader)
+      expect(table.align).toBe(was.align)
+      table.cells.forEach((cell, c) => {
+        const { padding, ...rest } = cell
+        const { padding: paddingWas, ...restWas } = was.cells[c]!
+        expect(rest).toEqual(restWas)
+        expect(padding.left).toBe(paddingWas.left)
+        expect(padding.right).toBe(paddingWas.right)
+        expect(padding.top).toBeGreaterThanOrEqual(283)
+        expect(padding.bottom).toBeGreaterThanOrEqual(283)
+      })
+    })
+  })
+
+  it('keeps a vertical margin the author made larger', () => {
+    const table = before[0]!
+    const roomy: Table = {
+      ...table,
+      cells: table.cells.map((cell) => ({
+        ...cell,
+        padding: { ...cell.padding, top: hwpFromPt(12), bottom: hwpFromPt(12) },
+      })),
+    }
+    const looked = tables(wordLook({ ...word, body: [roomy] }).body)[0]!
+    expect(looked.cells.map((c) => c.padding)).toEqual(roomy.cells.map((c) => c.padding))
+  })
+
+  it('leaves a table inside a cell placed like a character, with the same margins', async () => {
+    const nested = wordLook(await lowered(`${FIXTURES}/nested.docx`))
+    const outer = tables(nested.body)
+    const inner = outer.flatMap((t) => t.cells.flatMap((c) => tables(c.body)))
+    expect(inner.length).toBeGreaterThan(0)
+    expect(outer.every((t) => t.flow.kind === 'block')).toBe(true)
+    expect(inner.every((t) => t.flow.kind === 'char')).toBe(true)
+    expect(inner.flatMap((t) => t.cells).every((c) => c.padding.top >= 283)).toBe(true)
+  })
+
+  it('leaves the paragraphs and the page as they were', () => {
+    expect(plan.page).toEqual(word.page)
+    expect(plan.body.filter((b) => b.kind === 'para')).toEqual(
+      word.body.filter((b) => b.kind === 'para'),
+    )
+  })
+})
+
 describe('writing with the Hangul look', () => {
   let engine: HwpEngine
   beforeAll(async () => {
@@ -207,7 +276,7 @@ describe('writing with the Hangul look', () => {
   })
 })
 
-describe('a .hwp whose tables grew after they were laid out', () => {
+describe('writing a Word document', () => {
   let engine: HwpEngine
   beforeAll(async () => {
     engine = await HwpEngine.start(
@@ -215,44 +284,54 @@ describe('a .hwp whose tables grew after they were laid out', () => {
     )
   })
 
-  it('is written from the file opened again, with the pages that file has', async () => {
-    // Word's look: tables placed like characters, filled inside the batch
-    const hwpx = await docxToHwp(docx(MARKDOWN_DOCX), 'hwpx', engine)
-    const hwp = await docxToHwp(docx(MARKDOWN_DOCX), 'hwp', engine)
-    expect([...hwp.bytes.subarray(0, 4)]).toEqual([0xd0, 0xcf, 0x11, 0xe0])
-    const [fromHwpx, fromHwp] = [
-      await readBack(engine, hwpx.bytes),
-      await readBack(engine, hwp.bytes),
-    ]
-    expect(fromHwp.pages).toBe(fromHwpx.pages)
-    expect(fromHwp.body.map((p) => p.text)).toEqual(fromHwpx.body.map((p) => p.text))
-    expect(fromHwp.tables.map((t) => t.cells.map((c) => c.texts))).toEqual(
-      fromHwpx.tables.map((t) => t.cells.map((c) => c.texts)),
+  it('saves its tables as ones that continue on the next page, headers as Word has them', async () => {
+    const { bytes } = await docxToHwp(docx(MARKDOWN_DOCX), 'hwpx', engine)
+    const zip = await JSZip.loadAsync(bytes)
+    const section = await zip.file('Contents/section0.xml')!.async('string')
+    const saved = [...section.matchAll(/<hp:tbl\b[^>]*>/g)].map((m) => m[0])
+    expect(saved).toHaveLength(6)
+    for (const tag of saved) {
+      expect(tag).toContain('pageBreak="TABLE"')
+      // this document does not repeat its first rows in Word
+      expect(tag).toContain('repeatHeader="0"')
+    }
+    expect([...section.matchAll(/treatAsChar="(\d)"/g)].map((m) => m[1])).toEqual(
+      Array(6).fill('0'),
     )
-    expect(hwp.losses).toEqual(hwpx.losses)
   })
 
-  it('matches the document written call by call, where the layout never went stale', async () => {
-    const settled = await docxToHwp(docx(MARKDOWN_DOCX), 'hwp', engine)
-    const slow = await convert(docx(MARKDOWN_DOCX), 'hwp', engine, { batch: false })
-    const [a, b] = [await readBack(engine, settled.bytes), await readBack(engine, slow.bytes)]
-    const outline = (back: typeof a) => back.body.map((p) => [p.text, p.style, p.controls])
-    expect(a.pages).toBe(b.pages)
-    expect(outline(a)).toEqual(outline(b))
-    expect(a.body.map((p) => p.shape)).toEqual(b.body.map((p) => p.shape))
-    expect(a.tables).toEqual(b.tables)
+  it('keeps the column widths and the cell alignment of the Word document', async () => {
+    const back = await readBack(
+      engine,
+      (await docxToHwp(docx(MARKDOWN_DOCX), 'hwpx', engine)).bytes,
+    )
+    // Word's default: the text at the top of its cell (0)
+    expect(back.tables.flatMap((t) => t.cells).every((c) => c.verticalAlign === 0)).toBe(true)
+    const zip = await JSZip.loadAsync((await docxToHwp(docx(MARKDOWN_DOCX), 'hwpx', engine)).bytes)
+    const section = await zip.file('Contents/section0.xml')!.async('string')
+    const firstRow = /<hp:tr>([\s\S]*?)<\/hp:tr>/.exec(section)![1]!
+    const widths = [...firstRow.matchAll(/<hp:cellSz width="(\d+)"/g)].map((m) => Number(m[1]))
+    expect(widths).toHaveLength(2)
+    expect(Math.abs(widths[0]! - widths[1]!)).toBeLessThanOrEqual(2)
   })
 
-  it('still refuses a .hwp that reads back differently after that', async () => {
+  it('reads the same number of pages from both formats, without writing the .hwp twice', async () => {
     const core = await import('@rhwp/core')
     const verify = core.HwpDocument.prototype.exportHwpVerify
-    core.HwpDocument.prototype.exportHwpVerify = () =>
-      JSON.stringify({ ok: true, recovered: true, pageCountBefore: 3, pageCountAfter: 4 })
+    let checks = 0
+    core.HwpDocument.prototype.exportHwpVerify = function (this: unknown, ...args: never[]) {
+      checks++
+      return (verify as (...a: never[]) => string).apply(this, args)
+    }
     try {
-      const refusal = await docxToHwp(docx(MARKDOWN_DOCX), 'hwp', engine).catch((err) => err)
-      expect(refusal).toBeInstanceOf(Docx2HwpError)
-      expect(refusal.code).toBe('hwp-readback')
-      expect(refusal.message).toBe('the .hwp reads back with 4 pages instead of 3')
+      const hwp = await docxToHwp(docx(MARKDOWN_DOCX), 'hwp', engine)
+      const hwpx = await docxToHwp(docx(MARKDOWN_DOCX), 'hwpx', engine)
+      expect(checks).toBe(1)
+      const pages = [hwp, hwpx].map(({ bytes }) =>
+        withOpenedDocument(engine, bytes, (doc) => doc.pageCount()),
+      )
+      expect(pages[0]).toBe(pages[1])
+      expect(pages[0]).toBeGreaterThan(2)
     } finally {
       core.HwpDocument.prototype.exportHwpVerify = verify
     }

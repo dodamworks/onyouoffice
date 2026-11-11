@@ -1,18 +1,22 @@
 /**
- * The look of a table when the document was not laid out in Word: Markdown has
- * tables but says nothing of widths, margins or pages, and what its Word
- * export picks draws badly in Hangul. Hangul puts the whole line gap under a
- * line and none under the last line of a cell, so a cell without vertical
- * margins has its text against both borders; a table placed like a character
- * cannot go on to the next page, so a long one leaves the rest of its page
- * empty. A pure function over the plan: the engine is not involved.
+ * The look of a table in Hangul. Two things a Word table relies on are not
+ * there: Hangul puts the whole line gap under a line and none under the last
+ * line of a cell, so a cell without vertical margins has its text against
+ * both borders; and a table placed like a character cannot go on to the next
+ * page, so a long one leaves the rest of its page empty. Every document gets
+ * those two put right (wordLook). A document that was not laid out in Word
+ * (Markdown has tables but says nothing of widths, margins or headers) also
+ * gets the rest of a Hangul table's look (hangulLook). Pure functions over
+ * the plan: the engine is not involved.
  */
 import type { Block, Cell, HwpPlan, Inline, Para, Table } from './model'
 import { hwpFromMm, hwpFromPt, ptFromHwp, ptFromPara, type HwpUnit } from './units'
 
 /**
- * 'word' keeps what the Word document says. 'hangul' gives the tables the look
- * of a document written in Hangul; everything else is left as it is.
+ * 'word' keeps what the Word document says and only makes its tables hold in
+ * Hangul: they run over pages and their text stays off the borders. 'hangul'
+ * gives the tables the whole look of a document written in Hangul. Nothing
+ * but tables is touched either way.
  */
 export type HwpLook = 'word' | 'hangul'
 
@@ -20,6 +24,9 @@ export type HwpLook = 'word' | 'hangul'
 const TABLE_ABOVE = hwpFromMm(1)
 const TABLE_BELOW = hwpFromMm(3)
 const TABLE_BELOW_MOST_PT = 24
+/** a Word table has no margin of its own: only the text under it is kept off its border */
+const WORD_TABLE_ABOVE = hwpFromMm(0)
+const WORD_TABLE_BELOW = hwpFromMm(1)
 
 const CELL_MARGIN_VERTICAL = hwpFromMm(1)
 /** Hangul's own default for a new cell */
@@ -32,10 +39,53 @@ export function hangulLook(plan: HwpPlan): HwpPlan {
       block.kind === 'table'
         ? {
             ...tableLook(block),
-            flow: { kind: 'block', above: TABLE_ABOVE, below: spaceBelow(plan.body[i + 1]) },
+            flow: {
+              kind: 'block',
+              above: TABLE_ABOVE,
+              below: spaceBelow(plan.body[i + 1], TABLE_BELOW),
+            },
           }
         : block,
     ),
+  }
+}
+
+/**
+ * A Word document's tables as Word shows them, made to hold in Hangul: a body
+ * table goes on to the next page, and a cell has at least the vertical margin
+ * that stands in for the line gap Hangul leaves out. Widths, alignment, the
+ * side margins and the header row stay what the document says.
+ */
+export function wordLook(plan: HwpPlan): HwpPlan {
+  return {
+    ...plan,
+    body: plan.body.map((block, i) =>
+      block.kind === 'table'
+        ? {
+            ...offTheBorders(block),
+            flow: {
+              kind: 'block',
+              above: WORD_TABLE_ABOVE,
+              below: spaceBelow(plan.body[i + 1], WORD_TABLE_BELOW),
+            },
+          }
+        : block,
+    ),
+  }
+}
+
+function offTheBorders(table: Table): Table {
+  return {
+    ...table,
+    cells: table.cells.map((cell): Cell => ({
+      ...cell,
+      padding: {
+        ...cell.padding,
+        top: atLeast(cell.padding.top, CELL_MARGIN_VERTICAL),
+        bottom: atLeast(cell.padding.bottom, CELL_MARGIN_VERTICAL),
+      },
+      body: cell.body.map((block) => (block.kind === 'table' ? offTheBorders(block) : block)),
+    })),
   }
 }
 
@@ -44,10 +94,10 @@ export function hangulLook(plan: HwpPlan): HwpPlan {
  * edge: its own space above is not kept clear of the table, so the table's
  * margin has to be at least that much.
  */
-function spaceBelow(next: Block | undefined): HwpUnit {
-  if (next?.kind !== 'para') return TABLE_BELOW
+function spaceBelow(next: Block | undefined, least: HwpUnit): HwpUnit {
+  if (next?.kind !== 'para') return least
   const before = hwpFromPt(Math.min(ptFromPara(next.shape.before), TABLE_BELOW_MOST_PT))
-  return before > TABLE_BELOW ? before : TABLE_BELOW
+  return before > least ? before : least
 }
 
 function tableLook(table: Table): Table {

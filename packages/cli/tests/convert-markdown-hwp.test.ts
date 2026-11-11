@@ -157,7 +157,9 @@ describe('the tables of a Markdown file in Hangul', () => {
     const first = /<hp:tbl\b[\s\S]*?<\/hp:tbl>/.exec(section)![0]
     const widths = [...first.matchAll(/<hp:cellSz width="(\d+)"/g)].map((m) => Number(m[1]))
     expect(widths[0]).toBe(widths[1])
-    expect(first).toContain('treatAsChar="1"')
+    // a Word table also runs over pages, and its header row stays as Word has it
+    expect(first).toContain('treatAsChar="0"')
+    expect(first).toContain('repeatHeader="0"')
   })
 })
 

@@ -1,7 +1,7 @@
 import { parseDocx } from '@genoffice/docx-engine'
 import type { HwpDocument } from '@rhwp/core'
 import { call, exportDocument, withNewDocument, withOpenedDocument, type HwpEngine } from './engine'
-import { hangulLook, type HwpLook } from './look'
+import { hangulLook, wordLook, type HwpLook } from './look'
 import { lowerDocument } from './lower'
 import { LossLedger, type Loss } from './losses'
 import { writePlan } from './write'
@@ -67,7 +67,7 @@ export async function convert(
   }
   const ledger = new LossLedger()
   const lowered = lowerDocument(parsed, ledger)
-  const plan = options.look === 'hangul' ? hangulLook(lowered) : lowered
+  const plan = options.look === 'hangul' ? hangulLook(lowered) : wordLook(lowered)
   try {
     let lost = 0
     const take = (doc: HwpDocument, as: HwpFormat): Uint8Array => {
