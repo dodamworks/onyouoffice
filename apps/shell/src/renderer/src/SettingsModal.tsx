@@ -1650,6 +1650,8 @@ export interface SettingsModalProps {
   onSkillUpdateDue?: (due: boolean) => void
   /** open on this section / block instead of the account page */
   target?: SettingsTarget | null
+  /** the first-run welcome window is up: stack above it */
+  overWelcome?: boolean
 }
 
 export function SettingsModal({
@@ -1658,6 +1660,7 @@ export function SettingsModal({
   skillUpdateDue: updateDue = false,
   onSkillUpdateDue,
   target,
+  overWelcome = false,
 }: SettingsModalProps) {
   const { lang, setLang, t } = useI18n()
   const [section, setSection] = useState<SectionId>(target?.section ?? 'account')
@@ -1812,7 +1815,7 @@ export function SettingsModal({
 
   return (
     <div
-      className="set-overlay"
+      className={overWelcome ? 'set-overlay over-welcome' : 'set-overlay'}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}

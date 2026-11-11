@@ -5741,7 +5741,8 @@ function showAppWarning(message: string, detail?: string): void {
  * Files dropped from the OS into any renderer arrive via installDropOpenBridge
  * and route through the normal File > Open pipeline; detached editor windows
  * can host the drop target, so the shell must reveal itself after opening.
- * A skill file (a SKILL.md, a skill zip) goes to Settings ▸ Skills' preview.
+ * A skill file (a SKILL.md, a skill zip) goes to Settings ▸ Skills' preview,
+ * and a zip that holds no skill to the same page's "no skill found" notice.
  */
 const droppedFilesDeps = (): DroppedFilesDeps => ({
   openDocumentPath,
@@ -5751,6 +5752,10 @@ const droppedFilesDeps = (): DroppedFilesDeps => ({
   skillSourceOf: (path) => droppedSkillSourceOf(path, homedir()),
   importSkills: (source) => {
     userSkillsIpc.queueDropped(source)
+    openSkillsSettings()
+  },
+  noSkillsFound: () => {
+    userSkillsIpc.queueDropped({ kind: 'no-skills' })
     openSkillsSettings()
   },
 })
