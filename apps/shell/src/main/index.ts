@@ -438,6 +438,8 @@ import {
 import { showErrorDialog } from './error-dialog'
 import { startRendererWatchdog } from './renderer-watchdog'
 import { crashLogPath, memoryFigures, startCrashWatch, startLowMemoryWatch } from './crash-watch'
+import { appendCrashLog } from './crash-log'
+import { runStopEntry } from './ai-run-stop-log'
 import { startHeartbeat, type HeartbeatHandle } from './crash-heartbeat'
 import {
   capStatPaths,
@@ -879,6 +881,10 @@ configureHwpRuntime({
   newDocumentDir: (id) => newDocumentFolderFor(id),
   openMarkdownAsDocument: (_id, path, request) =>
     openMarkdownAsHangul(markdownImportDeps, path, request),
+  noteAiRunStop: (stop) => {
+    const entry = runStopEntry('hwp', stop)
+    if (entry) appendCrashLog(crashLogPath(), entry)
+  },
 })
 configureEpubRuntime({
   preloadPath: join(EPUB_OUT, 'preload', 'index.js'),

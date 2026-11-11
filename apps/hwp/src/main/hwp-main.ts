@@ -101,6 +101,12 @@ interface RuntimePaths {
     path: string,
     request?: string,
   ) => Promise<AttachmentImportResult>
+  /**
+   * The AI panel's run was stopped by the app's own rule. `stop` is what the
+   * renderer sent, unchecked: the shell keeps the rule and its counts in the
+   * crash record on this PC and nothing else.
+   */
+  noteAiRunStop?: (stop: unknown) => void
 }
 
 let runtime: RuntimePaths = { preloadPath: '' }
@@ -542,6 +548,10 @@ function registerHwpIpc(): void {
     headlessTargetByWc.delete(e.sender.id)
     return target
   })
+  ipcMain.on(HWP_CHANNELS.aiRunStop, (_e, stop: unknown) => {
+    runtime.noteAiRunStop?.(stop)
+  })
+
   ipcMain.on(HWP_CHANNELS.headlessExportDone, (e, result: unknown) => {
     const settle = headlessWaiters.get(e.sender.id)
     if (!settle) return

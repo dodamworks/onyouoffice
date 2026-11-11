@@ -55,6 +55,8 @@ export const HWP_CHANNELS = {
   filesReadImage: 'hwp:files-read-image',
   /** invoke(path) → `AttachmentDocumentResult`: an attached .hwp / .hwpx, for read_formatting */
   filesReadDocument: 'hwp:files-read-document',
+  /** send(stop): the AI panel's run was stopped by the app's own rule; kept in the crash record */
+  aiRunStop: 'hwp:ai-run-stop',
   /** invoke(path, request?) → `AttachmentImportResult`: an attached Markdown file as a new Hangul tab */
   filesImportDocument: 'hwp:files-import-document',
   /** invoke({prompt, aspectRatio}) �� `{url?, error?, errorCode?}`: one AI picture */
@@ -420,6 +422,11 @@ export interface HwpApi {
    * tab of its own; with `request` the person's words go along for that tab's AI panel
    */
   importAttachmentAsDocument(path: string, request?: string): Promise<AttachmentImportResult>
+  /**
+   * note that the app stopped an AI run by its own rule: the rule, fault counts and
+   * tool names only (an AgentRunStop), for the crash record on this PC
+   */
+  noteAiRunStop?(stop: unknown): void
   /** let the model look at one picture of the document (a data URL) and answer about it */
   analyzeMedia(op: { mediaUrls: string[]; requirements: string }): Promise<MediaAnalysisResult>
   /** the local path of a dropped or pasted file; empty for one that has none (a screenshot) */
