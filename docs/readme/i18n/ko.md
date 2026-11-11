@@ -16,6 +16,10 @@
   <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
   <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
 </p>
 
 문서를 열고, 바꾸고 싶은 내용을 말하고, 같은 창에서 작업을 이어가세요. 온유오피스는 문서 편집기와 AI 에이전트를 한 데스크톱 앱에 담았습니다. AI로 초안을 쓰고 문서를 다듬거나 직접 편집할 수 있습니다. 앱은 무료 오픈소스이며, AI 연결은 선택입니다.
@@ -89,6 +93,6 @@ AI 계정 없이 문서를 편집할 수 있습니다. AI 구독·API 요금·�
 
 온유오피스는 IeumOffice의 독립 포크이며, 그 원본은 GenOffice입니다. 문서 엔진과 많은 편집 기능은 원본 프로젝트·rhwp·오픈소스 기여자들의 작업입니다. 원본 출처와 저작자 표시를 보존하며, 온유오피스가 모든 기능을 직접 만들었다고 주장하지 않습니다. 프로젝트 소스는 Apache-2.0, 제3자 구성 요소는 각각의 조건을 따릅니다. 상표 사용권은 별도이며, 원본 프로젝트나 AI·문서 형식 제공자와의 제휴·후원을 주장하지 않습니다.
 
-[IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
+[IeumOffice](https://github.com/pblsketch/ieumoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 
 [Apache-2.0](../../../LICENSE) · [NOTICE](../../../NOTICE) · [Contributors](../../../CONTRIBUTORS.md) · [Trademarks](../../../TRADEMARKS.md) · [Source history](../SOURCE-HISTORY.md)

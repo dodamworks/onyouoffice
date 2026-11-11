@@ -9,9 +9,17 @@
 <p align="center"><strong>あなたのための、AI エージェントと使うオフィス。</strong></p>
 
 <p align="center">
+  <a href="https://onyouoffice.com/">onyouoffice.com</a>
+</p>
+
+<p align="center">
   <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
   <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
 </p>
 
 文書を開き、変更したい内容を伝えて、そのまま同じウィンドウで作業を続けられます。Onyou Office は文書エディターと AI エージェントをひとつにしたデスクトップアプリです。AI で下書きや修正を行うことも、自分で編集することもできます。無料のオープンソースで、AI 接続は任意です。
@@ -67,6 +75,6 @@ AI アカウントなしでも文書を編集できます。AI の契約、API �
 
 Onyou Office は IeumOffice の独立したフォークで、その基盤は GenOffice です。文書エンジンや多くの編集機能は、これらのプロジェクト、rhwp、オープンソース貢献者によるものです。出典と著作者の表示を保ち、すべてを独自開発したとは主張しません。ソースは Apache-2.0、第三者の構成要素は個別の条件に従います。商標権は別です。上流プロジェクトや AI・ファイル形式提供元との提携・後援は主張しません。
 
-[IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
+[IeumOffice](https://github.com/pblsketch/ieumoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 
 [Apache-2.0](../../../LICENSE) · [NOTICE](../../../NOTICE) · [Contributors](../../../CONTRIBUTORS.md) · [Trademarks](../../../TRADEMARKS.md) · [Source history](../SOURCE-HISTORY.md)
