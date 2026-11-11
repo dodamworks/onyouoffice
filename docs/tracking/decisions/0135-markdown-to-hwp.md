@@ -45,8 +45,8 @@
 - 워드 문서의 표 모양으로 쓴 시험 문서 셋(`markdown-tables`, `notice`, `nested`)을 한컴 한글 2024로 열었다(2026-11-11). 5쪽, 2쪽, 1쪽으로 우리 엔진과 같고, 표가 쪽을 넘어 이어지며 칸 글이 선에서 떨어져 있다. 열 너비는 워드 그대로다.
 - 다시 여는 길로 쓴 `.hwp`를 한컴 한글 2024가 5쪽으로 열고, 무늬 같은 덧칠은 없었다.
 - 우리 엔진은 문단 사이 표의 바깥 아래 여백을 배치에 쓰지 않는다. 표 문단의 "문단 아래"로 같은 간격을 내고 있고, 엔진의 차이는 `docs/tracking/findings.md`에 적었다.
-- 마크다운 편집기의 순서(허락된 경로, 저장 창, 확인 창의 취소, 변환 실패)는 `apps/markdown/tests/save-as-hwp.test.ts`가 가짜 변환으로 본다. 빌드한 앱에서는 아직 눌러 보지 않았다.
+- 마크다운 편집기의 순서(허락된 경로, 저장 창, 확인 창의 취소, 변환 실패)는 `apps/markdown/tests/save-as-hwp.test.ts`가 가짜 변환으로 본다. 빌드한 앱에서는 `e2e/markdown-export-hwp.spec.ts`가 통과했다.
 - 도움말의 마크다운 주제에 한 줄을 21개 언어로 더했다.
-- 한글 AI 창의 가져오기는 단위 시험으로 봤다: 도구(`apps/hwp/tests/hwp-skill.test.ts`), 뒷단 창구(`attachments-import.test.ts`), 껍데기 앱의 바꾸기·열기·넘겨주기(`apps/shell/tests/hwp-import.test.ts`), 넘겨받은 창이 앱의 한 줄을 모델에게만 보내는지(`packages/ui/tests/skill-templates.test.ts`). 빌드한 앱과 실제 구독으로는 아직 돌려 보지 않았다.
+- 한글 AI 창의 가져오기는 단위 시험으로 봤다: 도구(`apps/hwp/tests/hwp-skill.test.ts`), 뒷단 창구(`attachments-import.test.ts`), 껍데기 앱의 바꾸기·열기·넘겨주기(`apps/shell/tests/hwp-import.test.ts`), 넘겨받은 창이 앱의 한 줄을 모델에게만 보내는지(`packages/ui/tests/skill-templates.test.ts`). 빌드한 앱과 실제 구독(Claude, 가장 작은 모델)으로 한 번 돌렸다(2026-11-11): 모델이 `import_attachment`를 불렀고, 새 탭이 열렸으며, 넘겨받은 창이 서식 도구로 요청을 마쳤다. 첫 호출이 `continue_request`를 글자 `"true"`로 보내 한 번 거절돼서, 반복부가 참·거짓 칸의 `"true"`·`"false"`를 고쳐 받게 했다.
 - 끊긴 실행의 알림은 단위 시험으로 봤다: 반복부가 알리는 까닭(`packages/agent-core/tests/loop.test.ts`), 문장과 "이어서 하기"와 모델에게 붙는 말(`packages/ui/tests/run-stop.test.ts`), 한글 AI 창의 연결(`apps/hwp/tests/run-stop-wiring.test.ts`), 크래시 기록에 글이 섞이지 않는지(`apps/shell/tests/ai-run-stop-log.test.ts`). 다른 편집기의 AI 창은 아직 영어 한 줄을 보인다.
 - 의존성은 늘지 않았다.
