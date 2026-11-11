@@ -474,6 +474,7 @@ export function AiChatPanel({
   const mcpWindow = useMcpWindow()
   const skills = useComposerSkills({
     lang,
+    editor: 'sheets',
     dollarAtStartOnly: true,
     onTemplateSkill,
     usableMcpServers: mcpWindow.state?.usableServers(),

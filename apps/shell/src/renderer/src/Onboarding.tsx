@@ -27,6 +27,8 @@ interface OnboardingProps {
   /** a subscription can be used and the first-connection notice was not acknowledged yet */
   noticeDue: boolean
   onNoticeAcknowledge: () => void
+  /** Settings is open above this window: the keyboard is not ours meanwhile */
+  covered?: boolean
 }
 
 /* Reuse the existing artwork; onboarding CSS controls its display size. */
@@ -64,6 +66,7 @@ export function Onboarding({
   connection,
   noticeDue,
   onNoticeAcknowledge,
+  covered = false,
 }: OnboardingProps) {
   const { t, lang } = useI18n()
   const [index, setIndex] = useState(0)
@@ -160,8 +163,8 @@ export function Onboarding({
   // when a button is focused so the native click doesn't double-fire.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      // the notice above owns the keyboard while it is open
-      if (noticeOpen) return
+      // the notice or the Settings dialog above owns the keyboard while it is open
+      if (noticeOpen || covered) return
       if (event.key === 'Escape') {
         finish()
         return

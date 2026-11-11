@@ -46,6 +46,7 @@ import type {
 } from '../shared/home-api'
 import { HOME_CHANNELS } from '../shared/home-api'
 import { normalizeNickname } from '../shared/nickname'
+import { createInbox } from './inbox'
 import { normalizeSlidesAiFonts } from '@genoffice/ui/slides-ai-fonts'
 import { RECOVERY_LIST_CHANNELS } from '../shared/recovery-list-api'
 import type {
@@ -94,6 +95,16 @@ import {
   subscriptionOffResultOf,
   subscriptionStatusMapOf,
 } from '../shared/subscription-api'
+
+// listened to from the start: Home subscribes only once it has mounted, and a
+// request sent before that (a skill file dropped right after launch) must
+// still open Settings
+const openSettingsInbox = createInbox<{ section: string; field?: string }>()
+ipcRenderer.on(
+  HOME_CHANNELS.openSettings,
+  (_event: IpcRendererEvent, target: { section: string; field?: string }) =>
+    openSettingsInbox.push(target),
+)
 
 const UI_LANGUAGES: readonly UiLanguage[] = [
   'zh',
@@ -389,10 +400,7 @@ const homeApi: HomeApi = {
     await ipcRenderer.invoke(HOME_CHANNELS.setAutoUpdateCheck, on)
   },
   onOpenSettings(handler) {
-    const listener = (_event: IpcRendererEvent, target: { section: string; field?: string }) =>
-      handler(target)
-    ipcRenderer.on(HOME_CHANNELS.openSettings, listener)
-    return () => ipcRenderer.removeListener(HOME_CHANNELS.openSettings, listener)
+    return openSettingsInbox.subscribe(handler)
   },
   async getAppVersion() {
     const result: unknown = await ipcRenderer.invoke(HOME_CHANNELS.getAppVersion)

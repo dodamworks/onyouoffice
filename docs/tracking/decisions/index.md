@@ -103,11 +103,27 @@
 | [0102](0102-mindmap-line-format.md)                           | 마인드맵의 선은 파일 형식에 자리가 있는 값만 고르게 하고, 사람이 바꾼 것에서만 파일에 쓴다           | 2026-11-02 |
 | [0103](0103-diagram-editor.md)                                | 다이어그램은 draw.io 본체를 PC 안에서만 띄우고, AI와 바깥 연결은 글 표와 한 모듈의 연산으로 다룬다   | 2026-11-03 |
 | [0106](0106-hwp-ai-document-settings.md)                      | 한글 편집기의 AI가 각주·미주 모양, 쪽 설정, 번호 매기기를 바꾸고 다른 문서의 서식을 읽어 따라 한다   | 2026-11-03 |
-| [0104](0104-translation-style-rules.md)                       | 번역 지시문에 문체 규칙을 두고, 한국어는 문장 끝을 원문 성격에 맞춘다                                | 2026-11-03 |
-
-| [0107](0107-hwp-engine-on-rhwp-devel.md) | Pin the HWP engine and studio to the accepted rhwp development revision. | 2026-11-04 |
-| [0108](0108-easy-explanation.md) | 번역에 두 번째 방식 "쉬운 풀이"를 두고, 워드와 한글에는 오른쪽 클릭 "쉬운 말로 풀기"를 둔다 | 2026-11-03 |
-| [0110](0110-save-as-all-formats.md) | "다른 이름으로 저장"에서 편집기가 내보낼 수 있는 형식을 모두 고르고, 내보내기 형식은 사본만 쓴다 | 2026-11-05 |
-| [0111](0111-xls-import-print-settings.md) | 옛 형식 `.xls`를 열 때 셀 서식과 인쇄 설정을 함께 옮긴다 | 2026-11-05 |
-| [0112](0112-hancom-styles-alternate-content.md) | 한셀 `styles.xml`의 호환 블록을 그대로 두고 한 항목으로 센다(원본보다 먼저) | 2026-11-06 |
-| [0115](0115-slides-ai-default-fonts.md) | AI로 만드는 슬라이드의 기본 글꼴(고딕·명조·제목만 명조)을 사용자가 설정에서 고른다 | 2026-11-08 |
+| [0107](0107-hwp-engine-on-rhwp-devel.md)                      | 한글 엔진과 편집기를 배포 전 rhwp `devel` 커밋에 맞추고 우리 패치를 그 위로 옮긴다(고정점은 → 0116)  | 2026-11-04 |
+| [0108](0108-easy-explanation.md)                              | 번역에 두 번째 방식 "쉬운 풀이"를 두고, 워드와 한글에는 오른쪽 클릭 "쉬운 말로 풀기"를 둔다          | 2026-11-03 |
+| [0110](0110-save-as-all-formats.md)                           | "다른 이름으로 저장"에서 편집기가 내보낼 수 있는 형식을 모두 고르고, 내보내기 형식은 사본만 쓴다     | 2026-11-05 |
+| [0111](0111-xls-import-print-settings.md)                     | 옛 형식 `.xls`를 열 때 셀 서식과 인쇄 설정을 함께 옮긴다                                             | 2026-11-05 |
+| [0112](0112-hancom-styles-alternate-content.md)               | 한셀 `styles.xml`의 호환 블록을 그대로 두고 한 항목으로 센다(원본보다 먼저)                          | 2026-11-06 |
+| [0113](0113-resource-question-follows-the-pc.md)              | 자원 경고는 문서마다 그만 물을 수 있고, 메모리 기준은 PC의 메모리를 따른다                           | 2026-11-07 |
+| [0114](0114-subscription-off-in-app.md)                       | 구독 프로그램은 이 앱에서만 끌 수 있고, 끈 프로그램은 상태 확인부터 띄우지 않는다                    | 2026-11-07 |
+| [0115](0115-slides-ai-default-fonts.md)                       | AI로 만드는 슬라이드의 기본 글꼴(고딕·명조·제목만 명조)을 사용자가 설정에서 고른다                   | 2026-11-08 |
+| [0116](0116-hwp-engine-on-rhwp-0-9-0.md)                      | 한글 엔진·편집기를 rhwp v0.9.0에 맞추고, PDF 변환 메뉴의 "HWP로 변환"으로 PDF를 한글 문서로 바꾼다   | 2026-11-08 |
+| [0117](0117-chatgpt-one-account.md)                           | ChatGPT 직접 연결과 Codex를 화면에서 ChatGPT 하나로 보이고, 길은 앱이 정한다                         | 2026-11-09 |
+| [0118](0118-template-skill-in-current-document.md)            | 내용이 있는 문서에서 양식 스킬을 부르면 지금 문서와 새 문서 중 어디서 할지 묻는다                    | 2026-11-10 |
+| [0119](0119-ods-open-and-export.md)                           | ODS는 불러오기부터 넣고, 내보내기는 전체 변환으로 따로 낸다                                          | 2026-11-09 |
+| [0120](0120-skills-receive-and-hand-on.md)                    | 스킬을 끌어 놓기·글 붙여넣기로 받고, 여러 개를 zip 하나로 건네며, 살펴볼 줄은 보이기만 한다          | 2026-11-10 |
+| [0121](0121-docx-to-hwp-export.md)                            | 워드 문서를 다른 이름으로 저장·내보내기에서 .hwp·.hwpx 사본으로 쓴다                                 | 2026-11-10 |
+| [0122](0122-skill-editor-scope.md)                            | 스킬마다 쓰는 편집기를 정하고, 편집기 AI 창은 그 편집기의 스킬만 보인다                              | 2026-11-10 |
+| [0123](0123-reviewed-skill-collection.md)                     | 검토한 스킬 모음을 사람이 열 때만 둘러보고, 좋아요는 계정 없이 앱에서 누른다                         | 2026-11-10 |
+| [0124](0124-hwp-engine-batch-lays-out-once.md)                | 한글 엔진의 일괄 처리가 문단 모양·스타일·개체 편집도 끝에서 한 번 배치하고, 변환은 한 구역에 쓴다    | 2026-11-10 |
+| [0125](0125-sheets-quick-access-alt-digits.md)                | 엑셀 편집기의 빠른 실행 도구 모음을 고를 수 있게 하고, Alt+숫자로 그 순서의 단추를 실행한다          | 2026-11-10 |
+| [0126](0126-calamine-ahead-of-upstream.md)                    | 옛 .xls 한글이 깨지지 않게 calamine을 원본보다 먼저 0.38로 올린다                                    | 2026-11-10 |
+| [0127](0127-skills-first-user-findings.md)                    | 스킬을 바꿔 설치해도 설정이 남고, 미리보기에서 내용을 읽으며, 스킬 없는 zip에는 알림을 띄운다        | 2026-11-10 |
+| [0128](0128-skill-titles-in-any-language.md)                  | 내 스킬은 어떤 언어로든 제목을 붙이고, 남의 이름을 차지하기 전에 묻는다                              | 2026-11-10 |
+| [0131](0131-document-skills-for-the-agent-window.md)          | 공개 문서 스킬 넷(docx·pptx·xlsx·pdf)을 원본 그대로 싣고, 에이전트 창에서만 쓴다                     | 2026-11-11 |
+| [0132](0132-own-skills-for-four-editors.md)                   | 한글·마인드맵·다이어그램·HTML 편집기의 문서 작성 스킬 넷을 직접 써서 싣는다                          | 2026-11-11 |
+| [0133](0133-sheets-structural-ops-in-runs.md)                 | 엑셀 저장이 같은 종류의 구조 변경을 한 번에 쓰고, 한 번에 보낼 수 있는 개수를 늘린다                 | 2026-11-11 |
