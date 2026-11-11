@@ -120,7 +120,7 @@ import { createSearchSkill } from './search-skill'
 import { createElectronTransport } from './transport'
 import { blockedRunFor, mergeSubscriptionUsage, type BlockedRun } from './connection'
 import { useSubscriptionConnection } from './subscription-client'
-import { type MapAiHost, MapTurn, revertTurn } from './map-tools'
+import { blankNewMapSheet, type MapAiHost, MapTurn, revertTurn } from './map-tools'
 import sendEnterOn from './assets/send-enter-on.png'
 import sendEnterOff from './assets/send-enter-off.png'
 import sendStop from './assets/send-stop.png'
@@ -507,6 +507,14 @@ export function AiPanel({
     cards: skillCards,
     busy,
     send: (text, use) => send(text, undefined, use),
+    // a template skill called in a map with content asks where to run
+    hasContent: () => host.session() !== null && blankNewMapSheet(host) === null,
+    // a template copy that brought the asking document: it goes in as an attachment
+    attach: async (paths) => {
+      const added = (await aiApi().addAttachmentPaths?.(paths)) ?? null
+      mergeAttachments(added)
+      return (added?.accepted.length ?? 0) > 0
+    },
     onTaken: onSkillHandoff,
     // a template copy's request: the map goes into the project once it ends well
     onHandedRun: ({ preview }) => {

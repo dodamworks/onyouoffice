@@ -57,6 +57,8 @@ export const pt = {
   errRateLimit: 'O limite da assinatura {provider} foi atingido.',
   errRateLimitReset:
     'O limite da assinatura {provider} foi atingido. Ele será redefinido às {time}.',
+  errChatGptAppLimit:
+    'Este aplicativo esgotou o uso do ChatGPT de que dispõe. Pode ser o limite de todo o seu plano ou um limite definido para este aplicativo. Confira no ChatGPT, em Configurações → Uso.',
   errUnsafeTools:
     'O programa {provider} foi iniciado com as próprias ferramentas ativadas, então a execução foi interrompida por segurança.',
   errMeteredNotAccepted:
@@ -163,6 +165,8 @@ export const pt = {
     'Você entrou no navegador, mas a OpenAI não aceitou esta conexão, ou a resposta dela não pôde ser verificada. Confira se a data e a hora deste PC estão certas e pressione de novo para recomeçar.',
   chatgptLoginNetworkNote:
     'Não foi possível concluir o login: não deu para alcançar a OpenAI ou nenhum navegador abriu. Verifique a conexão com a internet (incluindo rede da empresa, VPN ou proxy) e pressione de novo.',
+  chatgptLoginWorkspacePolicyNote:
+    'Esta conta ChatGPT pertence a um espaço de trabalho gerido por uma empresa ou escola, e a OpenAI não permite que aplicações usem o plano ChatGPT de um espaço de trabalho. O administrador do espaço de trabalho não tem nenhuma definição para permitir esta aplicação, por isso iniciar sessão novamente não vai ajudar. Inicie sessão com uma conta ChatGPT pessoal (Go, Plus ou Pro) ou ligue-se pelo cartão Codex.',
   chatgptLoginNotAllowedNote:
     'Você não permitiu que este aplicativo use seu plano do ChatGPT, ou o navegador voltou do login com uma falha. Pressione de novo, entre e permita na página de autorização.',
   chatgptSigningInNote:

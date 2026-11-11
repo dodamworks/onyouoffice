@@ -102,6 +102,22 @@ describe('the ChatGPT card (decision 0081)', () => {
     expect(
       after({ reason: 'denied', step: 'callback-error', oauthError: 'access_denied' }),
     ).toEqual(['chatgptLoginNotAllowedNote', 'loginNote'])
+    // a workspace that does not allow third-party plan use has nothing the user can
+    // allow on the consent page: the card must not send them back there
+    expect(
+      after({
+        reason: 'denied',
+        step: 'callback-error',
+        oauthError: '3p_delegated_access_policy_denied',
+      }),
+    ).toEqual(['chatgptLoginWorkspacePolicyNote', 'loginNote'])
+    expect(
+      after({
+        reason: 'denied',
+        step: 'token-refused',
+        oauthError: '3p_delegated_access_policy_denied',
+      }),
+    ).toEqual(['chatgptLoginWorkspacePolicyNote', 'loginNote'])
     expect(after({ reason: 'timeout' })).toEqual(['chatgptLoginUnfinishedNote', 'loginNote'])
     expect(after()).toEqual(['chatgptLoginUnfinishedNote', 'loginNote'])
     // the button is the same: one more sign-in, from the start
@@ -801,6 +817,27 @@ describe('aiRunErrorText', () => {
         aiRunErrorText(lang, { kind: 'rate-limit', provider: 'claude-code', resetsAt }, now),
         lang,
       ).toContain(formatAiResetTime(lang, resetsAt, now))
+    }
+  })
+
+  it('does not call a ChatGPT limit the whole plan, nor give it a reset time', () => {
+    // OpenAI: the code may come from a limit set for this app alone
+    const text = aiRunErrorText('en', { kind: 'rate-limit', provider: 'chatgpt', resetsAt }, now)
+    expect(text).toBe(
+      'This app has used up the ChatGPT usage it can draw on. The limit may be your whole plan’s or one set for this app. Check Settings → Usage in ChatGPT.',
+    )
+    expect(text).not.toContain(time)
+    expect(aiRunErrorText('ko', { kind: 'rate-limit', provider: 'chatgpt' })).toBe(
+      'ChatGPT에서 이 앱이 쓸 수 있는 사용량을 다 썼습니다. 요금제 전체의 한도이거나 이 앱에 정해 둔 한도일 수 있습니다. ChatGPT 설정 → 사용량에서 확인하세요.',
+    )
+    for (const lang of LANGS) {
+      const worded = aiRunErrorText(lang, { kind: 'rate-limit', provider: 'chatgpt' })
+      expect(worded, lang).toContain('ChatGPT')
+      expect(worded, lang).not.toMatch(/[{}]/)
+      if (lang !== 'en')
+        expect(worded, lang).not.toBe(
+          aiRunErrorText('en', { kind: 'rate-limit', provider: 'chatgpt' }),
+        )
     }
   })
 

@@ -184,6 +184,7 @@ describe('home quick actions', () => {
       '.xls',
       '.csv',
       '.tsv',
+      '.ods',
       '.pptx',
       '.ppt',
       '.pdf',
