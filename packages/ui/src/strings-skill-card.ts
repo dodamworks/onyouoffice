@@ -965,6 +965,8 @@ export const SKILL_CARD_STRINGS = defineStrings({
   tr: {
     cardNewTitle: 'Yeni beceri',
     cardEditTitle: 'Beceriyi değiştir',
+    fieldTitle: 'Başlık',
+    titleHint: 'Listelerde gösterilir, herhangi bir dilde olabilir. Boş bırakırsanız ad gösterilir',
     fieldDescription: 'Açıklama',
     fieldBody: 'Yönergeler',
     fieldName: 'Ad',
@@ -996,6 +998,9 @@ export const SKILL_CARD_STRINGS = defineStrings({
     nameTaken: 'Becerilerimde bu adla bir beceri zaten var',
     nameTakenReplace:
       'Becerilerimde bu adla bir beceri zaten var; kaydedince o beceri değiştirilir',
+    sameNameOn:
+      'Aynı adlı bir beceri açık ({sources}). Kaydederseniz onun yerine sizin beceriniz kullanılır ve o beceri kapatılır.',
+    saveTurnOff: 'Kaydet ve onu kapat',
     saveFailed: 'Kaydedilemedi',
     trashFailed:
       'Yerine geçilecek beceri geri dönüşüm kutusuna taşınamadı, bu yüzden hiçbir şey kaydedilmedi',

@@ -72,6 +72,8 @@ export const tr = {
   editorNew: 'Yeni beceri',
   editorEdit: 'Beceriyi düzenle',
   editorView: 'Beceri içeriği',
+  fieldTitle: 'Başlık',
+  titleHint: 'Listelerde gösterilir, herhangi bir dilde olabilir. Boş bırakırsanız ad gösterilir',
   fieldDescription: 'Açıklama',
   fieldDescriptionHint: 'AI, becerinin ne zaman kullanılacağına karar vermek için bunu okur',
   fieldBody: 'Yönergeler',
@@ -163,4 +165,20 @@ export const tr = {
     'İşaretlediğiniz beceriler, her beceri için bir klasör olmak üzere tek bir zip dosyasına girer. Dosyayı alan kişi zip’i bir uygulama penceresine bırakabilir veya Ekle ▸ Zip dosyasından seçeneğini kullanabilir.',
   bundleSelectLabel: '{title} becerisini dahil et',
   bundleExport: 'Dışa aktar ({n})',
+  sameNameOn:
+    'Aynı adlı bir beceri açık ({sources}). Kaydederseniz onun yerine sizin beceriniz kullanılır ve o beceri kapatılır.',
+  saveTurnOff: 'Kaydet ve onu kapat',
+  bundleFileName: '{title} ve {n} tane daha',
+  previewBodyEmpty: 'Talimatlar boş',
+  previewTruncated: 'Yalnızca ilk {n} karakter gösteriliyor. Devamı var.',
+  collisionKeeps:
+    'Değiştir, becerinin ayarlarını korur: açık ya da kapalı olması, ne zaman ve nerede kullanıldığı.',
+  discardAsk: 'Kaydedilmemiş değişiklikleriniz var. Kapatırsanız bunlar silinir.',
+  discardKeep: 'Düzenlemeye devam et',
+  discardClose: 'Değişiklikleri at ve kapat',
+  dropOverlaySkills: 'Beceri dosyaları (.zip, SKILL.md) da bırakılabilir',
+  shadowedNote: 'Bunun yerine aynı adlı bir beceri ({source}) kullanılıyor',
+  builtinBodyNote: 'Aşağıdaki talimatlar AI’ya verilen metindir, yazıldığı gibi gösterilir',
+  pasteUnclosed:
+    'Kapanış --- satırı eksik. Metin kesilmiş olabilir; baştan sona yeniden kopyalayın.',
 } satisfies Record<keyof typeof zh, string>

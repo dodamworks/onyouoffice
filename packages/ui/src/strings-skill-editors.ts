@@ -488,6 +488,8 @@ export const SKILL_EDITORS_STRINGS = defineStrings({
     all: 'Tüm düzenleyiciler',
     some: 'Yalnızca bu düzenleyiciler',
     none: 'En az bir düzenleyici seçin',
+    checkAll: 'Tümünü seç',
+    clearAll: 'Tümünü temizle',
     hintSome:
       'Diğer düzenleyicilerin AI panelleri bu beceriyi listelemez ve AI onu orada kullanmaz',
     settingsNote:
