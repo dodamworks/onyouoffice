@@ -9,6 +9,7 @@ type Lang = keyof typeof upstreamStrings
 /** Keys only Onyou Office uses; zh defines the set, every language must match. */
 const onyouAdded = {
   zh: {
+    openLocalSub: 'Word、Excel、韩文、PDF 等',
     askToolSearchHistory: '文档搜索',
     askToolReadHistory: '文件读取',
     askToolCreateHistory: '文档创建',
@@ -22,6 +23,7 @@ const onyouAdded = {
     onbConnectHelp: '连接帮助',
   },
   en: {
+    openLocalSub: 'Word, Excel, Hangul, PDF and more',
     askToolSearchHistory: 'Document search',
     askToolReadHistory: 'File reading',
     askToolCreateHistory: 'Document creation',
@@ -35,6 +37,7 @@ const onyouAdded = {
     onbConnectHelp: 'Connection help',
   },
   vi: {
+    openLocalSub: 'Word, Excel, Hangul, PDF và hơn thế',
     askToolSearchHistory: 'Tìm kiếm tài liệu',
     askToolReadHistory: 'Đọc tệp',
     askToolCreateHistory: 'Tạo tài liệu',
@@ -48,6 +51,7 @@ const onyouAdded = {
     onbConnectHelp: 'Trợ giúp kết nối',
   },
   ja: {
+    openLocalSub: 'Word・Excel・ハングル・PDF など',
     askToolSearchHistory: '文書検索',
     askToolReadHistory: 'ファイル読み取り',
     askToolCreateHistory: '文書作成',
@@ -61,6 +65,7 @@ const onyouAdded = {
     onbConnectHelp: '接続のヘルプ',
   },
   ko: {
+    openLocalSub: 'Word·Excel·한글·PDF 등',
     askToolSearchHistory: '문서 검색',
     askToolReadHistory: '파일 읽기',
     askToolCreateHistory: '문서 만들기',
@@ -74,6 +79,7 @@ const onyouAdded = {
     onbConnectHelp: '연결 도움말',
   },
   fr: {
+    openLocalSub: 'Word, Excel, Hangul, PDF et plus',
     askToolSearchHistory: 'Recherche de documents',
     askToolReadHistory: 'Lecture de fichier',
     askToolCreateHistory: 'Création de document',
@@ -87,6 +93,7 @@ const onyouAdded = {
     onbConnectHelp: 'Aide à la connexion',
   },
   de: {
+    openLocalSub: 'Word, Excel, Hangul, PDF und mehr',
     askToolSearchHistory: 'Dokumentsuche',
     askToolReadHistory: 'Dateilesen',
     askToolCreateHistory: 'Dokumenterstellung',
@@ -100,6 +107,7 @@ const onyouAdded = {
     onbConnectHelp: 'Verbindungshilfe',
   },
   es: {
+    openLocalSub: 'Word, Excel, Hangul, PDF y más',
     askToolSearchHistory: 'Búsqueda de documentos',
     askToolReadHistory: 'Lectura de archivo',
     askToolCreateHistory: 'Creación de documento',
@@ -113,6 +121,7 @@ const onyouAdded = {
     onbConnectHelp: 'Ayuda de conexión',
   },
   th: {
+    openLocalSub: 'Word, Excel, ฮันกึล, PDF และอื่น ๆ',
     askToolSearchHistory: 'การค้นหาเอกสาร',
     askToolReadHistory: 'การอ่านไฟล์',
     askToolCreateHistory: 'การสร้างเอกสาร',
@@ -126,6 +135,7 @@ const onyouAdded = {
     onbConnectHelp: 'ความช่วยเหลือในการเชื่อมต่อ',
   },
   id: {
+    openLocalSub: 'Word, Excel, Hangul, PDF, dan lainnya',
     askToolSearchHistory: 'Pencarian dokumen',
     askToolReadHistory: 'Pembacaan berkas',
     askToolCreateHistory: 'Pembuatan dokumen',
@@ -139,6 +149,7 @@ const onyouAdded = {
     onbConnectHelp: 'Bantuan koneksi',
   },
   ru: {
+    openLocalSub: 'Word, Excel, Hangul, PDF и другие',
     askToolSearchHistory: 'Поиск документов',
     askToolReadHistory: 'Чтение файла',
     askToolCreateHistory: 'Создание документа',
@@ -152,6 +163,7 @@ const onyouAdded = {
     onbConnectHelp: 'Помощь с подключением',
   },
   ar: {
+    openLocalSub: 'Word وExcel وHangul وPDF وغيرها',
     askToolSearchHistory: 'البحث في المستندات',
     askToolReadHistory: 'قراءة ملف',
     askToolCreateHistory: 'إنشاء مستند',
@@ -165,6 +177,7 @@ const onyouAdded = {
     onbConnectHelp: 'مساعدة الاتصال',
   },
   pt: {
+    openLocalSub: 'Word, Excel, Hangul, PDF e mais',
     askToolSearchHistory: 'Pesquisa de documentos',
     askToolReadHistory: 'Leitura de arquivo',
     askToolCreateHistory: 'Criação de documento',
@@ -178,6 +191,7 @@ const onyouAdded = {
     onbConnectHelp: 'Ajuda de conexão',
   },
   it: {
+    openLocalSub: 'Word, Excel, Hangul, PDF e altro',
     askToolSearchHistory: 'Ricerca documenti',
     askToolReadHistory: 'Lettura file',
     askToolCreateHistory: 'Creazione documento',
@@ -191,6 +205,7 @@ const onyouAdded = {
     onbConnectHelp: 'Aiuto per la connessione',
   },
   pl: {
+    openLocalSub: 'Word, Excel, Hangul, PDF i inne',
     askToolSearchHistory: 'Wyszukiwanie dokumentów',
     askToolReadHistory: 'Odczyt pliku',
     askToolCreateHistory: 'Tworzenie dokumentu',
@@ -204,6 +219,7 @@ const onyouAdded = {
     onbConnectHelp: 'Pomoc z połączeniem',
   },
   cs: {
+    openLocalSub: 'Word, Excel, Hangul, PDF a další',
     askToolSearchHistory: 'Hledání dokumentů',
     askToolReadHistory: 'Čtení souboru',
     askToolCreateHistory: 'Vytváření dokumentu',
@@ -217,6 +233,7 @@ const onyouAdded = {
     onbConnectHelp: 'Nápověda k připojení',
   },
   nl: {
+    openLocalSub: 'Word, Excel, Hangul, PDF en meer',
     askToolSearchHistory: 'Documenten zoeken',
     askToolReadHistory: 'Bestand lezen',
     askToolCreateHistory: 'Document aanmaken',
@@ -230,6 +247,7 @@ const onyouAdded = {
     onbConnectHelp: 'Verbindingshulp',
   },
   ms: {
+    openLocalSub: 'Word, Excel, Hangul, PDF dan lain-lain',
     askToolSearchHistory: 'Carian dokumen',
     askToolReadHistory: 'Pembacaan fail',
     askToolCreateHistory: 'Penciptaan dokumen',
@@ -243,6 +261,7 @@ const onyouAdded = {
     onbConnectHelp: 'Bantuan sambungan',
   },
   he: {
+    openLocalSub: 'Word,‏ Excel,‏ Hangul,‏ PDF ועוד',
     askToolSearchHistory: 'חיפוש מסמכים',
     askToolReadHistory: 'קריאת קובץ',
     askToolCreateHistory: 'יצירת מסמך',
@@ -256,6 +275,7 @@ const onyouAdded = {
     onbConnectHelp: 'עזרה בחיבור',
   },
   hi: {
+    openLocalSub: 'Word, Excel, Hangul, PDF और अन्य',
     askToolSearchHistory: 'दस्तावेज़ खोज',
     askToolReadHistory: 'फ़ाइल पठन',
     askToolCreateHistory: 'दस्तावेज़ निर्माण',
@@ -269,6 +289,7 @@ const onyouAdded = {
     onbConnectHelp: 'कनेक्शन में सहायता',
   },
   'zh-TW': {
+    openLocalSub: 'Word、Excel、韓文、PDF 等',
     askToolSearchHistory: '文件搜尋',
     askToolReadHistory: '檔案讀取',
     askToolCreateHistory: '文件建立',
@@ -304,10 +325,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: '先写下想到的内容。',
     greetAsk5: '从草稿开始也很好。',
     greetAsk6: '很高兴又见到你。',
-    setAiUseDesc: '自动模式使用已连接的订阅，也可自行选择 AI。',
     intgHeroDesc:
       '连接 AI 助手来创建和编辑文件。文档处理在本机进行；交给 AI 的内容可能会发送给其服务商。',
-    onbWelcomeBody: '打开和编辑文档，与 AI 一起工作。',
     onbConnectSkipNote: '你可以稍后在设置中连接 AI。',
     onbDoneNotConnected: '你可以稍后在设置中连接 AI。',
   },
@@ -329,10 +348,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Start with what comes to mind.',
     greetAsk5: 'A first draft is a good place to start.',
     greetAsk6: 'Good to see you.',
-    setAiUseDesc: 'Auto uses a connected subscription. You can also choose an AI yourself.',
     intgHeroDesc:
       'Connect an AI assistant to create and edit files. Document processing runs on this computer; content shared with AI may be sent to its provider.',
-    onbWelcomeBody: 'Open and edit documents, and work with AI.',
     onbConnectSkipNote: 'You can connect AI later in Settings.',
     onbDoneNotConnected: 'You can connect AI later in Settings.',
   },
@@ -355,10 +372,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Hãy viết điều bạn đang nghĩ đến.',
     greetAsk5: 'Bắt đầu bằng bản nháp cũng được.',
     greetAsk6: 'Rất vui được gặp lại bạn.',
-    setAiUseDesc: 'Tự động dùng gói đăng ký đã kết nối. Bạn cũng có thể tự chọn AI.',
     intgHeroDesc:
       'Kết nối trợ lý AI để tạo và chỉnh sửa tệp. Tài liệu được xử lý trên máy tính này; nội dung gửi cho AI có thể được chuyển đến nhà cung cấp.',
-    onbWelcomeBody: 'Mở và chỉnh sửa tài liệu, làm việc cùng AI.',
     onbConnectSkipNote: 'Bạn có thể kết nối AI sau trong Cài đặt.',
     onbDoneNotConnected: 'Bạn có thể kết nối AI sau trong Cài đặt.',
   },
@@ -381,10 +396,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: '思いついたことから書いてみましょう。',
     greetAsk5: 'まずは下書きからでも大丈夫です。',
     greetAsk6: '今日もよろしくお願いします。',
-    setAiUseDesc: '自動では接続済みのサブスクリプションを使います。AI を自分で選ぶこともできます。',
     intgHeroDesc:
       'AI アシスタントを接続してファイルを作成・編集します。文書の処理はこの PC で行いますが、AI に渡した内容は提供元に送信されることがあります。',
-    onbWelcomeBody: '文書を開いて編集し、AIと一緒に作業しましょう。',
     onbConnectSkipNote: 'AIはあとで設定から接続できます。',
     onbDoneNotConnected: 'AIはあとで設定から接続できます。',
   },
@@ -406,11 +419,9 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: '생각나는 것부터 적어보세요.',
     greetAsk5: '초안부터 시작해도 좋아요.',
     greetAsk6: '오늘도 반가워요.',
-    setAiUseDesc: '자동은 연결된 구독을 사용합니다. 사용할 AI를 직접 고를 수도 있습니다.',
     intgHeroDesc:
       'AI 어시스턴트가 파일을 만들고 편집하도록 연결합니다. 문서 처리는 이 PC에서 수행하며, AI에 전달한 내용은 사용하는 제공업체로 전송될 수 있습니다.',
     onbTitle1: 'GenOffice, 시작해 볼까요?',
-    onbWelcomeBody: '문서를 열고 편집하고, AI와 함께 작업하세요.',
     onbConnectSkipNote: 'AI는 나중에 설정에서 연결할 수 있어요.',
     onbDoneNotConnected: 'AI는 나중에 설정에서 연결할 수 있어요.',
   },
@@ -432,11 +443,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Commencez par ce qui vous vient à l’esprit.',
     greetAsk5: 'Un premier brouillon suffit pour commencer.',
     greetAsk6: 'Ravi de vous retrouver.',
-    setAiUseDesc:
-      'Le mode automatique utilise un abonnement connecté. Vous pouvez aussi choisir une IA.',
     intgHeroDesc:
       'Connectez un assistant IA pour créer et modifier des fichiers. Les documents sont traités sur cet ordinateur ; le contenu confié à l’IA peut être envoyé à son fournisseur.',
-    onbWelcomeBody: 'Ouvrez et modifiez vos documents, et travaillez avec l’IA.',
     onbConnectSkipNote: 'Vous pouvez connecter une IA plus tard dans les paramètres.',
     onbDoneNotConnected: 'Vous pouvez connecter une IA plus tard dans les paramètres.',
   },
@@ -458,11 +466,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Schreiben Sie auf, was Ihnen einfällt.',
     greetAsk5: 'Ein erster Entwurf ist ein guter Anfang.',
     greetAsk6: 'Schön, Sie wiederzusehen.',
-    setAiUseDesc:
-      'Automatisch wird ein verbundenes Abonnement verwendet. Sie können die KI auch selbst wählen.',
     intgHeroDesc:
       'Verbinden Sie einen KI-Assistenten zum Erstellen und Bearbeiten von Dateien. Dokumente werden auf diesem Computer verarbeitet; an die KI übergebene Inhalte können an deren Anbieter gesendet werden.',
-    onbWelcomeBody: 'Öffnen und bearbeiten Sie Dokumente und arbeiten Sie mit KI.',
     onbConnectSkipNote: 'Sie können KI später in den Einstellungen verbinden.',
     onbDoneNotConnected: 'Sie können KI später in den Einstellungen verbinden.',
   },
@@ -485,10 +490,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Empieza por lo que se te ocurra.',
     greetAsk5: 'Un borrador es un buen comienzo.',
     greetAsk6: 'Qué gusto verte de nuevo.',
-    setAiUseDesc: 'El modo automático usa una suscripción conectada. También puedes elegir una IA.',
     intgHeroDesc:
       'Conecta un asistente de IA para crear y editar archivos. Los documentos se procesan en este equipo; el contenido compartido con la IA puede enviarse a su proveedor.',
-    onbWelcomeBody: 'Abre y edita documentos y trabaja con IA.',
     onbConnectSkipNote: 'Puedes conectar una IA más tarde en Ajustes.',
     onbDoneNotConnected: 'Puedes conectar una IA más tarde en Ajustes.',
   },
@@ -511,10 +514,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'เริ่มเขียนจากสิ่งที่นึกออกได้เลย',
     greetAsk5: 'เริ่มจากฉบับร่างก็ได้',
     greetAsk6: 'ยินดีที่ได้พบกันอีกครั้ง',
-    setAiUseDesc: 'โหมดอัตโนมัติใช้การสมัครสมาชิกที่เชื่อมต่ออยู่ คุณเลือก AI เองได้เช่นกัน',
     intgHeroDesc:
       'เชื่อมต่อผู้ช่วย AI เพื่อสร้างและแก้ไขไฟล์ เอกสารถูกประมวลผลบนคอมพิวเตอร์นี้ แต่เนื้อหาที่ส่งให้ AI อาจถูกส่งไปยังผู้ให้บริการ',
-    onbWelcomeBody: 'เปิดและแก้ไขเอกสาร พร้อมทำงานร่วมกับ AI',
     onbConnectSkipNote: 'คุณเชื่อมต่อ AI ภายหลังได้ในการตั้งค่า',
     onbDoneNotConnected: 'คุณเชื่อมต่อ AI ภายหลังได้ในการตั้งค่า',
   },
@@ -537,10 +538,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Mulai dari apa yang terlintas di pikiran.',
     greetAsk5: 'Draf pertama bisa menjadi awal yang baik.',
     greetAsk6: 'Senang bertemu Anda lagi.',
-    setAiUseDesc: 'Otomatis memakai langganan yang terhubung. Anda juga dapat memilih AI sendiri.',
     intgHeroDesc:
       'Hubungkan asisten AI untuk membuat dan mengedit berkas. Dokumen diproses di komputer ini; konten yang dibagikan ke AI dapat dikirim ke penyedianya.',
-    onbWelcomeBody: 'Buka dan edit dokumen, lalu bekerja bersama AI.',
     onbConnectSkipNote: 'Anda dapat menghubungkan AI nanti di Pengaturan.',
     onbDoneNotConnected: 'Anda dapat menghubungkan AI nanti di Pengaturan.',
   },
@@ -562,11 +561,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Начните с того, что приходит в голову.',
     greetAsk5: 'Для начала достаточно черновика.',
     greetAsk6: 'Рады снова вас видеть.',
-    setAiUseDesc:
-      'Автоматический режим использует подключённую подписку. Можно выбрать ИИ самостоятельно.',
     intgHeroDesc:
       'Подключите ИИ-помощника для создания и редактирования файлов. Документы обрабатываются на этом компьютере; переданное ИИ содержимое может отправляться его поставщику.',
-    onbWelcomeBody: 'Открывайте и редактируйте документы, работайте вместе с ИИ.',
     onbConnectSkipNote: 'ИИ можно подключить позже в настройках.',
     onbDoneNotConnected: 'ИИ можно подключить позже в настройках.',
   },
@@ -589,11 +585,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'ابدأ بكتابة ما يخطر ببالك.',
     greetAsk5: 'المسودة الأولى بداية جيدة.',
     greetAsk6: 'سعداء برؤيتك مجددًا.',
-    setAiUseDesc:
-      'يستخدم الوضع التلقائي اشتراكًا متصلًا. ويمكنك أيضًا اختيار الذكاء الاصطناعي بنفسك.',
     intgHeroDesc:
       'اربط مساعد ذكاء اصطناعي لإنشاء الملفات وتعديلها. تُعالَج المستندات على هذا الكمبيوتر، وقد يُرسَل المحتوى الذي تشاركه مع الذكاء الاصطناعي إلى مزوّده.',
-    onbWelcomeBody: 'افتح المستندات وحرّرها، واعمل مع الذكاء الاصطناعي.',
     onbConnectSkipNote: 'يمكنك توصيل الذكاء الاصطناعي لاحقًا من الإعدادات.',
     onbDoneNotConnected: 'يمكنك توصيل الذكاء الاصطناعي لاحقًا من الإعدادات.',
   },
@@ -616,10 +609,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Comece pelo que vier à mente.',
     greetAsk5: 'Um rascunho já é um bom começo.',
     greetAsk6: 'Que bom ver você de novo.',
-    setAiUseDesc: 'O modo automático usa uma assinatura conectada. Você também pode escolher a IA.',
     intgHeroDesc:
       'Conecte um assistente de IA para criar e editar arquivos. Os documentos são processados neste computador; o conteúdo compartilhado com a IA pode ser enviado ao provedor.',
-    onbWelcomeBody: 'Abra e edite documentos e trabalhe com IA.',
     onbConnectSkipNote: 'Você pode conectar uma IA depois nas Configurações.',
     onbDoneNotConnected: 'Você pode conectar uma IA depois nas Configurações.',
   },
@@ -642,10 +633,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Inizia da quello che ti viene in mente.',
     greetAsk5: 'Una prima bozza è un buon inizio.',
     greetAsk6: 'È bello rivederti.',
-    setAiUseDesc: 'La modalità automatica usa un abbonamento collegato. Puoi anche scegliere l’IA.',
     intgHeroDesc:
       'Collega un assistente IA per creare e modificare file. I documenti vengono elaborati su questo computer; i contenuti condivisi con l’IA possono essere inviati al suo fornitore.',
-    onbWelcomeBody: 'Apri e modifica documenti e lavora con l’IA.',
     onbConnectSkipNote: 'Puoi collegare un’IA più tardi nelle Impostazioni.',
     onbDoneNotConnected: 'Puoi collegare un’IA più tardi nelle Impostazioni.',
   },
@@ -667,11 +656,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Zacznij od tego, co przychodzi Ci do głowy.',
     greetAsk5: 'Pierwszy szkic to dobry początek.',
     greetAsk6: 'Miło Cię znów widzieć.',
-    setAiUseDesc:
-      'Tryb automatyczny używa połączonej subskrypcji. Możesz też samodzielnie wybrać AI.',
     intgHeroDesc:
       'Połącz asystenta AI, aby tworzyć i edytować pliki. Dokumenty są przetwarzane na tym komputerze; treści przekazane AI mogą być wysyłane do jego dostawcy.',
-    onbWelcomeBody: 'Otwieraj i edytuj dokumenty, pracuj z AI.',
     onbConnectSkipNote: 'AI możesz połączyć później w Ustawieniach.',
     onbDoneNotConnected: 'AI możesz połączyć później w Ustawieniach.',
   },
@@ -694,10 +680,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Začněte tím, co vás napadne.',
     greetAsk5: 'První návrh je dobrý začátek.',
     greetAsk6: 'Rádi vás zase vidíme.',
-    setAiUseDesc: 'Automatický režim používá připojené předplatné. AI můžete vybrat i sami.',
     intgHeroDesc:
       'Připojte asistenta AI pro tvorbu a úpravu souborů. Dokumenty se zpracovávají na tomto počítači; obsah předaný AI může být odeslán jejímu poskytovateli.',
-    onbWelcomeBody: 'Otevírejte a upravujte dokumenty a pracujte s AI.',
     onbConnectSkipNote: 'AI můžete připojit později v Nastavení.',
     onbDoneNotConnected: 'AI můžete připojit později v Nastavení.',
   },
@@ -719,10 +703,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Begin met wat er in je opkomt.',
     greetAsk5: 'Een eerste opzet is een goed begin.',
     greetAsk6: 'Goed je weer te zien.',
-    setAiUseDesc: 'Automatisch gebruikt een verbonden abonnement. U kunt ook zelf een AI kiezen.',
     intgHeroDesc:
       'Verbind een AI-assistent om bestanden te maken en te bewerken. Documenten worden op deze computer verwerkt; inhoud die u met AI deelt, kan naar de aanbieder worden verzonden.',
-    onbWelcomeBody: 'Open en bewerk documenten en werk samen met AI.',
     onbConnectSkipNote: 'Je kunt AI later verbinden via Instellingen.',
     onbDoneNotConnected: 'Je kunt AI later verbinden via Instellingen.',
   },
@@ -745,11 +727,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'Mulakan dengan apa yang terlintas di fikiran.',
     greetAsk5: 'Draf pertama pun permulaan yang baik.',
     greetAsk6: 'Gembira bertemu anda lagi.',
-    setAiUseDesc:
-      'Automatik menggunakan langganan yang disambungkan. Anda juga boleh memilih AI sendiri.',
     intgHeroDesc:
       'Sambungkan pembantu AI untuk mencipta dan menyunting fail. Dokumen diproses pada komputer ini; kandungan yang dikongsi dengan AI boleh dihantar kepada penyedianya.',
-    onbWelcomeBody: 'Buka dan sunting dokumen, dan bekerja bersama AI.',
     onbConnectSkipNote: 'Anda boleh menyambungkan AI kemudian dalam Tetapan.',
     onbDoneNotConnected: 'Anda boleh menyambungkan AI kemudian dalam Tetapan.',
   },
@@ -771,10 +750,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'התחילו במה שעולה לכם בראש.',
     greetAsk5: 'טיוטה ראשונה היא התחלה טובה.',
     greetAsk6: 'טוב לראות אתכם שוב.',
-    setAiUseDesc: 'המצב האוטומטי משתמש במינוי מחובר. אפשר גם לבחור AI באופן ידני.',
     intgHeroDesc:
       'חברו עוזר AI ליצירה ולעריכה של קבצים. המסמכים מעובדים במחשב הזה; תוכן שנמסר ל-AI עשוי להישלח לספק שלו.',
-    onbWelcomeBody: 'פתחו וערכו מסמכים, ועבדו עם AI.',
     onbConnectSkipNote: 'אפשר לחבר AI מאוחר יותר בהגדרות.',
     onbDoneNotConnected: 'אפשר לחבר AI מאוחר יותר בהגדרות.',
   },
@@ -796,10 +773,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: 'जो मन में आए, उससे शुरू करें।',
     greetAsk5: 'पहला ड्राफ़्ट एक अच्छी शुरुआत है।',
     greetAsk6: 'आपसे फिर मिलकर अच्छा लगा।',
-    setAiUseDesc: 'स्वचालित मोड जुड़ी हुई सदस्यता का उपयोग करता है। आप AI स्वयं भी चुन सकते हैं।',
     intgHeroDesc:
       'फ़ाइलें बनाने और संपादित करने के लिए AI सहायक जोड़ें। दस्तावेज़ इसी कंप्यूटर पर संसाधित होते हैं; AI को दी गई सामग्री उसके प्रदाता को भेजी जा सकती है।',
-    onbWelcomeBody: 'दस्तावेज़ खोलें और संपादित करें, और AI के साथ काम करें।',
     onbConnectSkipNote: 'आप बाद में सेटिंग में AI कनेक्ट कर सकते हैं।',
     onbDoneNotConnected: 'आप बाद में सेटिंग में AI कनेक्ट कर सकते हैं।',
   },
@@ -822,10 +797,8 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
     greetAsk4: '先寫下想到的內容。',
     greetAsk5: '從草稿開始也很好。',
     greetAsk6: '很高興又見到你。',
-    setAiUseDesc: '自動模式使用已連接的訂閱，也可自行選擇 AI。',
     intgHeroDesc:
       '連接 AI 助理來建立和編輯檔案。文件處理在此電腦上進行；交給 AI 的內容可能會傳送給其供應商。',
-    onbWelcomeBody: '開啟和編輯文件，與 AI 一起工作。',
     onbConnectSkipNote: '你可以稍後在設定中連線 AI。',
     onbDoneNotConnected: '你可以稍後在設定中連線 AI。',
   },

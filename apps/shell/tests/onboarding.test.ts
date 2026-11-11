@@ -141,12 +141,22 @@ describe('Onboarding', () => {
   it('describes the product plainly on the welcome step', () => {
     renderOnboarding()
     const step = host.querySelector<HTMLElement>('.onb-slide[data-step="welcome"]')!
-    expect(step.querySelector('.onb-subtitle')).toBeNull()
+    expect(step.querySelector('.onb-subtitle')!.textContent).toBe(strings.en.onbWelcomeSubtitle)
     expect(step.querySelector('.onb-body')!.textContent).toBe(strings.en.onbWelcomeBody)
     // no superlative of its own
     expect(
       `${step.querySelector('h2')!.textContent} ${step.querySelector('.onb-body')!.textContent}`,
     ).not.toMatch(/\b(first|best|leading|most|only)\b|AI-native/i)
+  })
+
+  it('keeps the no-key and no-cost sentences on the connect and done steps', () => {
+    renderOnboarding()
+    const connect = host.querySelector<HTMLElement>('.onb-slide[data-step="connect"]')!
+    expect(connect.querySelector('.onb-body-lead')!.textContent).toBe(
+      aiSubscriptionText('en', 'connectBody'),
+    )
+    const done = host.querySelector<HTMLElement>('.onb-slide[data-step="done"]')!
+    expect(done.querySelector('.onb-body-dim')!.textContent).toBe(strings.en.onbBody3)
   })
 
   it('keeps help collapsed and leaves Enter on its native disclosure control', async () => {
@@ -384,10 +394,12 @@ describe('welcome copy', () => {
   })
 
   it.each(LANGS)(
-    'keeps the welcome focused instead of listing formats and providers in %s',
+    'says on the welcome how AI runs, before any connection is made, in %s',
     (lang) => {
+      // the cost question comes first for a new user: an existing subscription or a free AI
       const body = strings[lang].onbWelcomeBody
-      expect(body).not.toMatch(/Word|Excel|PowerPoint|PDF|Markdown|HTML|Claude|ChatGPT/i)
+      expect(body).toMatch(/Claude/)
+      expect(body).toMatch(/ChatGPT/)
       // The title carries the product name; the body introduces working with documents.
       expect(body).not.toMatch(/genoffice/i)
     },

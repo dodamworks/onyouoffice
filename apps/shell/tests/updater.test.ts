@@ -4,6 +4,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { HttpError } from 'builder-util-runtime'
+import { productServiceUnavailable } from '@genoffice/i18n'
 // deep import on purpose: 'electron-updater' itself is mocked below, the
 // provider that talks to GitHub is the dependency's real code
 import { GitHubProvider } from 'electron-updater/out/providers/GitHubProvider'
@@ -1765,7 +1766,7 @@ describe('local build without an update distribution', () => {
     expect(checkForUpdates).not.toHaveBeenCalled()
     expect(openExternal).not.toHaveBeenCalled()
     expect(showMessageBox).toHaveBeenCalledWith(
-      expect.objectContaining({ message: expect.stringContaining('not configured') }),
+      expect.objectContaining({ message: productServiceUnavailable('en') }),
     )
   })
 })

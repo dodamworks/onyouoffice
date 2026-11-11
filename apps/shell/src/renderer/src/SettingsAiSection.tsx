@@ -258,6 +258,7 @@ export function AiSection({
     <>
       <h3 className="set-pane-title">{t('setSecAi')}</h3>
       <h4 className="set-pane-subtitle set-sub-title">{t('setSubTitle')}</h4>
+      <div className="set-field-desc set-ai-note">{aiSubscriptionText(lang, 'connectBody')}</div>
       <div className="set-sub-cards">
         {AI_SUBSCRIPTION_PROVIDERS.map((provider) => (
           <Fragment key={provider}>

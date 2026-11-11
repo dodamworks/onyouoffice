@@ -2153,6 +2153,7 @@ export function Home({
             </span>
             <span className="quick-text">
               <span className="quick-title">{t('openLocal')}</span>
+              <span className="quick-sub">{t('openLocalSub')}</span>
             </span>
           </button>
           <SupportedFormatsInfo t={t} />

@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { AiConnectGuide, AiMark, aiSubscriptionProviderName } from '@genoffice/ui'
+import {
+  AiConnectGuide,
+  AiMark,
+  aiSubscriptionProviderName,
+  aiSubscriptionText,
+} from '@genoffice/ui'
 import { FREE_AI_PROVIDERS, freeAiConnected } from '@genoffice/ai-provider/browser'
 import appIcon from './assets/app-icon.png'
 import { FirstConnectionDialog } from './FirstConnectionNotice'
@@ -221,6 +226,7 @@ export function Onboarding({
     if (step === 'welcome') {
       return (
         <>
+          <p className="onb-subtitle">{t('onbWelcomeSubtitle')}</p>
           <p className="onb-body">{t('onbWelcomeBody')}</p>
           <div className="onb-nickname">
             <label htmlFor="onb-nickname">{t('nicknameLabel')}</label>
@@ -253,6 +259,7 @@ export function Onboarding({
     if (step === 'connect') {
       return (
         <>
+          <p className="onb-body onb-body-lead">{aiSubscriptionText(lang, 'connectBody')}</p>
           <div className="onb-connect">
             <AiConnectGuide
               statuses={connection.statuses}
@@ -297,6 +304,7 @@ export function Onboarding({
               })
             : t('onbDoneNotConnected')}
         </p>
+        <p className="onb-body onb-body-dim">{t('onbBody3')}</p>
       </>
     )
   }
