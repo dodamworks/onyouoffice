@@ -64,6 +64,8 @@ Excel 통합 문서(.xlsx, .csv 등) 에디터다. 화면은 Univer 격자 위�
 - 단독 실행 시트의 `aiCustomEndpointSchema`는 `kind`, `modelProfiles`, `timeoutMs`를 받는다. 좁은 스키마로 되돌리면 단독 실행 시트가 로컬 설정을 거절한다.
 - `aiSettingsInputSchema`는 `.strict()`라서 `AiSettings`(제공자 설정, 사용자 서버, 모델 정보, 미디어 설정 포함)에 새 필드가 생기면 같이 받아야 한다. 빠뜨리면 그 필드가 든 설정 파일에서 `ai:set-settings`·`ai:chat`·`ai:stream`이 모두 거절된다. `tests/ai-run.test.ts`의 `everyFieldNamed`가 빠진 필드 이름을 대며 타입 검사에서 실패한다. `subscriptionOff`는 CLI 식별자에 `true`만 받고, 저장할 때는 파일의 값을 남긴다(`withStoredMainFields`, 결정 0114).
 - `App.tsx`의 AI 루프는 `toolsAllowed`로 `localModelCapabilities`를 읽고, `AiChatPanel`은 `tools: false`일 때 `AiToolsUnsupportedNotice`를 보여 준다.
+- **파일에서 읽은 유효성 검사 규칙은 Univer에 `source: 'patched'`로 넣는다(`applyDataValidations`).** Univer가 저장된 문서를 불러올 때 스스로 쓰는 표시다. 이 표시가 없으면 Univer는 사용자가 방금 만든 규칙으로 보고, 목록 규칙이 덮는 모든 행의 자동 높이를 한 번에 다시 잰다. 드롭다운 열이 있는 2만 행 문서는 연 직후 5초, 10만 행 문서는 18초 동안 화면이 멈췄다(2026-11-11 측정). 행 높이는 파일이 갖고 있다.
+- **스크롤은 실어 둔 범위를 벗어날 때만 새 범위를 읽는다(`scrollNeedsWindow`).** 나눠 불러오는 시트가 실어 두는 범위(`createBufferedRange`)는 보이는 화면, 그 둘레의 여유(위아래로 화면 한 장만큼, 20~80행, 좌우 2열), 이동 폭(60행, 6열)을 더한 것이다. 스크롤 이벤트는 화면과 여유가 실어 둔 범위나 읽는 중인 범위 안에 있으면 아무것도 읽지 않는다. 예전에는 스크롤 이벤트마다 범위 전체를 다시 읽고, 비우고, 다시 실었다. 스크롤이 아닌 호출(시트 바꾸기, 이동, 다시 그리기)은 그대로 매번 읽는다. 범위를 다시 싣게 하려면 `loadedRanges.delete(sheetId)` 뒤에 `loadVisibleRange`를 부른다.
 
 ## 테스트
 
