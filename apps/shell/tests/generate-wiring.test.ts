@@ -83,8 +83,7 @@ describe('the shell wiring', () => {
 describe('generate strings', () => {
   const keys = Object.keys(generateStrings.zh).sort()
 
-  it('fills every key in all 22 languages', () => {
-    expect(LANGS).toHaveLength(22)
+  it('fills every key in every UI language', () => {
     for (const lang of LANGS) {
       const dict = generateStrings[lang] as Record<string, string>
       expect(Object.keys(dict).sort(), lang).toEqual(keys)

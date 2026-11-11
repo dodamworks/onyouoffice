@@ -12,6 +12,39 @@ import {
   type Params,
 } from '../src/index'
 
+// The one place the UI language list is pinned. Adding a language changes
+// this list and nothing else in the tests: every other check counts LANGS.
+// What else a new language needs is in packages/i18n/AGENTS.md, and
+// `npm run check:lang-count` finds documents still stating the old count.
+describe('LANGS', () => {
+  it('is the 22 UI languages, Turkish included', () => {
+    expect([...LANGS]).toEqual([
+      'zh',
+      'en',
+      'ja',
+      'ko',
+      'fr',
+      'de',
+      'es',
+      'th',
+      'id',
+      'ru',
+      'ar',
+      'pt',
+      'it',
+      'pl',
+      'cs',
+      'nl',
+      'ms',
+      'he',
+      'hi',
+      'zh-TW',
+      'vi',
+      'tr',
+    ])
+  })
+})
+
 describe('normalizeLang', () => {
   it('maps zh variants to zh', () => {
     expect(normalizeLang('zh')).toBe('zh')

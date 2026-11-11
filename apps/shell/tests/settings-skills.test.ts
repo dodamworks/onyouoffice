@@ -865,12 +865,11 @@ describe('Receiving and handing on skills', () => {
   })
 })
 
-describe('Skills strings in 22 languages', () => {
+describe('Skills strings in every UI language', () => {
   const keys = Object.keys(skillsUiStrings.zh) as SkillsStringKey[]
   const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort()
 
   it('fills every key in every language with the same placeholders', () => {
-    expect(LANGS).toHaveLength(22)
     for (const lang of LANGS) {
       const dict = skillsUiStrings[lang] as Record<string, string>
       expect(Object.keys(dict).sort(), lang).toEqual([...keys].sort())

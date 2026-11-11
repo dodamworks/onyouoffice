@@ -39,6 +39,7 @@ npm run licenses
 npm run check:theme-colors
 npm run check:english-comments
 npm run check:help-langs
+npm run check:lang-count
 npm run check:skill-version
 npm run check:no-genspark
 ```

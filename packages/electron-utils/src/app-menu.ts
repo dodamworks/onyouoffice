@@ -52,7 +52,7 @@ const EN: Labels = {
 }
 
 // Shared table, same rationale as context-menu.ts: one copy instead of
-// 15 keys × 20 languages per app dictionary.
+// 15 keys × every UI language in each app dictionary.
 const LABELS: Record<string, Labels> = {
   zh: {
     window: '窗口',

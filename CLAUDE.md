@@ -112,7 +112,7 @@ openoffice/
 | 구독 연동(프로그램 실행, 상태 판정, 환경변수)을 고친다 | `docs/security.md` 전체, `packages/ai-provider/AGENTS.md`, `docs/engineering-notes.md`의 "구독 프로그램" |
 | 제공자 선택이나 AI 창의 보내기·막힘 처리를 고친다      | `docs/business-rules.md`의 "제공자 선택", "보내기 전의 문지기", "실행 중 막혔을 때"                      |
 | 편집기 뒷단(`apps/*/src/main`)이나 preload를 고친다    | `docs/engineering-notes.md`의 "빌드와 실행". 껍데기 앱을 다시 빌드해야 반영된다                          |
-| 화면 문구나 도움말을 더하거나 고친다                   | `docs/standards.md`의 "글과 언어", "제품 이름". 22개 언어 모두 채운다                                    |
+| 화면 문구나 도움말을 더하거나 고친다                   | `docs/standards.md`의 "글과 언어", "제품 이름". 22개 언어(터키어 `tr` 포함) 모두 채운다                  |
 | 화면 스타일을 고친다                                   | `docs/standards.md`의 "화면 색"                                                                          |
 | 아이콘·그림을 더하거나 다른 회사 이름을 화면에 적는다  | `docs/standards.md`의 "상표와 아이콘"(결정 0052)                                                         |
 | 터미널 명령어·MCP·스킬을 고친다                        | `docs/contracts.md`. 출력 구조와 이름은 밖에서 기대고 있다                                               |

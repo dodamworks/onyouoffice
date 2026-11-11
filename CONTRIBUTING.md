@@ -121,6 +121,7 @@ CI also runs the repository check scripts:
 npm run check:theme-colors      # no raw colors in changed renderer CSS (see CLAUDE.md)
 npm run check:english-comments  # no Chinese text in code comments or docs
 npm run check:help-langs        # every language of the in-app manual matches the English structure
+npm run check:lang-count        # no doc or test states a language count other than LANGS
 npm run check:skill-version     # a changed skills/*/SKILL.md body bumps its metadata.version
 npm run check:no-genspark       # nothing tied to the removed vendor's services is back (allowlist in the tool)
 ```

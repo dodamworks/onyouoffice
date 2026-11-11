@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * The dictionaries: 21 languages, one key set, real translations. A missing
+ * The dictionaries: 22 languages, one key set, real translations. A missing
  * key is a type error already (each shard is checked against `zh`); these
  * tests catch what the types cannot.
  */

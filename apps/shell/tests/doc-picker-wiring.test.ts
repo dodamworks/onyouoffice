@@ -20,8 +20,7 @@ const src = (path: string) => readFileSync(fileURLToPath(new URL(path, import.me
 describe('doc-picker strings', () => {
   const keys = Object.keys(docPickerStrings.zh).sort()
 
-  it('fills every key in all 22 languages', () => {
-    expect(LANGS).toHaveLength(22)
+  it('fills every key in every UI language', () => {
     for (const lang of LANGS) {
       const dict = docPickerStrings[lang] as Record<string, string>
       expect(Object.keys(dict).sort(), lang).toEqual(keys)
