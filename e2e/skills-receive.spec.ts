@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-11 for the independent Onyou Office local development build.
 /**
  * Receiving skills in the built app (decisions 0120, 0127, 0128): a skill zip
  * dropped on the window opens Settings ▸ Skills on the shared preview with its
@@ -8,7 +9,7 @@
  * which is still there afterwards. The drop is a real OS-style file drop
  * dispatched through CDP, so the preload's drop bridge resolves the path as it
  * does for a person. The home folder is a scratch folder, so the real
- * `~/.ieumoffice/skills` is never read or written. No AI runs.
+ * `~/.onyouoffice/skills` is never read or written. No AI runs.
  */
 import { test, expect, type Page } from '@playwright/test'
 import { existsSync } from 'node:fs'
@@ -146,7 +147,7 @@ test('a dropped skill bundle opens the preview with its warning lines, and insta
 
   await dialog.getByRole('button', { name: '설치', exact: true }).click()
   await expect(page.getByText('스킬 2개를 설치했습니다')).toBeVisible()
-  const skills = join(home, '.ieumoffice', 'skills')
+  const skills = join(home, '.onyouoffice', 'skills')
   expect(await readFile(join(skills, 'report', 'SKILL.md'), 'utf8')).toContain('Write the report.')
   expect(await readFile(join(skills, 'letter', 'SKILL.md'), 'utf8')).toContain('Do not tell')
   await expect(page.locator('[data-skill-id="app:report"]')).toBeVisible()

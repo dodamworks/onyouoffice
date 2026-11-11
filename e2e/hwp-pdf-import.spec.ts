@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-11 for the independent Onyou Office local development build.
 /**
  * PDF Converter › PDF to HWP (decision 0116): the PDF opens in a new, untitled Hangul tab,
  * whose editor imports it with its own PDF import dialog. The PDF file is left alone.
@@ -102,7 +103,7 @@ test('File > Import PDF in a Hangul tab imports a picked PDF into a new Hangul t
   const launched = await launchShell({ onboardingSeen: true, videoDir: 'hwp-import-pdf-menu' })
   const { app, page } = launched
   try {
-    await page.locator('.quick-card', { hasText: 'AI HWP' }).click()
+    await page.locator('.quick-card[data-format="hwp"]').click()
     const first = await waitForPageWithUrl(app, '://hwp/')
     await first.waitForSelector('.hwp-app[data-phase="ready"]', { timeout: 90_000 })
     const firstStudio = await studioFrame(first)
