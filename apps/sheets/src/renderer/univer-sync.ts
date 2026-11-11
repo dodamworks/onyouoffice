@@ -6763,7 +6763,13 @@ const DV_ERROR_STYLES: Record<string, number> = { stop: 1, warning: 2, informati
 /// model is the wire format for the declarative save, so install fidelity IS
 /// save fidelity. Only called once indexing completes; marking the sheet even
 /// when it has no rules unlocks DV editing (the gate above).
-function applyDataValidations(
+///
+/// `source: 'patched'` is the tag Univer's own snapshot loader uses. Without
+/// it the rule counts as a user command, and Univer re-measures the auto
+/// height of every row a list rule covers (each column of each row, through
+/// the whole cell interceptor chain) in one synchronous block. The file
+/// already carries its row heights.
+export function applyDataValidations(
   runtime: UniverRuntime,
   state: LazyWorkbookState,
   sheetId: string,
@@ -6782,6 +6788,7 @@ function applyDataValidations(
           unitId,
           subUnitId: sheetId,
           rule: mapped,
+          source: 'patched',
         })
       } catch {
         // Unsupported validation shapes must not break streaming.
