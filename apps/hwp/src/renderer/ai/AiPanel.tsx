@@ -728,6 +728,8 @@ export function AiPanel({
       onInputTruncated: () => setInputTruncated(true),
     })
 
+  /** the person's words of the run that is going: import_attachment may hand them to a new tab */
+  const runRequestRef = useRef('')
   const skillRef = useRef<ReturnType<typeof createHwpSkill> | null>(null)
   if (!skillRef.current)
     skillRef.current = createHwpSkill({
@@ -744,6 +746,17 @@ export function AiPanel({
       confirmMemoRemoval: (refusal) => memoGateRef.current!.ask(refusal),
       imageGenAvailable: () => imageGenAvailableRef.current,
       pictureAnalysisAvailable: () => imageAnalysisAvailableRef.current !== false,
+      // a Markdown attachment as a new Hangul tab; the request of this run may go along
+      importAttachment: async (name, handOver) => {
+        const attachment = availableAttachmentsRef
+          .current()
+          .find((candidate) => candidate.name === name)
+        if (!attachment) {
+          return { ok: false, error: `there is no file named "${name}" attached to this chat.` }
+        }
+        const request = handOver ? runRequestRef.current.trim() : ''
+        return window.hwpApi.importAttachmentAsDocument(attachment.path, request || undefined)
+      },
       // the model names an attachment; only files the panel shows can be found
       attachmentPath: (name) =>
         availableAttachmentsRef.current().find((attachment) => attachment.name === name)?.path ??
@@ -1007,6 +1020,7 @@ export function AiPanel({
     setPrompt('')
     skillsRef.current.consume(skillUse)
     skillTemplatesRef.current.noteRequest(text)
+    runRequestRef.current = text
     runSkillUseRef.current = skillUse
     runStepsRef.current = []
     skillRef.current!.beginRun()
