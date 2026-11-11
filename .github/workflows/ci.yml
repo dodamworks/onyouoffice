@@ -272,18 +272,22 @@ jobs:
       - name: Generate document fixtures
         run: npm run fixtures
 
-      # The runner image usually ships xmllint; a mirror outage must not fail every unit job.
+      # Ubuntu mirrors can be unreachable from the runner while GitHub's own hosts
+      # still answer; Homebrew bottles come from ghcr.io, so they are the fallback.
       - name: Install xmllint
         run: |
           if command -v xmllint >/dev/null 2>&1; then xmllint --version; exit 0; fi
-          for attempt in 1 2 3; do
-            if sudo apt-get -o Acquire::Retries=3 update &&
-              sudo apt-get -o Acquire::Retries=3 install -y --no-install-recommends libxml2-utils; then
-              exit 0
-            fi
-            sleep 30
-          done
-          exit 1
+          if timeout 240 sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 update &&
+            timeout 240 sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 \
+              install -y --no-install-recommends libxml2-utils; then
+            xmllint --version
+            exit 0
+          fi
+          brew=/home/linuxbrew/.linuxbrew/bin/brew
+          test -x "$brew"
+          HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 "$brew" install libxml2
+          echo "$("$brew" --prefix libxml2)/bin" >> "$GITHUB_PATH"
+          "$("$brew" --prefix libxml2)/bin/xmllint" --version
 
       # CLI tests must see a finished sidecar, even on a cold isolated runner.
       - name: Build sidecar for CLI coverage
