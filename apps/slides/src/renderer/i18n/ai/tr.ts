@@ -242,6 +242,11 @@ export const tr = {
   aiTplFontsNotice:
     'Şablon yazı tipleri bu uygulamaya dahildir. PowerPoint gibi diğer programlar farklı bir yazı tipi gösterebilir.',
   aiTplOpenFonts: 'Yazı tipleri klasörünü aç',
+  aiTplFontsAuto: 'Yazı tipleri: AI seçer',
+  aiTplFontsOne: 'Yazı tipleri: {font}',
+  aiTplFontsTwo: 'Yazı tipleri: başlıklar {title}, gövde {body}',
+  aiTplFontsTemplate: 'Yazı tipleri: seçilen şablonun kendi yazı tipleri',
+  aiTplFontsChange: 'Değiştir',
   aiTplDesc_coral:
     'Neredeyse siyah zemin üzerinde krem ve turuncu-pembe; aşırı büyük dar başlıklar.',
   aiTplDesc_blue_professional:

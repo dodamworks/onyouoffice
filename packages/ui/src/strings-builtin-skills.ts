@@ -359,6 +359,10 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Zaten yazılmış İngilizce metni birkaç kez gözden geçirip daha açık ve daha kısa hale getirir.',
     'builtinSkillDesc.find-skills':
       'Yalnızca ajan penceresinde çalışır ve beceri bulup yüklemeyi önermek için internet bağlantısı gerektirir.',
+    'builtinSkillDesc.administration-report':
+      'Bir raporu İçişleri ve Güvenlik Bakanlığı kılavuzuna uydurur: düz anlatım, standart numaralandırma, her yerde açılan yazı tipleri, sade tablolar.',
+    'builtinSkillDesc.administration-report-draft':
+      'Bakanlık biçiminde sıfırdan bir idari rapor yazar: bölümler, Ⅰ·1·가 numaralandırması, düz anlatım, tablo başlıkları ve uyumlu yazı tipleri.',
   },
 })
 

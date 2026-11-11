@@ -379,6 +379,7 @@ export const SKILL_PICKER_STRINGS = defineStrings({
     manage: 'Becerileri yönet…',
     template: 'Şablon içerir',
     scriptsNotice: 'Bu becerinin betikleri normal AI panelinde çalışmaz',
+    mcpServerNeeded: 'MCP sunucusu gerekli: {servers}',
     tooLarge: 'Beceriler birlikte gönderilemeyecek kadar büyük',
     missing: 'Kullanılamıyor',
     missingNotice:

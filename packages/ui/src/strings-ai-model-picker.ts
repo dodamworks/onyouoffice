@@ -363,4 +363,19 @@ export const AI_EFFORT_STRINGS: Record<Lang, AiEffortStrings> = {
       max: 'Tối đa',
     },
   },
+  tr: {
+    title: 'Düşünme düzeyi',
+    hint: 'Modelin yanıt vermeden önce ne kadar düşündüğü. Daha yüksek düzey daha yavaştır ve aboneliğinizden ya da API kredinizden daha fazla kullanır.',
+    auto: 'Varsayılan',
+    autoNamed: 'Varsayılan ({level})',
+    levels: {
+      none: 'Yok',
+      minimal: 'En az',
+      low: 'Düşük',
+      medium: 'Orta',
+      high: 'Yüksek',
+      xhigh: 'Çok yüksek',
+      max: 'En yüksek',
+    },
+  },
 }

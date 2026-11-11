@@ -4,7 +4,7 @@
 
 Giriş ekranının sol altındaki satır ayarlar panelini açar (bir AI bağlanana kadar “AI bağla” yazar). Beş bölümü vardır: Hesap, AI, Genel, Entegrasyonlar ve Hakkında.
 
-**Hesap**, Claude ve Codex aboneliklerinizin durumunu gösterir; **Bağlantıları yönet** AI bölümüne götürür. AI’ın kendi makaleleri var: [Abonelik bağlantısı](help://subscription) ve [AI modelleri ve ayarlar](help://ai-models).
+**Hesap**, Claude, ChatGPT ve Codex bağlantılarınızın durumunu gösterir; **Bağlantıları yönet** AI bölümüne götürür. AI’ın kendi makaleleri var: [Abonelik bağlantısı](help://subscription) ve [AI modelleri ve ayarlar](help://ai-models).
 
 ## Dil
 
@@ -21,6 +21,8 @@ Açık / Koyu / Sistem. Sistem, işletim sisteminin görünümünü izler ve dü
 - **AI paneli** — Kapalı, Daraltılmış veya Son durum.
 - **Tüm belgeleri otomatik kaydet**, her düzenleyicide otomatik kaydetmeyi varsayılan olarak açar; yine de tek bir pencere için kapatabilirsiniz.
 - **Kayıt konumu** ve bir **Değiştir** düğmesi, ayrıca `.docx` / `.xlsx` / `.pptx` dosyalarını GenOffice’e bağlamak için **Office belgeleri için varsayılan uygulama**.
+- **Yeni HWP belgeleri için kaydetme biçimi**, yeni bir belgeyi ilk kaydettiğinizde önce HWP’nin mi HWPX’in mi sunulacağını seçer. Açtığınız belgeler kendi biçimlerini korur.
+- **AI slayt yazı tipleri**, isteğiniz yazı tipi belirtmediğinde AI’ın yeni bir sunum için kullandığı yazı tiplerini ayarlar. Otomatik, Tırnaksız, Tırnaklı veya Tırnaklı başlıklar’ı seçin ve tırnaksız ile tırnaklı yazı tipini ayrı ayrı değiştirin. Seçtiğiniz bir tasarım şablonu kendi yazı tiplerini kullanır ve bir sunuma başka yazı tipleriyle eklenen sayfalar o sunumu izler.
 
 GenOffice kullanım istatistiği toplamaz veya göndermez, bu yüzden bunun için bir anahtar yoktur.
 

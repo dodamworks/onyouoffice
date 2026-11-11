@@ -161,6 +161,9 @@ const tDlg = createI18n({
   tr: {
     dlgSaveTitle: 'Markdown Belgesini Kaydet',
     filterMarkdown: 'Metin Dosyaları (Markdown, TXT, JSON)',
+    filterPdf: 'PDF Belgesi',
+    filterWord: 'Word Belgesi',
+    filterPageImages: 'Sayfa Görüntüleri (PNG)',
     dlgPickImage: 'Görsel Seç',
     dlgSaveImage: 'Görseli Kaydet',
     filterImages: 'Görseller',

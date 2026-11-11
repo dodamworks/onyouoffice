@@ -22,18 +22,22 @@ Beceri, AI için bir dizi çalışma yönergesidir. Tekrar tekrar yaptığınız
 - Yerleşik bir beceri kaldırılmak yerine gizlenir: **Gizle** seçin. Listenin altındaki **Yeniden göster** onu ilk durumundaki gibi geri getirir.
 - Yerleşik bir beceriyi veya başka bir programdan gelen bir beceriyi değiştirmek için **Becerilerime kopyala** seçin. Kopya becerilerimde görünür ve özgün beceri kapatılır.
 - Bir beceriyi şablonuyla dışa aktarmak, şablon belgesini de zip dosyasına koyar. Dışa aktarmadan önce belgede kişisel bilgi olmadığını denetleyin.
+- Sayfanın üstündeki **Birkaçını dışa aktar**, işaretlediğiniz becerileri her beceri için bir klasörle tek bir zip dosyasına koyar. Zip’i alan kişi onu her beceri zip’i gibi ekler ve içindeki becerilerden hangilerini kuracağını seçebilir.
 
 ## Beceri ekleme
 
 1. **Ayarlar ▸ Beceriler** bölümünde **Ekle** düğmesine tıklayın.
-2. **Klasörden**, **Zip dosyasından** veya **GitHub bağlantısından** seçin. GitHub için herkese açık bir deponun adresini ya da `owner/repo` yazıp **Bul** düğmesine tıklayın.
-3. Önizlemede bulunan becerileri denetleyin. Dosyaların sayısını ve boyutunu, betik olup olmadığını, metindeki web adreslerini ve lisans dosyasını gösterir.
+2. **Klasörden**, **Zip dosyasından**, **Yapıştırılan metinden** veya **GitHub bağlantısından** seçin. Yapıştırılan metin için `SKILL.md` dosyasının tamamını ilk `---` satırından başlayarak yapıştırın ve **Önizle**’ye tıklayın. GitHub için herkese açık bir deponun adresini, `owner/repo` ya da bir becerinin skills.sh sayfasını girin ve **Bul**’a tıklayın.
+3. Önizlemede bulunan becerileri denetleyin. Dosyaların sayısını ve boyutunu, betik olup olmadığını, metindeki web adreslerini, lisans dosyasını ve kurmadan önce okumaya değer satırları gösterir.
 4. Yalnızca kurulacak becerileri işaretleyin ve **Yükle** düğmesine tıklayın. Kurulan beceriler açık olarak başlar.
 
 Önizlemenin altında her zaman şu yazar: "Becerileri yalnızca güvendiğiniz kaynaklardan yükleyin. Bir beceri AI’a yönergeler verir ve ajan penceresinde betik çalıştırabilir." Bilmediğiniz bir kaynaktan gelen beceriyi kurmadan önce okuyun.
 
 - Becerilerimde aynı adı taşıyan bir beceri varsa o satırda **Değiştir** veya **Atla** seçin.
+- Bir becerinin zip dosyasını veya bir `SKILL.md` dosyasını herhangi bir GenOffice penceresine de bırakabilirsiniz. **Ayarlar ▸ Beceriler** aynı önizlemeyle açılır. Bir zip, en üstünde `SKILL.md` varsa ya da en üstteki her klasör bir tane barındırıyorsa beceri sayılır; başka bir zip’e dokunulmaz. Bir `SKILL.md` dosyası tek başına gelir: daha fazla dosyası olan bir beceriyi bir zip’e koyun.
+- **Okumaya değer satırlar**, AI’dan önceki yönergeleri yok saymasını, sizden bir şey saklamasını veya dış bir adresten yönerge almasını isteyen satırlar ile beceri klasörünün dışını gösteren `../` yollarıdır. Her biri dosyasını ve satırını gösterir. Kurulumu durdurmazlar ve böyle satırı olmayan bir beceri bu yüzden güvenli sayılmaz.
 - GitHub’dan indirirken GenOffice yalnızca `github.com`, `api.github.com` ve `codeload.github.com` adreslerine bağlanır ve hiçbir oturum açma verisi göndermez. Arşiv çok büyükse veya güvenlik denetimlerinden geçemezse hiçbir şey kurulmaz.
+- Bir becerinin skills.sh sayfası (`https://skills.sh/owner/repo/skill`), `owner/repo` GitHub deposundaki o beceri olarak okunur. GenOffice skills.sh’ye bağlanmaz.
 - **Yeni beceri** adı, açıklamayı ve yönergeleri kendiniz yazacağınız boş bir düzenleyici açar.
 
 ## Güncellemeleri denetleme
@@ -72,6 +76,16 @@ Beceri, AI için bir dizi çalışma yönergesidir. Tekrar tekrar yaptığınız
 - **Kaydet** düğmesine tıklayana kadar hiçbir dosya yazılmaz. **İptal** düğmesine tıklarsanız sohbet bunu yalnızca "Kaydedilmemiş beceri önerisi" olarak saklar.
 - Var olan bir beceriyi değiştirmeyi de isteyebilirsiniz, örneğin "Toplantı tutanağı becerisini bizim yaptığımız gibi değiştir". O zaman kartın başlığı **Beceriyi değiştir** olur. Becerilerimden biri **Değiştir** ile üzerine yazılır; yerleşik bir beceri veya başka bir programdan gelen beceri becerilerimde kopya olarak kaydedilir ve özgün beceri kapatılır.
 
+## Bir becerinin nerede kullanılacağını seçme
+
+Slaytları biçimlendirmek veya bir elektronik tabloyu toparlamak gibi yalnızca tek bir belge türüne uyan bir beceri yalnızca o düzenleyicinin AI panelinde gösterilebilir. Diğer düzenleyicilerde `/` listesi ve AI’ın kendi kullandığı becerilerin listesi kısalır; böylece AI doğru beceriyi daha sık seçer.
+
+- Becerilerimden biri için **Düzenle**’yi açın ve **Nerede kullanılır** altında **Her düzenleyici** veya **Yalnızca bu düzenleyiciler**’i seçin. Seçtiğiniz düzenleyiciler becerinin dosyasına yazılır; böylece beceriyi dışa aktardığınızda veya başka bir programa taşıdığınızda onunla birlikte gider.
+- Yerleşik bir beceri veya başka bir programdan gelen bir beceri için bunu **İçeriği görüntüle** içindeki **Nerede kullanılır** altında değiştirin. Bu yalnızca bu bilgisayarın ayarlarında tutulur; becerinin dosyası olduğu gibi kalır.
+- Her düzenleyicide kullanılmayan bir beceri bunu kendi satırında söyler, örneğin "Kullanıldığı yer: Slides".
+- AI yalnızca tek bir biçime uyan bir beceri yaptığında nerede kullanılacağını önerir; aksi hâlde her düzenleyiciyi bırakır. Kaydetmeden önce karttaki **Nerede kullanılır** altında değiştirebilirsiniz.
+- Giriş ekranındaki AI’a sor ve ajan penceresi, nerede kullanılacağı nasıl ayarlanmış olursa olsun açık olan her beceriyi kullanır.
+
 ## Belgeyi şablon olarak ekleme
 
 Bir düzenleyicinin AI panelinde beceri oluştururken açık belge bir şablon olarak birlikte gidebilir. Kartta **Bu belgeyi şablon olarak birlikte kaydet** seçeneğini işaretleyin, düğme ikiye ayrılır.
@@ -85,6 +99,7 @@ Bir düzenleyicinin AI panelinde beceri oluştururken açık belge bir şablon o
 - Şablonu olan bir beceri listede **Şablonu var** olarak görünür.
 - Çip olarak çağırıp gönderin, şablonun bir kopyası yeni, adsız bir belge olarak açılır; o sekmedeki AI isteğinizle devam eder. Özgün panel "Şablonla yeni bir sekmede çalışılıyor" ve **Sekmeye git** bilgisini korur.
 - AI bir şablon becerisini kendisi seçtiğinde hemen bir sekme açılmaz. Sohbet bunun yerine bir **Bu şablondan yeni bir belge aç** düğmesi gösterir.
+- Zaten içeriği olan bir belgede çağrıldığında hemen bir sekme açmak yerine nerede çalışılacağını sorar. **Bu belgede yap**, yeni bir sekme olmadan geçerli belgeyi beceriye göre düzenler (şablon dosyası açılmaz). **Şablondan yeni belge (bunu ekle)** şablon kopyasını yeni bir sekmede açar ve geçerli belgeyi o sekmenin AI paneline ek olarak gönderir. Eklemek için geçerli belgenin kaydedilmiş olması gerekir. Hiç kaydedilmemişse veya kaydedilmemiş değişiklikleri varsa panel bunu söyler ve **Eklemeden aç** kopyayı ek olmadan açar. AI bir şablon becerisini kendisi seçtiğinde gösterilen düğme de içeriği olan bir belgeyi ekler. Markdown ve PDF düzenleyicileri ek almaz; bu yüzden orada açılan bir şablona hiçbir şey eklenmez.
 - Yeni belgenin nereye gideceğini genellikle ilk kaydettiğinizde seçersiniz. Markdown ve HTML düzenleyicileri her zamanki gibi varsayılan klasöre kaydeder. Şablon dosyasının kendisi olduğu gibi kalır.
 
 ## Betikli beceriler

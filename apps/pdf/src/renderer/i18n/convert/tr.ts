@@ -64,6 +64,9 @@ export const tr = {
   cvErrFailed: 'Dönüştürme başarısız oldu.',
   cvPageImageAlt: 'Sayfa {page}',
   imgExportWholePages: 'Tam sayfalar',
+  imgExportCurrentPage: 'Yalnızca geçerli sayfa',
+  imgExportCurrentPageTip: 'Görüntülediğiniz sayfayı tek bir PNG dosyası olarak dışa aktar',
+  imgExportCurrentPageJpgTip: 'Görüntülediğiniz sayfayı tek bir JPG dosyası olarak dışa aktar',
   imgExportEmbedded: 'Yalnızca sayfalardaki resimler',
   imgExportEmbeddedTip:
     'Sayfalara yerleştirilmiş resimleri özgün çözünürlüklerinde PNG dosyası olarak kaydedin',

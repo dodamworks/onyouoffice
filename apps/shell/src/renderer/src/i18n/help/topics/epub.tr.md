@@ -20,6 +20,15 @@ E-kitap düzenleyici EPUB kitaplarını (`.epub`) bir sekmede açar. Kitabı oku
 - Kitabın içindeki bir bağlantı o yere gider. Web ve e-posta bağlantıları varsayılan tarayıcınızda açılır; diğer adresler açılmaz.
 - Kitabın kendi betikleri asla çalışmaz ve internetten hiçbir şey yüklenmez. Ses ve video oynamaz.
 
+## Önizleme
+
+- Kitabı bir e-okuyucunun gösterdiği gibi sayfalar hâlinde görmek için **Giriş** veya **Görünüm** sekmesinde **Önizleme**’ye tıklayın. Okuduğunuz yerde açılır.
+- Üstteki çubukta ekranı (**E-okuyucu**, **Telefon**, **Tablet** veya **Pencereye sığdır**), yatay yönü, metin boyutunu ve kâğıdı (beyaz, sepya veya koyu) seçin. Yan çevrilmiş geniş bir ekran iki sayfayı yan yana gösterir. Bu ayarlar yalnızca önizlemeyi değiştirir, kitabı asla değiştirmez.
+- Sayfaları ok tuşları, Page Up ve Page Down, boşluk çubuğu, fare tekerleği veya iki yandaki düğmelerle çevirin. Bir bölümün son sayfasından sonra çevirmek bir sonraki bölüme geçer. İçindekiler ve kitaptaki bağlantılar önizlemeyi o yere taşır.
+- Önizlemede metin düzenlenemez. AI kitabı değiştirdiğinde veya siz bir değişikliği geri aldığınızda önizleme de izler.
+- Düzenlemeye, önizlemenin gösterdiği yerde dönmek için **Önizlemeyi kapat**’a tıklayın veya Esc’ye basın.
+- Sayfa sonları mağaza uygulamaları ve cihazlar arasında biraz farklıdır; bu yüzden önizlemeyi yakın bir tahmin olarak alın.
+
 ## Metin düzenleme
 
 - Bir paragrafa tıklayıp yazın. Paragraflar, başlıklar, liste öğeleri, alıntılar, tablo hücreleri ve resim alt yazıları düzenlenebilir. Resimler ve tabloların yerleşimi düzenlenemez.
@@ -58,11 +67,12 @@ E-kitap düzenleyici EPUB kitaplarını (`.epub`) bir sekmede açar. Kitabı oku
 - Çevrilen kısımlar saklanır. Durdurursanız **Şimdiye kadar çevrilenleri dışa aktar** (kalanı özgün dilinde kalır) veya **Daha sonra devam et** seçeneğini seçin. Bitmemiş çevirisi olan bir kitabı açtığınızda GenOffice devam etmeyi önerir. **Baştan yeniden çevir** önce o dil için saklanan çeviriyi siler.
 - Saklanan çeviriler, PDF belgelerininkilerle birlikte Ayarlar ▸ Genel ▸ **Saklanan AI sonuçları** altında sayılır ve **Tümünü sil** onları da kaldırır.
 - Aynı çeviri [terminal komutlarından](help://cli) `ieumoffice epub translate` ile de çalıştırılabilir.
+- Kitabı seçilen dilde kolay sözcüklerle yeniden yazmak için **Mod** altında **Sade dil**’i seçin. Sonuçlar **Sade dilde kitap** ve **Önce özgün, sonra sade dil** olur; başlıkları o dilde sade dil sürümü olarak işaretlenir, dosya adları ise çeviriden ayrılsın diye işareti ekran dilinde taşır. Dil ekran diliyle başlar ve kitabın kendi dili de olabilir. Sade dil sürümü çevirilerden ayrı tutulur, ona devam etmek ayrıca önerilir ve terminal komutları onu üretmez.
 
 ## Henüz desteklenmeyenler
 
 - Bölüm ekleme, silme veya yeniden sıralama; başlığı, yazarı ya da kapağı değiştirme; resim veya tablo ekleme; bir paragrafı başlığa ya da listeye çevirme.
 - Sabit düzenli kitapları düzenleme veya çevirme, kopya korumalı kitapları açma.
-- Basılı kitap gibi sayfa çevirme ve yeni, boş bir kitap oluşturma.
+- Yeni, boş bir kitap oluşturma.
 - Özgün ile çeviriyi düzenleyicinin içinde yan yana karşılaştırma. Bunun yerine iki dilli kitabı açın ve çevrilmiş kitabı diğer kitaplar gibi düzeltin.
 - Bir kitabın parçalarını AI’dan gizleme.

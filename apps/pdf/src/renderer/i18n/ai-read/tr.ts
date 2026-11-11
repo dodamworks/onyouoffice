@@ -37,6 +37,8 @@ export const tr = {
   arConfirmSends: 'Sayfa görüntüleri bu AI hizmetine gönderilir.',
   arConfirmNothing: 'Seçilen sayfaların hepsi zaten okunmuş. Gönderilecek bir şey yok.',
   arChecking: 'AI bağlantısı kontrol ediliyor…',
+  arProviderLabel: 'Sağlayıcı',
+  arProviderNotConnected: '{provider} (bağlı değil)',
   arVisionProvider:
     '{provider} görüntü okuyamıyor, bu yüzden AI ile sayfa okuma başlatılamıyor. Ayarlar bölümünden görüntü okuyabilen bir AI seçin.',
   arVisionModel:

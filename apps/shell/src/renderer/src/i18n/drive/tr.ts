@@ -26,8 +26,6 @@ export const tr = {
     'Drive erişimi işaretlenmediği için bağlantı kurulmadı. Yeniden bağlanın ve Drive öğesini işaretleyin.',
   driveFailTimeout: 'Oturum açma 10 dakika içinde tamamlanmadı. Yeniden deneyin.',
   driveFailNetwork: 'Google’a ulaşılamadı. İnternet bağlantınızı denetleyip yeniden deneyin.',
-  driveMyDrive: 'Drive’ım',
-  driveShared: 'Benimle paylaşılanlar',
   driveRecent: 'Son kullanılanlar',
   driveSearchPlaceholder: 'Drive’da ara',
   driveSearchResults: '“{q}” için sonuçlar',
@@ -54,10 +52,13 @@ export const tr = {
   driveErrRateLimit: 'Google istekleri bir süre bekletiyor. Kısa süre sonra yeniden deneyin.',
   driveErrNetwork: 'Google Drive’a ulaşılamadı. İnternet bağlantınızı denetleyin.',
   driveErrDisk: 'Dosya bu bilgisayara kaydedilemedi.',
-  drivePickTitle: 'Drive’dan ekle',
-  drivePickAttach: 'Ekle',
-  drivePickSelected: '{n} seçildi',
-  drivePickWorking: 'Dosyalar Drive’dan alınıyor…',
-  drivePickFolderNote: 'Bir klasörü işaretlemek içindeki en fazla 20 dosyayı ekler.',
-  drivePickGoogleNote: 'Bir Google belgesi Office dosyası olarak eklenir.',
+  drivePick: 'Google Drive’dan seç',
+  drivePicking: 'Tarayıcınızda açılan Google penceresinde dosyaları seçin…',
+  drivePickNote:
+    'GenOffice yalnızca Google’ın penceresinde seçtiğiniz Drive dosyalarını açabilir. Bir kez seçtiğiniz dosyalar bu listede kalır.',
+  driveTrainingTitle: 'Drive dosyalarını AI ile kullanmadan önce',
+  driveTrainingBody:
+    'Google, Drive dosyalarının bunları modellerini eğitmek için kullanan bir AI hizmetine gitmesine izin vermez. Kişisel Claude, ChatGPT ve Codex planları, siz kapatmadığınız sürece sohbetlerinizi eğitim için kullanabilir: Claude’da Ayarlar → Gizlilik bölümünden, ChatGPT’de Ayarlar → Veri kontrolleri → “Modeli herkes için geliştir” bölümünden. API anahtarı sağlayıcıları varsayılan olarak API verileriyle eğitim yapmaz. Ücretsiz AI bağlantılarına hiçbir zaman Drive dosyası verilmez.',
+  driveTrainingAck: 'Drive dosyalarıyla kullandığım AI hesaplarında model eğitimi kapalı',
+  driveFailTraining: 'Önce yukarıdaki model eğitimiyle ilgili öğeyi işaretleyin.',
 } satisfies Record<keyof typeof zh, string>

@@ -184,6 +184,7 @@ export const tr = {
   appCtxSendToBack: 'Arkaya Gönder',
   appCtxBringForward: 'Bir Katman Öne Getir',
   appCtxSendBackward: 'Bir Katman Arkaya Gönder',
+  appCtxRotate: 'Döndür',
   appCtxRotateLeft90: 'Sola 90° Döndür',
   appCtxRotateRight90: 'Sağa 90° Döndür',
   appCtxFlipH: 'Yatay Çevir',
@@ -262,4 +263,12 @@ export const tr = {
   appStatusSummaryZoomInserted: 'Özet Yakınlaştırma slaytı {count} kutucukla eklendi',
   appSectionSummary: 'Özet Bölüm',
   appSectionN: 'Bölüm {n}',
+  appStatusAnimPainterNone: 'Seçili öğenin animasyonu yok',
+  appStatusAnimPainterOnce:
+    'Animasyonların uygulanacağı öğeye tıklayın; sürekli mod için düğmeye çift tıklayın',
+  appStatusAnimPainterContinuous: 'Sürekli Animasyon Boyacısı modu; çıkmak için Esc’ye basın',
+  appStatusAnimPainted: 'Animasyonlar uygulandı',
+  appStatusMergeUnsupported:
+    'Bu şekiller birleştirilemiyor (çizgiler, resimler, tablolar, grafikler ve bazı şekiller dışarıda kalır)',
+  appStatusMergeEmpty: 'Birleştirmeden sonra hiçbir şey kalmıyor (şekiller çakışmıyor)',
 } satisfies Record<keyof typeof zh, string>

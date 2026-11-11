@@ -36,6 +36,13 @@ Docs, Sheets, Slides, Hangul, HTML ve zihin haritası düzenleyicilerinin AI pan
 - İki belge aynı adı taşıyıp farklı klasörlerdeyse hemen üstündeki klasörün adı eklenir, örneğin `@plan.docx(2. dönem)`, ve o klasör adı AI’a da verilir.
 - PDF ve Markdown düzenleyicilerinde henüz ek yoktur, bu yüzden orada iki yol da kullanılamaz.
 
+## Projeler
+
+- Bir proje (bilgisayarınızdaki bir klasör) seçmek için girişin altında, soldaki proje adına tıklayın. AI bundan sonra o klasörün dosyalarını, yönergelerini ve belleğini bilerek yanıtlar ve sohbet klasörde tutulur; böylece başka bir düzenleyicide devam edebilirsiniz. Bkz. [Projeler](help://projects).
+- Bir proje seçiliyken geçerli sohbetin başlığı panelin üstünde görünür. Bu projenin sohbet listesi ve **Yeni sohbet** için ona tıklayın.
+- Girişteki `@` listesi açık belgelerden sonra "Bu projedeki dosyalar" gösterir.
+- Proje seçiliyken yapılan bir istek, o projenin yönergelerini (klasörün en üstündeki `AGENTS.md` ve `CLAUDE.md` ile birlikte; bunları projenin sayfasından kapatabilirsiniz), belleğini ve dosya adları listesini, AI klasörde arama yaptığında bulduğu her dosyadan kısa bir alıntıyı ve AI’ın okuduğu her dosyanın metnini de kullandığınız AI’a gönderir.
+
 ## Geri alma ve güvenlik
 
 - Docs paneli bir **sürüm listesi** tutar: her tur için bir anlık görüntü, bunlardan herhangi birine dönün ve dönüşün kendisi Ctrl+Z ile geri alınabilir. Anlık görüntüler belge yeniden açıldıktan sonra da yaşar.

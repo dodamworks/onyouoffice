@@ -6,9 +6,11 @@ PDF düzenleyicisinin beş şerit sekmesi vardır: **Giriş / Açıklama / Düze
 
 - Sol kenar çubuğu: **küçük resimler** (atlamak için tıklayın, görünen aralık vurgulanır) ya da **anahat** (varsa yer imleri).
 - Yakınlaştırma: sağ alttaki oran denetimi; ctrl+tekerlek yakınlaştırmayı kademelendirir.
+- Açılış yakınlaştırması: Görünüm sekmesindeki **Açılışta**, yeni açılan bir PDF’nin hangi görünümle başlayacağını belirler: genişliğe sığdır, sayfaya sığdır veya %50 ile %200 arası bir yakınlaştırma. Yakınlaştırmasını kendiniz değiştirdiğiniz bir PDF o yakınlaştırmayla yeniden açılır.
+- Görünümü taşıma: **El aracını** (Giriş ve Görünüm sekmeleri) açın ve sayfayı yukarı, aşağı ve yanlara taşımak için sürükleyin. Açıkken sürüklemek metin seçmez ve düz bir tıklama yine bağlantıyı izler. Orta düğme (tekerlek) basılıyken sürüklemek, araç olmadan görünümü taşır. Esc veya başka bir araç seçmek onu kapatır.
 - Döndürme: Sayfa menüsünden sayfa başına ya da tüm sayfalar; döndürmeler kaydetmede geri yazılır.
 - Arama: ctrl+F ile tam metin, tüm eşleşmeler vurgulanır.
-- Şifreli PDF'ler: bir parola istemi (kendi küçük penceresi) onları açar; parola yalnızca bu oturum için kullanılır.
+- Şifreli PDF'ler: bir parola istemi (kendi küçük penceresi) onları açar; parola yalnızca bu oturum için kullanılır. Böyle bir belgeyi düzenleyip kaydedebilirsiniz; kaydetme parolasını korur. **Açıklama → Koru** parolayı ve okuyucuların neler yapabileceğini ayarlar, değiştirir veya kaldırır.
 
 ## Metin seçimi ve işaretleme (Açıklama)
 
@@ -18,7 +20,7 @@ Herhangi bir paragrafta deneyin:
 
 ![Metin seçildikten sonra açıklama çubuğu](img/pdf-highlight.png)
 
-2. **vurgu** (sarı örnek bir renk paleti açar), **altı çizili** ya da **üstü çizili** seçin; **AI'ya sor** seçimi sorunuzla birlikte AI paneline gönderir.
+2. Üç **vurgu** renginden birini ya da **altı çizili**, **dalgalı** veya **üstü çizili** seçin. Bir vurgu rengini değiştirmek için ona sağ tıklayın ve yeni bir renk seçin. Altı çizili, dalgalı veya üstü çizili işaretten sonra çubukta bir renk sırası açılır: değiştirmek için başka bir renge tıklayın; bir sonraki de o renkte çizilir. **AI'ya sor** seçimi sorunuzla birlikte AI paneline gönderir.
 3. Bir açıklamayı geri almak için aynı pasajı yeniden sürükleyerek seçin ve çubuktaki etkin düğmeye tıklayın (Word tarzı aç-kapa) ya da onu seçip Delete'e basın.
 
 Başvuru:
@@ -69,6 +71,7 @@ Altı araç: **mürekkep, dikdörtgen, elips, ok, not**, ayrıca Açıklama sekm
 ## Sayfa işlemleri (Sayfa)
 
 - **Döndür / sil / yeniden sırala**: sıralamak için küçük resimleri sürükleyin; silme onay ister.
+- **Birkaç sayfa birden**: birkaç sayfa seçmek için küçük resimlere Ctrl ile veya Shift ile tıklayın. Delete onları kaldırır; Ctrl+C, Ctrl+X ve Ctrl+V onları kopyalar, keser ve yapıştırır. Kopyalanan sayfalar başka bir PDF sekmesine de yapıştırılabilir ve bir yapıştırma hemen dosyaya kaydedilir. Küçük resimler kapalıysa sayfa alanının sol kenarındaki düğme onları geri getirir.
 - **Sayfa içe aktar**: başka bir PDF'ten sayfalar alın. **Boş sayfa ekle** boş bir sayfa ekler.
 - **Sayfaları değiştir** bir aralığı başka yerden gelen sayfalarla değiştirir; **Sayfaları kırp** kırpar, tümüne uygulama seçeneğiyle.
 - **Sayfa boyutu** her sayfayı tek bir kâğıt boyutuna ölçekler; **Sırayı ters çevir** belgeyi baştan sona tersine çevirir.
@@ -80,6 +83,8 @@ Altı araç: **mürekkep, dikdörtgen, elips, ok, not**, ayrıca Açıklama sekm
 ## Dışa aktarma ve yazdırma
 
 - Dosya menüsünde **Word olarak dışa aktar… / PowerPoint… / Excel…** ya da şeritteki **PDF Dönüştürücü** ile aynı üçü — hepsi yerel, yükleme yok. .pptx sayfa başına bir slayt, .xlsx sayfa başına bir çalışma sayfası olarak çıkar. Her biri nereye kaydedileceğini sorar.
+- Şeritteki **PDF Dönüştürücü** altındaki **PDF’den HWP’ye**, PDF’yi yeni bir Hangul sekmesinde bir Hangul belgesine dönüştürür. Sekmenin gösterdiği PDF içe aktarma penceresinde **İçe aktar**’ı (가져오기) seçin; belge o sekmede oluşturulur ve ilk kaydetmesi .hwp veya .hwpx dosyasının nereye konacağını sorar. PDF’nin kendisi olduğu gibi kalır ve dönüştürme bu bilgisayarda çalışır. Gövde metninin sayfalar boyunca akan paragraflar olarak mı yoksa sabit metin kutuları olarak mı geleceği, Hangul sekmesinin seçeneklerinde (환경 설정) PDF içe aktarma altında ayarlanır.
+- Aynı dönüştürme bir Hangul sekmesinden de başlar. **Dosya** ▸ **PDF içe aktar…** ile bir PDF seçin; aynı PDF içe aktarma penceresiyle yeni bir Hangul sekmesi açılır. Menünün kullanıldığı sekmenin belgesi olduğu gibi kalır.
 - **Yazdır**: sistem penceresi üzerinden geçerli sıra ve döndürmeler; sayfa aralıkları desteklenir.
 
 ## Kaydetme
@@ -102,7 +107,7 @@ Metin seçiliyken açıklama çubuğu görünürken tek bir tuş bir işlemi hem
 | Enter | AI'ya sor kutusunu aç              |
 
 - Tuşlar Korece ya da başka bir giriş yöntemi açıkken de aynı çalışır. Bir alanda yazarken ya da Ctrl veya Alt basılıyken yok sayılırlar.
-- Düzenlemeye kapalı (parola korumalı) bir belgede H, U, S ve N hiçbir şey yapmaz ve çubuğun düğmeleri gibi nedenini gösterir.
+- Düzenlemeye kilitli (sahip parolası değişiklikleri yasaklayan) bir belgede H, U, S ve N hiçbir şey yapmaz ve çubuğun düğmeleri gibi nedenini gösterir.
 
 ## Pasaj kartları
 
@@ -127,6 +132,9 @@ Metin seçiliyken açıklama çubuğu görünürken tek bir tuş bir işlemi hem
 - **Bu sayfayı çevir** (sayfanın bir kısmı bittiyse **Kalanı çevir**) bir abonelik kullanırken tek basışla o sayfayı gönderir; gideceği AI'nın adı düğmenin yanında gösterilir. Kullanıma göre ücretlendirilen bir bağlantıda bir sekmedeki ilk basış önce "‹AI adı› bunun için ücret alacak · Çevir / İptal" diye sorar.
 - Çevrilmiş bir paragrafı düzenlemek için çift tıklayın. Düzenlenen paragraflar düz metin olarak saklanır ve çevrilmiş PDF, Markdown ve EPUB dosyalarında oldukları gibi kullanılır. Bir paragrafta **Yeniden çevir** yalnızca o paragrafı gönderir ve onu düzenlediyseniz önce sorar.
 - Çevrilmiş bir paragrafın üzerine gelmek kaynak sayfadaki yerini ana hatla belirtir. Sütunun genişliği ve metin boyutu değiştirilebilir. **Tüm sayfaları çevir…** **Belgeyi çevir** penceresini açar; bu pencerenin **Yalnızca sakla (dosya yok)** biçimi çeviriyi dosya yazmadan tutar.
+- Yeni çevrilen paragraflar cümle cümle bağlanır. Çevrilmiş bir cümlenin üzerine gelmek kaynak sayfada o cümleyi vurgular, bir kaynak cümlenin üzerine gelmek de çevirisini yakar. Cümlenin sayfada bulunamadığı yerlerde ve daha önce çevrilen veya sizin düzenlediğiniz paragraflarda bağ paragraf paragraf kalır.
+- Sütunun üstündeki çubuk **Çeviri** ile **Sade dil** arasında geçiş yapar. Sade dil açıklaması metni çocuklar, yaşlı okurlar veya dili öğrenenler için gündelik sözcükler ve kısa cümlelerle yeniden yazar; gerçekler, sayılar ve adlar olduğu gibi kalır. Seçim hatırlanır ve geçiş yapmak hiçbir şey göndermez. Açıklama gösterilirken sayfa ve paragraf düğmeleri ve düzenleme onun üzerinde çalışır.
+- Sade dilde **Tüm sayfaları sadeleştirerek açıkla…**, **Belgeyi Çevir** penceresini mod olarak **Sade dil açıklaması** ile açar. Bir açıklama özgünden daha uzun olduğu için çevrilmiş bir PDF olamaz; Markdown veya EPUB olarak yazılır. **Önce kaynak, sonra açıklama** açıkken her kaynak paragrafı açıklaması izler; kapalıyken dosya yalnızca açıklamayı tutar. Dil ekran diliyle başlar ve belgenin kendi dili de olabilir.
 
 ## AI vurguları
 

@@ -83,4 +83,20 @@ export const tr = {
   errNeedsUpdate: 'Program ajan modu için çok eski. Güncelleyip yeniden deneyin.',
   errNotInstalled: 'Bu program yüklü değil.',
   errGeneric: 'Bir sorun oluştu. Yeniden deneyin.',
+  errUnsupportedPath:
+    'Codex, adında [ ] * veya ? bulunan bir klasör ya da dosyayla çalışamaz. Proje klasörünü yeniden adlandırın veya bu tür adlı belgeleri kapatın, sonra yeniden başlatın.',
+  errProgramExited:
+    'Oturum başlatılırken program kapandı. Programı güncelleyin, bir terminalde açıldığını denetleyin, sonra yeniden deneyin.',
+  errProgramNoAnswer: 'Oturum başlatılırken program zamanında yanıt vermedi. Yeniden deneyin.',
+  errProgramRefused:
+    'Program oturum ayarlarını kabul etmedi. Programı güncelleyip yeniden deneyin.',
+  errNoModel:
+    'Program kullanılabilecek bir model sunmadı. Ayarlar → AI bölümünden bir model seçip yeniden deneyin.',
+  errPrepareFailed: 'Uygulama oturumu hazırlayamadı. Yeniden deneyin.',
+  errCode: 'Bu durum sürerse geri bildirim gönderirken bu kodu ekleyin: {code}',
+  documentsUnprotected:
+    'Oturum başladıktan sonra açılan belgeler ({n}) programın kendi yazma korumasının dışında kalır. Bunları korumak için oturumu durdurup yeniden başlatın.',
+  connOff: 'Bu uygulamada kapatıldı. Ayarlar → AI bölümünden yeniden açın.',
+  errOffInApp:
+    'Bu program bu uygulamada kapalı olduğu için başka bir şey gönderilmedi. Ayarlar → AI bölümünden yeniden açın.',
 } satisfies Record<keyof typeof zh, string>

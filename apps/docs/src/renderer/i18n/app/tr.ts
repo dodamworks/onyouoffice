@@ -350,6 +350,9 @@ export const tr = {
   appAiBadgeTip: 'AI kullanır',
   appTranslate: 'Çevir',
   appTranslateTo: '{lang} diline çevir',
+  appEasyWords: 'Sade sözcüklerle açıkla',
+  appEasyWordsPrompt:
+    'Seçili metni, kolay okunur metne ihtiyaç duyan birinin (bir çocuk, yaşlı biri veya Türkçe öğrenen biri) anlayabileceği şekilde Türkçe açıkla. Gündelik sözcükler ve kısa cümleler kullan; her olguyu, sayıyı ve koşulu koru. Belgeyi değiştirme: "{text}"',
   redactMenuLabel: 'Seçimi AI’dan gizle',
   redactDialogDesc:
     'Sözcükler belgede ve dosyada kalır; model bunun yerine aşağıdaki yer tutucuyu görür. Modelin neyi temsil ettiğini anlaması için ona bir ad verin.',
@@ -581,4 +584,10 @@ export const tr = {
   appMergeSourceLoaded: '{name} yüklendi ({n} kayıt)',
   appMergeWritten: '{n} belge yazıldı',
   appMergeNothingToWrite: 'Yazılacak bir şey yok',
+  appExportingHwp: 'HWP belgesi dışa aktarılıyor…',
+  appExportedHwp: 'HWP belgesi dışa aktarıldı: {path}',
+  appExportHwpFailed: 'HWP dışa aktarma başarısız: {error}',
+  appExportHwpCanceled: 'HWP dışa aktarma iptal edildi',
+  appExportHwpReadback:
+    'Bu belge .hwp olarak tam aynen yazılamadı. .hwpx olarak kaydetmeyi deneyin.',
 } satisfies Record<keyof typeof zh, string>

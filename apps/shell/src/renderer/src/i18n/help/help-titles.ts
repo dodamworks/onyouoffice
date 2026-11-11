@@ -453,6 +453,7 @@ const TOPIC_TITLES: Record<string, Record<HelpTitleLang, string>> = {
     he: 'תרשימים: ציור ועריכה של קובצי draw.io',
     hi: 'आरेख: draw.io फ़ाइलें बनाना और संपादित करना',
     vi: 'Sơ đồ: vẽ và chỉnh sửa tệp draw.io',
+    tr: 'Diyagramlar: draw.io dosyalarını çizme ve düzenleme',
   },
   'ai-panel': {
     zh: 'AI 助手面板',
@@ -549,6 +550,7 @@ const TOPIC_TITLES: Record<string, Record<HelpTitleLang, string>> = {
     he: 'פרויקטים',
     hi: 'प्रोजेक्ट',
     vi: 'Dự án',
+    tr: 'Projeler',
   },
   'mcp-servers': {
     zh: '连接 MCP 服务器',
@@ -572,6 +574,7 @@ const TOPIC_TITLES: Record<string, Record<HelpTitleLang, string>> = {
     he: 'חיבור שרתי MCP',
     hi: 'MCP सर्वर जोड़ना',
     vi: 'Kết nối máy chủ MCP',
+    tr: 'MCP sunucularını bağlama',
   },
   'agent-mode': {
     zh: '智能体模式',

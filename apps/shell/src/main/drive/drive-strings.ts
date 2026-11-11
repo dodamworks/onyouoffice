@@ -555,6 +555,10 @@ export const DRIVE_MAIN_STRINGS = defineStrings({
     noticeCopy: 'Değişiklikleriniz Google Drive üzerine “{copyName}” olarak kaydedildi.',
     noticeUploadFailed:
       "“{name}” Google Drive üzerine yüklenemedi. Değişiklikleriniz bu PC'de kaydedildi ve uygulama tekrar deneyecek.",
+    pagePickedTitle: 'Dosyalar seçildi',
+    pagePickedBody: 'Bu sekmeyi kapatıp GenOffice’e dönebilirsiniz.',
+    freeAiDocRefusal:
+      'Bu belge bir Google Drive dosyasının kopyası ve kullanılan AI, aldıklarıyla eğitim yapabilecek ücretsiz bir bağlantı. Bu belgede çalışmak için başka bir AI seçin.',
     ok: 'Tamam',
   } satisfies Keys,
 })

@@ -103,8 +103,10 @@ export const tr = {
   appChartNoRepoint: 'Bu grafik, veri aralıklarının yeniden yönlendirilmesini desteklemiyor.',
   appKeepOneSeries: 'En az bir seri bırakın.',
   appNoCategoriesToSwitch: 'Değiştirilecek kategori yok.',
-  appComboNoSelectData: 'Birleşik grafiklerin veri kaynağını değiştirmek henüz desteklenmiyor.',
+  appSelectDataUnsupported: 'Bu grafik türünün veri kaynağını değiştirmek desteklenmiyor.',
   appSeriesName: 'Seri Adı',
+  appSeriesType: 'Seri Türü',
+  appSecondaryAxis: 'İkincil Eksen',
   appValuesRange: 'Değer Aralığı',
   appCategoriesRange: 'Kategori Aralığı',
   appKeepUnchanged: 'Değiştirme',
@@ -185,6 +187,13 @@ export const tr = {
   appInvalidGroupField: 'Geçersiz gruplandırma alanı.',
   appInvalidPageField: 'Geçersiz rapor filtresi alanı.',
   appPivotPageItemMissing: 'Rapor filtresi öğesi "{item}", "{label}" alanının üyesi değil.',
+  appInvalidPivotBaseField:
+    '"Değerleri farklı göster" temel alanı Satırlar veya Sütunlar üzerinde olmalıdır.',
+  appPivotBaseFieldMissing:
+    'Bir değer alanının "değerleri farklı göster" modu bir temel alan gerektirir.',
+  appPivotBaseFieldNotAxis:
+    '"{label}" temel alanı pivot tablonun satırlarında veya sütunlarında olmalıdır.',
+  appPivotBaseItemMissing: '"{item}" temel öğesi "{label}" alanının üyesi değil.',
   appInvalidLabelFilterField: 'Etiket filtresi alanı geçersiz.',
   appInvalidValueFieldIndex: '{index} değer alanı dizini geçersiz.',
   appInvalidValueField: 'Geçersiz değer alanı.',
@@ -324,8 +333,7 @@ export const tr = {
   appPivotSheetNoMove: 'Bu sayfa bir pivot tablo içeriyor — aralık taşıma henüz desteklenmiyor.',
   appMergeOverTable:
     'Seçim bir Excel tablosuyla çakışıyor — tablo içindeki hücreleri birleştirmek henüz desteklenmiyor.',
-  appTableFilterNoEdit:
-    'Bu sayfanın filtresi bir Excel tablosuna ait — düzenlemesi henüz kaydedilemiyor.',
+  appFilterToggleFailed: 'Filtre uygulanmadı — önce verilerinizin bulunduğu aralığı seçin.',
   appAutofillStreaming: 'Hâlâ akışla yüklenen bir alana otomatik doldurma henüz yapılamıyor.',
   appDvNeedsIndexed:
     'Veri doğrulamasını düzenlemek için bu sayfanın tam olarak dizinlenmesi gerekir — birazdan yeniden deneyin.',
@@ -375,6 +383,9 @@ export const tr = {
   appTableNameUsed: '"{name}" tablo adı bu oturumda zaten kullanıldı.',
   appTableNameInFile: '"{name}" tablo adı dosyadaki bir tablo tarafından zaten kullanılıyor.',
   appTableOverlapsSession: 'Aralık, bu oturumda oluşturulan "{name}" tablosuyla çakışıyor.',
+  appTableOverlapsFile: 'Aralık, dosyadaki "{name}" tablosuyla çakışıyor.',
+  appTableAlreadyInTable:
+    'Seçim zaten "{name}" tablosunun içinde. Değiştirmek için Tablo Tasarımı’ndan bir stil seçin.',
   appTablesNeedFile: 'Önce bir XLSX dosyası açın — tablolar dosyaya yazılır.',
   appTableSelectRange: 'Önce veri aralığını seçin — başlıklar ilk satırda olmalı.',
   appTableCreated: 'Tablo oluşturuldu — ⌘S ile kaydedin.',
@@ -454,6 +465,7 @@ export const tr = {
   appGridlinesHidden: 'Kılavuz çizgileri gizlendi.',
   appGridlinesShown: 'Kılavuz çizgileri gösterildi.',
   appShowingFormulas: 'Formüller gösteriliyor — değerlere dönmek için yeniden değiştirin.',
+  appShowingFormulasActive: 'Formüller gösteriliyor',
   appShowingValues: 'Hesaplanan değerler gösteriliyor.',
   appTraceNoFormula: 'Örnekleri İzle: etkin hücrede formül yok.',
   appTraceNoRefs: 'Örnekleri İzle: bu formülde hücre başvurusu yok.',
@@ -548,6 +560,9 @@ export const tr = {
     'CSV dışa aktarma tam yüklenmiş çalışma kitabını gerektirir — yüklemenin bitmesini bekleyin.',
   appCsvExportTooLarge: 'Sayfa CSV olarak dışa aktarılamayacak kadar büyük.',
   appCsvExportCanceled: 'CSV dışa aktarma iptal edildi.',
+  appOdsExported: '{path} dışa aktarıldı.',
+  appOdsExportCanceled: 'ODS dışa aktarma iptal edildi.',
+  appOdsExportFailed: 'ODS dışa aktarma başarısız oldu.',
   appCsvExported: '{path} dışa aktarıldı.',
   appCsvExportedActiveOnly: 'CSV tek sayfa tutar — etkin sayfa "{name}" {path} konumuna aktarıldı.',
   appCsvExportFailed: 'CSV dışa aktarılamadı.',
@@ -563,8 +578,6 @@ export const tr = {
   appSaveFailed: 'Çalışma kitabı kaydedilemedi.',
   appCfRuleUnsaveable:
     'Bu koşullu biçimlendirme kuralı xlsx biçimine kaydedilemiyor — başka bir kural türüne geçin.',
-  appSaveErrX14Dv:
-    'Bu sayfada genişletilmiş (x14) veri doğrulaması var; doğrulama kurallarını düzenlemek henüz desteklenmiyor.',
   appSaveErrMultiSelectList:
     'Çoklu seçimli liste doğrulaması xlsx biçimine kaydedilemiyor — kaydetmeden önce kuralı silin.',
   appSaveErrX14Cf:
@@ -585,6 +598,10 @@ export const tr = {
     'Bu çalışma kitabının stil sayfasında temel yapı eksik, bu yüzden stil değişiklikleri kaydedilemiyor.',
   appSaveErrPackageGuard:
     'Kaydetmek çalışma kitabının paket yapısını değiştirirdi — dosyayı korumak için durduruldu.',
+  appSaveErrSheetNotFound:
+    'Bu kaydetmenin başvurduğu bir sayfa çalışma kitabında bulunamadı. Kaydetme durduruldu ve dosya olduğu gibi bırakıldı.',
+  appSaveErrSheetNameReused:
+    'Yeni bir sayfa, yeniden adlandırdığınız bir sayfanın eski adını kullanıyor, bu yüzden kaydedilemiyor. Şimdilik yeni sayfaya başka bir ad verin, kaydedin, sonra yeniden adlandırın. Dosya olduğu gibi bırakıldı.',
   appSaveErrChartUnsupported:
     'Bu grafik türü bu düzenlemeyi desteklemiyor; kaydetme durduruldu — grafik değişikliğini geri alın.',
   appSaveErrMoveOverlap:
@@ -695,6 +712,13 @@ export const tr = {
   appSaveAs: 'Farklı Kaydet',
   appUndo: 'Geri Al',
   appRedo: 'Yinele',
+  appQuickAccessCustomize: 'Hızlı Erişim Araç Çubuğunu Özelleştir',
+  appQuickAccessHint:
+    'Soldan sayarak o konumdaki düğmeyi çalıştırmak için Alt ve bir rakama basın.',
+  appQuickAccessMoveEarlier: 'Öne taşı',
+  appQuickAccessMoveLater: 'Arkaya taşı',
+  appQuickAccessReset: 'Varsayılana sıfırla',
+  appQuickAccessFull: 'Araç çubuğu en fazla 10 düğme tutar.',
   appUnsavedEditOne: '● {count} kaydedilmemiş düzenleme',
   appUnsavedEditMany: '● {count} kaydedilmemiş düzenleme',
   appSavedState: 'Kaydedildi',
@@ -1157,6 +1181,8 @@ export const tr = {
   appRefreshAll: 'Tümünü Yenile',
   appWorkbookNoPivot: 'Bu çalışma kitabında pivot tablo yok.',
   appRefreshAllTitle: 'Tüm pivot tabloları yenile',
+  appQueriesConnections: 'Sorgular ve Bağlantılar',
+  appQueriesConnectionsTitle: 'Çalışma kitabının sorgularını ve veri bağlantılarını listele',
   appErrorCheckingDetail: 'Sayfayı hata değerleri için tara',
   appErrorsFound: '{count} hata — {cell} hücresinde: {value}',
   appCheckingErrors: 'Tüm sayfa hatalar için taranıyor…',
@@ -1191,6 +1217,7 @@ export const tr = {
   appGroupForecast: 'Tahmin',
   appWhatIfAnalysis: 'Hesap Tablosu',
   appGoalSeek: 'Hedef Ara',
+  appDataTable: 'Veri Tablosu',
   appWhatIfTitle: 'Bir hedef değer için girdiyi çöz',
   appGoalSeekNeedsFormula: 'Ayarla hücresi bir formül içermelidir.',
   appGoalSeekByCellNotNumber:
@@ -1527,4 +1554,29 @@ export const tr = {
   appVisualFlipV: 'Dikey Çevir',
   appVisualFlipH: 'Yatay Çevir',
   appCtxPasteVisual: 'Resim veya Şekil Yapıştır',
+  appSpellTitle: 'Yazım',
+  appSpellBtnDetail: 'Sayfa metnini denetle (F7)',
+  appSpellToggle: 'Yazımı Denetle',
+  appSpellToggleTip:
+    'Yazım denetimini etkinleştir (F7 ve Gözden Geçir düğmesi); kapalıyken açıklama kutuları yazım dalgalı çizgilerini göstermez',
+  appSpellOn: 'Yazım denetimi açıldı.',
+  appSpellOff: 'Yazım denetimi kapalı. Gözden Geçir ▸ Yazım Denetleme’den açın.',
+  appSpellRecheck: 'Yeniden denetle',
+  appSpellNone: 'Şüpheli yazım hatası bulunamadı.',
+  appSpellFindings: '{count} şüpheli yazım hatası. Bulmak için bir satıra tıklayın.',
+  appSpellTruncated: 'Çok fazla metin hücresi var; yalnızca öndekiler denetlendi.',
+  appSpellColWord: 'Şüpheli',
+  appSpellIgnore: 'Yok say',
+  appSpellIgnoreAll: 'Tümünü Yok Say',
+  appSpellLearn: 'Sözlüğe Ekle',
+  appSpellNoSuggestions: 'Öneri yok',
+  appSpellIgnoredAll: '"{word}" bu oturumda yeniden işaretlenmeyecek.',
+  appSpellLearned: '"{word}" sözlüğe eklendi.',
+  appSpellChanged: '{address} düzeltildi.',
+  appSpellChangeFailed: '{address} düzeltilemedi.',
+  appSpellUnavailable: 'Yazım denetimi bu pencerede kullanılamıyor.',
+  appSpellReplaceAll: 'Tümünü "{suggestion}" ile değiştir',
+  appSpellChangedAll: '"{word}" içeren {count} hücre düzeltildi.',
+  appOdsImportNotice: 'ODS bir xlsx kopyası olarak açıldı. Kaydetmek bir xlsx dosyası yazar.',
+  appOdsFormulasDropped: '{count} formül yalnızca değer olarak tutuldu.',
 } satisfies Record<keyof typeof zh, string>

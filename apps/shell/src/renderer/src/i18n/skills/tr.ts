@@ -28,6 +28,7 @@ export const tr = {
   invokeManual: 'Yalnızca çağrıldığında',
   badgeTemplate: 'Şablonu var',
   badgeScripts: 'Betikleri var · ajan penceresinde tam olarak çalışır',
+  badgeMcpServer: 'MCP sunucusu gerekli: {servers}',
   badgeAgentOnly: 'Yalnızca ajan penceresinde',
   unreadableNoFrontmatter: 'ön bilgi bölümü yok',
   unreadableBadName: 'ad kurallara uymuyor',
@@ -138,4 +139,28 @@ export const tr = {
   failEmptyBody: 'Yönergeleri girin',
   failBadName: 'Ad kurallara uymuyor',
   failGeneric: 'İşlem yapılamadı. Yeniden deneyin',
+  addPaste: 'Yapıştırılan metinden',
+  pasteTitle: 'Metin yapıştırarak ekle',
+  pasteLabel: 'SKILL.md metni',
+  pasteHint:
+    'SKILL.md metninin tamamını, --- satırından ve altındaki name: ile description: satırlarından başlayarak yapıştırın.',
+  pastePreview: 'Önizleme',
+  pasteNotSkill:
+    'Bu bir beceri metni değil. Metin bir --- satırıyla başlamalı ve ardından bir name: satırı gelmelidir.',
+  previewFromText: 'Yapıştırılan metinde bulunan beceriler: {n}',
+  previewFromSkillFile: 'SKILL.md dosyasında bulunan beceriler: {n}',
+  previewWarnings: 'Yüklemeden önce okumaya değer satırlar: {n}',
+  previewWarningsNote:
+    'Bu satırlar kısa bir kalıp listesiyle eşleşti. Burada hiç satırı olmayan bir beceri bu yüzden güvenli sayılmaz.',
+  previewWarningAt: '{file}, satır {line}',
+  warnIgnoreInstructions: 'AI’dan önceki yönergeleri yok saymasını istiyor',
+  warnHideFromUser: 'AI’dan sizden bir şey saklamasını istiyor',
+  warnRemoteInstructions: 'AI’dan dışarıdaki bir adresten yönerge almasını istiyor',
+  warnParentPath: 'Beceri klasörünün dışını gösteren bir ../ yolu',
+  exportSeveral: 'Birkaçını dışa aktar',
+  bundleTitle: 'Becerileri birlikte dışa aktar',
+  bundleIntro:
+    'İşaretlediğiniz beceriler, her beceri için bir klasör olmak üzere tek bir zip dosyasına girer. Dosyayı alan kişi zip’i bir uygulama penceresine bırakabilir veya Ekle ▸ Zip dosyasından seçeneğini kullanabilir.',
+  bundleSelectLabel: '{title} becerisini dahil et',
+  bundleExport: 'Dışa aktar ({n})',
 } satisfies Record<keyof typeof zh, string>

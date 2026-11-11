@@ -1,6 +1,6 @@
 # Hızlı başlangıç: arayüz ve temeller
 
-GenOffice, kendi bilgisayarınızda çalışan bir ofis paketidir: tek pencere, tek sekme sırası ve içinde sekiz düzenleyici — Docs (kelime işlem), Sheets (elektronik tablo), Slides (sunum), PDF, Markdown ve düz metin, HTML, HWP/HWPX (Hangul belgeleri) ve Zihin Haritası (.xmind). Her düzenleyici dosyaları kendi biçiminde açar ve kaydeder: .docx, .xlsx, .pptx, .pdf, .md, .html, .hwp/.hwpx ve .xmind. Düzenleme için ağ gerekmez; AI özellikleri için gerekir.
+GenOffice, kendi bilgisayarınızda çalışan bir ofis paketidir: tek pencere, tek sekme sırası ve içinde sekiz düzenleyici — Docs (kelime işlem), Sheets (elektronik tablo), Slides (sunum), PDF, Markdown ve düz metin, HTML, HWP/HWPX (Hangul belgeleri) ve Zihin Haritası (.xmind). Her düzenleyici dosyaları kendi biçiminde açar ve kaydeder: .docx, .xlsx, .pptx, .pdf, .md, .html, .hwp/.hwpx ve .xmind. Düzenleme için ağ gerekmez; AI özellikleri için gerekir. Zihin haritası düzenleyicisi FreeMind ve Freeplane dosyalarını (.mm) da yeni haritalar olarak içe aktarır; bunlar .xmind olarak kaydedilir.
 
 ## Arayüze genel bakış
 

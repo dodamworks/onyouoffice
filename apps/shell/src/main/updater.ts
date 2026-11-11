@@ -182,6 +182,8 @@ const tUpd = createI18n({
       'Yeniden başlatmanın ardından bir yükleyici penceresi ilerlemeyi gösterir. Windows yönetici onayı isterse Evet seçin. Bittiğinde uygulama ve açık olan belgeleriniz geri gelir.',
     updRestartNote:
       'Yeniden başlatmanın ardından bir yükleyici penceresi ilerlemesini gösterir. Bittiğinde uygulama ve açık olan belgeleriniz geri gelir.',
+    updRestartNoteMac:
+      'Uygulama kapanır, yeni sürümle değiştirilir ve açık olan belgelerinizle birlikte yeniden açılır.',
   },
   ja: {
     updTitle: 'ソフトウェアアップデート',

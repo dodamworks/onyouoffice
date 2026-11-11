@@ -562,6 +562,13 @@ export const SKILL_TEMPLATE_STRINGS = defineStrings({
     handoffNotSent: 'Devredilen beceri okunamadı, bu yüzden istek gönderilmedi',
     documentUnreadable: 'Geçerli belge okunamadı',
     untitled: 'Başlıksız',
+    chooseWhere: 'Bu belgede zaten içerik var. Beceri nerede çalışsın?',
+    runHere: 'Bu belgede yap',
+    openNewWithCurrent: 'Şablondan yeni belge (bunu ekle)',
+    needsSave: 'Yeni belgeye eklemek için önce bu belgeyi kaydedin, sonra yeniden basın.',
+    openWithoutAttach: 'Eklemeden aç',
+    notAttachedEditor: 'Bu şablonun açıldığı düzenleyici ek almıyor, bu yüzden bu belge eklenmedi',
+    attachFailed: 'Devredilen belge eklenemedi, bu yüzden istek gönderilmedi',
   },
 })
 

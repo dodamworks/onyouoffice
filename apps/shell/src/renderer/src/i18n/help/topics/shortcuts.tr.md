@@ -290,6 +290,7 @@ Excel'in filtre kısayolu Ctrl+Shift+L, Windows'ta ve Linux'ta hiçbir şey yapm
 | Fare tekerleğiyle yakınlaştır                                       | ⌘ + kaydırma | Ctrl + kaydırma |
 | Hücrelerdeki formülleri göster veya gizle                           | ⌘`           | Ctrl+`          |
 | Formül çubuğunu genişlet veya daralt                                | ⌘⇧U          | Ctrl+Shift+U    |
+| Hızlı Erişim Araç Çubuğu düğmesini konumuna göre çalıştır (1.–10.)  |              | Alt+1 … Alt+0   |
 
 ## Slides
 
@@ -312,20 +313,24 @@ Bir sekmeyi kapatmak, iki platformun tamamen ayrıldığı tek yerdir: macOS'ta 
 
 ### Düzenleme
 
-| Eylem                                             | macOS  | Windows / Linux |
-| ------------------------------------------------- | ------ | --------------- |
-| Yeni slayt                                        | ⇧⌘N    | Ctrl+M          |
-| Bul (bir şeklin içinde metin düzenlenirken değil) | ⌘F     | Ctrl+F          |
-| Seçimi AI ile açıkla (şekiller seçiliyken)        | ⌘K     | Ctrl+K          |
-| Yakınlaştır                                       | ⌘=     | Ctrl+=          |
-| Uzaklaştır                                        | ⌘-     | Ctrl+-          |
-| Gerçek boyut (%100)                               | ⌘0     | Ctrl+0          |
-| Tümünü seç                                        | ⌘A     | Ctrl+A          |
-| Şekil seçiminde ileri / geri dön                  | ⇥ / ⇧⇥ | Tab / Shift+Tab |
+| Eylem                                                        | macOS  | Windows / Linux |
+| ------------------------------------------------------------ | ------ | --------------- |
+| Yeni slayt                                                   | ⇧⌘N    | Ctrl+M          |
+| Bul (bir şeklin içinde metin düzenlenirken değil)            | ⌘F     | Ctrl+F          |
+| Seçimi AI ile açıkla (şekiller seçiliyken)                   | ⌘K     | Ctrl+K          |
+| Yakınlaştır                                                  | ⌘=     | Ctrl+=          |
+| Uzaklaştır                                                   | ⌘-     | Ctrl+-          |
+| Gerçek boyut (%100)                                          | ⌘0     | Ctrl+0          |
+| Tümünü seç                                                   | ⌘A     | Ctrl+A          |
+| Şekil seçiminde ileri / geri dön                             | ⇥ / ⇧⇥ | Tab / Shift+Tab |
+| Son eylemi yinele (biçim, dolgu, çizgi, hizalama, çoğaltma…) | F4     | F4              |
+| Seçim Bölmesini göster/gizle                                 | ⌥F10   | Alt+F10         |
 
 Yeni slayt diğer platform ayrımıdır. Her platformun kendi tuşu vardır ve öteki hiçbir şey yapmaz: macOS'ta ⇧⌘N, Windows ve Linux'ta Ctrl+M. macOS'ta ⌘M bu işi yapamaz çünkü o sistemin Simge Durumuna Küçült tuşudur.
 
 Tümünü seç odağı izler: küçük resim bölmesi, anahat bölmesi veya slayt sıralayıcı odaktayken her slaytı seçer, başka her yerde geçerli slayttaki her öğeyi seçer. Tab slayttaki şekiller arasında döner ve yalnızca slayt tuvalinin kendisi odaktayken çalışır.
+
+F4 bir metin kutusunun içinde de çalışır ve son biçimi seçili metne uygular.
 
 ### Metin biçimlendirme
 
@@ -627,6 +632,8 @@ Bu tuşlar HWP/HWPX sekmesi öndeyken ve belge odaktayken çalışır. İki süt
 | Yeniden bul           | ⌃L          | Ctrl+L                       |
 | Geriye doğru bul      | ⌃Q, L       | Ctrl+Q, L                    |
 | Git                   | ⌥G          | Alt+G                        |
+| Belgenin başı         | ⌃⇞          | Ctrl+PageUp                  |
+| Belgenin sonu         | ⌃⇟          | Ctrl+PageDown                |
 | Belgeleri karşılaştır | ⌥⇧V         | Alt+Shift+V                  |
 
 ### Karakter
@@ -690,21 +697,29 @@ Bu tuşlar HWP/HWPX sekmesi öndeyken ve belge odaktayken çalışır. İki süt
 | Tarih/saat dizesi                           | ⌃K, D       | Ctrl+K, D          |
 | Nesneyi, alanı veya tabloyu/hücreyi düzenle | ⌃N, K       | Ctrl+N, K          |
 | Simgeler                                    | ⌃F10 / ⌥F10 | Ctrl+F10 / Alt+F10 |
+| Hanja’ya dönüştür                           | F9          | Hanja tuşu / F9    |
 
 ### Tablo
 
-| Eylem               | macOS        | Windows / Linux        |
-| ------------------- | ------------ | ---------------------- |
-| Satır/sütun ekle    | ⌥⏎ / ⌥Insert | Alt+Enter / Alt+Insert |
-| Satır/sütun sil     | ⌥⌫           | Alt+Delete             |
-| Hücreyi böl         | F5 → S       | F5 → S                 |
-| Hücreleri birleştir | F5 → M       | F5 → M                 |
-| Blok toplamı        | F5 → ⇧⌘S     | F5 → Ctrl+Shift+S      |
-| Blok ortalaması     | F5 → ⌃⇧A     | F5 → Ctrl+Shift+A      |
-| Blok çarpımı        | F5 → ⌃⇧P     | F5 → Ctrl+Shift+P      |
-| Tabloyu böl         | ⌃N, A        | Ctrl+N, A              |
-| Tabloyu iliştir     | ⌃N, Z        | Ctrl+N, Z              |
-| Hesaplama formülü   | ⌃N, F        | Ctrl+N, F              |
+| Eylem                                           | macOS        | Windows / Linux        |
+| ----------------------------------------------- | ------------ | ---------------------- |
+| Satır/sütun ekle                                | ⌥⏎ / ⌥Insert | Alt+Enter / Alt+Insert |
+| Satır/sütun sil                                 | ⌥⌫           | Alt+Delete             |
+| Hücreyi böl                                     | F5 → S       | F5 → S                 |
+| Hücreleri birleştir                             | F5 → M       | F5 → M                 |
+| Tablo/hücre özellikleri                         | F5 → P       | F5 → P                 |
+| Kenarlıklar / gölgelendirme, her hücre          | F5 → L / C   | F5 → L / C             |
+| Kenarlıklar / gölgelendirme, hücreler tek parça | F5 → B / F   | F5 → B / F             |
+| Eşit satır yüksekliği / sütun genişliği         | F5 → H / W   | F5 → H / W             |
+| Tabloyu otomatik doldur                         | F5 → A       | F5 → A                 |
+| Hücreyi düzenlemeye dön                         | F5 → ⏎       | F5 → Enter             |
+| Hızlı asılı girinti (hücrede)                   | ⌃⇧⇥          | Ctrl+Shift+Tab         |
+| Blok toplamı                                    | F5 → ⇧⌘S     | F5 → Ctrl+Shift+S      |
+| Blok ortalaması                                 | F5 → ⌃⇧A     | F5 → Ctrl+Shift+A      |
+| Blok çarpımı                                    | F5 → ⌃⇧P     | F5 → Ctrl+Shift+P      |
+| Tabloyu böl                                     | ⌃N, A        | Ctrl+N, A              |
+| Tabloyu iliştir                                 | ⌃N, Z        | Ctrl+N, Z              |
+| Hesaplama formülü                               | ⌃N, F        | Ctrl+N, F              |
 
 ### Tablo hesaplamaları
 
@@ -745,3 +760,5 @@ Bunlar yalnızca imleç boş bir tablo hücresindeyken çalışır. Ayrı tuşla
 | Giriş sekmesine git (tablo dışında)     | ⇧⌘H   | Ctrl+Shift+H    |
 
 `Ctrl+N,T` diye yazılan bir tuş, Ctrl+N'ye basıp bırakın, sonra T'ye basın demektir. `F5 → S`, F5 ile bir hücre bloğu seçin ve sonra S'ye basın demektir. `Ctrl+1 … Ctrl+0` belgenin birinciden onuncuya stillerini temsil eder; `Ctrl+Alt+1 … Ctrl+Alt+0` aynı stilleri uygular. Bir hücre bloğu seçiliyken `Ctrl+Shift+S` (macOS'ta `⇧⌘S`) blok toplamıdır; başka yerlerde bu tuş yeni bir adla kaydeder.
+
+Fareyle, Hangul’da olduğu gibi çift tıklama bir sözcüğü, üç kez tıklama paragrafın tamamını seçer; çift tıklayıp basılı tutarak sürüklemek seçimi sözcük sözcük genişletir. Bu, bir üst bilgi, alt bilgi veya dipnot düzenlerken de çalışır. Bir hücre bloğunu kopyalamak (`Ctrl+C`) hücrelerin metnini ve tablonun kendisini kopyalar; böylece onu gövdeye yapıştırmak aynı tabloyu yeniden oluşturur. İmleç yalnızca başka bir tablonun bir hücresindeyken yapıştırmak Hücreleri Yapıştır penceresini açar: o hücreden başlayarak üzerine yazın (tablonun dışına taşan hücreler atılır) ya da hücreleri yukarıya, aşağıya, sola veya sağa ekleyin.

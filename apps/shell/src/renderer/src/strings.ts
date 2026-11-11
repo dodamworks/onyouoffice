@@ -1825,6 +1825,7 @@ export const strings = {
     newMarkdown: 'AI Markdown',
     newHtml: 'AI HTML',
     newMindmap: 'Zihin Haritası',
+    newDiagram: 'Diyagram',
     newHwp: 'AI HWP',
     pdfToolsCard: 'PDF araçları',
     pdfToolsCardSub: 'Birleştir · ayır · düzenle',
@@ -1850,6 +1851,7 @@ export const strings = {
     filterMindmap: 'Zihin Haritası',
     filterHwp: 'HWP',
     filterEpub: 'EPUB',
+    filterDiagram: 'Diyagram',
     filterAria: 'Türe göre filtrele',
     fileCount: '{n} dosya',
     fileCountOne: '{n} dosya',
@@ -1940,6 +1942,9 @@ export const strings = {
     themeSystem: 'Sistemi izle',
     documentTheme: 'Belge sayfası teması',
     docThemeFollowApp: 'Uygulama temasını izle',
+    setHwpSaveFormat: 'Yeni HWP belgeleri için kaydetme biçimi',
+    setHwpSaveFormatDesc:
+      'Yeni bir HWP belgesini ilk kez kaydettiğinizde bu biçim önce sunulur. Açtığınız belgeler kendi biçimlerini korur.',
     saveLocation: 'Kaydetme konumu',
     setAutoSave: 'Tüm belgeleri otomatik kaydet',
     setAutoSaveDesc:
@@ -2027,10 +2032,13 @@ export const strings = {
     setSubLoginFailed:
       'Oturum açma başlatılamadı. Programın kurulu olduğunu denetleyip tekrar deneyin.',
     setSubLogoutFailed: 'Oturum kapatma tamamlanamadı. Birazdan tekrar deneyin.',
+    setSubSwitchFailed: 'Ayar kaydedilemediği için hiçbir şey değişmedi. Birazdan yeniden deneyin.',
     setSubLogoutConfirm:
       "Bu işlem bu PC'de {program} oturumunu kapatır. Terminaldeki {program} oturumu da kapanır.",
     setSubSwitchConfirm:
       "Bu işlem bu PC'de {program} için başka bir hesapla yeniden oturum açar. Terminalde {program} uygulamasının kullandığı hesap da değişir.",
+    setSubChatGptLogoutConfirm:
+      'Bu işlem ChatGPT’nin bu uygulamayla bağlantısını keser. Bu bilgisayardaki diğer programlar olduğu gibi kalır. Kullanmak için yeniden oturum açın.',
     setAiUse: 'Kullanılacak AI',
     setAiUseDesc:
       'Otomatik, bağlı bir aboneliği kullanır: önce Claude, sonra Codex. Ücret doğuracak bir bağlantıyı asla seçmez.',
@@ -2096,6 +2104,7 @@ export const strings = {
     intgCliPartDesc:
       'Terminal komutları çalıştırabilen asistanlar için (Claude Code, Codex, Cursor ve diğerleri). Beceri kurulduktan sonra asistan dosya oluşturmak, dönüştürmek, okumak ve düzenlemek için ieumoffice komut satırını kendisi çağırır; siz hiçbir komut yazmazsınız.',
     intgMcpPartTitle: 'MCP',
+    intgMcpPartWho: 'Burada diğer AI programları GenOffice’i kullanır.',
     intgMcpPartDesc:
       'MCP, yapay zekâ asistanlarının dış araçları çağırmak için kullandığı ortak protokoldür. Asistanınız komut çalıştıramıyorsa (örneğin Claude Desktop) veya GenOffice penceresini doğrudan kullanmasını istiyorsanız bunu kullanın. Aşağıdaki iki yoldan birini seçin.',
     intgMcpStdioTitle: 'Asistan başlatır (önerilir)',
@@ -2124,6 +2133,11 @@ export const strings = {
     intgStateForeign: 'Kurulu {v} (bu uygulama tarafından değil)',
     intgStateNewer: 'Kurulu {v} (paketlenenden daha yeni)',
     intgStateOccupied: 'Klasör zaten kullanımda',
+    intgSharedAgentsLabel:
+      'Paylaşılan klasör (~/.agents): Codex, Cursor, Gemini CLI, Copilot, OpenCode',
+    intgLegacyHint:
+      '{tool} aracının kendi klasöründeki eski kopya. {tool} artık beceriyi paylaşılan klasörden (~/.agents) okur; beceri oraya yüklendikten sonra bu kopyayı kaldırabilirsiniz.',
+    intgConfirmAlsoUpdate: '{paths} konumundaki eski kopyalar da güncellenir.',
     intgInstall: 'Kur',
     intgUpdate: 'Güncelle',
     intgUninstall: 'Kaldır',
@@ -2151,6 +2165,7 @@ export const strings = {
     setSecAiModel: 'AI modeli',
     setAiProvider: 'Sağlayıcı',
     setAiModelId: 'Model',
+    setAiModelType: 'Başka bir model girin…',
     setAiApiKey: 'API anahtarı',
     setAiKeyHint: 'Yalnızca bu cihazda saklanır.',
     setAiBaseUrl: 'Temel URL',
@@ -2260,6 +2275,7 @@ export const strings = {
     freeStatusChecking: 'Denetleniyor…',
     freeStatusConnected: 'Bağlandı',
     freeStatusInUse: 'Bağlı · kullanımda',
+    homeAiNeedsConnection: 'Bağlantı gerekiyor',
     freeUse: 'Bu AI ile devam et',
     freeDisconnect: 'Bağlantıyı kes',
     freeQuota: 'Bugün {limit} ücretsiz istekten {remaining} tanesi kaldı',

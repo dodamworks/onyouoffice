@@ -26,6 +26,8 @@ Kurallar: uzantı kendiliğinden korunur; geçersiz karakterler, sonu noktayla b
 ## Kaydetme ve Farklı Kaydetme
 
 - **⌘S / ctrl+S** geçerli dosyayı kaydeder; dosyası olmayan bir belge önce konum ve ad sorar.
+- Çoğu düzenleyicide Farklı Kaydet penceresindeki dosya türü listesi dışa aktarma biçimlerini de (PDF, resimler, diğer belge biçimleri) sunar. Bunlardan birini seçmek yalnızca bir kopya yazar; açık belge ve sekmesi özgün dosyada kalır. Birkaç sayfalık resimler `ad-01.png`, `ad-02.png`, … olarak bölünür.
+- **Docs**: Farklı Kaydet listesi .hwp ve .hwpx de sunar (Dosya ▸ HWP Belgesi Olarak Dışa Aktar… aynı işi yapar). Açıklamalar, denklemler veya metin kutuları gibi bir şey aktarılamıyorsa dosya yazılmadan önce size söylenir.
 - **Farklı kaydet** yeni bir dosya yazar, özgün dosyaya dokunmaz; sonraki düzenlemeler yeni dosyaya gider.
 - Her kayıt atomiktir (geçici dosya + yeniden adlandırma); yazma sırasında kapanma dosyayı bozamaz.
 - Otomatik kaydetme her düzenleyicinin kendi anahtarını izler; kendi dosyası olmayan yeni bir belge ilk kaydından sonra başlar ([Hızlı başlangıç](help://getting-started) bölümüne bakın).

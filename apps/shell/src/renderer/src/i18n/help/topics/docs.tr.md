@@ -42,6 +42,7 @@ Gövdenin herhangi bir yerine sağ tıklayın — menü tıkladığınız yeri i
 - **Pano**: kes / kopyala / yapıştır / **düz metin olarak yapıştır**.
 - **Yazı tipi, paragraf**: şeride gitmeden aile ve boyut, kalın/eğik/altı çizili, hizalama/girinti/aralık değiştirin.
 - **Eş anlamlılar**: seçili sözcüğün eş anlamlılarını listeler; değiştirmek için birine tıklayın.
+- **Sade sözcüklerle açıkla** (AI): seçimi ekran dilinde kolay sözcüklerle açıklanmak üzere AI paneline gönderir ve hemen çalıştırır. Seçim yokken kapalıdır ve AI’dan gizlenen metin gönderilmez.
 - **Çevir** (AI): seçimi AI paneli üzerinden hedef dile (İngilizce, Basitleştirilmiş Çince, Japonca, Korece, Fransızca, Almanca, İspanyolca, ...) çevirir.
 - **Yeni açıklama**: seçime bir açıklama ekler.
 - **Yazım** (yanlış yazılmış bir sözcükte): önerilen değişiklikler, tümünü yoksay, sözlüğe ekle, denetim dilini ayarla.

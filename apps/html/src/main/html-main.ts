@@ -203,6 +203,8 @@ const tDlg = createI18n({
   tr: {
     dlgSaveTitle: 'HTML Belgesini Kaydet',
     filterHtml: 'HTML Belgeleri',
+    filterPdf: 'PDF Belgesi',
+    filterWord: 'Word Belgesi',
     dlgPickImage: 'Bir Resim Seç',
     filterImages: 'Resimler',
     untitledFile: 'Adsız',

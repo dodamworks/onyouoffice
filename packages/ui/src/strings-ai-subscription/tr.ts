@@ -18,6 +18,8 @@ export const tr = {
   cardErrNeedsUpdatePath: 'Bu uygulamanın çalıştırdığı dosya:',
   cardErrNeedsUpdateWindows:
     '{provider} programını WSL (Ubuntu) içinde veya başka bir klasörde güncellemek bu dosyayı değiştirmez. {command} komutunu Windows PowerShell’de çalıştırın.',
+  claudeDesktopNote:
+    'Claude masaüstü uygulaması, bu uygulamanın çalıştırdığı Claude Code değildir. Claude Code terminalde kullanılan ayrı bir programdır; bu yüzden masaüstü uygulamasını yüklemek veya güncellemek onu değiştirmez.',
   cardErrTimeout: '{provider} programı zamanında yanıt vermedi. Birazdan yeniden denetleyin.',
   cardErrFailed: '{provider} denetlenirken bir sorun oluştu. Yeniden denetleyin.',
   actionInstall: 'Yükle',
@@ -53,6 +55,8 @@ export const tr = {
   errSignedOut: '{provider} oturumunun süresi doldu. Devam etmek için yeniden oturum açın.',
   errRateLimit: '{provider} abonelik kotası tükendi.',
   errRateLimitReset: '{provider} abonelik kotası tükendi. {time} itibarıyla sıfırlanır.',
+  errChatGptAppLimit:
+    'Bu uygulama kullanabileceği ChatGPT kullanımını bitirdi. Sınır, planınızın tamamına ait olabilir ya da bu uygulama için belirlenmiş olabilir. ChatGPT’de Ayarlar → Kullanım bölümüne bakın.',
   errUnsafeTools:
     '{provider} programı kendi araçları açıkken başladı, bu yüzden güvenlik için çalışma durduruldu.',
   errMeteredNotAccepted:
@@ -68,6 +72,8 @@ export const tr = {
     'Bugünkü ücretsiz kullanım hakkı tükendi. Yarın yeniden deneyin veya Ayarlar’da başka bir AI seçin.',
   errFreeLimitReset:
     'Bugünkü ücretsiz kullanım hakkı tükendi. {time} itibarıyla yeniden kullanabilirsiniz.',
+  errFreeTierModel:
+    'Bu modelin ücretsiz katmanı yok, bu yüzden ücretsiz bir anahtar onu kullanamaz. Ücretsiz katmanın kapsadığı bir model seçin (örneğin bir Flash modeli) ya da sağlayıcının konsolunda faturalandırmayı açın.',
   continueWith: '{provider} ile devam et',
   continueMeteredNote:
     '{provider} bağlantısı bir abonelik değil: devam etmek kullanım başına ücretlendirilir.',
@@ -144,4 +150,45 @@ export const tr = {
   actionCopyInfo: 'Yardım için ayrıntıları kopyala',
   copyInfoDone: 'Kopyalandı',
   actionConnectHelp: 'Her adımı ekranda görün (sayfa Korece)',
+  guidePathChatGptBody:
+    'ChatGPT hesabınızla oturum açıp planınızı kullanın. Yüklenecek bir şey yok. Ücretsiz plan yalnızca az bir kullanıma izin verir.',
+  guideUseCodex: 'Bu bilgisayarda Codex programını zaten kullanıyor musunuz? Codex ile bağlanın',
+  guideUseDirect: 'Codex olmadan doğrudan uygulamada bağlanın',
+  chatgptLoginNote:
+    'Tarayıcınızda bir ChatGPT oturum açma sayfası açılır. Oturum açın ve bu uygulamanın ChatGPT planınızı kullanmasına izin verin; bağlantı kendiliğinden tamamlanır.',
+  chatgptLoginUnfinishedNote:
+    'Oturum açma tamamlanmadı. Baştan başlamak için yeniden basın. Bağlantı için ChatGPT planınızın kullanılmasına izin vermeniz gerekir.',
+  chatgptLoginNoPlanNote:
+    'ChatGPT’de oturum açtınız, ancak bu uygulamanın planınızı kullanmasına izin verilmedi. Yeniden basın ve onay sayfasında plan kullanımına izin verin. İzin verdiyseniz OpenAI bunu hesabınız (örneğin bir şirket veya okul tarafından yönetilen bir hesap) ya da planınız için sunmuyor olabilir. Bunun yerine Codex programıyla bağlanabilirsiniz.',
+  chatgptLoginDeniedNote:
+    'Tarayıcıda oturum açtınız, ancak OpenAI bu bağlantıyı kabul etmedi ya da yanıtı denetlenemedi. Bu bilgisayarın tarih ve saatinin doğru olduğundan emin olun, ardından baştan başlamak için yeniden basın.',
+  chatgptLoginNetworkNote:
+    'Oturum açma tamamlanamadı: OpenAI’a ulaşılamadı ya da tarayıcı açılmadı. İnternet bağlantısını (şirket ağı, VPN veya proxy dahil) denetleyin, ardından yeniden basın.',
+  chatgptLoginWorkspacePolicyNote:
+    'Bu ChatGPT hesabı bir şirket veya okulun yönettiği bir çalışma alanına ait ve OpenAI uygulamaların bir çalışma alanının ChatGPT planını kullanmasına izin vermiyor. Çalışma alanı yöneticisinin buna izin verecek bir ayarı yok, bu yüzden yeniden oturum açmak işe yaramaz. Kişisel bir ChatGPT hesabıyla (Go, Plus veya Pro) oturum açın ya da bunun yerine Codex kartı üzerinden bağlanın.',
+  chatgptLoginNotAllowedNote:
+    'Bu uygulamanın ChatGPT planınızı kullanmasına izin verilmedi ya da tarayıcı oturum açmadan bir hatayla döndü. Yeniden basın, oturum açın ve onay sayfasında izin verin.',
+  chatgptSigningInNote:
+    'Açılan tarayıcıda ChatGPT hesabınızla oturum açın ve bu uygulamanın planınızı kullanmasına izin verin. Bağlantı kendiliğinden tamamlanır.',
+  chatgptPlanNote:
+    'Bu uygulamadaki AI, ChatGPT planınızla çalışır. Bağlantıyı kesmek yalnızca bu uygulama için onu sonlandırır; bu bilgisayardaki diğer programların oturumu açık kalır.',
+  actionContinueWithChatGpt: 'ChatGPT ile devam et',
+  actionManageUsage: 'Kullanımı yönet',
+  browserPageDoneBody: 'Bu sekmeyi kapatıp uygulamaya dönebilirsiniz.',
+  browserPageFailedTitle: 'Bağlantı kurulamadı',
+  browserPageFailedBody: 'Uygulamaya dönüp yeniden deneyin.',
+  cardOff: 'Bu uygulamada kapalı',
+  offNote:
+    'Bu uygulama {provider} programını ne çalıştırır ne de denetler. Bu bilgisayardaki {provider} oturumu ve terminaldeki kullanımı olduğu gibi kalır.',
+  offElsewhereNote: 'Ayarlar → AI bölümünden yeniden açabilirsiniz.',
+  offSwitchNote:
+    '"Bu uygulamada kullanma" bu bilgisayardaki {provider} oturumunu korur ve yalnızca bu uygulamayı durdurur. Oturumu kapatmak tüm bilgisayar için geçerlidir.',
+  actionTurnOff: 'Bu uygulamada kullanma',
+  actionTurnOn: 'Yeniden kullan',
+  connectOffTitle: '{provider} bu uygulamada kapalı',
+  connectOffBody:
+    'Ayarlar → AI bölümündeki {provider} kartında "Yeniden kullan" düğmesine basın ya da başka bir AI seçin.',
+  errOffInApp:
+    '{provider} bu uygulamada kapalı, bu yüzden hiçbir şey çalıştırılmadı. Ayarlar → AI bölümünden yeniden açabilirsiniz.',
+  guideBadgeOff: 'Kapalı',
 } satisfies Record<keyof typeof zh, string>

@@ -51,6 +51,10 @@ const tDlg = createI18n({
   tr: {
     dlgSaveTitle: 'Zihin Haritasını Kaydet',
     filterMindmap: 'Zihin Haritaları',
+    filterPng: 'PNG Görseli',
+    filterSvg: 'SVG Görseli',
+    filterPdf: 'PDF Belgeleri',
+    filterOutline: 'Markdown Ana Hatları',
     untitledFile: 'Adsız',
     closeUnsavedMsg: 'Bu belgede kaydedilmemiş değişiklikler var.',
     closeUnsavedDetail: 'Kapatmadan önce kaydedilsin mi?',

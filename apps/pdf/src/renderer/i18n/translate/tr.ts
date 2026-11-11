@@ -86,4 +86,29 @@ export const tr = {
   trRestartEditedCount: '{count} paragraf bir kişi tarafından düzenlendi.',
   trRestartDiscardEdited: 'Bir kişinin düzenlediği {count} paragrafı da sil',
   trRestartKeepEdited: 'Düzenlenen paragrafları koru',
+  trMode: 'Mod',
+  trModeTranslate: 'Çeviri',
+  trModeEasy: 'Sade dille açıklama',
+  trPdfEasy:
+    'Sade dille açıklama özgün metinden uzun olduğu için onun yerine sığmaz. Markdown ve EPUB çalışır.',
+  trEasyFormatMd: 'Sade dille Markdown',
+  trEasyFormatEpub: 'Sade dille EPUB',
+  trEasyBilingual:
+    'Önce kaynak, sonra açıklama: her kaynak paragrafın ardından sade dille açıklaması gelir (kapalı: yalnızca açıklama)',
+  trEasyFileWord: 'sade dil',
+  trEasyPickTitle: 'Sade dille {format} kaydet',
+  trConfirmEasyLanguage: 'Açıklama dili: {language}',
+  trEasyConfirmDone: '{total} bloğun {done} tanesi zaten açıklandı ve yeniden gönderilmeyecek',
+  trEasyConfirmNothing:
+    'Seçilen sayfalardaki her blok zaten açıklandı. Hiçbir şey gönderilmez; dosyalar kayıtlı açıklamadan yazılır.',
+  trEasyProviderChange:
+    'Kayıtlı açıklama {stored} ile yapıldı. {next} ile devam etmek tek bir açıklamada iki AI’yı karıştırır.',
+  trEasyStart: 'Açıklamaya başla',
+  trEasyRestart: 'Baştan yeniden açıkla…',
+  trEasyRestartConfirm:
+    'Kayıtlı {language} açıklaması ({count} blok) silinip her blok yeniden açıklansın mı? Silinen açıklamalar geri getirilemez.',
+  trEasyRestartYes: 'Yeniden açıkla',
+  trEasyRunning: '{language} sade dille açıklama yazılıyor… {done}/{total} blok',
+  trEasyDone: '{language} sade dille açıklama tamamlandı ({count} blok).',
+  trResumeEasy: 'Tamamlanmamış sade dille açıklama ({language}) %{percent}. Devam edilsin mi?',
 } satisfies Record<keyof typeof zh, string>

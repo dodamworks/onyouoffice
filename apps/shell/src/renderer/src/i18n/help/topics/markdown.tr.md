@@ -44,6 +44,7 @@ Dosya menüsünde, hepsi yerel çalışır ve hepsi sonucu nereye koyacağınız
 
 Şeritte, uygulamanın diline çevrilen bir **Kaynak** anahtarı vardır. Açtığınızda düzenleyicinin yerini ham Markdown alır: bir kaydetmenin yazdığı metnin aynısı; süslenmiş ya da arka planda normalleştirilmiş bir hali değil.
 
+- **Klavye**: Ctrl+E (Mac’te ⌘E) kaynak görünümü ile işlenmiş düzenleme tuvali arasında geçiş yapar. Tam ekran okumak için F5’e basın.
 - **Düzenleme bayt düzeyinde birebirdir.** Kaynak görünümünden yapılan kaydetme, düzenleyiciden yapılanla aynı baytları üretir — BOM, CRLF ve dosya sonundaki yeni satırın varlığı korunur.
 - **Aynı belgedir.** Serbestçe ileri geri geçin; kaynak, birleştirilmesi gereken bir kopya değil düzenleyicinin kendi metnidir.
 - **Biçimlendirme araç çubuğu kullanılamaz**, çünkü o düğmelerin çoğu yalnızca işlenmiş tarafta anlam taşıyan düzenleyici yapıları ekler. Görünümü kapattığınızda geri gelir.

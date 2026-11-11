@@ -4,7 +4,7 @@ Ajan, seçtiğiniz bir klasörü proje olarak alır ve bu bilgisayardaki Claude 
 
 ## Başlamadan önce
 
-- **Ayarlar ▸ AI** altında bağlanmış bir Claude aboneliği veya ChatGPT aboneliği. "Abonelik bağlantısı" konusu bunun nasıl yapıldığını anlatır.
+- **Ayarlar ▸ AI** altında bağlanmış Claude Code veya Codex programı (bir Claude aboneliği ya da bir ChatGPT planıyla oturum açılmış). Uygulamada doğrudan bağlanan ChatGPT ajan tarafından kullanılmaz. "Abonelik bağlantısı" konusu bunun nasıl yapıldığını anlatır.
 - İçinde malzemeniz olan bir klasör. Sürücünün tamamı, kullanıcı klasörünüzün tamamı ve oturum açma ya da uygulama verilerinin bulunduğu klasörler seçilemez.
 
 ## Oturum başlatma

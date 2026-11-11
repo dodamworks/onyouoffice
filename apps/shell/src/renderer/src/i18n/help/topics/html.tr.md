@@ -58,3 +58,11 @@ Viewport meta bilerek yoktur: bu, etkileyeceği bir mobil görünüm alanı olma
 `lang`, uygulamanın arayüz dilini izler; böylece eklediğiniz iskelet, araçlarınızın zaten hazır olduğu dildir. Sonrasında serbestçe düzenleyin.
 
 Bu öğe yalnızca düzenleme modunda ve yalnızca belge boşken görünür — içerik olduktan sonra iskeletin _içine_ ekleneceği bir şey yoktur.
+
+## Denklemi düzenle
+
+Görsel olarak yazın veya LaTeX düzenleyin. Kaydedilen HTML, sonradan düzenleyebilmeniz için kaynağı korur.
+
+Araç çubuğunda Denklem ekle’yi seçin. Görsel alanı, şablonları veya LaTeX’i kullanın, ardından uygulayın. Bir kaydedilmiş denklemi yeniden düzenlemek için önizlemede ona tıklayın. Satır içi matematik için bir paragraf seçin ve ayrı satır seçeneğini kapatın; denklem o paragrafın sonuna eklenir.
+
+Dizgi motorunun işleyemediği bir ifade kaybolmaz: denklem LaTeX kaynağını korur ve ham metni sayfada gösterir; böylece onu yeniden açıp düzeltebilirsiniz.

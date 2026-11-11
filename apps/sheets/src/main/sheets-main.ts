@@ -570,6 +570,10 @@ const tMain = createI18n({
       'Çalışma kitabı açıldıktan sonra diskte değişti — lütfen Farklı Kaydet’i kullanın.',
     errSaveUnreadable:
       'Kaydedilen sonuç yeniden açılamadığından özgün dosyanın üzerine yazılmadı. Özgün dosya değişmedi ve düzenlemeleriniz hâlâ ekranda.',
+    errSaveUnreadableReason:
+      'Neden: {reason}\n\nNedeni bulmamıza yardımcı olmak için "Nedeni kopyala"yı seçip Geri bildirim gönder’e yapıştırın.',
+    btnCopyReason: 'Nedeni kopyala',
+    btnCloseDialog: 'Kapat',
     menuFile: 'Dosya',
     menuOpenWorkbook: 'Çalışma Kitabını Aç…',
     menuSave: 'Kaydet',
@@ -588,7 +592,31 @@ const tMain = createI18n({
     csvSaveAsNotice:
       'CSV dosyaları biçimlendirmeyi koruyamaz — .xlsx olarak kaydetmek tüm değişikliklerinizi korur.',
     menuExportCsv: 'CSV Olarak Dışa Aktar…',
+    menuExportOds: 'ODS olarak dışa aktar…',
+    filterOds: 'OpenDocument Elektronik Tablosu (.ods)',
+    errOdsOriginalTarget: 'Özgün ODS dosyasının üzerine yazılamaz. Farklı bir ad seçin.',
+    errOdsEncrypted:
+      'Parola korumalı çalışma kitapları ODS olarak dışa aktarılamaz. Önce parolayı kaldırın.',
+    odsLossMsg: 'Her şey ODS’ye kaydedilemez',
+    odsLossDetail:
+      'Bu çalışma kitabı ODS’nin tutamadığı özellikler kullanıyor. Bunlar dışa aktarılan kopyaya alınmaz:',
+    odsLossFormulas: 'Yalnızca değer olarak tutulan formüller: {count}',
+    odsLossCharts: 'Grafikler: {count}',
+    odsLossImages: 'Görseller: {count}',
+    odsLossConditionalFormats: 'Koşullu biçimlendirme kuralları: {count}',
+    odsLossValidations: 'Veri doğrulama kuralları: {count}',
+    odsLossPivots: 'Pivot tablolar: {count}',
+    odsLossComments: 'Açıklamalar: {count}',
+    odsLossMacros: 'Makrolar: {count}',
+    odsLossShapes: 'Şekiller ve metin kutuları: {count}',
+    odsLossSlicers: 'Dilimleyiciler: {count}',
+    odsLossSparklines: 'Mini grafikler: {count}',
+    odsContinueBtn: 'Devam et',
+    errOdsExportFailed: 'ODS dışa aktarma başarısız oldu: {message}',
+    errOdsReopenFailed:
+      'Dışa aktarılan ODS dosyası yeniden açılamadığı için kaldırıldı. Çalışma kitabı değişmedi.',
     filterCsv: 'CSV (Virgülle Ayrılmış)',
+    filterPdfActiveSheet: 'PDF (Geçerli sayfa)',
     csvFormulaLossMsg: 'Bu sayfada CSV’nin koruyamayacağı formüller var.',
     csvFormulaLossDetail:
       'CSV yalnızca düz değerleri korur — formüller mevcut sonuçlarına dönüşür ve biçimlendirme kaybolur.',
@@ -599,6 +627,7 @@ const tMain = createI18n({
     csvKeepFormatMsg: 'CSV biçiminde kaydetmeye devam edilsin mi?',
     csvKeepFormatDetail:
       'CSV yalnızca tek bir sayfanın düz değerlerini korur — formüller, biçimlendirme ve diğer sayfalar .csv dosyasına kaydedilmez.',
+    saveAsNeedsExtension: 'Dosya adına bir uzantı ekleyin, örneğin rapor.xlsx veya rapor.ods.',
   },
   ja: {
     filterSpreadsheets: 'スプレッドシート',

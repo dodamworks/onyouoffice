@@ -1,6 +1,35 @@
 import type { zh } from './zh'
 
 export const tr = {
+  mathInsert: 'Denklem ekle',
+  mathEdit: 'Denklemi düzenle',
+  mathHelp:
+    'Görsel olarak yazın veya LaTeX’i düzenleyin. Kaydedilen HTML, sonradan düzenlemek için kaynağı saklar.',
+  mathVisualInput: 'Görsel denklem girişi',
+  mathSource: 'LaTeX kaynağı',
+  mathDisplay: 'Ayrı bir satırda göster',
+  mathPreview: 'Önizleme',
+  mathUnsupported: 'Bu ifade dizilemiyor. Sonradan düzeltebilmeniz için kaynağı kaydedilecek.',
+  mathTooLong: 'En fazla {n} karakter kullanın.',
+  mathStale:
+    'Belge değişti. Taslağınızı kopyalayın, bu iletişim kutusunu kapatın ve denklemi yeniden açın.',
+  mathShortcut: 'Uygulamak için ⌘+Enter',
+  mathApply: 'Denklemi uygula',
+  mathKeyboard: 'Matematik klavyesi',
+  mathFraction: 'Kesir',
+  mathRoot: 'Karekök',
+  mathNthRoot: 'n. dereceden kök',
+  mathPower: 'Üs',
+  mathSubscript: 'Alt simge',
+  mathSum: 'Toplam',
+  mathProduct: 'Çarpım',
+  mathIntegral: 'İntegral',
+  mathLimit: 'Limit değeri',
+  mathMatrix: 'Matris',
+  mathVector: 'Vektör',
+  mathCases: 'Denklem sistemi',
+  mathPiecewise: 'Parçalı fonksiyon',
+  mathBinomial: 'Binom',
   redactMenuLabel: 'Seçimi yapay zekâdan gizle',
   redactDialogDesc:
     'Sözcükler belgede ve dosyada kalır; model bunun yerine aşağıdaki yer tutucuyu görür. Neyi temsil ettiğini model bilsin diye ona bir ad verin.',

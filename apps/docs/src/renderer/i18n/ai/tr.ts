@@ -191,7 +191,12 @@ export const tr = {
   aiMindMapAskPrompt: 'Bu belgede “{label}” hakkında bilgi ver',
   aiMindMapJump: 'Başvurulan bloğa git',
   aiMindMapExport: 'PNG dışa aktar',
+  aiMindMapExportSvg: 'SVG Dışa Aktar',
+  aiMindMapInsert: 'Belgeye ekle',
   aiMindMapReset: 'Görünümü sıfırla',
   aiMindMapExpand: 'Dalı genişlet',
   aiMindMapCollapse: 'Dalı daralt',
+  aiMindMapToggleLayout: 'Yerleşimi değiştir',
+  aiMindMapLayoutTopDown: 'Yukarıdan aşağı yerleşime geç',
+  aiMindMapLayoutLeftRight: 'Soldan sağa yerleşime geç',
 } satisfies Record<keyof typeof zh, string>

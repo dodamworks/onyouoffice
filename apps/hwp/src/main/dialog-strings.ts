@@ -95,6 +95,7 @@ const tDlg = createI18n({
     dlgExportPdfTitle: 'PDF Olarak Dışa Aktar',
     filterHwp: 'HWP Belgeleri (HWP)',
     filterHwpx: 'HWP Belgeleri (HWPX)',
+    filterPdf: 'PDF Belgeleri',
     closeUnsavedMsg: 'Bu belgede kaydedilmemiş değişiklikler var.',
     closeUnsavedDetail: 'Kapatmadan önce kaydedilsin mi?',
     btnSave: 'Kaydet',

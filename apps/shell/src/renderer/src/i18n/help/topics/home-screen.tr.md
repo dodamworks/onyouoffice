@@ -8,6 +8,7 @@ Giriş, GenOffice'in başlangıç sayfasıdır: solda bir gezinme kenar çubuğu
 - **Yıldızlılar**: yıldız eklediğiniz dosyalar. Bir dosya satırının üzerine gelip yıldıza tıklayarak ekleyin ya da kaldırın. ⋯ menüsündeki **Gruba taşı** yıldızlı dosyaları adlandırılmış gruplara ayırır; Yıldızlılar görünümü bunlara göre filtreler.
 - **Kullanım Kılavuzu**: bu kılavuzu açar.
 - **AI'ya sor**: bilgi tabanı paneli — soru sorun, yıldızlı dosyalarınızdan alıntılanan yanıtlar alın (aşağıya bakın).
+- **Projeler**: AI’ın birlikte çalışabileceği klasörler (projeler). Bir proje oluşturun veya var olan bir klasörü kullanın ve yönergelerini, belleğini, dosyalarını ve sohbetlerini yönetmek için birini açın. Bkz. [Projeler](help://projects).
 - **Klasörler**: kenar çubuğuna **Klasör ekle…** ile eklediğiniz ya da dosya yöneticisinden sürüklediğiniz dizinler. Her biri açabildiğiniz, içinde alt klasör oluşturabildiğiniz, yeniden adlandırıp kaldırabildiğiniz bir kök olur; çevrimdışı kalan bir klasör kullanılamıyor olarak görünür ve listeden çıkarılabilir. **Yeni klasör** bir tane daha oluşturur.
 - **Alttaki satır**: AI'nın bağlı olup olmadığını gösterir — **AI bağla** ya da bağlı aboneliğin adı — ve Ayarlar'ı açar.
 
@@ -43,6 +44,8 @@ Listelerin üstündeki kartlar tek adımda yeni bir belge oluşturur. Bir karta 
 
 Yeni dosya, kenar çubuğunda o anda seçili olan klasöre gider; seçim yoksa varsayılan klasöre gider.
 
+Kartları gizlemek veya sıralarını değiştirmek için Ayarlar → Genel altındaki **Giriş ekranındaki yeni belgeler**’i kullanın. Kapattığınız bir tür yalnızca kartlardan ve Yeni menülerinden çıkar; o türdeki dosyalar eskisi gibi açılır. Giriş ekranında ⌘N/Ctrl+N hâlâ gösterilen ilk türü oluşturur.
+
 Kartların her birinin yaptığı iş:
 
 - **AI Docs** (.docx): Docs düzenleyicisinde boş bir metin belgesi. Dosya diske yalnızca **ilk kaydetmede** yazılır; yeni belgeler AI paneli açık olarak başlar (istemiyorsanız Ayarlar → "AI paneli" altından Kapalı ya da Katlanmış seçin).
@@ -60,5 +63,6 @@ Kartların her birinin yaptığı iş:
 - Önce dosyaları yıldızlayın (uygulamanın okuduğu her tür); panel başlığı derlemin büyüklüğünü sayar ve boş bir bilgi tabanı size gidip bir şeyi yıldızlamanızı söyler.
 - Yanıtlar hangi dosyalardan geldiğini belirtir; bir kaynağa tıklayarak dosyayı düzenleyicisinde açın.
 - Bağlı bir AI gerekir; bkz. [Abonelik bağlantısı](help://subscription). Sohbet yalnızca bellekte yaşar — uygulamayı kapatmak onu bitirir.
+- Girişin altında bir proje seçin; klasörün dosyaları da aranır ve okunur, sohbet de o klasörde tutulur; böylece başka bir düzenleyicide devam edebilirsiniz. Proje olmadan sohbet, yukarıdaki gibi yalnızca bellekte yaşar.
 - Arama, Giriş araması gibi yerel dosya dizininde çalışır; kaybolan dosyalar derlemden sessizce düşer.
 - Gruplar yalnızca Yıldızlılar listesini düzenler — bilgi tabanı her zaman yıldızlı bütün dosyaları kapsar.

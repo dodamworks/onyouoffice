@@ -8,7 +8,7 @@ Anahtar gerektiren her şey aynı sayfanın altındaki **Gelişmiş** bölümün
 
 ## Varsayılan: aboneliğiniz
 
-- **Kullanılacak AI** **Otomatik** ile başlar: önce bağlı bir Claude aboneliği, sonra Codex.
+- **Kullanılacak AI** **Otomatik** ile başlar: bağlı aboneliklerden önce Claude, sonra ChatGPT, sonra Codex.
 - Otomatik hiçbir zaman ek para maliyeti olan bir şey seçmez. Bir API anahtarı yalnızca o sağlayıcıyı **Kullanılacak AI** altında kendiniz seçtiğinizde kullanılır.
 - Her AI panelinin altındaki model listesi önce abonelikleri, sonra kurulumunu tamamladığınız anahtar sağlayıcıları gösterir. Bir aboneliğin altında **Varsayılan model**, o aboneliğin standart modelidir.
 
@@ -27,14 +27,14 @@ Bir sağlayıcıya doğrudan ödeme yapmayı ya da kendi modelini çalıştırma
 
 ## Hangi özellik neye ihtiyaç duyar
 
-| Özellik                                           | Neyle çalışır                                                                                                                                                                                     |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AI panelinde sohbet ve düzenleme                  | Aboneliğiniz veya kendiniz seçtiğiniz bir anahtar sağlayıcı.                                                                                                                                      |
-| Bir görseli anlama                                | Sohbet ettiğiniz AI görsele kendisi bakar. Ek anahtar gerekmez. Gelişmiş altında ayrı bir analiz sağlayıcısı seçilebilir.                                                                         |
-| Görsel üretme                                     | **Bu sürümde yalnızca anahtar.** Gelişmiş ▸ AI Medya ve Arama altında bir görsel sağlayıcısı kurun. Yoksa görsel üretimi kullanılamaz ve Slides bunun yerine aramayla bulunan resimleri kullanır. |
-| Video ve ses analizi                              | Gelişmiş ▸ AI Medya ve Arama altında seçilen, videoyu destekleyen bir anahtar sağlayıcı.                                                                                                          |
-| Web ve görsel arama, bir sayfayı adresinden okuma | Varsayılan olarak ücretsizdir, anahtar gerekmez. Bir arama sağlayıcısı anahtarı isteğe bağlıdır.                                                                                                  |
-| Kendi dosyalarınızda arama                        | Bu makinede çalışır. Sonuçları bir hizmet üzerinden yeniden sıralamak isteğe bağlıdır ve varsayılan olarak kapalıdır.                                                                             |
+| Özellik                                           | Neyle çalışır                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI panelinde sohbet ve düzenleme                  | Aboneliğiniz veya kendiniz seçtiğiniz bir anahtar sağlayıcı.                                                                                                                                                                                                                                                                                    |
+| Bir görseli anlama                                | Sohbet ettiğiniz AI görsele kendisi bakar. Ek anahtar gerekmez. Gelişmiş altında ayrı bir analiz sağlayıcısı seçilebilir.                                                                                                                                                                                                                       |
+| Görsel üretme                                     | **Bağlı Codex aboneliğiniz.** Gelişmiş ▸ AI Medya ve Arama altında bir görsel sağlayıcısı seçerseniz önce o gelir. Seçilen kullanılamadığında Codex aboneliği ve kurduğunuz sağlayıcılardan hangisi kullanılabiliyorsa onun yerini alır. İkisi de yoksa görsel üretimi kullanılamaz ve Slides bunun yerine aramayla bulunan resimleri kullanır. |
+| Video ve ses analizi                              | Gelişmiş ▸ AI Medya ve Arama altında seçilen, videoyu destekleyen bir anahtar sağlayıcı.                                                                                                                                                                                                                                                        |
+| Web ve görsel arama, bir sayfayı adresinden okuma | Varsayılan olarak ücretsizdir, anahtar gerekmez. Bir arama sağlayıcısı anahtarı isteğe bağlıdır.                                                                                                                                                                                                                                                |
+| Kendi dosyalarınızda arama                        | Bu makinede çalışır. Sonuçları bir hizmet üzerinden yeniden sıralamak isteğe bağlıdır ve varsayılan olarak kapalıdır.                                                                                                                                                                                                                           |
 
 **Gelişmiş ▸ AI Medya ve Arama** altında bir sağlayıcının anahtarı ve temel URL’si bir kez girilir ve o sağlayıcıyı kullanan her özellik tarafından paylaşılır.
 
