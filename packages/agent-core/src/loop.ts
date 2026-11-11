@@ -309,7 +309,8 @@ export function invalidArgumentFields(
 /**
  * Repairs the argument shapes weaker models emit that every handler used to
  * accept silently before invalidArgumentFields existed: a numeric string in a
- * number/integer field becomes a number, a number is clamped into a declared
+ * number/integer field becomes a number, the words "true" and "false" in a
+ * boolean field become the boolean, a number is clamped into a declared
  * minimum/maximum (the handlers clamp too, so this only spares a retry), and a
  * value that still violates a field whose schema declares a `default` is
  * replaced by it. Anything else is left for invalidArgumentFields.
@@ -333,6 +334,12 @@ export function coerceArgumentFields(
     if (numeric && typeof value === 'string' && value.trim() !== '') {
       const n = Number(value)
       if (Number.isFinite(n) && (declared.includes('number') || Number.isInteger(n))) next = n
+    }
+    // the same slip for a flag: "true" where true was meant (a field that also takes a string keeps it)
+    if (declared.includes('boolean') && !declared.includes('string') && typeof value === 'string') {
+      const word = value.trim().toLowerCase()
+      if (word === 'true') next = true
+      else if (word === 'false') next = false
     }
     if (typeof next === 'number' && Number.isFinite(next)) {
       const { minimum, maximum, exclusiveMinimum, exclusiveMaximum } = fieldSchema

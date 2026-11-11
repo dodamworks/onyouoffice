@@ -2007,6 +2007,37 @@ describe('AgentLoop compaction', () => {
     expect(coerceArgumentFields(undefined, same)).toBe(same)
   })
 
+  it('coerceArgumentFields reads the words true and false in a boolean field', () => {
+    const tool = {
+      name: 'import_attachment',
+      description: 'd',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          attachment: { type: 'string' },
+          continue_request: { type: 'boolean' },
+          either: { type: ['boolean', 'string'] },
+        },
+      },
+    }
+    expect(coerceArgumentFields(tool, { attachment: 'true', continue_request: 'true' })).toEqual({
+      attachment: 'true',
+      continue_request: true,
+    })
+    expect(coerceArgumentFields(tool, { continue_request: ' False ' })).toEqual({
+      continue_request: false,
+    })
+    // any other word is left for invalidArgumentFields to report
+    expect(coerceArgumentFields(tool, { continue_request: 'yes' })).toEqual({
+      continue_request: 'yes',
+    })
+    expect(invalidArgumentFields(tool, { continue_request: 'yes' })).toHaveLength(1)
+    // a field that takes a string keeps the string
+    expect(coerceArgumentFields(tool, { either: 'true' })).toEqual({ either: 'true' })
+    const same = { continue_request: true }
+    expect(coerceArgumentFields(tool, same)).toBe(same)
+  })
+
   it('the loop hands the handler the coerced arguments instead of a retry', async () => {
     const transport = scriptedTransport([
       (cb) => {
