@@ -9,9 +9,17 @@
 <p align="center"><strong>Il tuo ufficio con agenti IA.</strong></p>
 
 <p align="center">
+  <a href="https://onyouoffice.com/">onyouoffice.com</a>
+</p>
+
+<p align="center">
   <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
   <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
 </p>
 
 Apri un documento, descrivi le modifiche e continua nella stessa finestra. Onyou Office unisce editor di documenti e agenti IA sul desktop. Crea bozze e revisioni con l’IA oppure modifica i file direttamente. L’app è gratuita e open source; l’IA è facoltativa.
@@ -67,6 +75,6 @@ Sono benvenuti segnalazioni, proposte, traduzioni e codice. Usa esempi sintetici
 
 Onyou Office è un fork indipendente di IeumOffice, basato su GenOffice. I motori e molte funzioni derivano da questi progetti, rhwp e dai loro collaboratori. Ne conserviamo le indicazioni di provenienza e i crediti degli autori, senza attribuirci tutte le funzioni ereditate. Il sorgente è Apache-2.0; i componenti terzi mantengono le proprie condizioni. I marchi sono separati. Non si rivendica affiliazione o approvazione dei progetti originali o dei fornitori.
 
-[IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
+[IeumOffice](https://github.com/pblsketch/ieumoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 
 [Apache-2.0](../../../LICENSE) · [NOTICE](../../../NOTICE) · [Contributors](../../../CONTRIBUTORS.md) · [Trademarks](../../../TRADEMARKS.md) · [Source history](../SOURCE-HISTORY.md)

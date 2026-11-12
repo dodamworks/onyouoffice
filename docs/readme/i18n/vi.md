@@ -9,9 +9,17 @@
 <p align="center"><strong>Bộ ứng dụng văn phòng cùng tác nhân AI, dành cho bạn.</strong></p>
 
 <p align="center">
+  <a href="https://onyouoffice.com/">onyouoffice.com</a>
+</p>
+
+<p align="center">
   <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
   <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
 </p>
 
 Mở tài liệu, mô tả điều muốn thay đổi rồi tiếp tục trong cùng cửa sổ. Onyou Office kết hợp trình soạn thảo tài liệu và tác nhân AI trên máy tính. Dùng AI để viết nháp, chỉnh sửa hoặc tự biên tập. Ứng dụng miễn phí, mã nguồn mở; AI là tùy chọn.
@@ -67,6 +75,6 @@ Hoan nghênh báo lỗi, đề xuất, bản dịch và mã. Dùng ví dụ tổ
 
 Onyou Office là nhánh độc lập của IeumOffice, dựa trên GenOffice. Công cụ tài liệu và nhiều chức năng đến từ các dự án này, rhwp và cộng tác viên nguồn mở. Chúng tôi giữ thông tin nguồn gốc, ghi nhận tác giả và không nhận mọi chức năng kế thừa là tự phát triển. Mã dùng Apache-2.0; thành phần bên thứ ba giữ điều khoản riêng. Quyền nhãn hiệu tách biệt. Không tuyên bố liên kết hay được các dự án gốc hoặc nhà cung cấp bảo trợ.
 
-[IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
+[IeumOffice](https://github.com/pblsketch/ieumoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 
 [Apache-2.0](../../../LICENSE) · [NOTICE](../../../NOTICE) · [Contributors](../../../CONTRIBUTORS.md) · [Trademarks](../../../TRADEMARKS.md) · [Source history](../SOURCE-HISTORY.md)
