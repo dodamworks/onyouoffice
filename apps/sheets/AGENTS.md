@@ -73,3 +73,6 @@ Excel 통합 문서(.xlsx, .csv 등) 에디터다. 화면은 Univer 격자 위�
 - Windows에서 `tests/promote-file-atomically.test.ts`의 두 건은 변경과 무관하게 실패한다(단독으로 돌려도 같다).
 - AI 배선에서 바꾸면 반드시 테스트하는 것(`tests/ai-run.test.ts`, `tests/ai-subscription-state.test.ts`, `tests/ai-chat-panel-subscription.test.ts`): 연결 없는 요청의 거절과 원인 필드, 종량 허용 뒤 다시 읽은 설정, 재시도된 턴 뒤의 막힌 실행 판정. `claude-code`·`codex`로 가는 테스트는 브리지를 mock한다.
 - 형식 충실도 검증(`npm run compat`, `npm run fixtures`, 벤치마크)은 필요할 때 따로 돌린다.
+- 큰 파일이 느리거나 멈춘다는 신고는 두 스크립트로 잰다. `npx tsx scripts/generate-ledger-xlsx.ts <out.xlsx> <행 수> rich`가 업무 문서를 닮은 시험 파일을 만든다(30열, 긴 한글 주소, 수식과 저장된 결과, 테두리, 줄 바꿈, 조건부 서식, 유효성 목록, 병합, 필터, 틀 고정). 인자가 같으면 같은 파일이 나온다.
+- `npx electron-vite build`로 빌드한 뒤 `npx tsx scripts/benchmark-open-scroll.ts --file <xlsx> --sheet 대장 --label <이름> --out <결과.jsonl>`을 돌리면, 단독 편집기가 그 파일을 열고 첫 화면까지의 시간, 그 뒤 50ms를 넘긴 작업, 빠른 휠과 느린 휠 스크롤의 화면 간격과 칸을 다시 싣는 횟수를 JSON 한 줄로 낸다. 다른 빌드는 `--app <package.json이 있는 폴더>`로, 사이드카는 `--sidecar <실행 파일>`로 고른다.
+- 숫자만 든 통합 문서(`generate-large-xlsx.ts`)로는 이 문제가 보이지 않는다. `rich` 파일로 잰다. 같은 빌드도 회차마다 값이 크게 달라지므로, 견줄 빌드를 번갈아 여러 번 잰다.
