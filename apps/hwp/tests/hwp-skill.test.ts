@@ -3558,8 +3558,8 @@ describe('import_attachment: an attached Markdown file as a new Hangul document'
     const result = await call('import_attachment', { attachment: '안내.md' })
     expect(result.isError).toBe(true)
     expect(result.output).toContain('unknown tool')
-    })
   })
+})
 
 describe('a cut line', () => {
   const even = `${'- '.repeat(12)}절취선${' -'.repeat(12)}`
