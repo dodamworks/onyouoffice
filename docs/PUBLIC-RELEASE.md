@@ -1,15 +1,19 @@
-# Source publication and installer releases
+# Release status
 
-Onyou Office provides source code and installers through
+Onyou Office publishes source code and installers on
 [GitHub Releases](https://github.com/dodamworks/onyouoffice/releases/latest).
-The initial 0.12.10 release targets Windows x64, macOS Apple Silicon and Intel
-(beta), and Linux x64 (beta), including the standalone Linux command line.
+Each release targets Windows x64, macOS Apple Silicon and Intel (beta), and
+Linux x64 (beta: AppImage, DEB, RPM), plus the standalone Linux command line.
 
 Windows installers are unsigned. macOS builds are signed ad hoc and are not
-notarized. Updates are manual for this first release; no upstream update feed
-is used. The release assets and their recorded build results define the
-actually available downloads. Source publication and installer distribution
-remain separate operations for future releases.
+notarized. Your operating system may show an installation warning, and managed
+devices may block installation. There is no automatic update feed and no
+upstream update feed is used; updates are manual downloads. Each release
+carries `SHA256SUMS.txt` and `BUILD-PROVENANCE.json`; see
+[SECURITY.md](../SECURITY.md#downloads-and-provenance) for how to check a download.
+The release assets define the downloads that are actually available.
+
+The rest of this page is the maintainers' release checklist.
 
 ## Independent product versions
 

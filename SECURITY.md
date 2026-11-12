@@ -1,4 +1,4 @@
-<!-- Modified by Onyou Office on 2026-11-04 for the Onyou Office fork. -->
+<!-- Modified by Onyou Office on 2026-11-12 for the Onyou Office fork. -->
 
 # Onyou Office security policy
 
@@ -43,16 +43,24 @@ inventory are in [PRIVACY.md](PRIVACY.md).
 
 ## Downloads and provenance
 
-Official Onyou installers, signing/notarization and an update feed have not yet
-been released. Do not treat IeumOffice/GenOffice artifacts as Onyou binaries,
-or apply another repository's attestation instructions to an Onyou download.
-Publish the exact verification instructions with our own artifacts once their
-provenance and platform installation behavior have been verified.
+Official Onyou installers are published only on
+[GitHub Releases](https://github.com/dodamworks/onyouoffice/releases) of this
+repository and linked from [onyouoffice.com](https://onyouoffice.com). Windows
+installers are unsigned. macOS builds are signed ad hoc and are not notarized.
+There is no automatic update feed; updates are manual.
+
+Every release includes `SHA256SUMS.txt` and `BUILD-PROVENANCE.json`. To check a
+download, compute its SHA-256 (`certutil -hashfile <file> SHA256` on Windows,
+`shasum -a 256 <file>` on macOS, `sha256sum <file>` on Linux) and compare it with
+the line for that file in `SHA256SUMS.txt`. `BUILD-PROVENANCE.json` records the
+source commit, the build runs and the files they produced for that tag.
+Do not treat IeumOffice/GenOffice artifacts as Onyou binaries, or apply another
+repository's attestation instructions to an Onyou download.
 
 ## Attribution and rights reports
 
 This policy is adapted from the original project guidance while preserving its
-implementation boundaries. [IeumOffice](https://github.com/pblsketch/openoffice)
-and [GenOffice](README.en.md#license-and-acknowledgement) remain the source
+implementation boundaries. [IeumOffice](https://github.com/pblsketch/ieumoffice)
+and [GenOffice](README.md#license-and-origins) remain the source
 projects. Their copyright notices and contact details remain in [NOTICE](NOTICE).
 For Onyou-specific rights questions, use support@onyouoffice.com.

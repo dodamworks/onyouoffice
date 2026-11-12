@@ -3,7 +3,7 @@
   "productName": "Onyou Office",
   "version": "1.0.3",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/pblsketch/openoffice",
+  "homepage": "https://github.com/dodamworks/onyouoffice",
   "private": true,
   "description": "Onyou Office",
   "main": "out/main/index.js",
