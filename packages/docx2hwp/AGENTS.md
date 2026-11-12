@@ -43,7 +43,7 @@
 - **한글 문서 모양은 표만 바꾼다(`look.ts`).** 본문의 표를 문단 사이에 놓고(`Table.flow`가 `block`: 글자처럼 취급을 끄고, 줄 경계에서 쪽을 넘는다), 칸 여백을 위아래 1mm·좌우 1.8mm 이상으로, 글을 세로 가운데로, 첫 줄만 칠해진 표의 그 줄을 머리 줄(굵게, 가운데, 쪽마다 되풀이)로 한다. 열 너비가 모두 같을 때만 내용에 맞춰 나눈다: 작성자가 준 너비는 건드리지 않는다. 칸 안의 표는 `char` 그대로다. 문단, 쪽 설정, 글자 모양은 바꾸지 않는다.
 - **문단 사이 표의 아래 간격은 두 곳에 같은 값으로 쓴다.** 한컴 한글은 표의 바깥 아래 여백(`outerBottom`)을, 우리 엔진은 표가 놓인 문단의 "문단 아래"(`tableParaJson`의 `spacingAfter`)를 비워 둔다. 한쪽만 쓰면 다른 프로그램에서 다음 문단이 표에 붙는다.
 - 엔진이 개체 하나(그림, 각주, 표)를 거절하면 장부에 적고 나머지를 쓴다. 글자·서식 호출이 실패하면 변환 전체가 실패한다(서식 없는 문단은 조용한 손실이다).
-- `LOSS_FEATURES`에 기능을 더하면 `apps/docs/src/main/hwp-export.ts`의 이름 표와 `hwp-export-strings.ts`의 21개 언어 문구, 터미널 명령어의 이름 표(`packages/cli/src/formats/docx-hwp.ts`)도 더한다(형 검사가 지킨다). `docs/contracts.md`의 식별자 목록에도 더한다(`packages/cli/tests/convert-docx-hwp.test.ts`가 지킨다). 식별자는 명령어의 `detail.hwp_report`로 밖에 약속한 값이라 이름을 바꾸지 않는다. ODT의 보고 ID(`REPORT_FEATURES`)와 섞지 않는다.
+- `LOSS_FEATURES`에 기능을 더하면 `apps/docs/src/main/hwp-export.ts`의 이름 표와 `hwp-export-strings.ts`의 22개 언어 문구, 터미널 명령어의 이름 표(`packages/cli/src/formats/docx-hwp.ts`)도 더한다(형 검사가 지킨다). `docs/contracts.md`의 식별자 목록에도 더한다(`packages/cli/tests/convert-docx-hwp.test.ts`가 지킨다). 식별자는 명령어의 `detail.hwp_report`로 밖에 약속한 값이라 이름을 바꾸지 않는다. ODT의 보고 ID(`REPORT_FEATURES`)와 섞지 않는다.
 
 ## 첫판에서 옮기지 않는 것
 

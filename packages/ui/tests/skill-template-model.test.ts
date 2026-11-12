@@ -270,7 +270,7 @@ describe('SKILL_TEMPLATE_STRINGS', () => {
   const NON_LATIN: readonly Lang[] = ['zh', 'ja', 'ko', 'th', 'ru', 'ar', 'he', 'hi', 'zh-TW']
   const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort()
 
-  it('has every key, non-empty, with the same placeholders, in all 21 languages', () => {
+  it('has every key, non-empty, with the same placeholders, in all 22 languages', () => {
     expect(Object.keys(SKILL_TEMPLATE_STRINGS).sort()).toEqual([...LANGS].sort())
     for (const lang of LANGS) {
       const dict = SKILL_TEMPLATE_STRINGS[lang] as Record<string, string>

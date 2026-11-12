@@ -283,4 +283,16 @@ export const AI_RUN_STOP_LABELS: Record<Lang, AiRunStopLabels> = {
       'Tài liệu chưa bị thay đổi. Hãy gửi lại yêu cầu hoặc chia thành các yêu cầu nhỏ hơn.',
     continueAction: 'Tiếp tục',
   },
+  tr: {
+    toolInput:
+      'Yapay zekânın düzenlemeleri art arda birkaç kez okunamadı, bu yüzden iş durduruldu.',
+    truncated: 'Tek adımda yazmaya çalıştığı içerik çok uzundu ve kesildi.',
+    malformed: 'Gönderdiği içerik uygulamanın kullanabileceği biçimde değildi.',
+    toolErrors: 'Yapay zekânın düzenlemeleri sürekli başarısız oldu, bu yüzden iş durduruldu.',
+    repeating: 'Yapay zekâ ilerlemeden aynı adımı tekrarlayıp durdu, bu yüzden iş durduruldu.',
+    keptChanges:
+      'Bu noktaya kadar değiştirdikleri belgede duruyor. Kalan kısımla devam etmek için "Devam et"e basın.',
+    unchanged: 'Belge değiştirilmedi. İsteği yeniden gönderin veya daha küçük isteklere bölün.',
+    continueAction: 'Devam et',
+  },
 }
