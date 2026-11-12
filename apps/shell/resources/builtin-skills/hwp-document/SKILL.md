@@ -39,31 +39,34 @@ Leave out a part the material has nothing for; never pad one. A document in anot
 
 - **Title:** a short noun phrase naming the matter, with no sentence ending: `2026년 상반기 직원 연수 운영 계획`, `○○ 사업 추진 결과 보고`.
 - **One sentence style per document.** 개조식 ends lines in nouns or `~함`, `~임`, `~예정`; 서술식 ends in `~합니다`, `~바랍니다`. Do not mix them at the same level.
-- **Level marks are typed as text, one scheme for the whole document:** `□ → ○ → - → ·`, or `1. → 가. → 1) → 가) → (1) → (가) → ①`. Never skip a level, never use two marks at one depth. Indent each level two spaces more than the level above it.
+- **Level marks are typed as text, one scheme for the whole document:** `□ → ○ → - → ·`, or `1. → 가. → 1) → 가) → (1) → (가) → ①`. Never skip a level, never use two marks at one depth. Do not indent with spaces: each level takes its indent from its paragraph style (section 4).
 - **One line says one thing.** Three or more parallel items that each have two or more attributes (who, when, how much) become a table, not a long line.
 - **Dates and figures:** `2026. 11. 11.(수)`, `14:00~16:00`, `1,200천원`, with the unit named. Every figure comes from the material; a value you do not have is written `○○` and listed in your reply.
 - **Emphasis is rare:** bold for the title and the part headings only, unless the user asks for more.
 
 ## 4. Build it in this order
 
-1. **All the text first.** Put the title and every part into the document with `insert_paragraphs` (`where: "end"` on an empty document), in as few calls as possible: one call takes up to 100 paragraphs, each paragraph is one line, and `""` is an empty line. Put one empty line between top-level parts, none inside a part.
-2. **Tables after the text.** Write a caption line above the place (`<표 1> 세부 추진 일정`), then `insert_table` with that line as the `anchor`, `where: "after"` and `header: true`. Keep to six columns or fewer on a portrait page, name units in the header row, and keep each cell to a short phrase. Then call `check_layout`; if a cell overflows, shorten its text.
-3. **Looks last, and only for the text you wrote in this request.** Centre the title and make it bold and larger (16 to 20 pt); make part headings bold. When the context lists a paragraph style made for titles or headings, apply it instead of setting values one by one, but not a style that numbers its paragraphs (an outline style such as 개요 1) on a line whose level mark you typed: the number would show twice. Right-align the date and sender lines of a notice. Leave the body text as it came out.
-4. **Extras only when the user wants them:** for a document of about five pages or more, offer a table of contents in your reply and add it with `insert_toc` only on a yes; use `insert_note` for a source the text cites when the user asked for sources. Change the page setup only when the user asks.
+1. **Columns first, when the document has them** (a test paper, a newsletter): `set_columns`. Most documents have one column and skip this step.
+2. **All the text.** Put the title and every part into the document with `insert_paragraphs` (where "end" on an empty document), in as few calls as possible: one call takes up to 100 paragraphs and each paragraph is one line. Leave out empty lines between parts: the space above a heading comes from its style in step 4.
+3. **Tables after the text.** Write a caption line above the place (`<표 1> 세부 추진 일정`), then `insert_table` with that line as the anchor, where "after" and a header row, in the look the document has (a grid, or open at the sides, with the header row in the accent colour). Keep to six columns or fewer on a portrait page, name units in the header row, and keep each cell to a short phrase. Then call `check_layout`; if a cell overflows, shorten its text.
+4. **The look, in a few calls, for the text you wrote in this request.** A run of default text is not a finished document: give it the look that kind of document has, as the editor's own instructions on the look of a document describe. One `style_paragraphs` call makes a paragraph style for each level (part heading, item, sub-item, note; a heading style keeps its line with the text after it) and applies each by the mark or the number its lines start with, and the title by its text. Then `insert_title_box` for the title of a report or a plan; a notice takes a centred title, and an official letter takes neither a box nor colour. Then `read_page_layout`, and `set_page_number` when the document runs over one page. Do not format paragraph by paragraph, and leave alone text that was in the document before this request.
+5. **Extras only when the user wants them:** for a document of about five pages or more, offer a table of contents in your reply and add it with `insert_toc` only on a yes; use `insert_note` for a source the text cites when the user asked for sources; write a header or a footer with `set_header_footer` only when asked. Change the page setup only when the user asks.
 
-## 5. What the tools cannot make
+## 5. What the tools make, and what they cannot
 
-Headers and footers, page numbers, columns, borders around paragraphs or pages, table border lines, and an approval box (결재란) placed and sized like a real one: the tools add a plain table where the text flows, they cannot put it in a corner or fix its size. Say that the user adds these in the editor. Do not fake them: no 1×1 table as a title box, no line drawn with repeated `─` characters, no page number typed at the bottom.
+Make these with the tools instead of imitating them: a title box, tables with their border lines and shading, a box or a line of a paragraph (a border in `format_paragraph` or in a style: a box round a summary, a line under a heading), an approval box (결재란: a small table at the right, made with `insert_table`, `merge_cells` and `format_cells`), page numbers, a header or footer of one line, columns, a page or column break (`insert_break`), a line round the page of a certificate (`set_page_border`), a leader of dots up to a page number or a time (tab stops), and formulas (`insert_equations`). Never fake one: no 1×1 table typed as a box by hand, no line drawn with repeated `─` characters, no page number typed at the bottom, no dots typed up to a number.
+
+The tools cannot draw a line between columns, put a table or a picture into a header or footer, draw shapes or text boxes, or move or replace a picture that is already in the document. Say that the user adds these in the editor.
 
 ## 6. Check before you answer (required)
 
 Read the document once with `read_document` and go through this list. Fix what fails, then answer.
 
 - Every planned part is there, in order, and none appears twice.
-- Level marks follow one scheme with no skipped level; lines at the same depth start at the same indent.
+- Level marks follow one scheme with no skipped level; lines at the same depth have the same style.
 - One sentence style throughout.
-- No markdown left in the text (`#`, `**`, table pipes).
+- No markdown left in the text (`#`, `**`, table pipes), and no spaces typed as an indent.
 - Every date, name and figure is in the user's material; each `○○` is listed in your reply.
 - Each table has a caption line above it and a header row, and `check_layout` reports no overflow.
 
-In your reply say in a few lines what you wrote (the parts and roughly how many pages), what you assumed, which `○○` places are left and what belongs in each, and what the user has to add by hand (page numbers, a header, an approval box).
+In your reply say in a few lines what you wrote (the parts and roughly how many pages), which look you gave it and which fonts stood in for ones this PC lacks, what you assumed, which `○○` places are left and what belongs in each, and what the user still has to add by hand, if anything.
