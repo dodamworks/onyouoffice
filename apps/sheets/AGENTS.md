@@ -64,6 +64,8 @@ Excel 통합 문서(.xlsx, .csv 등) 에디터다. 화면은 Univer 격자 위�
 - 단독 실행 시트의 `aiCustomEndpointSchema`는 `kind`, `modelProfiles`, `timeoutMs`를 받는다. 좁은 스키마로 되돌리면 단독 실행 시트가 로컬 설정을 거절한다.
 - `aiSettingsInputSchema`는 `.strict()`라서 `AiSettings`(제공자 설정, 사용자 서버, 모델 정보, 미디어 설정 포함)에 새 필드가 생기면 같이 받아야 한다. 빠뜨리면 그 필드가 든 설정 파일에서 `ai:set-settings`·`ai:chat`·`ai:stream`이 모두 거절된다. `tests/ai-run.test.ts`의 `everyFieldNamed`가 빠진 필드 이름을 대며 타입 검사에서 실패한다. `subscriptionOff`는 CLI 식별자에 `true`만 받고, 저장할 때는 파일의 값을 남긴다(`withStoredMainFields`, 결정 0114).
 - `App.tsx`의 AI 루프는 `toolsAllowed`로 `localModelCapabilities`를 읽고, `AiChatPanel`은 `tools: false`일 때 `AiToolsUnsupportedNotice`를 보여 준다.
+- **파일에서 읽은 유효성 검사 규칙은 Univer에 `source: 'patched'`로 넣는다(`applyDataValidations`).** Univer가 저장된 문서를 불러올 때 스스로 쓰는 표시다. 이 표시가 없으면 Univer는 사용자가 방금 만든 규칙으로 보고, 목록 규칙이 덮는 모든 행의 자동 높이를 한 번에 다시 잰다. 드롭다운 열이 있는 2만 행 문서는 연 직후 5초, 10만 행 문서는 18초 동안 화면이 멈췄다(2026-11-11 측정). 행 높이는 파일이 갖고 있다.
+- **스크롤은 실어 둔 범위를 벗어날 때만 새 범위를 읽는다(`scrollNeedsWindow`).** 나눠 불러오는 시트가 실어 두는 범위(`createBufferedRange`)는 보이는 화면, 그 둘레의 여유(위아래로 화면 한 장만큼, 20~80행, 좌우 2열), 이동 폭(60행, 6열)을 더한 것이다. 스크롤 이벤트는 화면과 여유가 실어 둔 범위나 읽는 중인 범위 안에 있으면 아무것도 읽지 않는다. 예전에는 스크롤 이벤트마다 범위 전체를 다시 읽고, 비우고, 다시 실었다. 스크롤이 아닌 호출(시트 바꾸기, 이동, 다시 그리기)은 그대로 매번 읽는다. 범위를 다시 싣게 하려면 `loadedRanges.delete(sheetId)` 뒤에 `loadVisibleRange`를 부른다.
 
 ## 테스트
 
@@ -73,3 +75,6 @@ Excel 통합 문서(.xlsx, .csv 등) 에디터다. 화면은 Univer 격자 위�
 - Windows에서 `tests/promote-file-atomically.test.ts`의 두 건은 변경과 무관하게 실패한다(단독으로 돌려도 같다).
 - AI 배선에서 바꾸면 반드시 테스트하는 것(`tests/ai-run.test.ts`, `tests/ai-subscription-state.test.ts`, `tests/ai-chat-panel-subscription.test.ts`): 연결 없는 요청의 거절과 원인 필드, 종량 허용 뒤 다시 읽은 설정, 재시도된 턴 뒤의 막힌 실행 판정. `claude-code`·`codex`로 가는 테스트는 브리지를 mock한다.
 - 형식 충실도 검증(`npm run compat`, `npm run fixtures`, 벤치마크)은 필요할 때 따로 돌린다.
+- 큰 파일이 느리거나 멈춘다는 신고는 두 스크립트로 잰다. `npx tsx scripts/generate-ledger-xlsx.ts <out.xlsx> <행 수> rich`가 업무 문서를 닮은 시험 파일을 만든다(30열, 긴 한글 주소, 수식과 저장된 결과, 테두리, 줄 바꿈, 조건부 서식, 유효성 목록, 병합, 필터, 틀 고정). 인자가 같으면 같은 파일이 나온다.
+- `npx electron-vite build`로 빌드한 뒤 `npx tsx scripts/benchmark-open-scroll.ts --file <xlsx> --sheet 대장 --label <이름> --out <결과.jsonl>`을 돌리면, 단독 편집기가 그 파일을 열고 첫 화면까지의 시간, 그 뒤 50ms를 넘긴 작업, 빠른 휠과 느린 휠 스크롤의 화면 간격과 칸을 다시 싣는 횟수를 JSON 한 줄로 낸다. 다른 빌드는 `--app <package.json이 있는 폴더>`로, 사이드카는 `--sidecar <실행 파일>`로 고른다.
+- 숫자만 든 통합 문서(`generate-large-xlsx.ts`)로는 이 문제가 보이지 않는다. `rich` 파일로 잰다. 같은 빌드도 회차마다 값이 크게 달라지므로, 견줄 빌드를 번갈아 여러 번 잰다.

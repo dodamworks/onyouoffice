@@ -6128,6 +6128,20 @@ export const agentPlugin = {
       return { box, plain }
     }
 
+    /**
+     * Whether `box` is the one empty paragraph a new document starts with: no text in it,
+     * nothing else in the document, and no control but those that set up the page (the
+     * section and column definitions every first paragraph carries, and a page number or a
+     * header set before any text). Text added at the end of such a document goes into that
+     * paragraph, as typing would, instead of leaving it in front as an empty first line.
+     */
+    const isEmptyDocument = (doc, box) =>
+      !box.inTable &&
+      doc.getSectionCount() === 1 &&
+      doc.getParagraphCount(0) === 1 &&
+      box.length(box.index) === 0 &&
+      parse(doc.getControls()).every((control) => PAGE_CONTROLS.has(control.ctrlId))
+
     /** Make an empty paragraph after paragraph `k` of `box`; its index is k + 1. */
     const openAfter = (box, k, plain) => {
       if (plain) box.addAfter(k)
@@ -6391,16 +6405,11 @@ export const agentPlugin = {
               const before = objectsOf(doc)
               const texts = [...paragraphs]
               let at = box.index
-              // an empty document is one empty paragraph: the first words go into it, as
-              // typing them would, instead of standing under an empty line. That line would
-              // also push a title box or a head table down from the top of the page.
-              const fillsEmpty =
-                where === 'end' &&
-                !box.inTable &&
-                box.count() === 1 &&
-                box.length(at) === 0 &&
-                !holdsContentObject(doc, box.place(at, 0).sec, box)
-              if (fillsEmpty) {
+              // the first text of a new document is written into its empty paragraph: an
+              // empty line in front would also push a title box or a head table down from
+              // the top of the page
+              const intoEmpty = where === 'end' && isEmptyDocument(doc, box)
+              if (intoEmpty) {
                 const first = texts.shift()
                 if (first) box.insert(at, first)
               }
@@ -6421,7 +6430,7 @@ export const agentPlugin = {
                 if (text) box.insert(at, text)
               }
               mustKeep(before, objectsOf(doc))
-              const first = where === 'before' || fillsEmpty ? box.index : box.index + 1
+              const first = where === 'before' || intoEmpty ? box.index : box.index + 1
               return {
                 ok: true,
                 count: paragraphs.length,
