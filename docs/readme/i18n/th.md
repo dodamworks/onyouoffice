@@ -9,9 +9,17 @@
 <p align="center"><strong>ออฟฟิศของคุณ พร้อมเอเจนต์ AI</strong></p>
 
 <p align="center">
+  <a href="https://onyouoffice.com/">onyouoffice.com</a>
+</p>
+
+<p align="center">
   <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
   <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
 </p>
 
 เปิดเอกสาร บอกสิ่งที่ต้องการแก้ แล้วทำงานต่อในหน้าต่างเดิม Onyou Office รวมตัวแก้ไขเอกสารและเอเจนต์ AI ไว้บนเดสก์ท็อป ใช้ AI ร่างและปรับแก้ หรือแก้ไขด้วยตัวเองก็ได้ แอปฟรีและเป็นโอเพนซอร์ส การเชื่อมต่อ AI เป็นทางเลือก
@@ -67,6 +75,6 @@ npm run dev
 
 Onyou Office เป็นฟอร์กอิสระของ IeumOffice ซึ่งอิง GenOffice เอนจินเอกสารและฟังก์ชันจำนวนมากมาจากโครงการเหล่านี้ rhwp และผู้ร่วมพัฒนาโอเพนซอร์ส เรารักษาข้อมูลแหล่งที่มาและเครดิตผู้สร้างเดิม ไม่อ้างว่าสร้างฟังก์ชันที่รับมาทั้งหมดเอง ซอร์สใช้ Apache-2.0 ส่วนประกอบภายนอกคงเงื่อนไขของตน สิทธิ์เครื่องหมายการค้าแยกต่างหาก ไม่อ้างความเกี่ยวข้องหรือการรับรองจากโครงการต้นทางหรือผู้ให้บริการ
 
-[IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
+[IeumOffice](https://github.com/pblsketch/ieumoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 
 [Apache-2.0](../../../LICENSE) · [NOTICE](../../../NOTICE) · [Contributors](../../../CONTRIBUTORS.md) · [Trademarks](../../../TRADEMARKS.md) · [Source history](../SOURCE-HISTORY.md)

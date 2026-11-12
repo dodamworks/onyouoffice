@@ -9,9 +9,17 @@
 <p align="center"><strong>Vaše kancelář s AI agenty.</strong></p>
 
 <p align="center">
+  <a href="https://onyouoffice.com/">onyouoffice.com</a>
+</p>
+
+<p align="center">
   <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
   <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
 </p>
 
 Otevřete dokument, popište požadované změny a pokračujte ve stejném okně. Onyou Office propojuje editory dokumentů a AI agenty na počítači. S AI můžete tvořit návrhy a úpravy nebo pracovat sami. Aplikace je zdarma a open source; AI je volitelná.
@@ -67,6 +75,6 @@ Vítáme hlášení chyb, návrhy, překlady i kód. Používejte umělé přík
 
 Onyou Office je nezávislý fork IeumOffice, který vychází z GenOffice. Dokumentové enginy a mnoho funkcí pochází z těchto projektů, rhwp a od jejich přispěvatelů. Zachováváme údaje o původu a autorech a nepřivlastňujeme si všechny převzaté funkce. Zdrojový kód je pod Apache-2.0; komponenty třetích stran zachovávají vlastní podmínky. Ochranné známky jsou samostatné. Netvrdíme, že nás původní projekty či poskytovatelé podporují nebo že jsme s nimi propojeni.
 
-[IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
+[IeumOffice](https://github.com/pblsketch/ieumoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 
 [Apache-2.0](../../../LICENSE) · [NOTICE](../../../NOTICE) · [Contributors](../../../CONTRIBUTORS.md) · [Trademarks](../../../TRADEMARKS.md) · [Source history](../SOURCE-HISTORY.md)

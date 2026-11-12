@@ -9,9 +9,17 @@
 <p align="center"><strong>Ruang kerja Anda bersama agen AI.</strong></p>
 
 <p align="center">
+  <a href="https://onyouoffice.com/">onyouoffice.com</a>
+</p>
+
+<p align="center">
   <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
   <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
 </p>
 
 Buka dokumen, jelaskan perubahan yang diinginkan, lalu lanjutkan dalam jendela yang sama. Onyou Office menyatukan editor dokumen dan agen AI di desktop. Buat draf dan revisi dengan AI atau edit sendiri. Aplikasi ini gratis dan sumber terbuka; AI bersifat opsional.
@@ -67,6 +75,6 @@ Laporan bug, saran, terjemahan, dan kode sangat diterima. Gunakan contoh sinteti
 
 Onyou Office adalah fork independen IeumOffice, yang berbasis GenOffice. Mesin dokumen dan banyak fitur berasal dari proyek tersebut, rhwp, dan kontributor sumber terbuka. Keterangan sumber dan penulis asli dipertahankan; kami tidak mengklaim semua fitur warisan sebagai karya sendiri. Kode memakai Apache-2.0; komponen pihak ketiga mempertahankan syarat masing-masing. Hak merek terpisah. Tidak ada klaim afiliasi atau dukungan proyek asal maupun penyedia.
 
-[IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
+[IeumOffice](https://github.com/pblsketch/ieumoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 
 [Apache-2.0](../../../LICENSE) · [NOTICE](../../../NOTICE) · [Contributors](../../../CONTRIBUTORS.md) · [Trademarks](../../../TRADEMARKS.md) · [Source history](../SOURCE-HISTORY.md)

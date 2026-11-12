@@ -9,7 +9,8 @@
 <p align="center"><strong>Onyou Office is a free, open-source desktop app for editing documents, spreadsheets, and presentations, with optional AI assistance.</strong></p>
 
 <p align="center">
-  <strong><a href="https://github.com/dodamworks/onyouoffice/releases/latest">Download Onyou Office</a></strong><br>
+  <strong><a href="https://github.com/dodamworks/onyouoffice/releases/latest">Download Onyou Office</a></strong> ·
+  <a href="https://onyouoffice.com/">Official website</a><br>
   Windows x64 · macOS Apple Silicon and Intel (beta) · Linux x64 (beta)
 </p>
 
@@ -17,6 +18,10 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
   <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
 </p>
 
 Draft and revise in the editor with your chosen AI service, or work without AI.
@@ -125,7 +130,7 @@ For other questions: **support@onyouoffice.com**.
 
 ## License and origins
 
-Onyou Office is an independent fork of [IeumOffice](https://github.com/pblsketch/openoffice),
+Onyou Office is an independent fork of [IeumOffice](https://github.com/pblsketch/ieumoffice),
 itself based on [GenOffice](https://github.com/genspark-ai/genoffice).
 We credit their authors, rhwp and other open-source contributors and record the
 accepted upstream revision. These projects supply the document-engine foundation;

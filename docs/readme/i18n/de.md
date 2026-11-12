@@ -9,9 +9,17 @@
 <p align="center"><strong>Dein Office mit KI-Agenten.</strong></p>
 
 <p align="center">
+  <a href="https://onyouoffice.com/">onyouoffice.com</a>
+</p>
+
+<p align="center">
   <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
   <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
 </p>
 
 Öffne ein Dokument, beschreibe die gewünschte Änderung und arbeite im selben Fenster weiter. Onyou Office verbindet Dokumenteditoren mit KI-Agenten auf deinem Desktop. Entwirf und überarbeite Texte mit KI oder bearbeite sie selbst. Die App ist kostenlos und Open Source; KI ist optional.
@@ -67,6 +75,6 @@ Fehlerberichte, Vorschläge, Übersetzungen und Code sind willkommen. Verwende s
 
 Onyou Office ist ein unabhängiger Fork von IeumOffice auf Basis von GenOffice. Dokument-Engines und viele Bearbeitungsfunktionen stammen von diesen Projekten, rhwp und deren Mitwirkenden. Herkunfts- und Urheberangaben bleiben erhalten; wir beanspruchen nicht die Urheberschaft aller übernommenen Funktionen. Der Quellcode steht unter Apache-2.0, Drittkomponenten behalten ihre Bedingungen. Markenrechte sind separat. Eine Verbindung oder Unterstützung durch die Ursprungsprojekte oder Anbieter wird nicht behauptet.
 
-[IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
+[IeumOffice](https://github.com/pblsketch/ieumoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 
 [Apache-2.0](../../../LICENSE) · [NOTICE](../../../NOTICE) · [Contributors](../../../CONTRIBUTORS.md) · [Trademarks](../../../TRADEMARKS.md) · [Source history](../SOURCE-HISTORY.md)

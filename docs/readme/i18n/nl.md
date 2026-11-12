@@ -9,9 +9,17 @@
 <p align="center"><strong>Jouw kantoor met AI-agenten.</strong></p>
 
 <p align="center">
+  <a href="https://onyouoffice.com/">onyouoffice.com</a>
+</p>
+
+<p align="center">
   <a href="../../../LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2456FF" alt="License: Apache-2.0"></a>
   <a href="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml"><img src="https://github.com/dodamworks/onyouoffice/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="https://github.com/dodamworks/onyouoffice/stargazers"><img src="https://img.shields.io/github/stars/dodamworks/onyouoffice?style=flat&amp;label=GitHub%20stars&amp;color=2456FF" alt="GitHub stars"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
+  <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
+  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
 </p>
 
 Open een document, beschrijf wat je wilt veranderen en werk verder in hetzelfde venster. Onyou Office brengt documenteditors en AI-agenten samen op je desktop. Maak concepten en revisies met AI of bewerk zelf. De app is gratis en open source; AI is optioneel.
@@ -67,6 +75,6 @@ Foutmeldingen, suggesties, vertalingen en code zijn welkom. Gebruik synthetische
 
 Onyou Office is een onafhankelijke fork van IeumOffice, dat op GenOffice is gebaseerd. Documentengines en veel functies komen uit die projecten, rhwp en hun bijdragers. We behouden de bronvermeldingen en auteursvermeldingen en claimen niet alle geërfde functies zelf te hebben gemaakt. De broncode valt onder Apache-2.0; derden behouden hun voorwaarden. Merkrechten staan los hiervan. Er wordt geen verbondenheid of goedkeuring door oorspronkelijke projecten of aanbieders geclaimd.
 
-[IeumOffice](https://github.com/pblsketch/openoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
+[IeumOffice](https://github.com/pblsketch/ieumoffice) → [GenOffice](https://github.com/genspark-ai/genoffice)
 
 [Apache-2.0](../../../LICENSE) · [NOTICE](../../../NOTICE) · [Contributors](../../../CONTRIBUTORS.md) · [Trademarks](../../../TRADEMARKS.md) · [Source history](../SOURCE-HISTORY.md)
