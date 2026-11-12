@@ -121,7 +121,12 @@ test(`free model trial: ${MODEL}`, async () => {
     await editor?.screenshot({ path: screenshotPath(`free-trial-${slug}-failed`) }).catch(() => {})
   } finally {
     console.log('TRIAL ' + JSON.stringify(report))
-    await closeAndSaveVideo(launched, `free-trial-${slug}`)
-    await rm(userDataDir, { recursive: true, force: true })
+    try {
+      await closeAndSaveVideo(launched, `free-trial-${slug}`)
+    } finally {
+      // the folder holds the plain key: removed even when closing fails, retried
+      // while the app process still holds its files on Windows
+      await rm(userDataDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 })
+    }
   }
 })
