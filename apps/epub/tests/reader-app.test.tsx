@@ -339,7 +339,9 @@ describe('reading a book', () => {
 
     // jsdom lays nothing out: the pane starts at x = 0, so the width is the pointer's x
     await act(async () => {
-      handle.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 260 }))
+      handle.dispatchEvent(
+        new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 260 }),
+      )
     })
     expect(main().classList.contains('epub-side-resizing')).toBe(true)
     await act(async () => {
@@ -352,7 +354,9 @@ describe('reading a book', () => {
 
     // never narrower than the minimum, never wider than half the window
     await act(async () => {
-      handle.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 340 }))
+      handle.dispatchEvent(
+        new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 340 }),
+      )
       window.dispatchEvent(new MouseEvent('pointermove', { clientX: 20 }))
       window.dispatchEvent(new MouseEvent('pointerup', { clientX: 20 }))
     })
