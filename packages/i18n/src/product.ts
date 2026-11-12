@@ -51,9 +51,13 @@ export const USER_DATA_DIR_NAME = PRODUCT_NAME
 /** userData folder name of an unpacked (development) run, kept apart from the installed app's. */
 export const DEV_USER_DATA_DIR_NAME = `${PRODUCT_NAME}-Dev`
 
-/** Upstream source coordinates for attribution only; never an Onyou update feed. */
-export const PRODUCT_REPO_OWNER = 'pblsketch'
-export const PRODUCT_REPO_NAME = 'openoffice'
+/**
+ * Onyou Office's own public repository: the About field, "View on GitHub", and
+ * the issue and release pages. Upstream attribution stays in NOTICE and the
+ * README. This is not an update feed; PRODUCT_UPDATES_CONFIGURED controls that.
+ */
+export const PRODUCT_REPO_OWNER = 'dodamworks'
+export const PRODUCT_REPO_NAME = 'onyouoffice'
 /** `owner/repo`; the URLs built from it live in @genoffice/electron-utils (github-menu.ts) */
 export const PRODUCT_REPO_SLUG = `${PRODUCT_REPO_OWNER}/${PRODUCT_REPO_NAME}`
 

@@ -1018,7 +1018,7 @@ config.dmg.sign = false
 // the arm64 name stays the one the site and the README point at.
 config.dmg.artifactName = '${productName}-${version}-${arch}.${ext}'
 
-// No Onyou distribution has been published. Keep the updater implementation,
+// Onyou releases are manual downloads with no update feed. Keep the updater implementation,
 // but ship no upstream feed and do not invent a product endpoint.
 config.publish = null
 

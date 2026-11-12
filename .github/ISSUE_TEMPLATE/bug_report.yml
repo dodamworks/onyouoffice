@@ -32,7 +32,7 @@ body:
         App version (Settings → About, or the commit you built) and operating
         system. For an AI problem, also say which connection was in use
         (Claude subscription, Codex subscription, or an API-key provider).
-      placeholder: '0.11.0 on Windows 11'
+      placeholder: '1.0.3 on Windows 11'
     validations:
       required: true
   - type: textarea
