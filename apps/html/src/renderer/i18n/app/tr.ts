@@ -79,7 +79,8 @@ export const tr = {
   slideThumbs: 'Slaytlar',
   slideThumbGo: '{n}. slayta git',
   previewNeedsSave: 'Göreli görseller ve stiller, dosya kaydedildikten sonra önizlemede görünür',
-  inspectHint: 'Seçmek için önizlemede bir öğeye tıklayın, metni düzenlemek için çift tıklayın',
+  inspectHint:
+    'Seçmek için önizlemede bir öğeye tıklayın, metni düzenlemek için çift tıklayın, birden çok seçmek için Shift+tıklayın veya {alt}+sürükleyin',
   nodeDynamic:
     'Bu öğe sayfa betiği tarafından oluşturulmuş ve kaynağı yok; kaynak üzerinden veya yapay zekâ ile düzenleyin',
   nodeDynamicShort: 'betik tarafından oluşturuldu',
