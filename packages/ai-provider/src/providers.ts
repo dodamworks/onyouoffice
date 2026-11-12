@@ -40,6 +40,7 @@ export const AI_PROVIDERS: AiProviderMeta[] = [
     models: ['opus', 'sonnet', 'haiku'],
     defaultModel: '',
     keyPlaceholder: '',
+    needsCliPath: true,
   },
   {
     id: 'chatgpt',
@@ -270,6 +271,16 @@ export const AI_PROVIDERS: AiProviderMeta[] = [
     models: ['solar-pro4', 'solar-pro3', 'solar-mini4'],
     defaultModel: 'solar-pro4',
     keyPlaceholder: 'up_...',
+  },
+  {
+    id: 'exaone',
+    label: 'EXAONE',
+    // LG AI Research's API (docs.exaone.ai): GET api.exaone.ai/v1/models lists
+    // this one id (2026-11-10), and it answered a tool call, a streamed tool
+    // call and the turn after a tool result. Text only, 512K context.
+    models: ['k-exaone_v2.5'],
+    defaultModel: 'k-exaone_v2.5',
+    keyPlaceholder: 'sk-...',
   },
   {
     id: 'openrouter',

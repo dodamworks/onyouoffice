@@ -36,7 +36,7 @@ import {
 } from '../src/renderer/src/kb-ask-project'
 import { kbAskProjectText } from '../src/renderer/src/kb-ask-project-strings'
 import { LocaleProvider } from '../src/renderer/src/locale'
-import { strings } from '../src/renderer/src/strings'
+import { strings } from '../src/renderer/src/onyou-strings'
 import type { SubscriptionConnection } from '../src/renderer/src/subscription-client'
 import { KB_GROUP_EMPTY } from '../src/main/knowledge-base'
 import { PROJECT_UNAVAILABLE } from '../src/main/projects/project-tools'

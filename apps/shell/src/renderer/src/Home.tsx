@@ -72,6 +72,7 @@ import { DriveNavIcon, DrivePanel, useDriveState } from './DrivePanel'
 import { driveUiText } from './i18n/strings-drive'
 import { ProjectsPanel, subscribeProjectScreen, type ProjectScreenRequest } from './ProjectsPanel'
 import { projectsText } from './i18n/strings-projects'
+import { skillsText } from './i18n/strings-skills'
 
 declare global {
   interface Window {
@@ -969,10 +970,11 @@ function GroupPicker({ groups, count, onCancel, onPick, onCreate, onRemove }: Gr
 }
 
 // ── Settings entry (bottom-left) ─────────────────────────
-// Shows the AI that requests run on (homeAiEntry). Clicking it opens the
-// settings modal (SettingsModal.tsx) on its AI section, where the connect
-// cards live; the other preferences (language, theme, save location, update
-// channel) are one click away in the same dialog.
+// Shows the AI that requests run on (homeAiEntry) and the word "Settings":
+// the AI's name alone did not say this is the way into Settings. Clicking it
+// opens the settings modal (SettingsModal.tsx) on its AI section, where the
+// connect cards live; the other preferences (language, theme, save location,
+// update channel) are one click away in the same dialog.
 
 function AccountEntry({
   connection,
@@ -980,6 +982,7 @@ function AccountEntry({
   onOpenChange,
   onFileSearchSettingsChange,
   openRequest,
+  overWelcome = false,
 }: {
   connection: SubscriptionConnection
   /** the AI settings as last read; null until the first read answers */
@@ -989,6 +992,8 @@ function AccountEntry({
   onFileSearchSettingsChange?: () => void
   /** a fresh object per request: the home list asks to open the modal on a given block */
   openRequest?: SettingsTarget | null
+  /** the first-run welcome window is up: the modal opens above it */
+  overWelcome?: boolean
 }) {
   const { t, lang } = useI18n()
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -1064,6 +1069,7 @@ function AccountEntry({
           skillUpdateDue={skillUpdate}
           onSkillUpdateDue={setSkillUpdate}
           target={target}
+          overWelcome={overWelcome}
         />
       )}
       <button
@@ -1091,6 +1097,7 @@ function AccountEntry({
           <span className="account-name">{label}</span>
           {stateText && <span className="account-sub">{stateText}</span>}
         </span>
+        <span className="account-settings">{t('settings')}</span>
         <svg
           className="account-chevron"
           width="14"
@@ -1123,7 +1130,7 @@ function AccountEntry({
  * hide the overlay mid-drag. Enter fires before the matching leave when
  * moving between elements, so the depth never dips to zero inside the window.
  */
-function DropToOpenOverlay(): ReactElement | null {
+export function DropToOpenOverlay(): ReactElement | null {
   const [visible, setVisible] = useState(false)
   useEffect(() => {
     let depth = 0
@@ -1158,7 +1165,7 @@ function DropToOpenOverlay(): ReactElement | null {
       window.removeEventListener('blur', onHide)
     }
   }, [])
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   if (!visible) return null
   return (
     <div className="home-drop-overlay" aria-hidden="true">
@@ -1180,6 +1187,7 @@ function DropToOpenOverlay(): ReactElement | null {
         </svg>
         <h2>{t('dropToOpenTitle')}</h2>
         <p>{OPEN_LOCAL_EXTENSIONS}</p>
+        <p className="home-drop-skills">{skillsText(lang, 'dropOverlaySkills')}</p>
       </div>
     </div>
   )
@@ -1192,6 +1200,8 @@ export function Home({
   aiSettings,
   noticeDue,
   onNoticeAcknowledge,
+  welcomeOpen = false,
+  onSettingsOpenChange,
 }: {
   /** the live subscription connection (AppFrame owns the one instance) */
   connection: SubscriptionConnection
@@ -1200,6 +1210,14 @@ export function Home({
   /** a subscription can be used and the first-connection notice was not acknowledged yet */
   noticeDue: boolean
   onNoticeAcknowledge: () => void
+  /**
+   * The first-run welcome window is up, over this screen. A request to open
+   * Settings (a dropped skill file asks for one) opens at once and above that
+   * window, which is still there to finish when Settings closes.
+   */
+  welcomeOpen?: boolean
+  /** Settings opened or closed (the welcome window stands down while it is open) */
+  onSettingsOpenChange?: (open: boolean) => void
 }) {
   const i18n = useI18n()
   const { t, lang } = i18n
@@ -1265,9 +1283,13 @@ export function Home({
   // latched once Settings was opened: a connection made there may only be seen
   // here after the dialog closed, and its notice is still owed then
   const [settingsVisited, setSettingsVisited] = useState(false)
-  const handleSettingsOpenChange = useCallback((open: boolean) => {
-    if (open) setSettingsVisited(true)
-  }, [])
+  const handleSettingsOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) setSettingsVisited(true)
+      onSettingsOpenChange?.(open)
+    },
+    [onSettingsOpenChange],
+  )
   useEffect(
     () =>
       window.aiOffice.onOpenSettings?.((target) =>
@@ -2131,6 +2153,7 @@ export function Home({
             </span>
             <span className="quick-text">
               <span className="quick-title">{t('openLocal')}</span>
+              <span className="quick-sub">{t('openLocalSub')}</span>
             </span>
           </button>
           <SupportedFormatsInfo t={t} />
@@ -3650,6 +3673,7 @@ export function Home({
           onOpenChange={handleSettingsOpenChange}
           onFileSearchSettingsChange={() => setRerankSettingsTick((n) => n + 1)}
           openRequest={settingsRequest}
+          overWelcome={welcomeOpen}
         />
       </aside>
       <div className="sidebar-resizer" onPointerDown={onSidebarResizeStart} />

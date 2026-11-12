@@ -52,6 +52,7 @@ onyouoffice convert report.docx --to html               # the Word editor's stan
 onyouoffice convert page.html --to docx                 # html2docx, same as the HTML app's Export as Word
 onyouoffice convert report.docx --to md                 # GFM via the markdown editor's serializer; nested tables become cell text with a nested_tables_flattened warning
 onyouoffice convert book.xlsx --to csv [--sheet Data]   # one sheet, cell text as displayed, UTF-8 BOM, CRLF
+onyouoffice convert book.xlsx --to ods                  # a complete ODS package (also .xlsm→ods); detail.dropped and warnings list the features ODS cannot hold
 onyouoffice convert form.odt --to docx|pdf|md|html      # through the ODT bridge docx (pdf/html: a temporary docx the app exports, always deleted)
 onyouoffice convert letter.doc --to docx                # Word 97-2003 .doc/.dot through the in-process doc2docx importer
 onyouoffice convert report.docx --to odt                # also md→odt and html→odt; warnings[] odt_converted / odt_dropped + detail.odt_report
@@ -84,6 +85,7 @@ onyouoffice hwp apply form.hwp --ops ops.json [--out filled.hwpx] [--dry-run] [-
 onyouoffice create --type hwp --ops ops.json --out minutes.hwp             # a new Hangul document: the same ops on a blank A4 page (--type hwpx for .hwpx)
 onyouoffice guide hwp                                                    # the hwp apply ops, built from the in-app AI's tool definitions
 onyouoffice convert notice.hwp --to pdf                                  # .hwp/.hwpx → PDF: the Hangul editor's own PDF export in a hidden app, pages as the editor draws them, with a text layer
+onyouoffice convert letter.docx --to hwpx                               # .docx → .hwp/.hwpx with the Word editor's "Export as HWP Document" converter, no app process; warnings[] hwp_dropped / hwp_changed + detail.hwp_report; a .hwp that reads back with other pages is exit 3, detail.reason hwp-readback
 onyouoffice diagram read flow.drawio [--page Two] --json               # shapes and edges of each page of a draw.io diagram (.drawio, .dio, .drawio.svg, .drawio.png); no app process
 onyouoffice diagram apply flow.drawio --ops '[{"op":"add_shape","label":"Check","x":40,"y":200}]' [--page Two] [--out flow.dio] [--force] --json   # the in-app AI's diagram ops (`guide diagram`); .drawio/.dio keep untouched pages byte for byte
 onyouoffice create --type drawio --mermaid flow.mmd [--ops @more.json] --out flow.drawio   # Mermaid drawn by draw.io (a hidden Onyou Office), then the ops; --out x.drawio.png writes that format

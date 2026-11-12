@@ -20,7 +20,7 @@ import { AI_CONTEXT_STRINGS, aiRunErrorText, aiSubscriptionText } from '@genoffi
 import type { HomeApi } from '../src/shared/home-api'
 import { KbAskPanel } from '../src/renderer/src/KbAskPanel'
 import { LocaleProvider } from '../src/renderer/src/locale'
-import { strings } from '../src/renderer/src/strings'
+import { strings } from '../src/renderer/src/onyou-strings'
 import type { SubscriptionConnection } from '../src/renderer/src/subscription-client'
 
 /**

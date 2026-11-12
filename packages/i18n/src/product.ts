@@ -104,29 +104,29 @@ export function brandText(text: string, lang: string | null | undefined): string
   })
 }
 
-/** Local-build endpoints are deliberately unset, rather than routed to upstream. */
+/** Shown while a website, update or feedback address is unset: never routed to upstream. */
 const UNCONFIGURED_SERVICE: Readonly<Record<string, string>> = {
-  zh: '此本地开发版本尚未配置此服务。',
-  en: 'This service is not configured for this local development build.',
-  vi: 'Dịch vụ này chưa được cấu hình cho bản phát triển cục bộ này.',
-  ja: 'このローカル開発版では、このサービスはまだ設定されていません。',
-  ko: '이 로컬 개발 버전에는 아직 이 서비스의 연결 주소가 설정되지 않았습니다.',
-  fr: 'Ce service n’est pas configuré pour cette version de développement locale.',
-  de: 'Dieser Dienst ist für diese lokale Entwicklungsversion nicht eingerichtet.',
-  es: 'Este servicio no está configurado para esta versión de desarrollo local.',
-  it: 'Questo servizio non è configurato per questa versione di sviluppo locale.',
-  pt: 'Este serviço não está configurado para esta versão de desenvolvimento local.',
-  ru: 'Этот сервис не настроен для этой локальной версии для разработки.',
-  ar: 'لم يتم إعداد هذه الخدمة لإصدار التطوير المحلي هذا.',
-  hi: 'इस स्थानीय विकास संस्करण के लिए यह सेवा कॉन्फ़िगर नहीं की गई है।',
-  th: 'ยังไม่ได้กำหนดค่าบริการนี้สำหรับรุ่นพัฒนาในเครื่องนี้',
-  id: 'Layanan ini belum dikonfigurasi untuk versi pengembangan lokal ini.',
-  pl: 'Ta usługa nie jest skonfigurowana dla tej lokalnej wersji rozwojowej.',
-  nl: 'Deze dienst is niet ingesteld voor deze lokale ontwikkelversie.',
-  cs: 'Tato služba není pro tuto místní vývojovou verzi nakonfigurována.',
-  ms: 'Perkhidmatan ini belum dikonfigurasi untuk binaan pembangunan setempat ini.',
-  'zh-TW': '此本機開發版本尚未設定此服務。',
-  he: 'השירות הזה לא הוגדר עבור גרסת הפיתוח המקומית הזו.',
+  zh: '此版本暂不提供此功能。新版本可在 GitHub Releases 下载。',
+  en: 'This feature is not available in this version yet. New versions are on GitHub Releases.',
+  vi: 'Tính năng này chưa có trong phiên bản này. Phiên bản mới có trên GitHub Releases.',
+  ja: 'この機能はこのバージョンではまだ使えません。新しいバージョンは GitHub Releases から入手できます。',
+  ko: '이 기능은 이 버전에서 아직 제공하지 않습니다. 새 버전은 GitHub 릴리스에서 받을 수 있습니다.',
+  fr: 'Cette fonction n’est pas encore disponible dans cette version. Les nouvelles versions sont sur GitHub Releases.',
+  de: 'Diese Funktion ist in dieser Version noch nicht verfügbar. Neue Versionen gibt es auf GitHub Releases.',
+  es: 'Esta función aún no está disponible en esta versión. Las versiones nuevas están en GitHub Releases.',
+  it: 'Questa funzione non è ancora disponibile in questa versione. Le nuove versioni sono su GitHub Releases.',
+  pt: 'Este recurso ainda não está disponível nesta versão. As novas versões estão no GitHub Releases.',
+  ru: 'Эта функция пока недоступна в этой версии. Новые версии публикуются на GitHub Releases.',
+  ar: 'هذه الميزة غير متاحة بعد في هذا الإصدار. الإصدارات الجديدة متوفرة على GitHub Releases.',
+  hi: 'यह सुविधा इस संस्करण में अभी उपलब्ध नहीं है। नए संस्करण GitHub Releases पर मिलते हैं।',
+  th: 'ฟีเจอร์นี้ยังไม่มีในเวอร์ชันนี้ ดาวน์โหลดเวอร์ชันใหม่ได้ที่ GitHub Releases',
+  id: 'Fitur ini belum tersedia di versi ini. Versi baru tersedia di GitHub Releases.',
+  pl: 'Ta funkcja nie jest jeszcze dostępna w tej wersji. Nowe wersje są w GitHub Releases.',
+  nl: 'Deze functie is nog niet beschikbaar in deze versie. Nieuwe versies staan op GitHub Releases.',
+  cs: 'Tato funkce zatím v této verzi není k dispozici. Nové verze najdete na GitHub Releases.',
+  ms: 'Ciri ini belum tersedia dalam versi ini. Versi baharu ada di GitHub Releases.',
+  'zh-TW': '此版本尚未提供此功能。新版本可在 GitHub Releases 下載。',
+  he: 'התכונה הזו עדיין לא זמינה בגרסה הזו. גרסאות חדשות נמצאות ב-GitHub Releases.',
 } satisfies Record<Lang, string>
 
 export function productServiceUnavailable(lang: string): string {

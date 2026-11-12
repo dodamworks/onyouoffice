@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { AiConnectGuide, AiMark, aiSubscriptionProviderName } from '@genoffice/ui'
+import {
+  AiConnectGuide,
+  AiMark,
+  aiSubscriptionProviderName,
+  aiSubscriptionText,
+} from '@genoffice/ui'
 import { FREE_AI_PROVIDERS, freeAiConnected } from '@genoffice/ai-provider/browser'
 import appIcon from './assets/app-icon.png'
 import { FirstConnectionDialog } from './FirstConnectionNotice'
@@ -27,6 +32,8 @@ interface OnboardingProps {
   /** a subscription can be used and the first-connection notice was not acknowledged yet */
   noticeDue: boolean
   onNoticeAcknowledge: () => void
+  /** Settings is open above this window: the keyboard is not ours meanwhile */
+  covered?: boolean
 }
 
 /* Reuse the existing artwork; onboarding CSS controls its display size. */
@@ -64,6 +71,7 @@ export function Onboarding({
   connection,
   noticeDue,
   onNoticeAcknowledge,
+  covered = false,
 }: OnboardingProps) {
   const { t, lang } = useI18n()
   const [index, setIndex] = useState(0)
@@ -160,8 +168,8 @@ export function Onboarding({
   // when a button is focused so the native click doesn't double-fire.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      // the notice above owns the keyboard while it is open
-      if (noticeOpen) return
+      // the notice or the Settings dialog above owns the keyboard while it is open
+      if (noticeOpen || covered) return
       if (event.key === 'Escape') {
         finish()
         return
@@ -218,6 +226,7 @@ export function Onboarding({
     if (step === 'welcome') {
       return (
         <>
+          <p className="onb-subtitle">{t('onbWelcomeSubtitle')}</p>
           <p className="onb-body">{t('onbWelcomeBody')}</p>
           <div className="onb-nickname">
             <label htmlFor="onb-nickname">{t('nicknameLabel')}</label>
@@ -250,6 +259,7 @@ export function Onboarding({
     if (step === 'connect') {
       return (
         <>
+          <p className="onb-body onb-body-lead">{aiSubscriptionText(lang, 'connectBody')}</p>
           <div className="onb-connect">
             <AiConnectGuide
               statuses={connection.statuses}
@@ -294,6 +304,7 @@ export function Onboarding({
               })
             : t('onbDoneNotConnected')}
         </p>
+        <p className="onb-body onb-body-dim">{t('onbBody3')}</p>
       </>
     )
   }
