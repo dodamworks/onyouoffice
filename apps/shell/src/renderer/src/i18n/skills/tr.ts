@@ -79,7 +79,7 @@ export const tr = {
   fieldBody: 'Yönergeler',
   fieldName: 'Ad',
   nameHint:
-    'Beceri listesinde gösterilir. Küçük Latin harfleri, rakamlar ve kısa çizgi (-), en fazla 64 karakter',
+    'Diğer programların ve / çağrısının kullandığı ad. Küçük Latin harfleri, rakamlar ve kısa çizgi (-), en fazla 64 karakter. Sizin için doldurulan bir ad olduğu gibi kalabilir',
   files: 'Becerideki dosyalar',
   filesNone: 'Başka dosya yok',
   filesHint: 'Bu dosyaları değiştirmek için klasörü açın',

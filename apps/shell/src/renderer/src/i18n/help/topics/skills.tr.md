@@ -111,17 +111,25 @@ Bir düzenleyicinin AI panelinde beceri oluştururken açık belge bir şablon o
 
 ## Yerleşik beceriler
 
-| Beceri                        | Ne yapar                                                                                                                                       |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `meeting-minutes`             | Toplantı notlarını kararları ve eylem maddelerini gösteren tutanaklara çevirir                                                                 |
-| `internal-comms`              | Duyurular, bültenler, ilerleme güncellemeleri, SSS’ler ve diğer iç mesajları yazar                                                             |
-| `humanizer`                   | AI yazılmış gibi duran ifadeleri bulur ve doğallaştırır                                                                                        |
-| `copy-editing`                | Yazdığınız İngilizce metni gözden geçirir, daha açık ve daha derli toplu yapar                                                                 |
-| `find-skills`                 | Ajan penceresinde ihtiyaç duyduğunuz becerileri bulur ve kurmayı önerir                                                                        |
-| `administration-report`       | Bir raporu İçişleri ve Güvenlik Bakanlığı yönergesine uydurur: düz yazı, standart numaralandırma, her yerde açılan yazı tipleri, sade tablolar |
-| `administration-report-draft` | Bakanlık biçiminde sıfırdan idari rapor yazar: bölümler, Ⅰ·1·가 numaralandırması, düz yazı, tablo başlıkları ve uyumlu yazı tipleri            |
+| Beceri                        | Ne yapar                                                                                                                                                                                                              |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `meeting-minutes`             | Toplantı notlarını kararları ve eylem maddelerini gösteren tutanaklara çevirir                                                                                                                                        |
+| `internal-comms`              | Duyurular, bültenler, ilerleme güncellemeleri, SSS’ler ve diğer iç mesajları yazar                                                                                                                                    |
+| `humanizer`                   | AI yazılmış gibi duran ifadeleri bulur ve doğallaştırır                                                                                                                                                               |
+| `copy-editing`                | Yazdığınız İngilizce metni gözden geçirir, daha açık ve daha derli toplu yapar                                                                                                                                        |
+| `find-skills`                 | Ajan penceresinde ihtiyaç duyduğunuz becerileri bulur ve kurmayı önerir                                                                                                                                               |
+| `administration-report`       | Bir raporu İçişleri ve Güvenlik Bakanlığı yönergesine uydurur: düz yazı, standart numaralandırma, her yerde açılan yazı tipleri, sade tablolar                                                                        |
+| `administration-report-draft` | Bakanlık biçiminde sıfırdan idari rapor yazar: bölümler, Ⅰ·1·가 numaralandırması, düz yazı, tablo başlıkları ve uyumlu yazı tipleri                                                                                   |
+| `docx`                        | Yalnızca ajan penceresinde çalışır. Proje klasöründeki .docx dosyalarını oluşturmak, düzenlemek ve okumak için betik çalıştırır. Bu bilgisayarda Python ve başka programlar kurulu olmalıdır                          |
+| `pptx`                        | Yalnızca ajan penceresinde çalışır. Proje klasöründeki .pptx dosyalarını oluşturmak, düzenlemek ve okumak için betik çalıştırır. Bu bilgisayarda Python ve başka programlar kurulu olmalıdır                          |
+| `xlsx`                        | Yalnızca ajan penceresinde çalışır. Proje klasöründeki .xlsx dosyalarını oluşturmak ve düzenlemek, formüllerini yeniden hesaplamak için betik çalıştırır. Bu bilgisayarda Python ve başka programlar kurulu olmalıdır |
+| `pdf`                         | Yalnızca ajan penceresinde çalışır. Proje klasöründeki .pdf dosyalarını okumak, birleştirmek ve bölmek, formları doldurmak için betik çalıştırır. Bu bilgisayarda Python ve başka programlar kurulu olmalıdır         |
+| `hwp-document`                | Yeni bir .hwp veya .hwpx belgesini sıfırdan yazar: rapor, plan, duyuru, resmî yazı veya tutanak için bölümleri seçer, belge üslubuyla yazar ve sonunda denetler                                                       |
+| `mindmap`                     | Bir konudan veya malzemeden zihin haritası kurar: üç ila yedi dengeli ana dal, ayrıntısı notlarda duran kısa başlıklar ve sonunda yapı denetimi                                                                       |
+| `diagram`                     | Anlaşılır bir diyagram çizer: uygun türü seçer, tek yönü, kısa etiketleri ve az rengi korur, çakışmaları ve bağlantısız şekilleri denetler                                                                            |
+| `html-document`               | Ekranda rahat okunan ve temiz basılan bir HTML belgesi hazırlar: önce okuru, uzunluğu ve kâğıdı belirler, sonra sayfaları ve içeriği denetler                                                                         |
 
-`copy-editing` İngilizce pazarlama metinleri için yapılmıştır. `find-skills` yalnızca ajan penceresinde çalışır. Yerleşik bir becerinin **İçeriği görüntüle** bölümünde açıklama arayüz dilindedir; yönergeler ise AI’a verilen metindir ve yazıldığı gibi (İngilizce) gösterilir.
+`copy-editing` İngilizce pazarlama metinleri için yapılmıştır. `find-skills` yalnızca ajan penceresinde çalışır. Yerleşik bir becerinin **İçeriği görüntüle** bölümünde açıklama arayüz dilindedir; yönergeler ise AI’a verilen metindir ve yazıldığı gibi (İngilizce) gösterilir. `docx`, `pptx`, `xlsx` ve `pdf` yalnızca ajan penceresinde çalışır; betik çalıştırdıkları için bu bilgisayarda Python ve başka programlar kurulu olmalıdır. `hwp-document`, `mindmap`, `diagram` ve `html-document` yalnızca yazıldıkları düzenleyicide kullanılır.
 
 ## Ajan penceresinde
 
