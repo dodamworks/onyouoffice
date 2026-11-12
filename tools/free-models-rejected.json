@@ -14,5 +14,13 @@
   "liquid/lfm-2.5-2.6b:free": {
     "date": "2026-10-15",
     "reason": "시험하지 않음: 2.6B로 도구 루프에 너무 작음"
+  },
+  "thinkingmachines/inkling-2-small:free": {
+    "date": "2026-11-12",
+    "reason": "짧은 확인 403: only available on agentic harnesses"
+  },
+  "liquid/lfm-3-1.7b:free": {
+    "date": "2026-11-12",
+    "reason": "앱 시험: 요청을 보낸 뒤 기다린 화면이 나오지 않음(toBeVisible 실패). 1.7B로 도구 루프에 작음"
   }
 }
