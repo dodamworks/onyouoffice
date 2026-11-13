@@ -17,6 +17,23 @@ if [ -f "$profile_src" ] && apparmor_status --enabled >/dev/null 2>&1; then
     fi
   fi
 fi
+# Start the app through the launcher that raises the open-file soft limit
+# before Chromium forks its zygote (#488, see build/linux-launch.sh).
+# electron-builder refuses a custom Exec for the desktop entry it writes, so
+# the entry is repointed here. Only the line that starts our own binary is
+# changed, and a payload without the launcher keeps the entry as it is.
+# The install folder name has a space, so electron-builder writes the binary
+# path in double quotes; the launcher path is written the same way.
+desktop="/usr/share/applications/onyouoffice.desktop"
+launch="$app/resources/onyouoffice-launch"
+if [ -x "$launch" ] && [ -f "$desktop" ]; then
+  # Written through a temporary copy instead of sed -i, whose option differs
+  # between sed implementations; cat keeps the entry's owner and mode.
+  entry_tmp="$desktop.onyou-tmp"
+  sed -e "s#^Exec=\"$app/onyouoffice\" #Exec=\"$launch\" #" -e "s#^Exec=\"$app/onyouoffice\"\$#Exec=\"$launch\"#" "$desktop" > "$entry_tmp"
+  cat "$entry_tmp" > "$desktop"
+  rm -f "$entry_tmp"
+fi
 # electron-builder stamps every MIME type it registers with
 # <icon name="x-office-document"/>, which overrides the system's per-type
 # icons (spreadsheet, presentation, text, pdf...) for all 21 types we claim

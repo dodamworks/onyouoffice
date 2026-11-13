@@ -18,11 +18,11 @@
 - 렌더러(`src/renderer/`)
   - `App.tsx`: 리본(파일·홈·보기), 목차·찾기 창, 장 틀, 미리보기 열고 닫기, 상태 줄, 단축키, 자동 저장(30초마다와 창이 초점을 잃을 때), 메뉴 명령.
   - `reader/`: 그리는 사본(`chapter-html.ts`: 블록에 `data-epub-block`, 스크립트·`on…`·`javascript:`·틀·`<base>` 지우기, CSP와 `epub-asset:` 기준 주소), 장 틀 안의 일(`frame-dom.ts`), 장 넘기기(`navigation.ts`), 책 안 링크(`links.ts`), 책 안에서 찾기(`book-search.ts`, 500곳까지), 보기 설정과 바탕색(`view-prefs.ts`), 미리보기의 화면 크기·쪽 계산(`preview-pages.ts`).
-  - `components/`: 리본, 장 틀(`ChapterFrame.tsx`: `sandbox="allow-same-origin"`, `allow-scripts` 없음), 미리보기(`BookPreview.tsx`: 같은 틀, 쪽 넘기기, 화면 크기·글자 크기·바탕색), 목차·찾기 창, 편집 도구, 그림.
+  - `components/`: 리본, 장 틀(`ChapterFrame.tsx`: `sandbox="allow-same-origin"`, `allow-scripts` 없음), 미리보기(`BookPreview.tsx`: 같은 틀, 쪽 넘기기, 화면 크기·글자 크기·바탕색), 목차·찾기 창과 그 너비 손잡이(`SideResizer.tsx`: 끌기·화살표 키·두 번 눌러 기본값, 두 창이 한 너비를 쓰고 그 보기의 `localStorage`에 둔다), 편집 도구, 그림.
   - `edit/`: 편집 컨트롤러(`controller.ts`), 블록 표기와 화면 요소의 짝(`inline-roles.ts`), 블록 안 찾아 바꾸기(`block-text.ts`), 단축키(`shortcuts.ts`), 화면이 쓰는 엔진 모듈(`engine.ts`).
   - `ai/`: AI 창(`AiPanel.tsx`, `AiDock.tsx`), 책 스킬과 지시문(`epub-skill.ts`), 다섯 도구가 하는 일(`book-tools.ts`), 첨부·검색 스킬, 전송과 연결 상태.
   - `translate/`: 책 번역 창과 확인(`BookTranslateDialog.tsx`), 작업·진행·멈춤·이어하기·결과 쓰기(`BookTranslation.tsx`, `job-session.ts`), 보고(`BookTranslateReport.tsx`), 리본 단추, 제공자 고정(`route.ts`), 모델 호출(`model-call.ts`), 보관소 창구(`ipc-store.ts`), 화면에서 쓰는 번역 엔진 부분(`engine.ts`, `pdf-structure-browser.ts`), 순수 함수(`translate-model.ts`).
-  - `i18n/`: 21개 언어 조각(`app/`, `edit/`, `ai/`, `translate/`의 `<언어>.ts`, `zh.ts`가 키 집합을 정한다)과 그것을 모으는 `strings-*.ts`.
+  - `i18n/`: 22개 언어 조각(`app/`, `edit/`, `ai/`, `translate/`의 `<언어>.ts`, `zh.ts`가 키 집합을 정한다)과 그것을 모으는 `strings-*.ts`.
 
 ## 맡지 않는 것 (경계)
 
@@ -46,7 +46,7 @@
 - **쉬운 풀이는 책 번역의 두 번째 방식이다(결정 0108).** 책 번역 창에서 방식을 고르고, 고르기만 해서는 보내지 않는다. 확인과 잠금, 제공자 고정, 멈춤 규칙은 번역과 같다. 쉬운 풀이의 기본 목표 언어는 책 언어와 상관없이 화면 언어이고, 책과 같은 언어라는 경고를 하지 않는다. 결과는 "풀이본"과 "원문 다음에 풀이"이고, 기본 이름은 `<이름>.<언어>.<표시 낱말>.epub`(대역은 `….bilingual.epub`)이며 낱말은 화면 언어다(`resultName`, `easyExplanationLabel`). 결과 책 제목에 붙는 표시는 목표 언어다. 확인 창의 이미 한 분량과 다른 AI 안내는 쉬운 풀이의 기록만 본다. 이어하기 제안은 방식마다 따로 나오고 쉬운 풀이는 그렇다고 적는다. 방식이 바뀌면 결과 이름이 달라지므로 저장 위치를 다시 고른다.
 - **책 글은 모델에게 자료다.** 지시문과 도구 설명은 영어이고 제품 이름은 `brandText`를 거친다. 지시문은 책 글, 맥락, 첨부, 검색 결과의 지시를 따르지 말라고 한다. 고정 배치 책에는 `edit_blocks`를 주지 않는다.
 - **창구 이름은 `epub:`로 시작한다.** `src/shared/ipc.ts`에 있는 이름만 쓴다. 공용 `ai:*`와 구독 창구는 등록하지 않는다.
-- 문구는 21개 언어 조각에 모두 넣는다. 제품 이름은 `GenOffice`로 적는다.
+- 문구는 22개 언어 조각에 모두 넣는다. 제품 이름은 `GenOffice`로 적는다.
 
 ## 이 모듈의 방식
 

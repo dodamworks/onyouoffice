@@ -21,7 +21,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Draft and revise in the editor with your chosen AI service, or work without AI.
@@ -34,7 +34,7 @@ Open and edit Word, Excel, PowerPoint, and Hangul (HWP/HWPX) files in one worksp
 </p>
 
 <details>
-<summary>Read in your language · 21 languages</summary>
+<summary>Read in your language</summary>
 
 **English** · [العربية](docs/readme/i18n/ar.md) · [Čeština](docs/readme/i18n/cs.md) · [Deutsch](docs/readme/i18n/de.md) · [Español](docs/readme/i18n/es.md) · [Français](docs/readme/i18n/fr.md) · [עברית](docs/readme/i18n/he.md) · [हिन्दी](docs/readme/i18n/hi.md) · [Bahasa Indonesia](docs/readme/i18n/id.md) · [Italiano](docs/readme/i18n/it.md) · [日本語](docs/readme/i18n/ja.md) · [한국어](docs/readme/i18n/ko.md) · [Bahasa Melayu](docs/readme/i18n/ms.md) · [Nederlands](docs/readme/i18n/nl.md) · [Polski](docs/readme/i18n/pl.md) · [Português](docs/readme/i18n/pt.md) · [Русский](docs/readme/i18n/ru.md) · [ไทย](docs/readme/i18n/th.md) · [Tiếng Việt](docs/readme/i18n/vi.md) · [简体中文](docs/readme/i18n/zh.md) · [繁體中文](docs/readme/i18n/zh-TW.md) <!-- lang-switcher -->
 
@@ -67,7 +67,7 @@ Open and edit Word, Excel, PowerPoint, and Hangul (HWP/HWPX) files in one worksp
 - **Work with AI:** request document changes in the AI assistant, ask questions
   across a chosen document scope in Knowledge Vault, and keep project instructions,
   memory, files and conversations together.
-- **Make it yours:** 21 interface languages, light and dark themes, and adjustable
+- **Make it yours:** 22 interface languages, light and dark themes, and adjustable
   AI chat text size.
 
 ### From a first draft to a finished file

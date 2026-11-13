@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Abre un documento, describe los cambios y sigue trabajando en la misma ventana. Onyou Office reúne editores de documentos y agentes de IA en tu escritorio. Redacta y revisa con IA o edita por tu cuenta. La aplicación es gratuita y de código abierto; la IA es opcional.
@@ -36,7 +36,7 @@ Abre un documento, describe los cambios y sigue trabajando en la misma ventana. 
 - Edita diagramas de draw.io e importa archivos de Visio (.vsdx) como nuevos diagramas en tu equipo.
 - Crea y edita documentos, hojas de cálculo, presentaciones y archivos Hangul (HWP/HWPX). También admite PDF, Markdown, HTML, mapas mentales y EPUB. La edición y la conversión varían según el formato.
 - Pide cambios al asistente de IA, consulta los documentos seleccionados en Knowledge Vault y reúne instrucciones, memoria, archivos y conversaciones en proyectos.
-- 21 idiomas de interfaz, temas claro y oscuro y tamaño de texto del chat ajustable. Onyou Office renueva la bienvenida, el inicio, los paneles de IA, los proyectos y Knowledge Vault, con marca y rutas de instalación y datos propias.
+- 22 idiomas de interfaz, temas claro y oscuro y tamaño de texto del chat ajustable. Onyou Office renueva la bienvenida, el inicio, los paneles de IA, los proyectos y Knowledge Vault, con marca y rutas de instalación y datos propias.
 
 ## Primeros pasos
 

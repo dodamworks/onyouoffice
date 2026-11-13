@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Open een document, beschrijf wat je wilt veranderen en werk verder in hetzelfde venster. Onyou Office brengt documenteditors en AI-agenten samen op je desktop. Maak concepten en revisies met AI of bewerk zelf. De app is gratis en open source; AI is optioneel.
@@ -36,7 +36,7 @@ Open een document, beschrijf wat je wilt veranderen en werk verder in hetzelfde 
 - Bewerk draw.io-diagrammen en importeer Visio-bestanden (.vsdx) lokaal als nieuwe diagrammen.
 - Maak en bewerk documenten, spreadsheets, presentaties en Hangul-bestanden (HWP/HWPX). Ook PDF, Markdown, HTML, mindmaps en EPUB worden ondersteund. Bewerkings- en conversiemogelijkheden verschillen per formaat.
 - Vraag de AI-assistent om wijzigingen, stel in Knowledge Vault vragen over gekozen documenten en verzamel instructies, geheugen, bestanden en gesprekken in projecten.
-- 21 interfacetalen, lichte en donkere thema’s en instelbare AI-chattekst. Onyou Office vernieuwt de introductie, startpagina, AI-panelen, projecten en Knowledge Vault, met eigen branding en installatie- en datapaden.
+- 22 interfacetalen, lichte en donkere thema’s en instelbare AI-chattekst. Onyou Office vernieuwt de introductie, startpagina, AI-panelen, projecten en Knowledge Vault, met eigen branding en installatie- en datapaden.
 
 ## Aan de slag
 

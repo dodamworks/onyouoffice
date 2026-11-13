@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Apri un documento, descrivi le modifiche e continua nella stessa finestra. Onyou Office unisce editor di documenti e agenti IA sul desktop. Crea bozze e revisioni con l’IA oppure modifica i file direttamente. L’app è gratuita e open source; l’IA è facoltativa.
@@ -36,7 +36,7 @@ Apri un documento, descrivi le modifiche e continua nella stessa finestra. Onyou
 - Modifica diagrammi draw.io e importa localmente i file Visio (.vsdx) come nuovi diagrammi.
 - Crea e modifica documenti, fogli di calcolo, presentazioni e file Hangul (HWP/HWPX). Sono supportati anche PDF, Markdown, HTML, mappe mentali ed EPUB. Modifica e conversione variano in base al formato.
 - Chiedi modifiche all’assistente IA, interroga i documenti selezionati in Knowledge Vault e raccogli istruzioni, memoria, file e conversazioni nei progetti.
-- 21 lingue dell’interfaccia, temi chiaro e scuro e testo della chat regolabile. Onyou Office rivede introduzione, pagina iniziale, pannelli IA, progetti e Knowledge Vault, con marchio e percorsi di installazione e dati propri.
+- 22 lingue dell’interfaccia, temi chiaro e scuro e testo della chat regolabile. Onyou Office rivede introduzione, pagina iniziale, pannelli IA, progetti e Knowledge Vault, con marchio e percorsi di installazione e dati propri.
 
 ## Per iniziare
 

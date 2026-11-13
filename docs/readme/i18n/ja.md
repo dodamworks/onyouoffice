@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 文書を開き、変更したい内容を伝えて、そのまま同じウィンドウで作業を続けられます。Onyou Office は文書エディターと AI エージェントをひとつにしたデスクトップアプリです。AI で下書きや修正を行うことも、自分で編集することもできます。無料のオープンソースで、AI 接続は任意です。
@@ -36,7 +36,7 @@
 - draw.ioの図を編集し、Visio（.vsdx）ファイルを新しい図としてこのPC内で取り込めます。
 - 文書、表計算、プレゼンテーション、Hangul（HWP/HWPX）を作成・編集できます。PDF、Markdown、HTML、マインドマップ、EPUB も扱えます。編集・変換の範囲は形式によって異なります。
 - AI アシスタントに文書の変更を依頼し、ナレッジボールトで選んだ文書について質問できます。プロジェクトには指示、メモリー、ファイル、会話をまとめられます。
-- 21 言語の UI、ライト・ダークテーマ、AI チャットの文字サイズ調整に対応。Onyou Office は初回案内、ホーム、AI パネル、プロジェクト、ナレッジボールトを整理し、ブランドとインストール・データのパスを分離しています。
+- 22 言語の UI、ライト・ダークテーマ、AI チャットの文字サイズ調整に対応。Onyou Office は初回案内、ホーム、AI パネル、プロジェクト、ナレッジボールトを整理し、ブランドとインストール・データのパスを分離しています。
 
 ## はじめに
 

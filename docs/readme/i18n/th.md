@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 เปิดเอกสาร บอกสิ่งที่ต้องการแก้ แล้วทำงานต่อในหน้าต่างเดิม Onyou Office รวมตัวแก้ไขเอกสารและเอเจนต์ AI ไว้บนเดสก์ท็อป ใช้ AI ร่างและปรับแก้ หรือแก้ไขด้วยตัวเองก็ได้ แอปฟรีและเป็นโอเพนซอร์ส การเชื่อมต่อ AI เป็นทางเลือก
@@ -36,7 +36,7 @@
 - แก้ไขไดอะแกรม draw.io และนำเข้าไฟล์ Visio (.vsdx) เป็นไดอะแกรมใหม่ภายในคอมพิวเตอร์นี้
 - สร้างและแก้ไขเอกสาร สเปรดชีต งานนำเสนอ และ Hangul (HWP/HWPX) รวมถึงใช้งาน PDF, Markdown, HTML, แผนผังความคิด และ EPUB ความสามารถในการแก้ไขและแปลงขึ้นอยู่กับรูปแบบไฟล์
 - ขอให้ผู้ช่วย AI แก้ไขเอกสาร ถามเกี่ยวกับเอกสารที่เลือกใน Knowledge Vault และรวมคำสั่ง ความจำ ไฟล์ และบทสนทนาไว้ในโครงการ
-- รองรับส่วนติดต่อ 21 ภาษา ธีมสว่างและมืด และการปรับขนาดข้อความแชต AI โดย Onyou Office ปรับปรุงการเริ่มต้น หน้าหลัก แผง AI โครงการ และ Knowledge Vault พร้อมแบรนด์และเส้นทางติดตั้งและข้อมูลของตนเอง
+- รองรับส่วนติดต่อ 22 ภาษา ธีมสว่างและมืด และการปรับขนาดข้อความแชต AI โดย Onyou Office ปรับปรุงการเริ่มต้น หน้าหลัก แผง AI โครงการ และ Knowledge Vault พร้อมแบรนด์และเส้นทางติดตั้งและข้อมูลของตนเอง
 
 ## เริ่มต้นใช้งาน
 

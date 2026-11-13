@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Otwórz dokument, opisz potrzebne zmiany i pracuj dalej w tym samym oknie. Onyou Office łączy edytory dokumentów z agentami AI na komputerze. Twórz i poprawiaj tekst z AI lub edytuj samodzielnie. Aplikacja jest bezpłatna i otwartoźródłowa; AI jest opcjonalne.
@@ -36,7 +36,7 @@ Otwórz dokument, opisz potrzebne zmiany i pracuj dalej w tym samym oknie. Onyou
 - Edytuj diagramy draw.io i importuj lokalnie pliki Visio (.vsdx) jako nowe diagramy.
 - Twórz i edytuj dokumenty, arkusze, prezentacje i pliki Hangul (HWP/HWPX). Obsługiwane są też PDF, Markdown, HTML, mapy myśli i EPUB. Zakres edycji i konwersji zależy od formatu.
 - Zlecaj zmiany asystentowi AI, pytaj o wybrane dokumenty w Knowledge Vault i zbieraj instrukcje, pamięć, pliki oraz rozmowy w projektach.
-- 21 języków interfejsu, jasny i ciemny motyw oraz regulowany tekst czatu AI. Onyou Office porządkuje pierwsze uruchomienie, ekran główny, panele AI, projekty i Knowledge Vault, z własną marką i ścieżkami instalacji oraz danych.
+- 22 języków interfejsu, jasny i ciemny motyw oraz regulowany tekst czatu AI. Onyou Office porządkuje pierwsze uruchomienie, ekran główny, panele AI, projekty i Knowledge Vault, z własną marką i ścieżkami instalacji oraz danych.
 
 ## Pierwsze kroki
 

@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Buka dokumen, nyatakan perubahan yang diingini dan teruskan dalam tetingkap yang sama. Onyou Office menggabungkan penyunting dokumen dengan ejen AI pada desktop. Hasilkan draf dan semakan dengan AI atau sunting sendiri. Aplikasi ini percuma dan sumber terbuka; AI adalah pilihan.
@@ -36,7 +36,7 @@ Buka dokumen, nyatakan perubahan yang diingini dan teruskan dalam tetingkap yang
 - Sunting rajah draw.io dan import fail Visio (.vsdx) sebagai rajah baharu secara setempat.
 - Cipta dan sunting dokumen, hamparan, persembahan dan Hangul (HWP/HWPX). PDF, Markdown, HTML, peta minda dan EPUB turut disokong. Keupayaan penyuntingan dan penukaran berbeza mengikut format.
 - Minta perubahan melalui pembantu AI, tanya tentang dokumen terpilih dalam Knowledge Vault dan himpunkan arahan, ingatan, fail serta perbualan dalam projek.
-- 21 bahasa antara muka, tema cerah dan gelap serta saiz teks sembang AI boleh laras. Onyou Office memperkemas pengenalan, laman utama, panel AI, projek dan Knowledge Vault, dengan jenama serta laluan pemasangan dan data tersendiri.
+- 22 bahasa antara muka, tema cerah dan gelap serta saiz teks sembang AI boleh laras. Onyou Office memperkemas pengenalan, laman utama, panel AI, projek dan Knowledge Vault, dengan jenama serta laluan pemasangan dan data tersendiri.
 
 ## Bermula
 

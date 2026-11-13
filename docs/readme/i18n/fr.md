@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Ouvrez un document, décrivez les changements souhaités et continuez dans la même fenêtre. Onyou Office réunit éditeurs de documents et agents IA sur votre ordinateur. Rédigez et révisez avec l’IA, ou modifiez vous-même vos fichiers. L’application est gratuite et open source ; l’IA reste facultative.
@@ -36,7 +36,7 @@ Ouvrez un document, décrivez les changements souhaités et continuez dans la m�
 - Modifiez des diagrammes draw.io et importez localement des fichiers Visio (.vsdx) comme nouveaux diagrammes.
 - Créez et modifiez documents, feuilles de calcul, présentations et fichiers Hangul (HWP/HWPX). PDF, Markdown, HTML, cartes mentales et EPUB sont aussi pris en charge. Les possibilités d’édition et de conversion dépendent du format.
 - Demandez des modifications à l’assistant IA, interrogez les documents choisis dans Knowledge Vault et regroupez consignes, mémoire, fichiers et conversations dans des projets.
-- 21 langues d’interface, thèmes clair et sombre et taille du texte des discussions IA réglable. Onyou Office retravaille l’accueil, la première utilisation, les panneaux IA, les projets et Knowledge Vault, avec une identité et des chemins d’installation et de données distincts.
+- 22 langues d’interface, thèmes clair et sombre et taille du texte des discussions IA réglable. Onyou Office retravaille l’accueil, la première utilisation, les panneaux IA, les projets et Knowledge Vault, avec une identité et des chemins d’installation et de données distincts.
 
 ## Premiers pas
 

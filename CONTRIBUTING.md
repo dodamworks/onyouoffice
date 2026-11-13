@@ -56,7 +56,7 @@ maintainer's environment; they must not be copied with credentials or profiles.
   documents. Product identity is defined in `packages/i18n/src/product.ts`;
   CLI names are in `packages/cli/src/names.ts`.
 - Reuse the existing editor/shared components, resource dictionaries and design
-  tokens. Preserve 21-language coverage for changed user-facing strings.
+  tokens. Preserve 22-language coverage for changed user-facing strings.
 - Keep unrelated code unchanged so future upstream fixes remain reviewable.
 - Open/save changes need meaningful round-trip coverage for untouched content,
   original-file protection and the actual format affected.

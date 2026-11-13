@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Abra um documento, descreva as alterações e continue na mesma janela. O Onyou Office reúne editores de documentos e agentes de IA no computador. Crie rascunhos e revise com IA ou edite por conta própria. O aplicativo é gratuito e de código aberto; a IA é opcional.
@@ -36,7 +36,7 @@ Abra um documento, descreva as alterações e continue na mesma janela. O Onyou 
 - Edite diagramas draw.io e importe arquivos Visio (.vsdx) localmente como novos diagramas.
 - Crie e edite documentos, planilhas, apresentações e arquivos Hangul (HWP/HWPX). Também há suporte a PDF, Markdown, HTML, mapas mentais e EPUB. Os recursos de edição e conversão variam por formato.
 - Peça alterações ao assistente de IA, consulte documentos selecionados no Knowledge Vault e organize instruções, memória, arquivos e conversas em projetos.
-- 21 idiomas de interface, temas claro e escuro e tamanho de texto do chat ajustável. O Onyou Office reformula a introdução, a tela inicial, os painéis de IA, os projetos e o Knowledge Vault, com marca e caminhos de instalação e dados próprios.
+- 22 idiomas de interface, temas claro e escuro e tamanho de texto do chat ajustável. O Onyou Office reformula a introdução, a tela inicial, os painéis de IA, os projetos e o Knowledge Vault, com marca e caminhos de instalação e dados próprios.
 
 ## Como começar
 

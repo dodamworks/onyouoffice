@@ -212,7 +212,7 @@ license notices remain intact.
 
 Onyou branding, nickname, document order, project controls, storage and installed
 identifiers, download destinations and existing document-input work bounds are
-preserved. Installation help in all 21 languages uses Onyou downloads and manual
+preserved. Installation help in all 22 languages uses Onyou downloads and manual
 updates. It does not instruct users to disable system-wide security protections.
 Existing login registrations and saved-account matching remain unchanged.
 

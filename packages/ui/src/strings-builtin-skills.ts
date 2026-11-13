@@ -692,6 +692,38 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
     'builtinSkillDesc.html-document':
       'Tạo tài liệu HTML dễ đọc trên màn hình và gọn gàng khi in: xác định người đọc, độ dài và khổ giấy trước, rồi kiểm tra các trang và nội dung.',
   },
+  tr: {
+    'builtinSkillDesc.meeting-minutes':
+      'Toplantı notlarını, kararları ve yapılacakları gösteren bir tutanağa dönüştürür.',
+    'builtinSkillDesc.internal-comms':
+      'Duyurular, bültenler, ilerleme raporları, SSS ve diğer kurum içi yazıları yazar.',
+    'builtinSkillDesc.humanizer':
+      'Metinde AI tarafından yazılmış gibi duran ifadeleri bulur ve içeriğini değiştirmeden doğal hale getirir.',
+    'builtinSkillDesc.copy-editing':
+      'Zaten yazılmış İngilizce metni birkaç kez gözden geçirip daha açık ve daha kısa hale getirir.',
+    'builtinSkillDesc.find-skills':
+      'Yalnızca ajan penceresinde çalışır ve beceri bulup yüklemeyi önermek için internet bağlantısı gerektirir.',
+    'builtinSkillDesc.administration-report':
+      'Bir raporu İçişleri ve Güvenlik Bakanlığı kılavuzuna uydurur: düz anlatım, standart numaralandırma, her yerde açılan yazı tipleri, sade tablolar.',
+    'builtinSkillDesc.administration-report-draft':
+      'Bakanlık biçiminde sıfırdan bir idari rapor yazar: bölümler, Ⅰ·1·가 numaralandırması, düz anlatım, tablo başlıkları ve uyumlu yazı tipleri.',
+    'builtinSkillDesc.docx':
+      'Yalnızca ajan penceresinde çalışır. Proje klasöründeki .docx dosyalarını oluşturmak, düzenlemek ve okumak için betik çalıştırır. Bu bilgisayarda Python ve başka programlar kurulu olmalıdır.',
+    'builtinSkillDesc.pptx':
+      'Yalnızca ajan penceresinde çalışır. Proje klasöründeki .pptx dosyalarını oluşturmak, düzenlemek ve okumak için betik çalıştırır. Bu bilgisayarda Python ve başka programlar kurulu olmalıdır.',
+    'builtinSkillDesc.xlsx':
+      'Yalnızca ajan penceresinde çalışır. Proje klasöründeki .xlsx dosyalarını oluşturmak ve düzenlemek, formüllerini yeniden hesaplamak için betik çalıştırır. Bu bilgisayarda Python ve başka programlar kurulu olmalıdır.',
+    'builtinSkillDesc.pdf':
+      'Yalnızca ajan penceresinde çalışır. Proje klasöründeki .pdf dosyalarını okumak, birleştirmek ve bölmek, formları doldurmak için betik çalıştırır. Bu bilgisayarda Python ve başka programlar kurulu olmalıdır.',
+    'builtinSkillDesc.hwp-document':
+      'Yeni bir .hwp veya .hwpx belgesini sıfırdan yazar: rapor, plan, duyuru, resmî yazı veya tutanak için bölümleri seçer, belge üslubuyla yazar ve sonunda denetler.',
+    'builtinSkillDesc.mindmap':
+      'Bir konudan veya malzemeden zihin haritası kurar: üç ila yedi dengeli ana dal, ayrıntısı notlarda duran kısa başlıklar ve sonunda yapı denetimi.',
+    'builtinSkillDesc.diagram':
+      'Anlaşılır bir diyagram çizer: uygun türü seçer, tek yönü, kısa etiketleri ve az rengi korur, çakışmaları ve bağlantısız şekilleri denetler.',
+    'builtinSkillDesc.html-document':
+      'Ekranda rahat okunan ve temiz basılan bir HTML belgesi hazırlar: önce okuru, uzunluğu ve kâğıdı belirler, sonra sayfaları ve içeriği denetler.',
+  },
 })
 
 export type BuiltinSkillStringKey = keyof typeof zh

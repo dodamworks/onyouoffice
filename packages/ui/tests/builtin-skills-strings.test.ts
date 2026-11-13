@@ -19,8 +19,7 @@ const NON_LATIN: readonly Lang[] = ['zh', 'ja', 'ko', 'th', 'ru', 'ar', 'he', 'h
 const MANIFEST = join(__dirname, '../../../apps/shell/resources/builtin-skills/builtin-skills.json')
 
 describe('BUILTIN_SKILL_STRINGS', () => {
-  it('covers all 21 ui languages', () => {
-    expect(LANGS).toHaveLength(21)
+  it('covers every UI language', () => {
     expect(Object.keys(BUILTIN_SKILL_STRINGS).sort()).toEqual([...LANGS].sort())
   })
 
