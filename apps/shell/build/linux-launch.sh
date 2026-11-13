@@ -1,4 +1,5 @@
 #!/bin/sh
+# Modified by Onyou Office on 2026-11-13: starts the onyouoffice binary.
 # Starts the app with the open-file soft limit raised to the hard limit.
 # Chromium forks its zygote before any app code runs and every renderer keeps
 # the zygote's limit, so a desktop session's default of 1024 stays on each
