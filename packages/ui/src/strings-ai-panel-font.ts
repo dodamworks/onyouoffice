@@ -12,6 +12,11 @@ export const AI_PANEL_FONT_LABELS: Record<Lang, { size: string; smaller: string;
       smaller: 'Decrease AI chat text size',
       larger: 'Increase AI chat text size',
     },
+    tr: {
+      size: 'AI sohbet yazı boyutu',
+      smaller: 'AI sohbet yazısını küçült',
+      larger: 'AI sohbet yazısını büyüt',
+    },
     zh: {
       size: 'AI 聊天字号',
       smaller: '缩小 AI 聊天字号',

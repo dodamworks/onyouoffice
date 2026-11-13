@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Mở tài liệu, mô tả điều muốn thay đổi rồi tiếp tục trong cùng cửa sổ. Onyou Office kết hợp trình soạn thảo tài liệu và tác nhân AI trên máy tính. Dùng AI để viết nháp, chỉnh sửa hoặc tự biên tập. Ứng dụng miễn phí, mã nguồn mở; AI là tùy chọn.
@@ -36,7 +36,7 @@ Mở tài liệu, mô tả điều muốn thay đổi rồi tiếp tục trong c
 - Chỉnh sửa sơ đồ draw.io và nhập tệp Visio (.vsdx) thành sơ đồ mới ngay trên máy tính.
 - Tạo và chỉnh sửa văn bản, bảng tính, bản trình chiếu và Hangul (HWP/HWPX). Cũng hỗ trợ PDF, Markdown, HTML, sơ đồ tư duy và EPUB. Khả năng chỉnh sửa và chuyển đổi tùy định dạng.
 - Yêu cầu trợ lý AI sửa tài liệu, hỏi về tài liệu đã chọn trong Knowledge Vault và tập hợp chỉ dẫn, bộ nhớ, tệp cùng hội thoại theo dự án.
-- 21 ngôn ngữ giao diện, chủ đề sáng/tối và cỡ chữ trò chuyện AI có thể điều chỉnh. Onyou Office cải tiến hướng dẫn ban đầu, trang chủ, bảng AI, dự án và Knowledge Vault, với thương hiệu cùng đường dẫn cài đặt và dữ liệu riêng.
+- 22 ngôn ngữ giao diện, chủ đề sáng/tối và cỡ chữ trò chuyện AI có thể điều chỉnh. Onyou Office cải tiến hướng dẫn ban đầu, trang chủ, bảng AI, dự án và Knowledge Vault, với thương hiệu cùng đường dẫn cài đặt và dữ liệu riêng.
 
 ## Bắt đầu
 

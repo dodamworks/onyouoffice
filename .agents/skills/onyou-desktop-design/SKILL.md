@@ -38,7 +38,7 @@ Keep words intact in Korean and other supported languages. Use normal wrapping
 or `keep-all` where appropriate; reserve emergency wrapping for long paths,
 identifiers and unspaced strings. Do not force whole paragraphs onto one line.
 Respect RTL direction and test real translated text rather than fixed manual
-line breaks. Follow the existing 21-language resource structure.
+line breaks. Follow the existing 22-language resource structure.
 
 Empty states should have one clear purpose, a balanced focal point and an
 obvious next action. Keep composer controls and scope selectors stable between

@@ -25,7 +25,7 @@ The existing isolated development instance at localhost:5199 was used, keeping i
 
 Evidence: `.local/review/editor-boundaries-2026-11-03/` contains per-editor PNG captures, DOM text/control inventories, HWP inner-frame text and runtime-results.json. These establish the visible chrome and integration boundaries, not validation of every command/dialog. The HWP capture includes a loading/progress state with the studio toolbar visible; the sheet capture precedes a confirmed painted grid. A follow-up CDP attachment timed out, so neither capture is presented as a complete load/render regression. Do not diagnose these initial captures as confirmed editor defects.
 
-The editor renderers are existing built bundles, while Home runs in development mode. Their shared AI connection copy predates the recent source edits; their screenshots must not be cited as proof of the latest shared-UI build. The source boundary findings above come from current checkout files. No rebuild was necessary for this read-only architectural inspection. Full functionality, 21-language rendering and license/distribution clearance are outside this investigation.
+The editor renderers are existing built bundles, while Home runs in development mode. Their shared AI connection copy predates the recent source edits; their screenshots must not be cited as proof of the latest shared-UI build. The source boundary findings above come from current checkout files. No rebuild was necessary for this read-only architectural inspection. Full functionality, rendering in every interface language and license/distribution clearance are outside this investigation.
 
 ## Implication for the next discussion
 

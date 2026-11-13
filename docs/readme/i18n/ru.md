@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Откройте документ, опишите нужные изменения и продолжайте в том же окне. Onyou Office объединяет редакторы документов и ИИ-агентов на компьютере. Создавайте черновики и правьте текст с ИИ или самостоятельно. Приложение бесплатное, с открытым кодом; подключение ИИ необязательно.
@@ -36,7 +36,7 @@
 - Редактируйте диаграммы draw.io и импортируйте файлы Visio (.vsdx) как новые диаграммы на своём компьютере.
 - Создавайте и редактируйте документы, таблицы, презентации и Hangul (HWP/HWPX). Поддерживаются также PDF, Markdown, HTML, интеллект-карты и EPUB. Возможности редактирования и преобразования зависят от формата.
 - Поручайте изменения ИИ-помощнику, задавайте вопросы по выбранным документам в Knowledge Vault и собирайте инструкции, память, файлы и беседы в проектах.
-- 21 язык интерфейса, светлая и тёмная темы, настройка размера текста ИИ-чата. Onyou Office перерабатывает первое знакомство, главный экран, панели ИИ, проекты и Knowledge Vault, используя собственный бренд и отдельные пути установки и данных.
+- 22 язык интерфейса, светлая и тёмная темы, настройка размера текста ИИ-чата. Onyou Office перерабатывает первое знакомство, главный экран, панели ИИ, проекты и Knowledge Vault, используя собственный бренд и отдельные пути установки и данных.
 
 ## Начало работы
 

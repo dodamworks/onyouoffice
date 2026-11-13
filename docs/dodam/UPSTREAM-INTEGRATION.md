@@ -212,7 +212,7 @@ license notices remain intact.
 
 Onyou branding, nickname, document order, project controls, storage and installed
 identifiers, download destinations and existing document-input work bounds are
-preserved. Installation help in all 21 languages uses Onyou downloads and manual
+preserved. Installation help in every interface language uses Onyou downloads and manual
 updates. It does not instruct users to disable system-wide security protections.
 Existing login registrations and saved-account matching remain unchanged.
 
@@ -222,3 +222,25 @@ build-container change is deferred to preserve the validated Onyou platform
 pipeline; the current Linux packages continue to require glibc 2.35 or newer.
 Passing source checks, accepted code and published installers remain separate
 milestones; consult the matching release provenance for the shipped source.
+
+## November 13 maintenance source
+
+The next Onyou candidate merges IeumOffice main through
+[`6e7be8a35ac1a3a216a6ffaafae7eeda95b9a231`](https://github.com/pblsketch/ieumoffice/commit/6e7be8a35ac1a3a216a6ffaafae7eeda95b9a231).
+The previous accepted upstream point was
+`58031f1a58bc52aa797f426bb8ef3c07d1929be2`. Upstream history is merged, so
+`git merge-base origin/main upstream/main` gives the accepted point.
+
+The update adds a Turkish interface, Markdown-to-Hangul conversion with Hangul
+table styling, a starting look for Hangul documents written from scratch, HTML
+rubber-band selection from anywhere, a resizable EPUB contents pane, the PDF
+hand tool on `H`, daily model-list refreshes, and a Linux launcher that raises
+the open-file limit before the renderers start. It also fixes stale HWP table
+widths and the HWP document-information dialog.
+
+Onyou adaptations: the Onyou Home, Knowledge Vault, project, AI panel and
+unconfigured-service strings and the three Onyou help topics include Turkish.
+The Linux launcher, desktop-entry rewrite and their tests use the `onyouoffice`
+binary under `/opt/Onyou Office`. The feedback survey stays unconfigured.
+The Onyou Linux workflow keeps its existing steps; upstream's glibc-floor and
+Ubuntu 20.04 package smoke steps remain deferred, as above.

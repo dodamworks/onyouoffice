@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 दस्तावेज़ खोलें, बताएं कि क्या बदलना है और उसी विंडो में काम जारी रखें। Onyou Office डेस्कटॉप पर दस्तावेज़ संपादकों और AI एजेंट को एक साथ लाता है। AI से मसौदा और संशोधन कराएं या खुद संपादित करें। ऐप मुफ़्त और ओपन सोर्स है; AI जोड़ना वैकल्पिक है।
@@ -36,7 +36,7 @@
 - draw.io आरेख संपादित करें और Visio (.vsdx) फ़ाइलों को अपने कंप्यूटर पर नए आरेखों के रूप में आयात करें।
 - दस्तावेज़, स्प्रेडशीट, प्रस्तुतियां और Hangul (HWP/HWPX) बनाएं और संपादित करें। PDF, Markdown, HTML, माइंड मैप और EPUB भी समर्थित हैं। संपादन और रूपांतरण की क्षमता फ़ॉर्मैट पर निर्भर है।
 - AI सहायक से बदलाव कराएं, Knowledge Vault में चुने दस्तावेज़ों पर सवाल पूछें और प्रोजेक्ट में निर्देश, मेमोरी, फ़ाइलें और बातचीत साथ रखें।
-- 21 इंटरफ़ेस भाषाएं, हल्की और गहरी थीम तथा AI चैट के अक्षरों का आकार बदलने की सुविधा। Onyou Office शुरुआती परिचय, होम, AI पैनल, प्रोजेक्ट और Knowledge Vault को सुधारता है और अपनी ब्रांडिंग तथा अलग इंस्टॉलेशन और डेटा पथ रखता है।
+- 22 इंटरफ़ेस भाषाएं, हल्की और गहरी थीम तथा AI चैट के अक्षरों का आकार बदलने की सुविधा। Onyou Office शुरुआती परिचय, होम, AI पैनल, प्रोजेक्ट और Knowledge Vault को सुधारता है और अपनी ब्रांडिंग तथा अलग इंस्टॉलेशन और डेटा पथ रखता है।
 
 ## शुरू करें
 

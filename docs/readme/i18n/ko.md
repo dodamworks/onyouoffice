@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 문서를 열고, 바꾸고 싶은 내용을 말하고, 같은 창에서 작업을 이어가세요. 온유오피스는 문서 편집기와 AI 에이전트를 한 데스크톱 앱에 담았습니다. AI로 초안을 쓰고 문서를 다듬거나 직접 편집할 수 있습니다. 앱은 무료 오픈소스이며, AI 연결은 선택입니다.
@@ -54,7 +54,7 @@
 - draw.io 다이어그램을 편집하고 Visio(.vsdx) 파일을 이 PC에서 새 다이어그램으로 가져옵니다.
 - 문서·스프레드시트·프레젠테이션·한글(HWP/HWPX)을 작성하고 편집합니다. PDF·Markdown·HTML·마인드맵·EPUB도 다룹니다. 편집·변환 범위는 형식마다 다릅니다.
 - AI 도우미에게 문서 수정을 요청하고, 지식 창고에서 선택한 문서 범위를 바탕으로 질문합니다. 프로젝트에는 지침·기억·파일·대화를 모아 둡니다.
-- 21개 화면 언어, 밝은·어두운 테마, AI 채팅 글자 크기 조절을 지원합니다. 온유오피스는 첫 실행·홈·AI 패널·프로젝트·지식 창고를 정리하고 브랜드와 설치·데이터 경로를 분리했습니다.
+- 22개 화면 언어, 밝은·어두운 테마, AI 채팅 글자 크기 조절을 지원합니다. 온유오피스는 첫 실행·홈·AI 패널·프로젝트·지식 창고를 정리하고 브랜드와 설치·데이터 경로를 분리했습니다.
 
 ## 시작하기
 

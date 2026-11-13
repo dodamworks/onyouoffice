@@ -1,7 +1,8 @@
 # README translations
 
 The canonical introduction is the English [root README](../../README.md).
-The other 20 introductions in `i18n/` cover all 21 interface languages.
+The other 20 introductions in `i18n/` cover the interface languages except Turkish,
+which reads the English root README.
 This follows the existing translated-document boundary of the English-comment guard. English appears first
 in language navigation; the remaining languages follow the ISO-code ordering in
 `LANG_OPTIONS` in the Shell settings. The app language order is unchanged.
@@ -11,7 +12,7 @@ known limitations, contribution routes, and license/origins. Localize for reader
 do not copy the upstream author's personal story or make new product claims.
 Translate these essentials in every version. Detailed developer documents remain
 in their existing languages; these introductions do not imply every repository
-document is available in 21 languages.
+document is available in every interface language.
 
 When changing a fact, update the English original and all translations together.
 Keep setup commands, provider limitations, source-preview status, support address,

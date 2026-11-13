@@ -111,7 +111,8 @@ jobs:
           for bin in \
             "$dir/onyouoffice" \
             "$dir/resources/native/xlsx-sidecar" \
-            "$dir/resources/cli/onyouoffice"; do
+            "$dir/resources/cli/onyouoffice" \
+            "$dir/resources/onyouoffice-launch"; do
             test -x "$bin" || { echo "missing or not executable: $bin"; exit 1; }
           done
           compgen -G "apps/shell/release/Onyou Office-*.AppImage" >/dev/null
@@ -130,6 +131,18 @@ jobs:
               exit 1
             }
           done
+          # The post-install step repoints the desktop entry at the open-file
+          # limit launcher by matching the quoted Exec line electron-builder
+          # writes for an install folder with a space (build/linux-after-install.sh).
+          entry_dir="$RUNNER_TEMP/deb-entry"
+          rm -rf "$entry_dir"
+          dpkg-deb -x apps/shell/release/onyouoffice_*_amd64.deb "$entry_dir"
+          grep -Eq '^Exec="/opt/Onyou Office/onyouoffice"( |$)' "$entry_dir/usr/share/applications/onyouoffice.desktop" || {
+            echo "unexpected desktop Exec line:"
+            grep '^Exec=' "$entry_dir/usr/share/applications/onyouoffice.desktop" || true
+            exit 1
+          }
+          test -x "$entry_dir/opt/Onyou Office/resources/onyouoffice-launch"
 
       # The packages are consumed on distributions newer than this 22.04
       # runner. Prove in a container that the deb's dependency set — the

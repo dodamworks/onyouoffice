@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 افتح مستندًا، وصف التغيير المطلوب، ثم واصل العمل في النافذة نفسها. يجمع Onyou Office محررات المستندات ووكلاء الذكاء الاصطناعي في تطبيق سطح مكتب. أنشئ المسودات وراجعها بالذكاء الاصطناعي أو حررها بنفسك. التطبيق مجاني ومفتوح المصدر، والذكاء الاصطناعي اختياري.
@@ -36,7 +36,7 @@
 - حرّر مخططات draw.io واستورد ملفات Visio (.vsdx) كمخططات جديدة على هذا الجهاز.
 - أنشئ المستندات وجداول البيانات والعروض وملفات Hangul ‏(HWP/HWPX) وحررها. يدعم التطبيق أيضًا PDF وMarkdown وHTML والخرائط الذهنية وEPUB. تختلف إمكانات التحرير والتحويل حسب التنسيق.
 - اطلب تعديلات من مساعد الذكاء الاصطناعي، واسأل عن المستندات المحددة في Knowledge Vault، واجمع التعليمات والذاكرة والملفات والمحادثات ضمن المشاريع.
-- 21 لغة للواجهة، ومظهر فاتح وداكن، وحجم نص قابل للضبط في محادثة الذكاء الاصطناعي. يحسن Onyou Office البداية والصفحة الرئيسية ولوحات الذكاء الاصطناعي والمشاريع وKnowledge Vault، مع هوية ومسارات تثبيت وبيانات مستقلة.
+- 22 لغة للواجهة، ومظهر فاتح وداكن، وحجم نص قابل للضبط في محادثة الذكاء الاصطناعي. يحسن Onyou Office البداية والصفحة الرئيسية ولوحات الذكاء الاصطناعي والمشاريع وKnowledge Vault، مع هوية ومسارات تثبيت وبيانات مستقلة.
 
 ## البدء
 

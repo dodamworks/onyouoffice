@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Otevřete dokument, popište požadované změny a pokračujte ve stejném okně. Onyou Office propojuje editory dokumentů a AI agenty na počítači. S AI můžete tvořit návrhy a úpravy nebo pracovat sami. Aplikace je zdarma a open source; AI je volitelná.
@@ -36,7 +36,7 @@ Otevřete dokument, popište požadované změny a pokračujte ve stejném okně
 - Upravujte diagramy draw.io a místně importujte soubory Visio (.vsdx) jako nové diagramy.
 - Vytvářejte a upravujte dokumenty, tabulky, prezentace a soubory Hangul (HWP/HWPX). Podporovány jsou také PDF, Markdown, HTML, myšlenkové mapy a EPUB. Možnosti úprav a převodů závisejí na formátu.
 - Požádejte AI asistenta o úpravy, ptejte se na vybrané dokumenty v Knowledge Vault a uchovávejte pokyny, paměť, soubory a rozhovory v projektech.
-- 21 jazyků rozhraní, světlé i tmavé motivy a nastavitelná velikost textu AI chatu. Onyou Office upravuje úvod, domovskou obrazovku, AI panely, projekty a Knowledge Vault a používá vlastní značku a instalační i datové cesty.
+- 22 jazyků rozhraní, světlé i tmavé motivy a nastavitelná velikost textu AI chatu. Onyou Office upravuje úvod, domovskou obrazovku, AI panely, projekty a Knowledge Vault a používá vlastní značku a instalační i datové cesty.
 
 ## Začínáme
 

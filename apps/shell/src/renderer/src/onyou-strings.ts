@@ -1,6 +1,6 @@
 // Onyou Office copy for the home screen, layered over upstream's dictionary.
 // strings.ts stays as IeumOffice ships it, so upstream updates merge without
-// copy conflicts. Add or change Onyou wording here, in all 21 languages.
+// copy conflicts. Add or change Onyou wording here, in all 22 languages.
 import { strings as upstreamStrings } from './strings'
 
 type UpstreamKey = keyof typeof upstreamStrings.zh
@@ -301,6 +301,20 @@ const onyouAdded = {
     nicknameSaveFailed: '無法儲存暱稱，請再試一次。',
     greetNamed: '{name}，{greeting}。',
     onbConnectHelp: '連線說明',
+  },
+  tr: {
+    openLocalSub: 'Word, Excel, Hangul, PDF ve daha fazlası',
+    askToolSearchHistory: 'Belge arama',
+    askToolReadHistory: 'Dosya okuma',
+    askToolCreateHistory: 'Belge oluşturma',
+    supportedFormats: 'Desteklenen biçimler',
+    formatText: 'Metin',
+    nicknameLabel: 'Takma ad (isteğe bağlı)',
+    nicknamePlaceholder: 'Size nasıl hitap edelim?',
+    nicknameDesc: 'Yalnızca bu bilgisayardaki ana sayfa selamlamalarında kullanılır.',
+    nicknameSaveFailed: 'Takma adınız kaydedilemedi. Lütfen yeniden deneyin.',
+    greetNamed: '{greeting}, {name}.',
+    onbConnectHelp: 'Bağlantı yardımı',
   },
 } as const satisfies Record<Lang, Record<string, string>>
 
@@ -801,6 +815,29 @@ const onyouOverrides: { readonly [L in Lang]: Partial<Record<UpstreamKey, string
       '連接 AI 助理來建立和編輯檔案。文件處理在此電腦上進行；交給 AI 的內容可能會傳送給其供應商。',
     onbConnectSkipNote: '你可以稍後在設定中連線 AI。',
     onbDoneNotConnected: '你可以稍後在設定中連線 AI。',
+  },
+  tr: {
+    navAsk: 'Bilgi Kasası',
+    askTitle: 'Bilgi Kasası',
+    askCorpusCount: '{n} yıldızlı dosya',
+    askIntro: 'Belgelerinize soru sorun ve aradığınız bilgiyi bulun.',
+    newDoc: 'Belge',
+    newSheet: 'E-Tablo',
+    newSlide: 'Sunum',
+    newMarkdown: 'Markdown',
+    newHtml: 'HTML',
+    newHwp: 'HWP',
+    newPdf: 'PDF',
+    openLocal: 'Dosya aç',
+    greetAsk2: 'Kaldığınız yerden devam edelim mi?',
+    greetAsk3: 'Yeni bir belgeye başlayalım mı?',
+    greetAsk4: 'Aklınıza gelenle başlayın.',
+    greetAsk5: 'İlk taslak, başlamak için iyi bir yer.',
+    greetAsk6: 'Sizi görmek güzel.',
+    intgHeroDesc:
+      'Dosya oluşturmak ve düzenlemek için bir AI asistanı bağlayın. Belgeler bu bilgisayarda işlenir; AI ile paylaşılan içerik sağlayıcısına gönderilebilir.',
+    onbConnectSkipNote: 'AI bağlantısını daha sonra Ayarlar bölümünden yapabilirsiniz.',
+    onbDoneNotConnected: 'AI bağlantısını daha sonra Ayarlar bölümünden yapabilirsiniz.',
   },
 }
 

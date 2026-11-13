@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 פתחו מסמך, תארו מה תרצו לשנות והמשיכו באותו חלון. Onyou Office משלבת עורכי מסמכים וסוכני AI ביישום למחשב. אפשר להכין טיוטות ולערוך בעזרת AI או לעבוד לבד. היישום חינמי ובקוד פתוח; חיבור AI הוא לבחירתכם.
@@ -36,7 +36,7 @@
 - ערכו תרשימי draw.io וייבאו קובצי Visio (.vsdx) כתרשימים חדשים במחשב שלכם.
 - צרו וערכו מסמכים, גיליונות, מצגות וקובצי Hangul ‏(HWP/HWPX). יש תמיכה גם ב-PDF, Markdown, HTML, מפות חשיבה ו-EPUB. יכולות העריכה וההמרה משתנות לפי הפורמט.
 - בקשו שינויים מעוזר ה-AI, שאלו על מסמכים נבחרים ב-Knowledge Vault ואספו הנחיות, זיכרון, קבצים ושיחות בפרויקטים.
-- 21 שפות ממשק, ערכות נושא בהירות וכהות וגודל טקסט מתכוונן בצ׳אט AI. Onyou Office מעדכנת את ההיכרות הראשונית, הבית, לוחות ה-AI, הפרויקטים ו-Knowledge Vault, עם מיתוג ונתיבי התקנה ונתונים נפרדים.
+- 22 שפות ממשק, ערכות נושא בהירות וכהות וגודל טקסט מתכוונן בצ׳אט AI. Onyou Office מעדכנת את ההיכרות הראשונית, הבית, לוחות ה-AI, הפרויקטים ו-Knowledge Vault, עם מיתוג ונתיבי התקנה ונתונים נפרדים.
 
 ## תחילת העבודה
 

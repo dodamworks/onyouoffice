@@ -204,6 +204,7 @@ import { startFirstChunkKeepalive } from './ai-keepalive'
 import { atomicWriteFile } from './atomic-write'
 import { Worker } from 'node:worker_threads'
 import hwpExportWorkerPath from './hwp-export-worker?modulePath'
+import type { HwpConversion, HwpFormat, HwpLook, Loss } from '@genoffice/docx2hwp'
 import { convertInWorker, exportHwp, hwpLossMessageBox } from './hwp-export'
 import { createDocsRecovery } from './docs-recovery'
 import {
@@ -699,6 +700,145 @@ const tMain = createI18n({
     menuWindow: 'Cửa sổ',
     menuHelp: 'Trợ giúp',
     menuShortcuts: 'Phím tắt bàn phím',
+  },
+  tr: {
+    dlgOpenDoc: 'Belge Aç',
+    filterWord: 'Word Belgeleri',
+    filterOdt: 'OpenDocument Metni',
+    dlgSaveAs: 'Farklı Kaydet',
+    closeUnsavedMsg: 'Bu belgede kaydedilmemiş değişiklikler var.',
+    closeUnsavedDetail: 'Kapatmadan önce kaydedilsin mi?',
+    closeNoReplyMsg: 'Belge yanıt vermiyor ve kaydedilmemiş değişiklikler olabilir.',
+    closeNoReplyDetail: 'Yine de kapatılsın mı? Kaydedilmemiş değişiklikler kaybolur.',
+    btnCloseAnyway: 'Yine de Kapat',
+    btnDontSave: 'Kaydetme',
+    btnCancel: 'İptal',
+    extModifiedMsg: 'Dosya başka bir program tarafından değiştirilmiş.',
+    extModifiedDetail: 'Yine de kaydedip diskteki değişikliklerin üzerine yazılsın mı?',
+    btnOverwrite: 'Üzerine Yaz',
+    dlgInsertImage: 'Resim Ekle',
+    filterImages: 'Resimler',
+    dlgMergeDataSource: 'Alıcı Listesini Seç',
+    filterMergeDataSource: 'Excel veya CSV',
+    dlgAddAttachment: 'Ek Dosya Ekle',
+    filterSupported: 'Desteklenen Dosyalar',
+    filterAll: 'Tüm Dosyalar',
+    dlgExportPdf: 'PDF Olarak Dışa Aktar',
+    dlgExportHtml: 'HTML Olarak Dışa Aktar',
+    dlgExportHwp: 'HWP Belgesi Olarak Dışa Aktar',
+    dlgExportMarkdown: 'Markdown Olarak Dışa Aktar',
+    dlgPickExportDir: 'Dışa Aktarma Klasörünü Seç',
+    filterPdf: 'PDF Belgesi',
+    filterHtml: 'Web Sayfası (HTML)',
+    filterMarkdown: 'Markdown Belgesi',
+    filterPageImages: 'Sayfa Görüntüleri (PNG)',
+    filterHwp: 'HWP Belgeleri (HWP)',
+    filterHwpx: 'HWP Belgeleri (HWPX)',
+    errUnsupportedExt: '.{ext} dosyaları desteklenmiyor',
+    errNotFile: 'dosya değil',
+    errTooLarge: '{mb}MB sınırını aşıyor',
+    errImageTooLarge: 'resim 5MB sınırını aşıyor',
+    errUnreadable: 'okunamıyor',
+    errFileTooLarge: 'Dosya boyut sınırını aşıyor',
+    errParseFailed: 'Dosya ayrıştırılamadı',
+    errImageNoText:
+      'Resim eklerinde metin yok; resim, kullanıcı iletisiyle birlikte gönderildiğinden doğrudan resme bakabilirsiniz',
+    errNotImage: 'desteklenen bir resim türü değil',
+    errNoApiKey: '{provider} için API anahtarı yapılandırılmamış',
+    errAiBusy: 'AI hizmeti şu anda meşgul — lütfen biraz sonra yeniden deneyin',
+    errNoModel: 'Model adı yapılandırılmamış',
+    menuFile: 'Dosya',
+    menuNewDoc: 'Yeni Belge',
+    menuNewWindow: 'Yeni Pencere',
+    menuOpen: 'Aç…',
+    menuOpenRecent: 'Son Belgeleri Aç',
+    menuNoRecent: 'Son Belge Yok',
+    menuClose: 'Kapat',
+    menuSave: 'Kaydet',
+    menuSaveAs: 'Farklı Kaydet…',
+    menuPageSetup: 'Sayfa Yapısı…',
+    menuExportPdf: 'PDF Olarak Dışa Aktar…',
+    menuExportHwp: 'HWP Belgesi Olarak Dışa Aktar…',
+    menuExportHtml: 'HTML Olarak Dışa Aktar…',
+    menuExportMarkdown: 'Markdown Olarak Dışa Aktar…',
+    menuExportImages: 'Resim Olarak Dışa Aktar…',
+    menuPrint: 'Yazdır…',
+    menuEdit: 'Düzen',
+    menuUndo: 'Geri Al',
+    menuRedo: 'Yinele',
+    menuCut: 'Kes',
+    menuCopy: 'Kopyala',
+    menuPaste: 'Yapıştır',
+    menuPasteMatch: 'Yapıştır ve Biçimi Eşleştir',
+    menuFindReplace: 'Bul ve Değiştir…',
+    menuGoTo: 'Git…',
+    menuSelectAll: 'Tümünü Seç',
+    menuView: 'Görünüm',
+    menuZoom: 'Yakınlaştırma',
+    menuZoomIn: 'Yakınlaştır',
+    menuZoomOut: 'Uzaklaştır',
+    menuZoom100: 'Gerçek Boyut (%100)',
+    menuPageWidth: 'Sayfa Genişliği',
+    menuWholePage: 'Tam Sayfa',
+    menuMultiPage: 'Birden Çok Sayfa',
+    menuAiSidebar: 'AI Kenar Çubuğu',
+    menuDarkMode: 'Koyu Mod',
+    menuFullscreen: 'Tam Ekrana Geç',
+    menuInsert: 'Ekle',
+    menuInsertTable: 'Tablo…',
+    menuInsertImage: 'Resim…',
+    menuInsertPageBreak: 'Sayfa Sonu',
+    menuInsertLink: 'Köprü…',
+    menuInsertEquation: 'Denklem…',
+    menuComment: 'Yorum',
+    menuFormat: 'Biçim',
+    menuBold: 'Kalın',
+    menuItalic: 'İtalik',
+    menuUnderline: 'Altı Çizili',
+    menuAlign: 'Hizala',
+    menuAlignLeft: 'Sola Yasla',
+    menuAlignCenter: 'Ortala',
+    menuAlignRight: 'Sağa Yasla',
+    menuAlignJustify: 'İki Yana Yasla',
+    menuFont: 'Yazı Tipi…',
+    menuParagraph: 'Paragraf…',
+    menuTools: 'Araçlar',
+    menuTable: 'Tablo',
+    menuTableInsert: 'Ekle',
+    menuTableInsertTable: 'Tablo…',
+    menuTableColsLeft: 'Sola Sütun Ekle',
+    menuTableColsRight: 'Sağa Sütun Ekle',
+    menuTableRowsAbove: 'Yukarı Satır Ekle',
+    menuTableRowsBelow: 'Aşağı Satır Ekle',
+    menuTableCells: 'Hücreler…',
+    menuTableDelete: 'Sil',
+    menuTableDeleteTable: 'Tablo',
+    menuTableDeleteColumns: 'Sütunlar',
+    menuTableDeleteRows: 'Satırlar',
+    menuTableSelect: 'Seç',
+    menuTableSelectCell: 'Hücre',
+    menuTableSelectColumn: 'Sütun',
+    menuTableSelectRow: 'Satır',
+    menuTableSelectTable: 'Tablo',
+    menuTableMergeCells: 'Hücreleri Birleştir',
+    menuTableSplitCells: 'Hücreleri Böl…',
+    menuTableSplitTable: 'Tabloyu Böl',
+    menuTableAutoFit: 'Otomatik Sığdır ve Dağıt',
+    menuTableAutoFitContents: 'İçeriğe Göre Otomatik Sığdır',
+    menuTableAutoFitWindow: 'Pencereye Göre Otomatik Sığdır',
+    menuTableFixedWidth: 'Sabit Sütun Genişliği',
+    menuTableDistributeRows: 'Satırları Eşit Dağıt',
+    menuTableDistributeColumns: 'Sütunları Eşit Dağıt',
+    menuTableRepeatHeader: 'Başlık Satırlarını Yinele',
+    menuTableGridlines: 'Kılavuz Çizgilerini Görüntüle',
+    menuTableProperties: 'Tablo Özellikleri…',
+    menuWordCount: 'Sözcük Sayısı…',
+    menuAutoCorrect: 'Otomatik Düzeltme Seçenekleri…',
+    menuPreferences: 'Tercihler…',
+    menuAiProofread: 'AI Yazım Denetimi',
+    menuWindow: 'Pencere',
+    menuHelp: 'Yardım',
+    menuShortcuts: 'Klavye Kısayolları',
   },
   ja: {
     dlgOpenDoc: '文書を開く',
@@ -3205,6 +3345,27 @@ const tMain = createI18n({
     menuShortcuts: '鍵盤快速鍵',
   },
 })
+/**
+ * The Hangul conversion and its confirmation, lent to another editor's export
+ * through the shell (the Markdown editor's Save As): the same worker per job
+ * and the same message box as this editor's own export.
+ */
+export const hwpCopy = {
+  convert: (docx: Uint8Array, format: HwpFormat, look: HwpLook): Promise<HwpConversion> =>
+    convertInWorker(
+      { docx, format, wasmPath: rhwpWasmPath(), look },
+      () => new Worker(hwpExportWorkerPath),
+    ),
+  /** asked only when something is lost; false = cancel */
+  confirm: async (parent: BrowserWindow | undefined, losses: readonly Loss[]): Promise<boolean> => {
+    const options = hwpLossMessageBox(losses, false, getUiLang())
+    const { response } = parent
+      ? await dialog.showMessageBox(parent, options)
+      : await dialog.showMessageBox(options)
+    return response === 0
+  },
+}
+
 const tm = (key: Parameters<typeof tMain>[1], params?: Parameters<typeof tMain>[2]) =>
   tMain(getUiLang(), key, params)
 
@@ -4142,6 +4303,13 @@ function writeAiSettingsFile(settings: unknown): void {
 /** how long after start the key providers are first asked for their models */
 const KEY_MODEL_FIRST_LIST_DELAY_MS = 5000
 
+/**
+ * how often a running app looks whether a key provider's list is due again.
+ * The refresher asks only for a list a day old; an hourly look on the wall
+ * clock is what catches that after the PC slept through the night.
+ */
+const KEY_MODEL_RELIST_CHECK_MS = 60 * 60 * 1000
+
 const activeAiStreams = new Map<string, AbortController>()
 
 /** AI requests in flight across every editor (the shell's memory record reads it) */
@@ -4191,8 +4359,9 @@ const AI_RUN_TEXTS: AiRunTexts = {
 
 /**
  * Asks the key providers for their current models (decision 0087): once per run,
- * then again for a provider whose key or base URL changed. The list lands in
- * the settings file, so every picker shows it.
+ * then again for a provider whose key or base URL changed, or whose list is a
+ * day old (decision 0138). The list lands in the settings file, so every
+ * picker shows it.
  */
 const keyModelRefresher = createKeyModelRefresher({
   read: storedAiSettings,
@@ -4305,6 +4474,9 @@ export function registerAiIpc(): void {
   // the first listing waits for the windows: a key provider's list is not needed to show them
   void app.whenReady().then(() => {
     setTimeout(() => keyModelRefresher.refreshChanged(), KEY_MODEL_FIRST_LIST_DELAY_MS)
+    // an app left open for days: a list a day old is asked again (decision 0138).
+    // Unref'd, so the look never keeps a process that is done alive.
+    setInterval(() => keyModelRefresher.refreshChanged(), KEY_MODEL_RELIST_CHECK_MS).unref()
   })
 
   ipcMain.handle('ai:codex-models', async (_event, cliPath: unknown) => {

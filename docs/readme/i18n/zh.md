@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 打开文档，说出想要修改的内容，然后在同一个窗口继续工作。Onyou Office 将文档编辑器与 AI 智能体整合到桌面应用中。用 AI 起草和修改，也可以自行编辑。应用免费且开源，AI 连接可选。
@@ -36,7 +36,7 @@
 - 编辑 draw.io 图表，并在本机将 Visio（.vsdx）文件导入为新图表。
 - 创建和编辑文档、电子表格、演示文稿及 Hangul（HWP/HWPX）。也支持 PDF、Markdown、HTML、思维导图和 EPUB。编辑及转换能力因格式而异。
 - 在 AI 助手中请求修改文档，在知识仓库中针对所选文档提问，并通过项目整理指令、记忆、文件和对话。
-- 支持 21 种界面语言、浅色和深色主题，以及 AI 聊天字号调整。Onyou Office 改进了首次使用、主页、AI 面板、项目与知识仓库，并采用独立品牌及安装和数据路径。
+- 支持 22 种界面语言、浅色和深色主题，以及 AI 聊天字号调整。Onyou Office 改进了首次使用、主页、AI 面板、项目与知识仓库，并采用独立品牌及安装和数据路径。
 
 ## 开始使用
 

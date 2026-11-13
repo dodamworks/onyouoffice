@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Öffne ein Dokument, beschreibe die gewünschte Änderung und arbeite im selben Fenster weiter. Onyou Office verbindet Dokumenteditoren mit KI-Agenten auf deinem Desktop. Entwirf und überarbeite Texte mit KI oder bearbeite sie selbst. Die App ist kostenlos und Open Source; KI ist optional.
@@ -36,7 +36,7 @@
 - Bearbeite draw.io-Diagramme und importiere Visio-Dateien (.vsdx) lokal als neue Diagramme.
 - Erstelle und bearbeite Dokumente, Tabellen, Präsentationen und Hangul-Dateien (HWP/HWPX). Auch PDF, Markdown, HTML, Mindmaps und EPUB werden unterstützt. Bearbeitung und Konvertierung unterscheiden sich je nach Format.
 - Bitte den KI-Assistenten um Änderungen, stelle in Knowledge Vault Fragen zu ausgewählten Dokumenten und sammle Anweisungen, Erinnerungen, Dateien und Gespräche in Projekten.
-- 21 Oberflächensprachen, helle und dunkle Designs und anpassbare KI-Chatschrift. Onyou Office überarbeitet Einstieg, Startseite, KI-Panels, Projekte und Knowledge Vault und nutzt eigene Marken-, Installations- und Datenpfade.
+- 22 Oberflächensprachen, helle und dunkle Designs und anpassbare KI-Chatschrift. Onyou Office überarbeitet Einstieg, Startseite, KI-Panels, Projekte und Knowledge Vault und nutzt eigene Marken-, Installations- und Datenpfade.
 
 ## Erste Schritte
 

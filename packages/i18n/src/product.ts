@@ -131,6 +131,7 @@ const UNCONFIGURED_SERVICE: Readonly<Record<string, string>> = {
   ms: 'Ciri ini belum tersedia dalam versi ini. Versi baharu ada di GitHub Releases.',
   'zh-TW': '此版本尚未提供此功能。新版本可在 GitHub Releases 下載。',
   he: 'התכונה הזו עדיין לא זמינה בגרסה הזו. גרסאות חדשות נמצאות ב-GitHub Releases.',
+  tr: 'Bu özellik bu sürümde henüz yok. Yeni sürümler GitHub Releases sayfasında.',
 } satisfies Record<Lang, string>
 
 export function productServiceUnavailable(lang: string): string {

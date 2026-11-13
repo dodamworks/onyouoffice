@@ -75,6 +75,16 @@ export const KB_SCOPE_LABELS: Record<
     empty: 'Select documents to ask about.',
     placeholder: 'Ask about the selected documents.',
   },
+  tr: {
+    changeHint: 'Kapsamı değiştirmek yeni bir sohbet başlatır.',
+    label: 'Belge kapsamı',
+    registered: 'Tüm kayıtlı belgeler',
+    project: 'Proje',
+    selected: 'Belgeleri seçin',
+    choose: 'Belgeleri seçin',
+    empty: 'Soru sormak istediğiniz belgeleri seçin.',
+    placeholder: 'Seçili belgeler hakkında sorun.',
+  },
   zh: {
     changeHint: '更改范围将开始新对话。',
     label: '文档范围',

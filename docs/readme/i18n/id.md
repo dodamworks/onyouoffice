@@ -19,7 +19,7 @@
   <a href="https://github.com/dodamworks/onyouoffice/releases/latest"><img src="https://img.shields.io/github/v/release/dodamworks/onyouoffice?label=release&amp;color=2456FF" alt="Latest release"></a>
   <a href="https://github.com/dodamworks/onyouoffice/releases"><img src="https://img.shields.io/github/downloads/dodamworks/onyouoffice/total?label=downloads&amp;color=2456FF" alt="Total downloads"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-555" alt="Platforms: Windows, macOS, Linux">
-  <img src="https://img.shields.io/badge/UI-21%20languages-555" alt="21 interface languages">
+  <img src="https://img.shields.io/badge/UI-22%20languages-555" alt="22 interface languages">
 </p>
 
 Buka dokumen, jelaskan perubahan yang diinginkan, lalu lanjutkan dalam jendela yang sama. Onyou Office menyatukan editor dokumen dan agen AI di desktop. Buat draf dan revisi dengan AI atau edit sendiri. Aplikasi ini gratis dan sumber terbuka; AI bersifat opsional.
@@ -36,7 +36,7 @@ Buka dokumen, jelaskan perubahan yang diinginkan, lalu lanjutkan dalam jendela y
 - Edit diagram draw.io dan impor berkas Visio (.vsdx) sebagai diagram baru secara lokal.
 - Buat dan edit dokumen, spreadsheet, presentasi, dan Hangul (HWP/HWPX). PDF, Markdown, HTML, peta pikiran, dan EPUB juga didukung. Kemampuan edit dan konversi berbeda menurut format.
 - Minta perubahan melalui asisten AI, ajukan pertanyaan tentang dokumen terpilih di Knowledge Vault, dan kumpulkan instruksi, memori, berkas, serta percakapan dalam proyek.
-- 21 bahasa antarmuka, tema terang dan gelap, serta ukuran teks chat AI yang dapat diatur. Onyou Office memperbarui pengenalan awal, Beranda, panel AI, proyek, dan Knowledge Vault, dengan merek serta jalur instalasi dan data sendiri.
+- 22 bahasa antarmuka, tema terang dan gelap, serta ukuran teks chat AI yang dapat diatur. Onyou Office memperbarui pengenalan awal, Beranda, panel AI, proyek, dan Knowledge Vault, dengan merek serta jalur instalasi dan data sendiri.
 
 ## Mulai menggunakan
 
