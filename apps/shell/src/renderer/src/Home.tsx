@@ -126,7 +126,7 @@ const FILE_ICONS: Record<string, string> = {
 
 /* Keep the advertised groups aligned with OPEN_DIALOG_EXTENSIONS in Shell main. */
 const OPEN_LOCAL_FORMATS: readonly { label: StringKey; extensions: readonly string[] }[] = [
-  { label: 'filterDocs', extensions: ['docx', 'doc', 'dot', 'odt'] },
+  { label: 'filterDocs', extensions: ['docx', 'doc', 'odt'] },
   { label: 'filterSheets', extensions: ['xlsx', 'xlsm', 'xls', 'csv', 'tsv', 'ods'] },
   { label: 'filterSlides', extensions: ['pptx', 'ppt'] },
   { label: 'filterPdf', extensions: ['pdf'] },
