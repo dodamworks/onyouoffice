@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { handOffBytes } from './byte-handoff'
+import { altChunkDocument } from './altchunk-document'
 import {
   appendFileSync,
   existsSync,
@@ -108,6 +109,7 @@ import {
 } from '@genoffice/file-parse'
 import { convertHtmlToDocx } from '../../../../packages/html2docx/src'
 import { ElectronBrowserDriver } from '../../../../packages/html2docx/src/drivers/electron'
+import { isFileUrlOf } from '../../../../packages/html2docx/src/drivers/file-url'
 import {
   AI_MEDIA_PROVIDERS,
   AI_SEARCH_PROVIDERS,
@@ -254,6 +256,7 @@ import {
 import { copyImageDisplaySize, validCopyImageDataUrl } from './copy-image-guard'
 import {
   printJobOptions,
+  printPaperOption,
   printScaleOption,
   validPrintGeometry,
   validPrintPaper,
@@ -3416,14 +3419,26 @@ export function queueDocsAiContent(wcId: number, content: AiDocContent): void {
 }
 
 /**
- * Untitled copies waiting for their tab (a skill template's, spec 5.7), keyed
- * by webContents id: the copy's temp file and the name it shows. The tab gets
- * the bytes once and is never granted a write to that file.
+ * An untitled copy waiting for its tab: the copy's temp file and the name it
+ * shows, plus, for a legacy Word file opened as a converted copy, the path its
+ * first save suggests and the format it came from.
  */
-const pendingDocCopies = new Map<number, { path: string; name: string }>()
+export interface QueuedDocsCopy {
+  path: string
+  name: string
+  saveAsDefaultPath?: string | undefined
+  importedFrom?: string | undefined
+}
+
+/**
+ * Untitled copies waiting for their tab (a skill template's, spec 5.7, or a
+ * converted .doc/.dot), keyed by webContents id. The tab gets the bytes once
+ * and is never granted a write to that file.
+ */
+const pendingDocCopies = new Map<number, QueuedDocsCopy>()
 
 /** queue an untitled copy for a fresh docs tab (called by the shell right after creating the view) */
-export function queueDocsCopy(wcId: number, copy: { path: string; name: string }): void {
+export function queueDocsCopy(wcId: number, copy: QueuedDocsCopy): void {
   pendingDocCopies.set(wcId, copy)
 }
 
@@ -5097,14 +5112,18 @@ export function registerDocsIpc(): void {
     let driver: ElectronBrowserDriver | null = null
     try {
       const htmlPath = join(workDir, 'chunk.html')
-      // the BOM outranks a stale <meta charset> left in the decoded markup
-      await writeFile(htmlPath, `\ufeff${html}`, 'utf8')
-      driver = await ElectronBrowserDriver.create(ALT_CHUNK_VIEWPORT)
-      // The markup is an unsanitised AI artifact: a script that never yields
-      // would otherwise keep executeJavaScript pending forever, and the
-      // finally below would never run (the hidden window and workDir leak for
-      // good). Race a watchdog and destroy the window on timeout, matching
-      // the slides export guard.
+      // The chunk is whatever the .docx's author put there. Its page runs no
+      // scripts and fetches nothing (CSP), and its window may load this one
+      // file and nothing else: not the chunk's neighbours on disk, not the network.
+      await writeFile(htmlPath, altChunkDocument(html), 'utf8')
+      driver = await ElectronBrowserDriver.create(ALT_CHUNK_VIEWPORT, {
+        allowRequest: (url) => isFileUrlOf(url, htmlPath),
+      })
+      // The converter's own page work still has to finish: a page that never
+      // yields would keep executeJavaScript pending forever, and the finally
+      // below would never run (the hidden window and workDir leak for good).
+      // Race a watchdog and destroy the window on timeout, matching the
+      // slides export guard.
       const conversion = convertHtmlToDocx({ url: pathToFileURL(htmlPath).href }, driver, {
         naturalTableWidth: true,
       }).then(({ docx }) => docx)
@@ -5252,6 +5271,8 @@ export function registerDocsIpc(): void {
         dataUrl: handOffBytes(bytes),
         hash: '',
         untitledCopy: true,
+        ...(copy.saveAsDefaultPath ? { saveAsDefaultPath: copy.saveAsDefaultPath } : {}),
+        ...(copy.importedFrom ? { importedFrom: copy.importedFrom } : {}),
       }
     } catch {
       return null
@@ -5851,9 +5872,7 @@ export function registerDocsIpc(): void {
     },
   )
 
-  ipcMain.handle('docs:recent', () =>
-    readJson<string[]>(RECENT_PATH(), []).filter((p) => existsSync(p)),
-  )
+  ipcMain.handle('docs:recent', () => readJson<string[]>(RECENT_PATH(), []))
 
   ipcMain.handle('docs:pick-image', async (event) => {
     const result = await openDialog(event, {
@@ -5908,7 +5927,7 @@ export function registerDocsIpc(): void {
       await writeFile(path, bytes)
     }
     try {
-      if (request.mode === 'single') {
+      if (request.mode === 'single' || request.mode === 'labels') {
         const file = files[0]!
         const name = mergeOutputFileName(file.name)
         const result = await saveDialog(event, {
@@ -6086,6 +6105,10 @@ export function registerDocsIpc(): void {
       margins: { marginType: 'none' as const },
       ...printScale(scale),
       ...printJobOptions(job),
+      // the document's own paper: Chromium prints on Letter unless the job
+      // states one, and an A4 sheet on Letter is taller than the paper — it
+      // splits in two, so the printed page loses its bottom (genoffice#2563)
+      ...printPaperOption(paper),
     }
     // A named printer prints silently, and Chromium's silent print on macOS
     // can drop the job outright — no queue entry, no callback error
@@ -6701,9 +6724,8 @@ export function setDocsMenuGate(gate: () => boolean): void {
 export function buildDocsMenu(): void {
   if (docsMenuGate && !docsMenuGate()) return
   const isMac = process.platform === 'darwin'
-  const recent = readJson<string[]>(RECENT_PATH(), [])
-    .filter((p) => existsSync(p))
-    .slice(0, 10)
+  // Opening a menu must not trigger an automount; validate when the user opens a file.
+  const recent = readJson<string[]>(RECENT_PATH(), []).slice(0, 10)
 
   const recentSubmenu: MenuItemConstructorOptions[] =
     recent.length > 0

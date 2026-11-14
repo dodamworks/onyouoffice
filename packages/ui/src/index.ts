@@ -264,6 +264,7 @@ export { installScreenTips } from './screentip'
 export {
   installPopoverDismiss,
   useDismissablePopover,
+  useEscapeToClose,
   type PopoverDismissOptions,
 } from './popover-dismiss'
 export { Dropdown, type DropdownOption } from './dropdown'
@@ -627,3 +628,4 @@ export {
   useNameFromTitle,
   type SuggestSkillName,
 } from './skill-name-from-title'
+export { createImeEnterGuard, useImeEnterGuard, type ImeEnterGuard } from './ime-enter'

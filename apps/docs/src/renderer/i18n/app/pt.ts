@@ -1,6 +1,8 @@
 import type { zh } from './zh'
 
 export const pt = {
+  appLegacyDocImported:
+    'O arquivo .{ext} foi aberto como uma cópia .docx convertida. O original permanece inalterado; ao salvar, é gravado um novo arquivo .docx.',
   appScTitle: 'Atalhos de Teclado',
   appScFilter: 'Pesquisar atalho',
   appScNone: 'Nenhum atalho correspondente',
@@ -374,9 +376,9 @@ export const pt = {
   appLangIndonesian: 'indonésio',
   appLangRussian: 'russo',
   appLangArabic: 'árabe',
-  appLangPortuguese: 'português',
+  appLangPortuguese: 'Português',
   appLangItalian: 'italiano',
-  appLangPolish: 'polaco',
+  appLangPolish: 'polonês',
   appLangCzech: 'tcheco',
   appLangDutch: 'neerlandês',
   appLangMalay: 'malaio',
