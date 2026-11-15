@@ -1727,14 +1727,17 @@ export function SettingsModal({
   const openItems = useOpenEditorItems(tabsApi)
   const aiOn = choice?.aiFeatures ?? true
   // Onyou has no separate account page: the account target and the default open the AI section
-  const requestedSection = settingsSectionFor(requested, aiOn)
-  const asked: SectionId = requestedSection === 'account' ? 'aiModel' : requestedSection
+  const onyouSectionFor = (value: SectionId | null): SectionId => {
+    const resolved = settingsSectionFor(value, aiOn)
+    return resolved === 'account' ? 'aiModel' : resolved
+  }
+  const asked = onyouSectionFor(requested)
   // a window without the choice bridge has no Editors and AI section
   // nothing shows until the choice is known
   const section: SectionId | null = !choice
     ? null
     : asked === 'editorChoice' && !choiceApi
-      ? settingsSectionFor(null, aiOn)
+      ? onyouSectionFor(null)
       : asked
   const [theme, setTheme] = useState<UiTheme>('system')
   const [docTheme, setDocTheme] = useState<DocTheme>('follow')

@@ -217,6 +217,25 @@ describe('Settings → Editors and AI: which sections show', () => {
     expect(activeNav()).toBe('AI')
   })
 
+  it('opens the AI section for an Editors and AI target in a window without the choice bridge', async () => {
+    const w = window as unknown as Record<string, unknown>
+    delete w.aiOfficeEditorChoice
+    await act(async () => {
+      root.render(
+        createElement(
+          LocaleProvider,
+          { initial: 'en' },
+          createElement(SettingsModal, { onClose: vi.fn(), target: { section: 'editorChoice' } }),
+        ),
+      )
+    })
+    await flush()
+    // Onyou has no account page: the fallback lands on AI, never on an empty pane
+    expect(navLabels()).not.toContain('Editors and AI')
+    expect(activeNav()).toBe('AI')
+    expect(host.querySelector('.set-pane')!.childElementCount).toBeGreaterThan(0)
+  })
+
   it('hides account, AI and skills while AI is off and opens on General', async () => {
     await open(fakeChoice({ aiFeatures: false }))
     expect(navLabels()).toEqual(['General', 'Editors and AI', 'Integrations', 'About'])
