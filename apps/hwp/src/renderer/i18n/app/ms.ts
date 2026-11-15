@@ -283,6 +283,7 @@ export const ms = {
   previewMargins: 'Tunjuk jidar',
   previewEditPage: 'Edit halaman ini',
   previewEditFailed: 'Tidak dapat pergi ke halaman ini.',
+  printLayoutSaved: 'Hasil susun atur telah disimpan sebagai PDF.',
   checkTitle: 'Semak format dokumen',
   checkRunning: 'Membaca dokumen…',
   checkFailed: 'Dokumen tidak dapat dibaca.',

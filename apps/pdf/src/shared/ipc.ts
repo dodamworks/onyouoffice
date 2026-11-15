@@ -2,6 +2,7 @@ import type { AiPanelPrefs, AutoSaveDefault } from '@genoffice/ui'
 import type { Lang } from '@genoffice/i18n'
 import type { AiSettings, AiStreamChunk, AiStreamRequest } from '@genoffice/ai-provider'
 import type { SubscriptionApi } from './subscription-api'
+import type { PrintLayoutBridge } from '@genoffice/electron-utils/print-layout-bridge'
 import type { DocumentTree, InlineRun } from '../../../../packages/pdf-structure/src/tree/types'
 import type { PageFingerprint } from '../../../../packages/pdf-structure/src/tree/extract'
 import type { MarkdownWarning } from '../../../../packages/pdf-structure/src/markdown/write'
@@ -91,6 +92,10 @@ export const PDF_CHANNELS = {
   createDocument: 'pdf:create-document',
   openInPdfTools: 'pdf:open-in-pdf-tools',
   generateImage: 'pdf:generate-image',
+  // a document job of this screen begins / ends (the shell's AI activity); main asks it to stop
+  aiJobBegin: 'pdf:ai-job-begin',
+  aiJobEnd: 'pdf:ai-job-end',
+  aiJobStop: 'pdf:ai-job-stop',
   listDigitalSignatures: 'pdf:list-digital-signatures',
   pickCertificate: 'pdf:pick-certificate',
   listSystemCertificates: 'pdf:list-system-certificates',
@@ -167,6 +172,10 @@ export const PDF_CHANNELS = {
   convertDialogRequest: 'pdf:convert-dialog-request',
   convertReleaseTarget: 'pdf:convert-release-target',
   convertOpenResult: 'pdf:convert-open-result',
+  /** before the converter's Markdown dialog: the shell asks while the Markdown editor is off */
+  convertAskBeforeOpen: 'pdf:convert-ask-before-open',
+  /** the annotation list's "Open as Markdown / Word document" (no AI) */
+  annotDocument: 'pdf:annot-document',
   convertRevealResult: 'pdf:convert-reveal-result',
   authorNameChanged: 'app:author-name-changed',
 } as const
@@ -371,6 +380,8 @@ export interface CreateDocumentResult {
   /** the created file, when it is written directly (pdf/md); docx opens as a new tab that saves itself */
   path?: string
   error?: string
+  /** the person cancelled (the editor it opens in is off): nothing was made */
+  canceled?: boolean
 }
 
 export type UiTheme = 'light' | 'dark' | 'system'
@@ -1688,6 +1699,25 @@ export interface PdfDiskFileChange {
   kind: 'changed' | 'missing' | 'unchanged'
 }
 
+/**
+ * The PDF editor's part of an advanced print request (`pdf:print-layout-*`):
+ * which saved file, which 1-based pages (null: all), and whether annotations
+ * are baked in or left out.
+ */
+export interface PdfPrintLayoutEditor {
+  path: string
+  pages: number[] | null
+  includeAnnotations: boolean
+}
+
+/**
+ * The error `pdf:print-layout-save` answers for a file with permission
+ * restrictions: its arranged result would be a copy without them, so it is
+ * never saved (printing it stays allowed). The screen shows its own wording.
+ */
+export const PDF_PRINT_SAVE_RESTRICTED =
+  'pdf: a PDF with permission restrictions cannot be saved as an arranged PDF'
+
 export interface PdfApi {
   /** Take the pdf path pending for this view (queued at tab creation); null if none */
   consumePending(): Promise<string | null>
@@ -1838,12 +1868,28 @@ export interface PdfApi {
   onConvertDialogRequest(handler: (request: PdfConvertDialogRequest) => void): () => void
   /** Before a Markdown job writes: close a Markdown tab showing that file (its unsaved-changes guard applies). False = still open */
   releaseConvertTarget(request: PdfConvertOutputRequest): Promise<boolean>
+  /**
+   * The converter's Markdown entry, before its dialog opens: the shell asks
+   * while the editor the result opens in is off ('cancel' = do nothing; a
+   * result made with 'file-only' is shown in its folder). 'open' without a shell.
+   */
+  askBeforeConvert(request: {
+    source: string
+    format: PdfReflowFormat
+  }): Promise<'open' | 'file-only' | 'cancel'>
   /** Open a converted Markdown file in a Markdown tab (same routing as File > Open) */
   openConvertResult(request: PdfConvertOutputRequest): Promise<boolean>
   /** Show a converted file (or an export folder's first file) in the system file manager */
   revealConvertResult(request: PdfConvertOutputRequest): Promise<boolean>
   /** AI create_document: build a new standalone file in the default folder and open it in a new tab */
   createDocument(request: CreateDocumentRequest): Promise<CreateDocumentResult>
+  /**
+   * The annotation list's "Open as Markdown / Word document": not an AI
+   * document. While the editor it opens in is off the shell asks first
+   * (editor choice spec 7.3); "create the file only" writes it and shows it
+   * in its folder.
+   */
+  openAnnotDocument(request: CreateDocumentRequest): Promise<CreateDocumentResult>
   /** open the shell's PDF tools window on `tool` with this view's file picked (false: no host) */
   openInPdfTools(path: string, tool: PdfToolsHandoffTool): Promise<boolean>
   /** Web image search for AI tools (app-wide ai:image-search handler) */
@@ -1907,6 +1953,8 @@ export interface PdfApi {
   onAutoSaveDefaultChanged(handler: (value: AutoSaveDefault) => void): () => void
   /** Shell menu Print → renderer runs its print flow (save, rasterize, system dialog) */
   onPrintRequest(handler: () => void): () => void
+  /** Advanced print: arranged preview, print and PDF save, built in the main process from the saved file */
+  printLayout: PrintLayoutBridge<PdfPrintLayoutEditor>
   /** The file was renamed or moved from the shell (home Folders / Files pane); the viewer follows the new path */
   onFileRenamed(handler: (newPath: string) => void): () => void
   /** Watch the file this view just read; another program's change arrives via onDiskFileChanged */
@@ -1961,4 +2009,19 @@ export interface PdfApi {
    */
   aiStreamCancel(requestId: string, scope?: 'request'): Promise<void>
   onAiStream(handler: (chunk: AiStreamChunk) => void): () => void
+  /** a document job tells the main process it runs (absent in an older preload) */
+  aiJob?: ScreenAiJobBridge
+}
+
+/**
+ * How a document job of this screen tells the main process it runs, so the
+ * shell can count it and stop it when AI is turned off.
+ */
+export interface ScreenAiJobBridge {
+  /** a job begins: null to go on, or the refusal to show (AI is turned off) */
+  begin(jobId: string): Promise<string | null>
+  /** the job ended however it ended */
+  end(jobId: string): void
+  /** the main process asks the job `jobId` to stop */
+  onStop(handler: (jobId: string) => void): () => void
 }

@@ -1378,6 +1378,8 @@ export type AgentReadPictureResult =
 /** What the plugin answers to, by method name (the studio's `plugins.invoke`). */
 export interface AgentPluginSurface {
   foreignChanges(): number
+  /** moves with every edit of the document and every document swapped in */
+  documentRevision(): number
   readText(): string
   listPictures(): AgentPictureList
   readPicture(picture: number): AgentReadPictureResult
@@ -1478,6 +1480,7 @@ export interface AgentPluginSurface {
   installDocumentCheckMenu(label: string): { ok: boolean }
   installFileMenu(labels: Record<AgentFileCommand, string>): { ok: boolean }
   installEasyWords(label: string): { ok: boolean }
+  removeEasyWords(): { ok: boolean }
   showCharCount(labels: AgentCharCountLabels): { ok: boolean }
   watchMissingFonts(labels: AgentMissingFontLabels): { ok: boolean }
   reveal(place: AgentPlace): { ok: boolean }
@@ -1549,6 +1552,8 @@ export interface AgentPluginSurface {
   ): AgentStyleResult
   /** pages for printing from `from`, as many as are drawn in about two seconds */
   printPages(from: number): AgentPrintPages
+  /** each page's size as the print path lays it out, from `from`, measured for about two seconds */
+  printPageSizes(from: number): AgentPrintPageSizes
   /** one page as the print path draws it, for the preview; `page` is 0-based */
   previewPage(page: number): AgentPreviewPage
   /** the first body paragraph that starts on `page`, for Ctrl+Enter in the preview */
@@ -1643,6 +1648,13 @@ export interface AgentPrintPages {
   pageCount: number
   from: number
   pages: { svg: string; width: number; height: number }[]
+}
+
+/** Page sizes in CSS pixels as the print path lays the pages out, from page `from`. */
+export interface AgentPrintPageSizes {
+  pageCount: number
+  from: number
+  sizes: { width: number; height: number }[]
 }
 
 /** One page for the print preview, with the count it belongs to. */

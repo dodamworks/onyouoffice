@@ -21,6 +21,7 @@
 - AI와 무관한 공용 부품: `Dropdown`, 색 선택기(문구 `eyedropper`를 넘긴 편집기에만 화면 색 따오기 줄이 생긴다, `pickScreenColor`), 찾기 패널, 리본 접기, 이미지 대화 상자·뷰어, `Markdown`, 아이콘, 글꼴 목록, WordArt 프리셋.
 - PC 글꼴 불러오기(`src/system-fonts.ts`): 워드·엑셀·파워포인트 글꼴 상자가 쓰는 `createSystemFontSource`와 훅 `useSystemFontSource`. 편집기마다 한글 이름을 묻는 다리만 넘긴다(한글 편집기는 rhwp의 찾기를 쓴다, `apps/hwp/studio-plugin/pc-fonts.mjs`).
 - 디자인 템플릿 글꼴: 폴더 `template-fonts/`(글꼴 파일, 패밀리마다의 라이선스 글, `README.md`)와 그 목록 `src/template-fonts.ts`(`@genoffice/ui/template-fonts`). 폴더는 `src/` 밖에 있어 어느 편집기 빌드에도 복사되지 않는다.
+- 고급 인쇄의 공용 화면(결정 0141): 쪽 배치 칸(`src/print-layout/PrintLayoutPanel.tsx`), 배치도, 결과 미리 보기, HTML·마인드맵·다이어그램의 작은 인쇄 창(`SimplePrintDialog`), 양면·한 벌씩 맞추기 같은 도우미(`model.ts`, `hooks.ts`), 문구(`strings-print-layout/`, 22개 언어). 화면은 `@genoffice/print-layout/plan`만 값으로 가져온다.
 
 ## 맡지 않는 것 (경계)
 
@@ -54,6 +55,7 @@
 - **프로젝트 도구는 앱 도구다.** 도구 넷은 이 패키지가 정의하고 실행은 다리를 부른다. 범위는 뒷단이 지키므로 화면은 프로젝트 id만 넘긴다. `project_remember`는 기억 쌓기가 켜져 있고, 믿음이 "지침까지 사용"이고, 폴더에 쓸 수 있을 때만 목록에 넣는다. 구독 프로그램에 도구를 켜는 길을 만들지 않는다. 기억 정리는 사람이 누를 때만 한 번 실행하고, 보내기 전 판단(`aiSendGate`)을 똑같이 지난다.
 - **사용자 MCP 허락은 카드가 답할 때만 진행한다(결정 0100).** `McpPermissionCard`는 사람이 단추를 누르기 전에 허락을 넘기지 않고, 언마운트·멈춤은 거절로 끝낸다. 서버 단추의 동작은 설정을 열거나 다시 시도를 부를 뿐, 서버 설정을 바꾸지 않는다(설정 창구는 껍데기 앱 메인 창 전용). 화면에 서버의 주소·열쇠·명령을 그리지 않는다. 다리가 주지 않는다.
 - 상태 확인의 오류 문장(`status.error`)을 그대로 화면에 찍지 않는다. `subscriptionStatusErrorKind`로 종류를 읽어 번역된 문장을 쓴다. 로그인·설치 실패의 원문도 마찬가지다(실행 파일 경로가 들어 있을 수 있다).
+- **`use-app-choice.ts`(결정 0143).** 편집기 화면은 `useAppChoice(window.aiOfficeEditorChoice)`와 `aiVisible`로 AI 부분을 그릴지 정한다. 원천은 바뀌지 않는 객체를 넘긴다. 원천이 있으면 첫 답을 받기 전에는 `PENDING_APP_CHOICE_STATE`(AI 부분 감춤)라서 AI를 끈 사람에게 AI 단추가 번쩍 보이지 않는다. 원천이 없으면(편집기 단독 실행) 처음부터 모두 켜짐이다. 첫 답 전에 들은 바뀜이 첫 답보다 앞선다.
 
 ## 이 모듈의 방식
 

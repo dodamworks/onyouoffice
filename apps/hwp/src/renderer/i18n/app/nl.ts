@@ -288,6 +288,7 @@ export const nl = {
   previewMargins: 'Marges tonen',
   previewEditPage: 'Deze pagina bewerken',
   previewEditFailed: 'Kon deze pagina niet openen.',
+  printLayoutSaved: 'Het geschikte resultaat is als pdf opgeslagen.',
   checkTitle: 'Documentopmaak controleren',
   checkRunning: 'Het document wordt gelezen…',
   checkFailed: 'Het document kon niet worden gelezen.',

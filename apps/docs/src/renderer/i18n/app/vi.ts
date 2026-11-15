@@ -55,6 +55,7 @@ export const vi = {
   appVerticalTextNotice:
     'Tài liệu này chứa văn bản dọc (tạm thời hiển thị ngang; không ảnh hưởng khi lưu)',
   appNewDocCreated: 'Đã tạo tài liệu trống. Mô tả nội dung cần tạo trong ngăn AI ở bên trái.',
+  appNewDocCreatedNoAi: 'Đã tạo tài liệu trống.',
   appNewFailed: 'Tạo tài liệu thất bại: {error}',
   appSaveFailed: 'Lưu thất bại: {error}',
   appAutoSavedAt: 'Đã tự động lưu ({time})',
@@ -95,6 +96,9 @@ export const vi = {
   appPrintRangeAll: 'Tất cả các trang',
   appPrintRangeCurrent: 'Trang hiện tại',
   appPrintRangeCustom: 'Phạm vi tùy chỉnh',
+  appPrintRangeSelection: 'Vùng chọn',
+  appPrintSelectionPreparing: 'Đang chia trang vùng chọn…',
+  appPrintSelectionFailed: 'Không thể chia trang vùng chọn: {error}',
   appPrintRangeHint: 'ví dụ: 1,3,5-8',
   appPrintPageCount: '{n} trang',
   appPrintNoPages: 'Không có trang nào để in',

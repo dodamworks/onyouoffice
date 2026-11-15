@@ -54,6 +54,7 @@ export const ar = {
   appVerticalTextNotice: 'يحتوي المستند على نص عمودي (يُعرض أفقيًا حاليًا؛ لا يؤثر ذلك على الحفظ)',
   appNewDocCreated:
     'تم إنشاء مستند فارغ. صِف المحتوى المراد إنشاؤه في لوحة الذكاء الاصطناعي على اليسار',
+  appNewDocCreatedNoAi: 'تم إنشاء مستند فارغ.',
   appNewFailed: 'فشل إنشاء المستند: {error}',
   appSaveFailed: 'فشل الحفظ: {error}',
   appAutoSavedAt: 'تم الحفظ التلقائي ({time})',
@@ -93,6 +94,9 @@ export const ar = {
   appPrintRangeAll: 'كل الصفحات',
   appPrintRangeCurrent: 'الصفحة الحالية',
   appPrintRangeCustom: 'نطاق مخصص',
+  appPrintRangeSelection: 'التحديد',
+  appPrintSelectionPreparing: 'جارٍ تقسيم التحديد إلى صفحات…',
+  appPrintSelectionFailed: 'تعذّر تقسيم التحديد إلى صفحات: {error}',
   appPrintRangeHint: 'مثال: 1,3,5-8',
   appPrintPageCount: '{n} صفحات',
   appPrintNoPages: 'لا توجد صفحات للطباعة',

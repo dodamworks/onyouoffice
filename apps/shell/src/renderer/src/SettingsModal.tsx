@@ -69,10 +69,20 @@ import { HomeKindsField } from './SettingsHomeKinds'
 import { QuickLookField } from './SettingsQuickLook'
 import { SlidesFontsField } from './SettingsSlidesFonts'
 import { ResultStoreField } from './SettingsResultStore'
-import { useSubscriptionConnection } from './subscription-client'
+import { useSubscriptionConnection, type SubscriptionConnection } from './subscription-client'
 import { SkillsPane } from './skills/SkillsPane'
 import { useUsableMcpServers } from './mcp/mcp-open-request'
 import { skillsText } from './i18n/strings-skills'
+import { editorPickText } from './i18n/strings-editor-pick'
+import { EditorChoiceSection } from './editor-settings/EditorChoiceSection'
+import {
+  navSectionOf,
+  sectionShown,
+  settingsSectionFor,
+  type SectionId,
+} from './editor-settings/settings-sections'
+import { useEditorChoice, useOpenEditorItems } from './editor-settings/use-editor-choice'
+import './editor-choice/globals'
 import {
   advancedPaneUseChoice,
   advancedProviderIds,
@@ -208,8 +218,7 @@ function CustomFontSizeInput({
   )
 }
 
-export type SectionId =
-  'account' | 'aiModel' | 'aiMedia' | 'skills' | 'general' | 'integrations' | 'about'
+export type { SectionId }
 
 /** a section labelled from the home dictionary, or by a feature's own dictionary */
 type SectionEntry = { id: SectionId } & (
@@ -221,6 +230,7 @@ const SECTIONS: readonly SectionEntry[] = [
   { id: 'aiModel', labelKey: 'setSecAi' },
   { id: 'skills', label: (lang) => skillsText(lang, 'navLabel') },
   { id: 'general', labelKey: 'setSecGeneral' },
+  { id: 'editorChoice', label: (lang) => editorPickText(lang, 'settingsTabName') },
   { id: 'integrations', labelKey: 'setSecIntegrations' },
   { id: 'about', labelKey: 'setSecAbout' },
 ]
@@ -300,6 +310,21 @@ function SectionIcon({ id }: { id: SectionId }) {
           strokeWidth="1.3"
           strokeLinecap="round"
           strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+  if (id === 'editorChoice') {
+    return (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <path
+          d="M9.5 11.5h4M11.5 9.5v4"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinecap="round"
         />
       </svg>
     )
@@ -1672,7 +1697,10 @@ export interface SettingsModalProps {
   /** an installed skill is older than the bundled one: dot on the Integrations entry */
   skillUpdateDue?: boolean
   onSkillUpdateDue?: (due: boolean) => void
-  /** open on this section / block instead of the account page */
+  /**
+   * open on this section / block instead of the first page (account, or
+   * General while AI is off); a section hidden while AI is off opens Editors and AI
+   */
   target?: SettingsTarget | null
   /** the first-run welcome window is up: stack above it */
   overWelcome?: boolean
@@ -1687,10 +1715,27 @@ export function SettingsModal({
   overWelcome = false,
 }: SettingsModalProps) {
   const { lang, setLang, t } = useI18n()
-  const [section, setSection] = useState<SectionId>(target?.section ?? 'aiModel')
+  // the section asked for (null: none); what shows depends on whether AI is on
+  const [requested, setSection] = useState<SectionId | null>(target?.section ?? null)
   useEffect(() => {
     if (target) setSection(target.section)
   }, [target])
+  const [choiceApi] = useState(() => window.aiOfficeEditorChoice)
+  const [tabsApi] = useState(() => window.aiOfficeTabs)
+  // null until known: nothing shows (and no subscription check starts) before then
+  const [choice, setChoice] = useEditorChoice(choiceApi)
+  const openItems = useOpenEditorItems(tabsApi)
+  const aiOn = choice?.aiFeatures ?? true
+  // Onyou has no separate account page: the account target and the default open the AI section
+  const requestedSection = settingsSectionFor(requested, aiOn)
+  const asked: SectionId = requestedSection === 'account' ? 'aiModel' : requestedSection
+  // a window without the choice bridge has no Editors and AI section
+  // nothing shows until the choice is known
+  const section: SectionId | null = !choice
+    ? null
+    : asked === 'editorChoice' && !choiceApi
+      ? settingsSectionFor(null, aiOn)
+      : asked
   const [theme, setTheme] = useState<UiTheme>('system')
   const [docTheme, setDocTheme] = useState<DocTheme>('follow')
   const [saveDir, setSaveDir] = useState('')
@@ -1708,8 +1753,6 @@ export function SettingsModal({
   const [channel, setChannel] = useState<'stable' | 'beta'>('stable')
   const [appVersion, setAppVersion] = useState('')
   const [updateState, setUpdateState] = useState<UpdateUiState | null>(null)
-  // one live view of the two subscription connections for the whole dialog
-  const connection = useSubscriptionConnection()
   // a skill's "MCP server needed" mark leaves out the servers registered and on
   const usableMcpServers = useUsableMcpServers()
 
@@ -1853,7 +1896,7 @@ export function SettingsModal({
   }
 
   // the media area is part of the AI section: a target naming it lights the AI entry
-  const navSection: SectionId = section === 'aiMedia' || section === 'account' ? 'aiModel' : section
+  const navSection = section && navSectionOf(section)
 
   const defaultAppDesc = (() => {
     if (!defaultApp) return ''
@@ -1887,7 +1930,9 @@ export function SettingsModal({
         </div>
         <div className="set-body">
           <nav className="set-nav" aria-label={t('settings')}>
-            {SECTIONS.map((s) => (
+            {SECTIONS.filter(
+              (s) => choice && sectionShown(s.id, aiOn) && (s.id !== 'editorChoice' || choiceApi),
+            ).map((s) => (
               <button
                 key={s.id}
                 className={`set-nav-item${navSection === s.id ? ' active' : ''}`}
@@ -1903,25 +1948,47 @@ export function SettingsModal({
             ))}
           </nav>
           <div className="set-pane">
-            {navSection === 'aiModel' && (
-              <AiSection
-                t={t}
-                lang={lang}
-                connection={connection}
-                openTab={section === 'aiMedia' ? 'media' : undefined}
-                advanced={(tab) =>
-                  tab === 'model' ? (
-                    <AiModelPane t={t} onCliPathSaved={connection.recheck} />
-                  ) : (
-                    <AiMediaPane
-                      t={t}
-                      lang={lang}
-                      codexImageAvailable={connection.codexImageAvailable}
-                      onFileSearchChange={onFileSearchChange}
-                      focusBlock={target?.block}
-                    />
-                  )
-                }
+            {/* one live view of the two subscription connections for the whole
+                dialog, only once AI is known to be on: AI off starts no subscription check */}
+            {choice?.aiFeatures && (
+              <SubscriptionScope>
+                {(connection) => (
+                  <>
+                    {navSection === 'aiModel' && (
+                      <AiSection
+                        t={t}
+                        lang={lang}
+                        connection={connection}
+                        openTab={section === 'aiMedia' ? 'media' : undefined}
+                        advanced={(tab) =>
+                          tab === 'model' ? (
+                            <AiModelPane t={t} onCliPathSaved={connection.recheck} />
+                          ) : (
+                            <AiMediaPane
+                              t={t}
+                              lang={lang}
+                              codexImageAvailable={connection.codexImageAvailable}
+                              onFileSearchChange={onFileSearchChange}
+                              focusBlock={target?.block}
+                            />
+                          )
+                        }
+                      />
+                    )}
+                  </>
+                )}
+              </SubscriptionScope>
+            )}
+            {section === 'editorChoice' && choiceApi && choice && (
+              <EditorChoiceSection
+                api={choiceApi}
+                choice={choice}
+                onChoice={(next) => {
+                  // stay here whatever brought the dialog: a switch moved on this page
+                  setSection('editorChoice')
+                  setChoice(next)
+                }}
+                openItems={openItems}
               />
             )}
             {section === 'general' && (
@@ -1969,84 +2036,89 @@ export function SettingsModal({
                     onPick={(v) => applyDocumentTheme(v as DocTheme)}
                   />
                 </div>
-                <div className="set-field">
-                  <div className="set-field-text">
-                    <label className="set-field-label">{t('setAiPanelSide')}</label>
-                  </div>
-                  <Dropdown
-                    className="set-dd"
-                    value={aiPrefs.side}
-                    ariaLabel={t('setAiPanelSide')}
-                    options={[
-                      { value: 'left', label: t('aiPanelSideLeft') },
-                      { value: 'right', label: t('aiPanelSideRight') },
-                    ]}
-                    onPick={(side) => updateAiPrefs({ side: side as AiPanelSide })}
-                  />
-                </div>
-                <div className="set-field">
-                  <div className="set-field-text">
-                    <label className="set-field-label">{t('setAiFontSize')}</label>
-                  </div>
-                  {aiPrefs.fontSize === 'custom' && (
-                    <CustomFontSizeInput
-                      value={aiPrefs.customFontSize}
-                      label={t('aiFontSizeCustom')}
-                      onCommit={(px) => updateAiPrefs({ customFontSize: px })}
-                    />
-                  )}
-                  <Dropdown
-                    className="set-dd"
-                    value={aiPrefs.fontSize}
-                    ariaLabel={t('setAiFontSize')}
-                    options={AI_FONT_SIZE_OPTIONS.map((opt) => ({
-                      value: opt.value,
-                      label: t(opt.labelKey),
-                    }))}
-                    onPick={(v) => {
-                      const fontSize = v as AiFontSize
-                      // start the custom size from the preset being left so nothing jumps
-                      updateAiPrefs(
-                        fontSize === 'custom' && aiPrefs.fontSize !== 'custom'
-                          ? { fontSize, customFontSize: aiPanelFontPx(aiPrefs) }
-                          : { fontSize },
-                      )
-                    }}
-                  />
-                </div>
-                <div className="set-field">
-                  <div className="set-field-text">
-                    <div className="set-field-stack">
-                      <div className="set-field-label">{t('setAiSpellcheck')}</div>
-                      <div className="set-field-desc">{t('setAiSpellcheckDesc')}</div>
+                {/* the AI panel rows: AI-only, hidden while AI is off */}
+                {aiOn && (
+                  <>
+                    <div className="set-field">
+                      <div className="set-field-text">
+                        <label className="set-field-label">{t('setAiPanelSide')}</label>
+                      </div>
+                      <Dropdown
+                        className="set-dd"
+                        value={aiPrefs.side}
+                        ariaLabel={t('setAiPanelSide')}
+                        options={[
+                          { value: 'left', label: t('aiPanelSideLeft') },
+                          { value: 'right', label: t('aiPanelSideRight') },
+                        ]}
+                        onPick={(side) => updateAiPrefs({ side: side as AiPanelSide })}
+                      />
                     </div>
-                  </div>
-                  <button
-                    className="set-switch"
-                    role="switch"
-                    aria-checked={aiPrefs.spellcheck}
-                    aria-label={t('setAiSpellcheck')}
-                    onClick={() => updateAiPrefs({ spellcheck: !aiPrefs.spellcheck })}
-                  />
-                </div>
-                <div className="set-field">
-                  <div className="set-field-text">
-                    <div className="set-field-stack">
-                      <div className="set-field-label">{t('setAiPanelStart')}</div>
-                      <div className="set-field-desc">{t('setAiPanelStartDesc')}</div>
+                    <div className="set-field">
+                      <div className="set-field-text">
+                        <label className="set-field-label">{t('setAiFontSize')}</label>
+                      </div>
+                      {aiPrefs.fontSize === 'custom' && (
+                        <CustomFontSizeInput
+                          value={aiPrefs.customFontSize}
+                          label={t('aiFontSizeCustom')}
+                          onCommit={(px) => updateAiPrefs({ customFontSize: px })}
+                        />
+                      )}
+                      <Dropdown
+                        className="set-dd"
+                        value={aiPrefs.fontSize}
+                        ariaLabel={t('setAiFontSize')}
+                        options={AI_FONT_SIZE_OPTIONS.map((opt) => ({
+                          value: opt.value,
+                          label: t(opt.labelKey),
+                        }))}
+                        onPick={(v) => {
+                          const fontSize = v as AiFontSize
+                          // start the custom size from the preset being left so nothing jumps
+                          updateAiPrefs(
+                            fontSize === 'custom' && aiPrefs.fontSize !== 'custom'
+                              ? { fontSize, customFontSize: aiPanelFontPx(aiPrefs) }
+                              : { fontSize },
+                          )
+                        }}
+                      />
                     </div>
-                  </div>
-                  <Dropdown
-                    className="set-dd"
-                    value={aiPanelStartOf(aiPrefs)}
-                    ariaLabel={t('setAiPanelStart')}
-                    options={AI_PANEL_START_OPTIONS.map((opt) => ({
-                      value: opt.value,
-                      label: t(opt.labelKey),
-                    }))}
-                    onPick={(start) => updateAiPrefs(aiPanelStartPatch(start))}
-                  />
-                </div>
+                    <div className="set-field">
+                      <div className="set-field-text">
+                        <div className="set-field-stack">
+                          <div className="set-field-label">{t('setAiSpellcheck')}</div>
+                          <div className="set-field-desc">{t('setAiSpellcheckDesc')}</div>
+                        </div>
+                      </div>
+                      <button
+                        className="set-switch"
+                        role="switch"
+                        aria-checked={aiPrefs.spellcheck}
+                        aria-label={t('setAiSpellcheck')}
+                        onClick={() => updateAiPrefs({ spellcheck: !aiPrefs.spellcheck })}
+                      />
+                    </div>
+                    <div className="set-field">
+                      <div className="set-field-text">
+                        <div className="set-field-stack">
+                          <div className="set-field-label">{t('setAiPanelStart')}</div>
+                          <div className="set-field-desc">{t('setAiPanelStartDesc')}</div>
+                        </div>
+                      </div>
+                      <Dropdown
+                        className="set-dd"
+                        value={aiPanelStartOf(aiPrefs)}
+                        ariaLabel={t('setAiPanelStart')}
+                        options={AI_PANEL_START_OPTIONS.map((opt) => ({
+                          value: opt.value,
+                          label: t(opt.labelKey),
+                        }))}
+                        onPick={(start) => updateAiPrefs(aiPanelStartPatch(start))}
+                      />
+                    </div>
+                  </>
+                )}
                 <div className="set-field">
                   <div className="set-field-text">
                     <div className="set-field-stack">
@@ -2165,7 +2237,7 @@ export function SettingsModal({
                     }}
                   />
                 </div>
-                <SlidesFontsField focus={target?.field === 'slidesAiFonts'} />
+                {aiOn && <SlidesFontsField focus={target?.field === 'slidesAiFonts'} />}
                 <div className="set-field">
                   <div className="set-field-text">
                     <div className="set-field-stack">
@@ -2185,14 +2257,18 @@ export function SettingsModal({
                     }}
                   />
                 </div>
-                <HomeKindsField />
+                <HomeKindsField off={choice?.off} />
                 <QuickLookField />
                 <ResultStoreField />
               </>
             )}
             {section === 'skills' && <SkillsPane usableMcpServers={usableMcpServers} />}
             {section === 'integrations' && (
-              <IntegrationsPane t={t} onStatus={(st) => onSkillUpdateDue?.(skillUpdateDue(st))} />
+              <IntegrationsPane
+                t={t}
+                onStatus={(st) => onSkillUpdateDue?.(skillUpdateDue(st))}
+                mcpServers={aiOn}
+              />
             )}
             {section === 'about' && (
               <>
@@ -2343,4 +2419,18 @@ export function SettingsModal({
       </div>
     </div>
   )
+}
+
+/**
+ * Holds the dialog's live view of the subscription connections (its first
+ * check runs on mount). Mounted only while AI is on, so Settings starts no
+ * subscription check while AI is off and checks once when AI comes back on.
+ */
+function SubscriptionScope({
+  children,
+}: {
+  children: (connection: SubscriptionConnection) => ReactNode
+}) {
+  const connection = useSubscriptionConnection()
+  return <>{children(connection)}</>
 }

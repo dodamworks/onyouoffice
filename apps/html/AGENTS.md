@@ -32,6 +32,7 @@ HTML 에디터다. HTML 원문이 기준이고, 옆에서 실시간 미리 보�
 - AI 첨부 확장자에 `odt`가 있다. 글자 뽑기는 `@genoffice/file-parse`가 한다. 받는 형식 목록은 그 패키지의 `attachable.ts` 한 곳에 있고, 첨부 칸에는 로컬 파일과 함께 "이음오피스 문서에서 첨부"(`DocAttachButton`, 결정 0035)가 있다. 입력란에는 `@` 문서 목록(결정 0051)이 있다. 고른 파일은 드라이브 첨부와 같은 길로 첨부 칸에 들어간다.
 - 모델에게 주는 프롬프트에서 제품을 가리키는 이름은 `brandText`를 거친다(`tests/ai-prompts-brand.test.ts`가 확인한다). 크롬 색은 토큰만 쓴다. 미리 보기 안의 쪽은 문서 내용이라 토큰의 영향을 받지 않는다.
 - **기본 스킬 `html-document`가 이 편집기의 도구 이름과 쪽 쓰기 단계에 넘기는 것(`plan`, `context`, 대화)을 적는다**(`apps/shell/resources/builtin-skills/html-document`). 도구 이름이나 쪽 쓰기 요청이 받는 것을 바꾸면 그 본문도 고친다(`tests/builtin-skill.test.ts`가 지킨다, 결정 0132).
+- **AI 끄기(설정 › 편집기와 AI, 결정 0143).** preload는 선택의 읽기·구독(`get`, `onChange`)만 내보내고 바꾸기·모두 멈추기는 내보내지 않는다. 화면은 `renderer/ai-visibility.tsx`(`aiVisible(useAppChoice(...))`)로 AI 창과 리본의 AI 입구를 그리지 않는다. 대화는 공용 `ai:stream`이 거절·작업 등록을 맡고, 이 뒷단의 그림 생성·미디어 분석은 AI가 꺼져 있으면 거절하고 도는 동안 `registerAiJob`으로 올린다(`html-main.ts`).
 
 ## 이 모듈의 방식
 
@@ -49,6 +50,7 @@ HTML 에디터다. HTML 원문이 기준이고, 옆에서 실시간 미리 보�
 - 인쇄 대화 상자는 모달이다. `runGuardedPrint`가 대화 상자가 열려 있는 동안의 두 번째 인쇄 요청을 막는다.
 - 복구 사본: 저장하지 않은 변경이 있으면 화면이 약 30초마다 저장할 때 쓸 글자 그대로를 뒷단에 넘기고(`src/renderer/recovery-copy.ts`, 자동 저장 스위치와 무관), 뒷단이 공용 저장소로 `<userData>/html-autosave`에 둔다(`src/main/recovery.ts`). 원본 파일과 사용자 폴더에는 쓰지 않는다(제목 없는 문서 포함). 저장(자동 저장·다른 이름·MCP 포함)은 사본을 지우고, "저장 안 함"과 MCP의 저장 없이 닫기는 `dontSave`로, 깨끗하게 닫힌 탭은 자기가 쓴 사본만 지운다. 화면이 죽은 탭과 앱이 끝나는 중의 닫기는 지우지 않는다. 사본이 있는 파일을 열면 내용을 읽기 전에 `recoveryOpen`이 공용 물음(Esc는 되살리기)을 거치고, 되살린 글은 원래 경로를 저장 대상으로 둔 채 "바뀜" 상태로 열린다. 껍데기 앱은 `htmlRecoveryEditor`(약속), `htmlRecoveryIdentity`, `setHtmlRecoveryTitleSource`를 쓴다. `recovery.ts`와 `recovery-copy.ts`는 마크다운 편집기의 같은 이름 파일과 내용이 같다.
 - 문자열은 `src/renderer/i18n/`의 언어별 조각(`ai/`, `app/`)이고 `zh.ts`가 키 집합을 정한다. 22개 언어 모두에 넣는다. 구독 연결 문장과 AI 진입 이름은 `@genoffice/ui`의 것을 쓴다.
+- **고급 인쇄(결정 0141).** 인쇄 요청은 작은 인쇄 창(`PrintDialog.tsx`, 전체·직접 입력)을 먼저 연다. 전체에 아무것도 고르지 않으면 `runPrint`가 전과 같다. 쪽 배치를 고르거나 범위를 적으면 지금 인쇄와 같은 창(스크립트 켬, 준비 확인)에서 `printToPDF`한 PDF를 `html:print-layout-*`로 보낸다. 쪽 수는 PDF 내보내기 설정(A4, 0.6인치 여백)으로 세므로 인쇄 용지 보기의 쪽 번호와 같다.
 
 ## 테스트
 

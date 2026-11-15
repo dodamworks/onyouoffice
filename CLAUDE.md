@@ -70,6 +70,7 @@ openoffice/
 │   │   ├── ai-web-reading.md      ← AI 웹 읽기 계획(초안)
 │   │   ├── connect-guide.md       ← AI 연결 도우미 계획(진행 중)
 │   │   ├── diagram-editor.md      ← 다이어그램(.drawio) 편집기 계획(구현됨, 사람 확인 남음)
+│   │   ├── editor-choice.md       ← 편집기 고르기와 AI 끄기 계획(1단계 구현됨, 2단계·관리자 정책 자리)
 │   │   ├── epub-editor.md         ← EPUB 편집기 계획(구현됨, 사람 확인 남음)
 │   │   ├── md-to-hwp.md           ← 마크다운을 한글 문서로 옮기기 계획(1~4단계 구현됨, 사람 확인 남음)
 │   │   ├── ods-open-export.md     ← ODS 불러오기·내보내기 계획(1·2단계 구현됨, 사람 확인 남음)
@@ -121,6 +122,7 @@ openoffice/
 │   ├── doc-rules/AGENTS.md        ← 행정문서 형식 규칙(자료)과 순수 판정 함수
 │   ├── file-parse/AGENTS.md       ← 첨부·검색용 파일 읽기, 다른 파일로 읽을 때의 가리기
 │   ├── zip-gate/AGENTS.md         ← 압축 파일 안전 검사
+│   ├── print-layout/AGENTS.md     ← 고급 인쇄 배치(모아찍기·소책자·포스터·라벨·홀짝·회색조), 쪽 그림 만들기
 │   ├── google-drive/AGENTS.md     ← Google 드라이브 로그인과 파일 주고받기
 │   ├── font-metrics/AGENTS.md     ← 글꼴 치수
 │   ├── pipelines/AGENTS.md        ← 슬라이드 생성 단계

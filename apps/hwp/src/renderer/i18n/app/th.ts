@@ -278,6 +278,7 @@ export const th = {
   previewMargins: 'แสดงระยะขอบ',
   previewEditPage: 'แก้ไขหน้านี้',
   previewEditFailed: 'ไม่สามารถไปยังหน้านี้ได้',
+  printLayoutSaved: 'บันทึกผลการจัดวางเป็น PDF แล้ว',
   checkTitle: 'ตรวจสอบรูปแบบเอกสาร',
   checkRunning: 'กำลังอ่านเอกสาร…',
   checkFailed: 'อ่านเอกสารไม่สำเร็จ',

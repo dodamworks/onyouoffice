@@ -10332,7 +10332,7 @@ html:lang(ko) .ai-send-note {
 /* ---- print dialog (Word-style: page preview + range options) ---- */
 
 .modal.print-dialog {
-  width: min(880px, calc(100vw - 64px));
+  width: min(940px, calc(100vw - 64px));
 }
 
 .print-dialog-body {
@@ -10405,6 +10405,14 @@ html:lang(ko) .ai-send-note {
   cursor: default;
 }
 
+/* the shared layout diagram in place of the page clone (page layout options, printed selection) */
+.print-preview-schematic {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+}
+
 .print-preview-empty {
   flex: 1;
   display: flex;
@@ -10415,7 +10423,7 @@ html:lang(ko) .ai-send-note {
 }
 
 .print-options {
-  width: 240px;
+  width: 280px;
   flex-shrink: 0;
   overflow-y: auto;
   display: flex;
@@ -11167,7 +11175,7 @@ html:lang(ko) .ai-send-note {
 }
 
 .read-mode .editor-scroll {
-  background: var(--docs-pv-canvas);
+  background: var(--canvas);
   padding-top: 44px;
 }
 
@@ -11250,6 +11258,39 @@ html:lang(ko) .ai-send-note {
   margin-left: 104px;
 }
 .view-outline .doc-page h6 {
+  margin-left: 130px;
+}
+
+/* Structural headings: a document without heading styles still shows its
+   sections through bold or all-caps lines and section numbers. The outline
+   view keeps those paragraphs visible and at their inferred depth, faded so
+   they read as a guess rather than a style in the file. */
+.view-outline .doc-page > .inferred-heading {
+  display: block;
+}
+
+.view-outline .doc-page .inferred-heading {
+  position: relative;
+  padding-left: 22px;
+  opacity: 0.62;
+}
+
+.view-outline .doc-page .inferred-heading.inferred-h1 {
+  margin-left: 0;
+}
+.view-outline .doc-page .inferred-heading.inferred-h2 {
+  margin-left: 26px;
+}
+.view-outline .doc-page .inferred-heading.inferred-h3 {
+  margin-left: 52px;
+}
+.view-outline .doc-page .inferred-heading.inferred-h4 {
+  margin-left: 78px;
+}
+.view-outline .doc-page .inferred-heading.inferred-h5 {
+  margin-left: 104px;
+}
+.view-outline .doc-page .inferred-heading.inferred-h6 {
   margin-left: 130px;
 }
 
@@ -11352,6 +11393,13 @@ html:lang(ko) .ai-send-note {
   font-style: inherit !important;
 }
 
+/* an inferred heading is a guess read from the paragraph's shape, not a style
+   in the file: it takes the same look, faded so the guess stays
+   distinguishable from a real style */
+.view-story .doc-page .story-heading-inferred {
+  opacity: 0.62;
+}
+
 /* the run's own formatting: the docTextStyle mark carries the font, the size,
    the colour, the highlight and the spacing. The bold, italic, underline and
    strike marks are separate elements, so they stay. */
@@ -11400,6 +11448,10 @@ html:lang(ko) .ai-send-note {
   white-space: pre;
   user-select: none;
   pointer-events: none;
+}
+
+.view-story .story-marker-inferred {
+  opacity: 0.62;
 }
 
 /* the list's own marker moves into the gutter, unchanged: a numbered list

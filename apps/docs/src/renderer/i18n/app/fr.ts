@@ -56,6 +56,7 @@ export const fr = {
   appVerticalTextNotice:
     "Ce document contient du texte vertical (affiché horizontalement pour l'instant ; l'enregistrement n'est pas affecté)",
   appNewDocCreated: 'Document vierge créé. Décrivez le contenu à générer dans le volet IA à gauche',
+  appNewDocCreatedNoAi: 'Document vierge créé.',
   appNewFailed: 'Échec de la création du document : {error}',
   appSaveFailed: "Échec de l'enregistrement : {error}",
   appAutoSavedAt: 'Enregistrement automatique ({time})',
@@ -99,6 +100,9 @@ export const fr = {
   appPrintRangeAll: 'Toutes les pages',
   appPrintRangeCurrent: 'Page actuelle',
   appPrintRangeCustom: 'Plage personnalisée',
+  appPrintRangeSelection: 'Sélection',
+  appPrintSelectionPreparing: 'Mise en page de la sélection…',
+  appPrintSelectionFailed: 'Impossible de mettre en page la sélection : {error}',
   appPrintRangeHint: 'ex. 1,3,5-8',
   appPrintPageCount: '{n} pages',
   appPrintNoPages: 'Aucune page à imprimer',

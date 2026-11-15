@@ -282,6 +282,7 @@ export const cs = {
   previewMargins: 'Zobrazit okraje',
   previewEditPage: 'Upravit tuto stránku',
   previewEditFailed: 'Na tuto stránku nelze přejít.',
+  printLayoutSaved: 'Uspořádaný výsledek byl uložen jako PDF.',
   checkTitle: 'Kontrola formátu dokumentu',
   checkRunning: 'Načítání dokumentu…',
   checkFailed: 'Dokument se nepodařilo načíst.',

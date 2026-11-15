@@ -57,6 +57,7 @@ export const ms = {
     'Dokumen ini mengandungi teks menegak (dipaparkan mendatar buat masa ini; penyimpanan tidak terjejas)',
   appNewDocCreated:
     'Dokumen kosong telah dibuat. Terangkan kandungan yang hendak dijana di panel AI sebelah kiri.',
+  appNewDocCreatedNoAi: 'Dokumen kosong dicipta.',
   appNewFailed: 'Gagal membuat dokumen: {error}',
   appSaveFailed: 'Gagal menyimpan: {error}',
   appAutoSavedAt: 'Disimpan secara automatik ({time})',
@@ -99,6 +100,9 @@ export const ms = {
   appPrintRangeAll: 'Semua halaman',
   appPrintRangeCurrent: 'Halaman semasa',
   appPrintRangeCustom: 'Julat tersuai',
+  appPrintRangeSelection: 'Pilihan',
+  appPrintSelectionPreparing: 'Menyusun pilihan ke halaman…',
+  appPrintSelectionFailed: 'Tidak dapat menyusun pilihan ke halaman: {error}',
   appPrintRangeHint: 'cth. 1,3,5-8',
   appPrintPageCount: '{n} halaman',
   appPrintNoPages: 'Tiada halaman untuk dicetak',

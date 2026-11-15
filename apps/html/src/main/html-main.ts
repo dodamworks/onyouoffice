@@ -47,13 +47,25 @@ import {
   type PrintDialogOutcome,
   assertFileSaved,
 } from '@genoffice/electron-utils'
+import { askBeforeMakeAndOpen } from '@genoffice/electron-utils/editor-entrance'
 import { fetchImageBytes } from '@genoffice/electron-utils/fetch-image-bytes'
+import {
+  ensurePrintLayoutIpc,
+  LABEL_SPEC_FILE_NAME,
+} from '@genoffice/electron-utils/print-arranged'
 import { createI18n, getUiLang } from '@genoffice/i18n'
 import {
   sharedSubscriptionStatuses,
   shutdownSubscriptionChildren,
 } from '@genoffice/ai-provider/subscription'
-import { generateImageTool, documentMediaRoots, withMediaCallSignal } from '@genoffice/ai-search'
+import {
+  abortMediaCalls,
+  generateImageTool,
+  documentMediaRoots,
+  withMediaCallSignal,
+} from '@genoffice/ai-search'
+import { registerAiJob } from '@genoffice/electron-utils/ai-activity'
+import { aiFeaturesOn } from '@genoffice/electron-utils/app-choice'
 import {
   parseFileToText,
   ATTACHABLE_EXTS,
@@ -95,6 +107,7 @@ import { registerHtmlHandoffIpc } from './generate-handoff-ipc'
 import { registerHtmlSeedIpc } from './seed-main'
 import { createTextRecovery } from './recovery'
 import { registerHtmlAiSearchIpc } from './ai-search-ipc'
+import { registerHtmlPrintLayout } from './print-layout'
 import {
   assetBaseHref,
   previewUrlFor,
@@ -1191,6 +1204,20 @@ async function writeHtmlDocx(
   }
 }
 
+/**
+ * A Word file's bytes from restricted HTML, the way the Word export makes
+ * them: for "create the file only" of a document that would otherwise open
+ * as a new Word tab while the Word editor is off (editor choice spec 7.3).
+ */
+export async function htmlToDocxBytes(html: string): Promise<Uint8Array> {
+  const workDir = await mkdtemp(join(tmpdir(), 'genoffice-html-docx-'))
+  try {
+    return await renderHtmlDocx(html, undefined, workDir)
+  } finally {
+    await rm(workDir, { recursive: true, force: true }).catch(() => {})
+  }
+}
+
 /** The ODT export: the Word export's bytes converted by docxToOdt, a change report confirmed. */
 async function writeHtmlOdt(
   html: string,
@@ -1621,6 +1648,27 @@ async function readHead(target: string): Promise<Uint8Array> {
 
 let ipcRegistered = false
 
+/** what a picture call answers while AI is off; the model reads it, so it stays English */
+const AI_OFF_ERROR = 'AI features are turned off in Settings.'
+
+/**
+ * A tab's AI picture call: refused while AI is off (Settings › Editors and
+ * AI), else one running AI job that turning AI off stops the way the tab's
+ * Stop does (ending its media calls ends the program the call started).
+ */
+async function aiImageCall<T>(
+  senderId: number,
+  run: () => Promise<T>,
+): Promise<T | { error: string }> {
+  if (!aiFeaturesOn()) return { error: AI_OFF_ERROR }
+  const end = registerAiJob({ kind: 'chat', stop: () => abortMediaCalls(senderId) })
+  try {
+    return await run()
+  } finally {
+    end()
+  }
+}
+
 function registerHtmlIpc(): void {
   if (ipcRegistered) return
   ipcRegistered = true
@@ -1985,23 +2033,26 @@ function registerHtmlIpc(): void {
   ipcMain.handle(
     HTML_CHANNELS.aiGenerateImage,
     (e, op: { prompt?: unknown; aspectRatio?: unknown }) =>
-      // ends with its tab, or when the tab's AI run is stopped
-      withMediaCallSignal(e.sender, (signal) =>
-        generateImageTool(
-          join(app.getPath('userData'), 'ai-settings.json'),
-          {
-            prompt: String(op?.prompt ?? ''),
-            aspectRatio: op?.aspectRatio ? String(op.aspectRatio) : undefined,
-          },
-          {
-            mediaRoots: documentMediaRoots(
-              htmlFilePath(e.sender.id),
-              join(app.getPath('temp'), 'genoffice-pasted'),
-            ),
-            // screen path: the statuses of the process-wide subscription service decide the route
-            context: { path: 'screen', statuses: sharedSubscriptionStatuses() },
-            signal,
-          },
+      // refused while AI is off, else one running AI job; ends with its tab,
+      // or when the tab's AI run is stopped
+      aiImageCall(e.sender.id, () =>
+        withMediaCallSignal(e.sender, (signal) =>
+          generateImageTool(
+            join(app.getPath('userData'), 'ai-settings.json'),
+            {
+              prompt: String(op?.prompt ?? ''),
+              aspectRatio: op?.aspectRatio ? String(op.aspectRatio) : undefined,
+            },
+            {
+              mediaRoots: documentMediaRoots(
+                htmlFilePath(e.sender.id),
+                join(app.getPath('temp'), 'genoffice-pasted'),
+              ),
+              // screen path: the statuses of the process-wide subscription service decide the route
+              context: { path: 'screen', statuses: sharedSubscriptionStatuses() },
+              signal,
+            },
+          ),
         ),
       ),
   )
@@ -2043,9 +2094,20 @@ function registerHtmlIpc(): void {
       }
       const win =
         BrowserWindow.fromWebContents(e.sender) ?? BrowserWindow.getFocusedWindow() ?? undefined
+      const headless = isHeadlessMode() && typeof request.outPath === 'string' && request.outPath
+      // the Word copy opens in a Word tab: while that editor is off the export asks
+      // first (editor choice spec 7.3); "create the file only" shows it in its folder
+      if (
+        !headless &&
+        (await askBeforeMakeAndOpen('docs', {
+          fileName: `${exportFileName(request.suggestedName)}.docx`,
+        })) === 'cancel'
+      ) {
+        return { ok: true, canceled: true }
+      }
       // Headless export has no dialog to authorize a path; the CLI already chose one.
       const picked =
-        isHeadlessMode() && typeof request.outPath === 'string' && request.outPath
+        headless && typeof request.outPath === 'string'
           ? { canceled: false, filePath: request.outPath }
           : await showSaveDialogWithMemory(
               dialog,
@@ -2155,6 +2217,39 @@ function registerHtmlIpc(): void {
       return printHtml(request.html, savePathByWc.get(e.sender.id))
     },
   )
+
+  // Advanced print (decision 0141): an option on, or a typed page range, makes
+  // the job PDF from the page loaded as printHtml loads it (scripting on, the
+  // readiness probe), never from the export's script-free window.
+  ensurePrintLayoutIpc({
+    ipcMain,
+    labelSpecPath: () => join(app.getPath('userData'), LABEL_SPEC_FILE_NAME),
+  })
+  registerHtmlPrintLayout({
+    ipcMain,
+    documentOf: (event, html) => {
+      const docPath = savePathByWc.get(event.sender.id)
+      return buildPreviewDocument(html, docPath ? assetBaseHref(dirname(docPath)) : null)
+    },
+    createJobWindow: () => new BrowserWindow({ show: false, webPreferences: { sandbox: true } }),
+    createPrintWindow: () => new BrowserWindow({ show: false, webPreferences: { sandbox: true } }),
+    pickSavePath: async (event, suggestedName) => {
+      const win =
+        BrowserWindow.fromWebContents(event.sender as WebContents) ??
+        BrowserWindow.getFocusedWindow() ??
+        undefined
+      const picked = await showSaveDialogWithMemory(
+        dialog,
+        win,
+        {
+          defaultPath: `${exportFileName(suggestedName)}.pdf`,
+          filters: [{ name: 'PDF', extensions: ['pdf'] }],
+        },
+        configuredDefaultSaveDir(app),
+      )
+      return picked.canceled || !picked.filePath ? null : picked.filePath
+    },
+  })
 
   ipcMain.handle(
     HTML_CHANNELS.exportHtml,

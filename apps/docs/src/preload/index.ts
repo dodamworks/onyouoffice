@@ -11,6 +11,8 @@ import { USER_SKILLS_BRIDGE_KEY } from '@genoffice/electron-utils/user-skills-ch
 import { docAttachBridge } from '@genoffice/electron-utils/doc-attach-bridge'
 import { DOC_ATTACH_BRIDGE_KEY } from '@genoffice/electron-utils/doc-attach-channels'
 import { splitPaneBridge } from '@genoffice/electron-utils/split-pane-bridge'
+import { createPrintLayoutBridge } from '@genoffice/electron-utils/print-layout-bridge'
+import { APP_CHOICE_BRIDGE_KEY, appChoiceBridge } from '@genoffice/electron-utils/app-choice-bridge'
 import type { IpcRendererEvent } from 'electron'
 import { SUBSCRIPTION_IPC_CHANNELS } from '@genoffice/ai-provider/browser'
 import { VIEW_IMAGE_CHANNEL } from '../shared/ipc'
@@ -23,6 +25,7 @@ import type {
   AiStreamChunk,
   AiStreamRequest,
   DesktopApi,
+  DocsPrintJobRequest,
   PdfInternalLink,
   MarkdownImage,
   PrintJobOptions,
@@ -239,6 +242,9 @@ const api: DesktopApi = {
     images: MarkdownImage[],
     outPath?: string,
   ) => ipcRenderer.invoke('docs:export-markdown', defaultName, markdown, images, outPath),
+  printLayout: createPrintLayoutBridge<DocsPrintJobRequest>(ipcRenderer, 'docs'),
+  printSelectionPdf: (docx: ArrayBuffer, sectPr: string | null) =>
+    ipcRenderer.invoke('docs:print-selection-pdf', docx, sectPr),
   printPdfBuffer: (pageWidthTwips: number, pageHeightTwips: number, scale?: number) =>
     ipcRenderer.invoke('docs:print-pdf-buffer', pageWidthTwips, pageHeightTwips, scale),
   saveMergedPdf: (
@@ -409,6 +415,13 @@ contextBridge.exposeInMainWorld(PROJECT_FOLDER_BRIDGE_KEY, projectFolderBridge(i
 contextBridge.exposeInMainWorld('aiOfficeSubscription', subscriptionApi)
 // The shell's split panes: which pane this view is, and focus requests for it
 contextBridge.exposeInMainWorld('aiOfficeSplit', splitPaneBridge(ipcRenderer))
+// Settings › Editors and AI: the screen reads and hears the choice (hides its AI parts
+// while AI is off); changing it or stopping AI jobs is the shell's alone
+const editorChoice = appChoiceBridge()
+contextBridge.exposeInMainWorld(APP_CHOICE_BRIDGE_KEY, {
+  get: editorChoice.get,
+  onChange: editorChoice.onChange,
+})
 
 // open documents dragged from the OS onto this tab as a new shell tab
 installDropOpenBridge()

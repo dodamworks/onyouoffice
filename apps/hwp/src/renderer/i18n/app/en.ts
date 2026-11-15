@@ -280,6 +280,7 @@ export const en = {
   previewMargins: 'Show margins',
   previewEditPage: 'Edit this page',
   previewEditFailed: 'Could not go to this page.',
+  printLayoutSaved: 'Saved the arranged pages as a PDF.',
   checkTitle: 'Document format check',
   checkRunning: 'Reading the document…',
   checkFailed: 'Could not read the document.',

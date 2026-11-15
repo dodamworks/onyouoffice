@@ -7,9 +7,11 @@ import {
   AiMark,
   aiSubscriptionText,
   aiPanelInitiallyOpen,
+  aiVisible,
   rememberAiPanelOpen,
   skillTemplateText,
   templateDocumentOf,
+  useAppChoice,
   useAutoSavePref,
   useSplitPaneFocusPing,
   type TemplateDocument,
@@ -49,6 +51,7 @@ import { hwpFormatOfPath } from '../shared/ipc'
 import type {
   HwpFormat,
   PreviewAction,
+  PrintJob,
   PrintMode,
   PrintResult,
   SaveMode,
@@ -163,6 +166,12 @@ export default function App() {
   const prePresentChromeRef = useRef<ChromeVisibility | null>(null)
   const [notice, setNotice] = useState<Notice | null>(null)
   const [aiOpen, setAiOpen] = useState(() => aiPanelInitiallyOpen(AI_OPEN_KEY))
+  /**
+   * AI turned off in Settings takes every AI entrance away: the dock and its rail, the
+   * editor's right-click 쉬운 말로 풀기, the check panel's hand-off and the marks of the AI's
+   * changes on the pages. Turned on, they come back.
+   */
+  const aiOn = aiVisible(useAppChoice(window.aiOfficeEditorChoice))
   const [checkOpen, setCheckOpen] = useState(false)
   /**
    * a request for the AI panel; `nonce` says it is a new one. The check panel's waits in the
@@ -540,6 +549,12 @@ export default function App() {
     if (phase !== 'ready') return
     const frame = editorRef.current?.element.contentWindow
     if (!frame) return
+    if (!aiOn) {
+      // AI is off: the item leaves the menus, and the AI's marks leave the pages with its panel
+      void pluginBridge.removeEasyWords().catch(() => {})
+      void pluginBridge.clearMarks().catch(() => {})
+      return
+    }
     void pluginBridge.installEasyWords(t('easyWordsLabel')).catch(() => {})
     const onEasyWords = (event: Event) => {
       const request = easyWordsRequest((event as CustomEvent<unknown>).detail, t, Date.now())
@@ -549,7 +564,7 @@ export default function App() {
     }
     frame.addEventListener(EASY_WORDS_EVENT, onEasyWords)
     return () => frame.removeEventListener(EASY_WORDS_EVENT, onEasyWords)
-  }, [phase, pluginBridge, t])
+  }, [phase, pluginBridge, t, aiOn])
 
   // fonts that are not on this PC are drawn with others while the file keeps their names
   // (a document from Hancom Office on a PC without it): the editor's font menu and font box
@@ -743,6 +758,15 @@ export default function App() {
         printingRef.current = false
       }
     },
+    [phase, agentBridge],
+  )
+
+  /** The preview's advanced print layout: the job's pages as the PDF export gathers them. */
+  const gatherLayoutJob = useCallback(
+    (onProgress: (done: number, total: number) => void): Promise<PrintJob> =>
+      phase === 'ready'
+        ? gatherPrintJob(agentBridge, 'pdf', onProgress)
+        : Promise.reject(new Error('the editor is not ready')),
     [phase, agentBridge],
   )
 
@@ -1073,7 +1097,7 @@ export default function App() {
       <div className="app-main">
         {/* the AI dock, then the memo column beside the document (as the PDF editor's notes);
             both can be out at once, and both need an open document. The preview covers both. */}
-        {phase === 'ready' && !preview.open && (
+        {phase === 'ready' && !preview.open && aiOn && (
           <HwpAiDock
             open={aiOpen}
             setOpen={setAiOpen}
@@ -1103,10 +1127,14 @@ export default function App() {
               format={docFormat}
               revision={docRevision}
               onClose={() => setCheckOpen(false)}
-              onHandOff={(request) => {
-                setAiPrefill({ text: request, nonce: Date.now() })
-                setAiOpen(true)
-              }}
+              onHandOff={
+                aiOn
+                  ? (request) => {
+                      setAiPrefill({ text: request, nonce: Date.now() })
+                      setAiOpen(true)
+                    }
+                  : undefined
+              }
             />
           )}
           {phase === 'booting' && <div className="hwp-cover">{t('loading')}</div>}
@@ -1139,6 +1167,8 @@ export default function App() {
           onClose={closePreview}
           onPrint={runPrint}
           onEditPage={editPage}
+          printLayout={window.hwpApi.printLayout}
+          gatherJob={gatherLayoutJob}
         />
       )}
     </div>

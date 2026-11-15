@@ -161,6 +161,10 @@
   color: var(--onb-brand);
 }
 
+.onb-art-pick {
+  margin-left: -7px;
+}
+
 .onb-title {
   margin: 0;
   font-size: 28px;
@@ -187,7 +191,23 @@
   color: var(--onb-text-secondary);
 }
 
-/* step 2: one card per subscription provider, then the Codex line */
+/* the closing step's last line reads as a footnote */
+.onb-body-dim {
+  color: var(--onb-text-tertiary);
+}
+
+/* the connect step has no subtitle: its lead paragraph sits right under the title */
+.onb-body-lead {
+  margin-top: 0;
+}
+
+/* the pick step: the editor and AI switches under the lead paragraph */
+.onb-pick {
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* step 3: one card per subscription provider, then the Codex line */
 .onb-connect {
   display: flex;
   flex-direction: column;

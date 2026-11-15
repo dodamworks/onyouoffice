@@ -291,6 +291,7 @@ export const de = {
   previewMargins: 'Ränder anzeigen',
   previewEditPage: 'Diese Seite bearbeiten',
   previewEditFailed: 'Diese Seite konnte nicht geöffnet werden.',
+  printLayoutSaved: 'Das angeordnete Ergebnis wurde als PDF gespeichert.',
   checkTitle: 'Dokumentformat prüfen',
   checkRunning: 'Das Dokument wird gelesen…',
   checkFailed: 'Das Dokument konnte nicht gelesen werden.',

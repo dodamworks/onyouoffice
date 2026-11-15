@@ -276,7 +276,7 @@ draw.io 다이어그램(`.drawio`, `.dio`, `.drawio.svg`, `.drawio.png`)을 읽�
 명령어 쪽 서버와 다른 것이다. 실행 중인 앱이 직접 여는 서버이고, 열려 있는 문서를 다룬다.
 
 - 설정 → 연동에서 켠다. 기본은 꺼짐이다. 기본 포트는 3093이고 이 PC(`127.0.0.1`)에서만 닿는다. 인증은 없고, 요청의 Host·Origin이 이 PC의 것이 아니면 거절한다.
-- 도구: `get_app_info`, `open_documents`, `open_in_genoffice`(이 이름은 예전 철자를 유지한다), `create_session`, `save_session`, `read_document`, `read_docx`, `read_sheet`, `read_deck`, `read_pdf`, `create_docx`, `create_xlsx`, `create_pptx`, `apply_ops`, `apply_sheet_ops`, `apply_slide_ops`, `insert_content`, `replace_blocks`, `insert_picture`, `read_diagram`, `apply_diagram_ops`.
+- 도구: `get_app_info`, `open_documents`, `open_in_genoffice`(이 이름은 예전 철자를 유지한다), `create_session`, `save_session`, `read_document`, `read_blocks`, `read_docx`, `read_sheet`, `read_deck`, `read_pdf`, `create_docx`, `create_xlsx`, `create_pptx`, `apply_ops`, `apply_sheet_ops`, `apply_slide_ops`, `insert_content`, `replace_blocks`, `insert_picture`, `read_diagram`, `apply_diagram_ops`.
 - `insert_picture`는 열린 워드 탭에 그림을 넣는다(원본 genoffice#2267). 앱 안 AI의 같은 이름 도구를 그대로 거치므로 그림 주소는 http(s)와 `data:image/`만 받고, http(s) 주소면 앱이 그 주소에서 그림을 받아 온다. 에이전트 모드의 세션 서버에는 없다.
 - 열린 ODT 탭은 워드 문서로 다룬다(`open_documents`의 `format`이 `odt`). `read_docx`는 `.odt` 파일도 읽는다. `save_session`은 탭의 형식으로만 저장한다. 다른 확장자의 경로를 주면 거절하고 `ieumoffice convert`를 쓰라고 안내한다. 대화 상자가 없는 경로에서 형식이 조용히 바뀌지 않게 하기 위해서다.
 - 에이전트 설정에 넣는 항목 이름은 `ieumoffice-editor`다. 명령어 쪽 서버의 `ieumoffice`와 겹치지 않는다.
@@ -347,18 +347,22 @@ metadata:
 
 **앱 설정(`app-settings.json`)의 값.** 데이터 폴더에 있다.
 
-| 값                      | 종류                                                                                                                                                                                                            | 기본                                                                                   |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `skills.states`         | 식별자 → `{ enabled?, invoke?: 'auto' \| 'manual', editors?: 'all' \| 편집기 이름 목록 }`. 사람이 바꾼 것만 적는다. `editors`는 내 스킬이 아닌 스킬의 쓰는 곳이고 파일의 `ieum-editors`보다 앞선다(결정 0122)   | 없음(출처별 처음 상태)                                                                 |
-| `skills.hiddenBuiltins` | 숨긴 기본 스킬 이름 목록                                                                                                                                                                                        | 없음                                                                                   |
-| `agentSkillNoticeSeen`  | 참/거짓. 에이전트 창의 스킬 안내를 봤는지                                                                                                                                                                       | 없음                                                                                   |
-| `agentProjectPrefs`     | 프로젝트 폴더 절대 경로 → `{ codexWebSearch: 'cached' \| 'live' \| 'disabled', codexNetwork }`                                                                                                                  | 없음(`cached`, 거짓)                                                                   |
-| `hwpDefaultFormat`      | `'hwp'` 또는 `'hwpx'`. 파일이 없는 새 한글 문서의 첫 저장에 먼저 제안할 형식                                                                                                                                    | `hwp`                                                                                  |
-| `slidesAiFonts`         | `{ mode: 'auto' \| 'sans' \| 'serif' \| 'serifTitle', sans, serif }`. AI가 새 발표 자료를 만들 때 요청에 글꼴이 없으면 쓰는 글꼴. `sans`·`serif`는 글꼴 이름(80자까지). 모르는 부분은 그 부분만 기본으로 읽는다 | 화면 언어가 한국어·영어면 `sans`, 나머지는 `auto`. 글꼴은 `Pretendard`·`Noto Serif KR` |
-| `homeKinds`             | `{ order?, hidden? }`. 홈의 새 문서 카드·새로 만들기 메뉴의 순서와 뺀 종류(`docx`·`xlsx`·`pptx`·`md`·`html`·`xmind`·`hwp`·`pdf`·`pdfTools`). 처음 상태와 다른 것만 적는다                                       | 없음(모두, 처음 순서)                                                                  |
+| 값                      | 종류                                                                                                                                                                                                                                                                                               | 기본                                                                                   |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `skills.states`         | 식별자 → `{ enabled?, invoke?: 'auto' \| 'manual', editors?: 'all' \| 편집기 이름 목록 }`. 사람이 바꾼 것만 적는다. `editors`는 내 스킬이 아닌 스킬의 쓰는 곳이고 파일의 `ieum-editors`보다 앞선다(결정 0122)                                                                                      | 없음(출처별 처음 상태)                                                                 |
+| `skills.hiddenBuiltins` | 숨긴 기본 스킬 이름 목록                                                                                                                                                                                                                                                                           | 없음                                                                                   |
+| `agentSkillNoticeSeen`  | 참/거짓. 에이전트 창의 스킬 안내를 봤는지                                                                                                                                                                                                                                                          | 없음                                                                                   |
+| `agentProjectPrefs`     | 프로젝트 폴더 절대 경로 → `{ codexWebSearch: 'cached' \| 'live' \| 'disabled', codexNetwork }`                                                                                                                                                                                                     | 없음(`cached`, 거짓)                                                                   |
+| `hwpDefaultFormat`      | `'hwp'` 또는 `'hwpx'`. 파일이 없는 새 한글 문서의 첫 저장에 먼저 제안할 형식                                                                                                                                                                                                                       | `hwp`                                                                                  |
+| `slidesAiFonts`         | `{ mode: 'auto' \| 'sans' \| 'serif' \| 'serifTitle', sans, serif }`. AI가 새 발표 자료를 만들 때 요청에 글꼴이 없으면 쓰는 글꼴. `sans`·`serif`는 글꼴 이름(80자까지). 모르는 부분은 그 부분만 기본으로 읽는다                                                                                    | 화면 언어가 한국어·영어면 `sans`, 나머지는 `auto`. 글꼴은 `Pretendard`·`Noto Serif KR` |
+| `homeKinds`             | `{ order?, hidden? }`. 홈의 새 문서 카드·새로 만들기 메뉴의 순서와 뺀 종류(`docx`·`xlsx`·`pptx`·`md`·`html`·`xmind`·`hwp`·`pdf`·`pdfTools`). 처음 상태와 다른 것만 적는다                                                                                                                          | 없음(모두, 처음 순서)                                                                  |
+| `editors`               | `{ off: [...] }`. 끈 항목의 id(`docs`·`sheets`·`slides`·`pdf`·`pdfTools`·`markdown`·`html`·`mindmap`·`diagram`·`hwp`·`epub`, 결정 0143). 모르는 id는 읽을 때 버린다. 편집기 10개(`pdfTools` 제외)가 모두 꺼진 값은 쓰지 않고, 그런 값이 있으면 모두 켜짐으로 읽는다. `homeKinds`의 숨김과는 따로다 | 없음(모두 켜짐)                                                                        |
+| `aiFeatures`            | `false`일 때만 쓴다. 앱 화면의 AI 기능을 모두 감추고 화면 경로의 AI 실행을 멈춘다. 로그인·키·스킬·다른 설정은 지우지 않는다. 터미널 명령어와 MCP는 이 값을 따르지 않는다                                                                                                                           | 없음(켜짐)                                                                             |
+| `editorPickSeen`        | 참. 첫 실행 안내의 고르기 단계나 기존 사용자의 한 번 고르기를 한 번 지났는지                                                                                                                                                                                                                       | 없음(아직 안 봄)                                                                       |
 
 - 식별자는 `〈출처〉:〈이름〉`, 플러그인은 `plugin:〈플러그인〉:〈이름〉`이다. 출처 값은 `builtin`(기본), `app`(`~/.ieumoffice/skills`, 깃허브 포함), `user`(`~/.claude/skills`), `plugin`(설치된 Claude 플러그인), `codex`(`~/.agents/skills`)다. 저장되는 값이라 바꾸지 않는다. 프로젝트 스킬(`project`)은 저장하지 않는다.
 - 알 수 없는 값은 무시하고 처음 상태로 읽는다. 처음 상태는 `builtin`·`app`이 켜짐·스스로 쓰기, `user`·`plugin`·`codex`가 꺼짐이다.
+- `editors`·`aiFeatures`·`editorPickSeen`은 처음 상태와 다른 것만 적는다. 모두 켜면 `editors`는 빈 `{}`가 되고, AI를 다시 켜면 `aiFeatures`를 지운다. 읽는 길은 껍데기 뒷단의 `effectiveAppChoice` 하나이고, 편집기 뒷단은 파일을 따로 읽지 않는다(나중에 관리자 정책이 덮을 자리, `docs/plans/editor-choice.md`). 명령어와 MCP는 세 값을 읽지 않는다.
 
 ## 설정 파일 (`ai-settings.json`)
 
@@ -634,6 +638,10 @@ metadata:
 - `models`의 `id`는 프로그램이 받는 값이자 저장되는 선택값이다. 빈 `id`는 프로그램의 기본 모델을 뜻하고, 그것이 가리키는 모델이 `resolved`에 온다. 목록은 50개까지다.
 - 창구 이름은 `ai:subscription-statuses`, `-recheck`, `-login`, `-logout`, `-install`, `-metered`, `-codex-image`와 변경 알림 `ai:subscription-changed`다. `-logout`은 껍데기 앱의 화면에서만 부른다.
 - `chatgpt`의 `state`는 `checking`, `signed-out`, `ready`, `error`뿐이다. `-login`은 앱 자신의 브라우저 로그인을 시작하고, `-logout`은 이 앱의 연결만 끊는다. `-install`·`-update`는 `invalid`로 답한다. 답에 `chatgpt` 항목이 없으면(예전 앱) `signed-out`으로 읽는다.
+
+## 라벨 규격 (`print-label-spec.json`, 결정 0141)
+
+데이터 폴더에 있다. 인쇄 창의 쪽 배치에서 라벨 규격을 "직접 입력"으로 적으면 앱 전체에 하나(마지막에 쓴 값)를 기억한다. 앱만 읽고 쓰고, 터미널 명령어와 MCP는 읽지 않는다. 모양은 `{ "version": 1, "spec": { "paper": "A4" | "Letter", "cols", "rows", "cellWidthMm", "cellHeightMm", "topMarginMm", "leftMarginMm", "hPitchMm", "vPitchMm" } }`이고, 쓸 때마다 간격이 칸보다 작지 않은지와 종이 안에 드는지를 검사한다. 읽을 수 없거나 검사를 통과하지 못하는 파일은 없는 것으로 본다.
 
 ## 문서 호환
 
