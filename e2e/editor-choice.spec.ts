@@ -57,10 +57,9 @@ function tabKinds(page: Page): Promise<string[]> {
   )
 }
 
-function quickCard(page: Page, title: string) {
-  return page.locator('.quick-card').filter({
-    has: page.locator('.quick-title', { hasText: new RegExp(`^${title}$`) }),
-  })
+// Onyou's Home cards carry their own titles; find a card by the format it creates
+function quickCard(page: Page, format: string) {
+  return page.locator(`.quick-card[data-format="${format}"]`)
 }
 
 /**
@@ -193,8 +192,8 @@ test.describe('editor choice and AI off', () => {
 
       // ---- Home: no PowerPoint card, the others stay ----
       await expect(page.locator('.home-hero')).toBeVisible()
-      await expect(quickCard(page, 'AI Docs')).toHaveCount(1)
-      await expect(quickCard(page, 'AI Slides')).toHaveCount(0)
+      await expect(quickCard(page, 'docx')).toHaveCount(1)
+      await expect(quickCard(page, 'pptx')).toHaveCount(0)
       await page.screenshot({ path: screenshotPath('editor-choice-home-off') })
 
       // ---- the tab bar's "+" menu: no PowerPoint ----
@@ -218,7 +217,7 @@ test.describe('editor choice and AI off', () => {
       await page.locator('.set-close').click()
 
       // ---- a new Word document: no AI dock, no AI ribbon buttons ----
-      await quickCard(page, 'AI Docs').click()
+      await quickCard(page, 'docx').click()
       const docs = await waitForPageWithUrl(app, '://docs/')
       await docs.locator('.doc-page[contenteditable="true"]').waitFor()
       // the ribbon is drawn: Home's spelling button sits beside where the AI buttons were
@@ -240,7 +239,8 @@ test.describe('editor choice and AI off', () => {
         'true',
       )
       // the AI sections come back
-      await expect(nav.filter({ hasText: /^Account$/ })).toHaveCount(1)
+      // Onyou has no separate account page
+      await expect(nav.filter({ hasText: /^Account$/ })).toHaveCount(0)
       await expect(nav.filter({ hasText: /^AI$/ })).toHaveCount(1)
       await expect(nav.filter({ hasText: /^Skills$/ })).toHaveCount(1)
       // the open Word tab hears it without a reload
@@ -254,7 +254,7 @@ test.describe('editor choice and AI off', () => {
         'true',
       )
       await page.locator('.set-close').click()
-      await expect(quickCard(page, 'AI Slides')).toHaveCount(1)
+      await expect(quickCard(page, 'pptx')).toHaveCount(1)
       const plusAgain = await captureNextMenu(app, () =>
         page.locator('.tab-bar .tab-new-btn').click(),
       )
@@ -327,7 +327,7 @@ test.describe('editor choice and AI off', () => {
     const { app, page, userDataDir } = launched
     try {
       await expect(page.locator('.home-hero')).toBeVisible()
-      await expect(quickCard(page, 'AI Slides')).toHaveCount(0)
+      await expect(quickCard(page, 'pptx')).toHaveCount(0)
 
       // ---- Cancel: nothing opens, PowerPoint stays off ----
       await stubQuestion(app, 'cancel')
@@ -354,13 +354,13 @@ test.describe('editor choice and AI off', () => {
         .not.toContain('slides')
       // the card is back on Home
       await page.evaluate(() => (window as unknown as ShellWindow).aiOfficeTabs.activate('home'))
-      await expect(quickCard(page, 'AI Slides')).toHaveCount(1)
+      await expect(quickCard(page, 'pptx')).toHaveCount(1)
 
       // ---- off again with the deck open: the open deck stays, opening it again asks nothing ----
       await page.evaluate(() =>
         (window as unknown as ShellWindow).aiOfficeEditorChoice.set({ off: ['slides'] }),
       )
-      await expect(quickCard(page, 'AI Slides')).toHaveCount(0)
+      await expect(quickCard(page, 'pptx')).toHaveCount(0)
       expect(await tabKinds(page)).toContain('slides')
       await stubQuestion(app, 'cancel')
       await openFromOs(app, deck)
