@@ -368,6 +368,8 @@ describe('Onboarding', () => {
 
   it('keeps help collapsed and leaves Enter on its native disclosure control', async () => {
     renderOnboarding()
+    // welcome, then the pick step, then the connect step with its help
+    await click('.onb-next')
     await click('.onb-next')
     const details = host.querySelector<HTMLDetailsElement>('.ai-sub-guide-disclosure')!
     const summary = details.querySelector<HTMLElement>('summary')!
@@ -633,7 +635,7 @@ describe('optional onboarding nickname', () => {
     vi.stubGlobal('aiOffice', { getNickname: async () => '', setNickname: save })
     renderOnboarding()
     await click('.onb-next')
-    expect(activeStep()).toBe('connect')
+    expect(activeStep()).toBe('pick')
     expect(save).not.toHaveBeenCalled()
   })
 
@@ -650,7 +652,7 @@ describe('optional onboarding nickname', () => {
     expect(activeStep()).toBe('welcome')
     await click('.onb-next')
     expect(save).toHaveBeenCalledWith('Mina')
-    expect(activeStep()).toBe('connect')
+    expect(activeStep()).toBe('pick')
   })
 
   it('skips without saving an unfinished name', async () => {

@@ -246,7 +246,7 @@ describe('turned-off editors (Settings → Editors and AI)', () => {
     const calls: string[][] = []
     const run = vi.fn<RunCommand>(async (cmd, args) => {
       calls.push([cmd, ...args])
-      return args[0] === 'query' ? 'ieumoffice.desktop' : ''
+      return args[0] === 'query' ? 'onyouoffice.desktop' : ''
     })
     const svc = createDefaultAppService({
       ...base,
@@ -262,7 +262,7 @@ describe('turned-off editors (Settings → Editors and AI)', () => {
     expect(calls.find((c) => c[1] === 'default')).toEqual([
       'xdg-mime',
       'default',
-      'ieumoffice.desktop',
+      'onyouoffice.desktop',
       pptx,
     ])
   })

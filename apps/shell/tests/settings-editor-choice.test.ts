@@ -205,8 +205,8 @@ async function click(el: HTMLElement | null | undefined): Promise<void> {
 describe('Settings → Editors and AI: which sections show', () => {
   it('lists every section with AI on, the editors and AI section right after General', async () => {
     await open(fakeChoice({}))
+    // Onyou has no separate account page: AI comes first
     expect(navLabels()).toEqual([
-      'Account',
       'AI',
       'Skills',
       'General',
@@ -214,7 +214,7 @@ describe('Settings → Editors and AI: which sections show', () => {
       'Integrations',
       'About',
     ])
-    expect(activeNav()).toBe('Account')
+    expect(activeNav()).toBe('AI')
   })
 
   it('hides account, AI and skills while AI is off and opens on General', async () => {

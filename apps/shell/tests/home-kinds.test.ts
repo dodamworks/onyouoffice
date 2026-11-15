@@ -129,7 +129,9 @@ describe('where the setting applies', () => {
   it('draws home cards from the setting', () => {
     const home = src('../src/renderer/src/Home.tsx')
     expect(home).toMatch(/visibleHomeKinds\(homeKinds\)/)
-    expect(home).toMatch(/visibleHomeKinds\(homeKinds\)\.flatMap\(/)
+    // Onyou's cards follow the setting minus the kinds of editors turned off
+    expect(home).toMatch(/const shownKinds = visibleHomeKinds\(homeKinds\)\.filter\(/)
+    expect(home).toMatch(/shownKinds\.flatMap\(/)
     expect(home).toContain('<SupportedFormatsInfo t={t} />')
     expect(home).toContain('data-format={item.ext}')
     expect(home).not.toContain('className="ai-chip"')

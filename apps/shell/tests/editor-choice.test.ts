@@ -111,9 +111,10 @@ describe('new-document kinds that are hidden', () => {
   it('joins the hidden kinds and the kinds of items turned off, in home order', () => {
     const homeKinds = { ...defaultHomeKinds(), hidden: ['html' as const] }
     expect(hiddenNewDocumentKinds(homeKinds, { off: ['epub', 'docs', 'pdfTools'] })).toEqual([
+      // Onyou's home order puts the PDF tools before HTML
       'docx',
-      'html',
       'pdfTools',
+      'html',
     ])
     expect(hiddenNewDocumentKinds(defaultHomeKinds(), { off: [] })).toEqual([])
   })
