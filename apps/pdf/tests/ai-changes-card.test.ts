@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-16 for the Onyou Office AI panel without quick-action chips.
 /**
  * The PDF AI panel puts the shared changes card under the reply of a run
  * that changed the document: the run is recorded from the send to its end,
@@ -144,7 +145,18 @@ async function runOnce(aiChanges: PdfAiChanges) {
     })
   await render(aiChanges)
   await settle()
-  await act(async () => (container!.querySelector('.ai-quick-btn') as HTMLElement).click())
+  // this product's panel has no quick-action chips: send the same request from the composer
+  const input = container!.querySelector('.ai-composer textarea') as HTMLTextAreaElement
+  const setValue = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!
+  await act(async () => {
+    setValue.call(input, 'Summarize this document')
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  await act(async () => {
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    )
+  })
   await settle()
   expect(bridge.starts).toHaveLength(1)
   expect(aiChanges.begin).toHaveBeenCalledTimes(1)
