@@ -2,7 +2,9 @@
 
 ## Ouvrir les paramètres
 
-La ligne en bas à gauche de l’accueil ouvre le panneau des paramètres (elle affiche Connecter l’IA tant qu’aucune IA n’est connectée). Il comporte cinq sections : Compte, IA, Général, Intégrations et À propos.
+La ligne en bas à gauche de l’accueil ouvre le panneau des paramètres (la ligne en dessous indique si une IA est connectée). Il comporte cinq sections : Compte, IA, Général, Intégrations et À propos.
+
+Vous pouvez aussi l’ouvrir depuis n’importe quel onglet avec **⌘,** (Ctrl+, sous Windows et Linux), depuis **Paramètres…** dans le menu de l’application sur un Mac (le menu qui porte le nom de l’app, à gauche de la barre des menus), ou depuis **Menu (☰) ▸ Paramètres…** sous Windows et Linux. Dans un onglet Word, ⌘, (Ctrl+,) sert à l’indice : passez alors par le menu.
 
 **Compte** indique où en sont vos connexions Claude, ChatGPT et Codex, et **Gérer les connexions** mène à la section IA. L’IA a ses propres articles : [Connexion par abonnement](help://subscription) et [Modèles IA et paramètres](help://ai-models).
 
@@ -59,7 +61,7 @@ Les paramètres peuvent enregistrer GenOffice comme gestionnaire de .docx / .xls
 ## Mentions relatives aux logiciels tiers et mises à jour
 
 - Aide ▸ Mentions relatives aux logiciels tiers : l’inventaire complet des licences open source livré avec l’application.
-- Menu (☰) ▸ Vérifier les mises à jour (sur un Mac, Aide ▸ Vérifier les mises à jour) : déclenche une vérification manuelle ; une version plus récente propose l’installation.
+- Menu (☰) ▸ Vérifier les mises à jour (sur un Mac, Aide ▸ Vérifier les mises à jour) : déclenche une vérification manuelle ; une version plus récente propose l’installation. Sur un Mac, le menu de l’application la propose aussi, juste sous « À propos de GenOffice ».
 
 ## Intégration MCP (pour les utilisateurs avancés / clients IA)
 

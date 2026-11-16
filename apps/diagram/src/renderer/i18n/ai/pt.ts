@@ -36,10 +36,6 @@ export const pt = {
   aiRetry: 'Tentar novamente',
   aiCopyReplyTitle: 'Copiar resposta',
   aiRegenerateTitle: 'Gerar novamente',
-  aiTurnsTitle: 'Desfazer uma rodada da IA',
-  aiRollback: 'Reverter',
-  aiRollbackIncomplete:
-    'Parte dessa rodada não pôde ser desfeita: o diagrama foi alterado depois. Use Desfazer no editor.',
   aiUnknownError: 'A solicitação de IA falhou, tente novamente',
   aiTimeoutError: 'A resposta da IA expirou',
   aiCreditsExhausted: 'Créditos esgotados — recarregue com o seu provedor de IA',

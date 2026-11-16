@@ -90,8 +90,6 @@ export const it = {
   aiStopGeneration: 'Interrompi la generazione',
   aiStop: 'Interrompi',
   aiSend: 'Invia',
-  aiSnapshotsTitle: 'Snapshot delle versioni',
-  aiRollback: 'Ripristina',
   aiStarterPolishTitle: 'Migliora il titolo e il testo di questa diapositiva',
   aiStarterTighten: 'Rendi più concisi i punti elenco di questa diapositiva',
   aiStarterProofread: 'Controlla i refusi in tutta la presentazione e correggili',

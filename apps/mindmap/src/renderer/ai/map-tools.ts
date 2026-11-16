@@ -958,6 +958,29 @@ function confirmApplied(
   }
 }
 
+/** The edits whose id is a topic that stays on the sheet, changed: what an AI turn marks and counts. */
+const TOPIC_EDIT_OPS: ReadonlySet<string> = new Set<EditOp>([
+  'add',
+  'set_title',
+  'move',
+  'set_note',
+  'set_labels',
+  'set_link',
+  'fold',
+  'unfold',
+  'set_format',
+  'set_line',
+])
+
+/** The topics a batch added or changed go into the turn, in order; a topic it deleted comes out. */
+function noteTopicOutcomes(turn: MapTurn, key: string, outcomes: readonly EditOutcome[]): void {
+  for (const outcome of outcomes) {
+    if (!outcome.ok || !outcome.id) continue
+    if (outcome.op === 'delete') turn.forgetTopics(key, [outcome.id])
+    else if (TOPIC_EDIT_OPS.has(outcome.op)) turn.noteTopics(key, [outcome.id])
+  }
+}
+
 /** The `edit_map` tool: up to 50 edits on one sheet, as one step of its history. */
 export async function editMap(
   host: MapAiHost,
@@ -1011,6 +1034,7 @@ export async function editMap(
       if (changed.boundaries) live.boundaries = parts.boundaries
     }, options)
     confirmApplied(session, key, outcomes, edits)
+    if (turn) noteTopicOutcomes(turn, key, outcomes)
   }
   const done = outcomes.filter((outcome) => outcome.ok).length
   const lines = [
@@ -1230,6 +1254,7 @@ export async function setTopicPicture(
     if (entryName !== null) session.removePicture(entryName)
     throw error
   }
+  turn?.noteTopics(key, [topicId])
   if (entryName === null) {
     return {
       output: `Changed the title of topic ${topicId} of sheet ${position}; the user can undo this step.`,
@@ -1368,6 +1393,7 @@ export async function writeMap(
     const nodes = nodesOf(sheet, controller.layout === 'both')
     if (fill) turn?.noteEdit(session, key)
     controller.edit((root) => takeTree(root, nodes))
+    turn?.noteTopics(key, viewTopicIds(session.view(key).root))
     if (fill && typeof sheet.title === 'string' && sheet.title !== session.tabs()[0]!.title) {
       turn?.noteRename(key, session.tabs()[0]!.title)
       session.renameSheet(key, sheet.title)
@@ -1422,9 +1448,32 @@ export class MapTurn {
   readonly editedSheets = new Map<string, string>()
   /** sheet key → its title before the turn renamed it */
   readonly renamedSheets = new Map<string, string>()
+  /** sheet key → the topics the turn added or changed there (marked on screen, counted on its card) */
+  readonly topics = new Map<string, Set<string>>()
 
   get changed(): boolean {
     return this.addedSheets.length > 0 || this.editedSheets.size > 0
+  }
+
+  /** how many topics the turn added or changed */
+  get topicCount(): number {
+    let count = 0
+    for (const ids of this.topics.values()) count += ids.size
+    return count
+  }
+
+  noteTopics(key: string, ids: readonly string[]): void {
+    let known = this.topics.get(key)
+    if (!known) this.topics.set(key, (known = new Set()))
+    for (const id of ids) known.add(id)
+  }
+
+  /** a topic the turn deleted again is neither marked nor counted */
+  forgetTopics(key: string, ids: readonly string[]): void {
+    const known = this.topics.get(key)
+    if (!known) return
+    for (const id of ids) known.delete(id)
+    if (known.size === 0) this.topics.delete(key)
   }
 
   noteSheetAdded(key: string): void {
@@ -1523,6 +1572,13 @@ function findViewTopic(
       pending.push({ topic: child, parentId: entry.topic.id })
   }
   return null
+}
+
+/** The ids of a topic and of every topic below it. */
+function viewTopicIds(topic: ViewTopic, into: string[] = []): string[] {
+  into.push(topic.id)
+  for (const child of topic.children) viewTopicIds(child, into)
+  return into
 }
 
 function countBelow(topic: ViewTopic): number {

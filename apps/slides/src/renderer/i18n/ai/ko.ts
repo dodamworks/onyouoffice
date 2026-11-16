@@ -90,8 +90,6 @@ export const ko = {
   aiStopGeneration: '생성 중지',
   aiStop: '중지',
   aiSend: '보내기',
-  aiSnapshotsTitle: '버전 스냅샷',
-  aiRollback: '롤백',
   aiStarterPolishTitle: '이 슬라이드의 제목과 문구를 개선해 줘',
   aiStarterTighten: '이 슬라이드의 요점을 더 간결하게 만들어 줘',
   aiStarterProofread: '전체 슬라이드의 오타를 검사하고 수정해 줘',

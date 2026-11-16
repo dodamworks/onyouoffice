@@ -69,6 +69,7 @@ import type {
   PrintMode,
   PrintResult,
   SaveMode,
+  SavePreview,
   TabSpot,
 } from '../shared/ipc'
 
@@ -525,6 +526,7 @@ function memoSnapshotsOf(value: unknown): MemoSnapshot[] | null {
 function commitOptionsOf(raw: unknown): {
   auto: boolean
   memos: MemoSnapshot[] | null | undefined
+  preview: SavePreview | undefined
 } {
   const options = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
   const memos =
@@ -533,7 +535,21 @@ function commitOptionsOf(raw: unknown): {
       : options.memos === null
         ? null
         : memoSnapshotsOf(options.memos)
-  return { auto: options.auto === true, memos }
+  return { auto: options.auto === true, memos, preview: savePreviewOf(options.preview) }
+}
+
+/**
+ * The preview the renderer sent. Anything but a well-formed one (null, a failed draw) is
+ * a blank preview: the save writes that over the stale one rather than keep it. Absent
+ * (an older renderer): the preview is left as the engine wrote it.
+ */
+function savePreviewOf(raw: unknown): SavePreview | undefined {
+  if (raw === undefined) return undefined
+  const given = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+  return {
+    text: typeof given.text === 'string' ? given.text : '',
+    image: given.image instanceof Uint8Array ? given.image : null,
+  }
 }
 
 let ipcRegistered = false
@@ -820,6 +836,7 @@ function registerHwpIpc(): void {
           pending.format,
           Array.isArray(tabs) ? (tabs as MeasuredTab[]) : undefined,
           recoveryHost.saveBaseOf(wcId),
+          saveOptions.preview,
         )
         const bytes = fixed.bytes
         const tailsLost = fixed.tailsSkipped !== undefined
@@ -893,6 +910,7 @@ function registerHwpIpc(): void {
     else if (command === 'preview') requestHwpPreview(e.sender, 'open')
     else if (command === 'print') requestHwpPreview(e.sender, 'print')
     else if (command === 'importPdf' && hwpViews.has(e.sender.id)) runtime.importPdf?.()
+    else if (command === 'open' && hwpViews.has(e.sender.id)) runtime.openFileDialog?.()
   })
 
   ipcMain.on(HWP_CHANNELS.abortSave, (e) => {

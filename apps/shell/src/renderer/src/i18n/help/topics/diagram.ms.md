@@ -36,7 +36,7 @@ Editor rajah membuka fail draw.io dalam satu tab. Anda boleh melukis carta alir,
 
 - Minta AI melukis carta alir, rajah jujukan atau carta organisasi, menerangkan rajah, mengemaskan sesuatu halaman, atau menambah langkah seterusnya selepas bentuk yang anda pilih.
 - AI membaca rajah sebagai teks: halaman-halamannya dan, bagi setiap bentuk dan penyambung, id, teks, bentuk, kedudukan dan sambungannya, serta bentuk mana yang anda pilih. AI tidak melihat rajah sebagai gambar.
-- Perubahan yang dibuat oleh AI muncul serta-merta. Setiap perubahan ialah satu langkah buat asal (Ctrl+Z), dan senarai "Buat asal giliran AI" dalam panel mengembalikan satu giliran AI sepenuhnya. Jika mana-mana bahagian perubahan ditolak, rajah kekal seperti sebelumnya.
+- Perubahan yang dibuat oleh AI muncul serta-merta. Setiap perubahan ialah satu langkah buat asal (Ctrl+Z), bentuk dan penyambung yang diubah oleh AI diberi garis tepi kuning, dan **Buat asal perubahan ini** pada kad di bawah jawapannya mengembalikan satu giliran AI sepenuhnya. Jika mana-mana bahagian perubahan ditolak, rajah kekal seperti sebelumnya.
 - Untuk carta alir, rajah jujukan atau yang seumpamanya yang baharu, AI menulis Mermaid dan GenOffice menukarnya menjadi bentuk pada PC anda. Susun aturnya mungkin sedikit berbeza daripada yang dihasilkan oleh laman web draw.io.
 - Rajah juga boleh dilampirkan dalam panel AI editor lain, dipilih dengan `@`, dan ditemui melalui carian fail di Laman Utama. [Arahan terminal](help://cli) juga boleh membaca, menyunting dan mencipta rajah (`ieumoffice diagram read`, `ieumoffice diagram apply`, `ieumoffice create --type drawio`).
 

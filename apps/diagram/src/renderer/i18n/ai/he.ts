@@ -36,10 +36,6 @@ export const he = {
   aiRetry: 'נסו שוב',
   aiCopyReplyTitle: 'העתקת התשובה',
   aiRegenerateTitle: 'יצירה מחדש',
-  aiTurnsTitle: 'ביטול סבב של הבינה המלאכותית',
-  aiRollback: 'שחזור',
-  aiRollbackIncomplete:
-    'לא ניתן היה לבטל חלק מהתור הזה: התרשים השתנה אחריו. השתמשו בביטול בעורך במקום זאת.',
   aiUnknownError: 'בקשת ה-AI נכשלה, נסו שוב',
   aiTimeoutError: 'תגובת ה-AI חרגה מהזמן',
   aiCreditsExhausted: 'נגמרו הקרדיטים — טענו אצל ספק ה-AI שלכם',

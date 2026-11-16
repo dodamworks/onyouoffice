@@ -2,7 +2,9 @@
 
 ## Ayarları açma
 
-Giriş ekranının sol altındaki satır ayarlar panelini açar (bir AI bağlanana kadar “AI bağla” yazar). Beş bölümü vardır: Hesap, AI, Genel, Entegrasyonlar ve Hakkında.
+Giriş ekranının sol altındaki satır ayarlar panelini açar (altındaki satır bir AI'nin bağlı olup olmadığını gösterir). Beş bölümü vardır: Hesap, AI, Genel, Entegrasyonlar ve Hakkında.
+
+Ayarları herhangi bir sekmeden **⌘,** ile de açabilirsiniz (Windows ve Linux’ta Ctrl+,). Mac’te menü çubuğunun solundaki uygulama adlı menüden **Ayarlar…**, Windows ve Linux’ta **Menü (☰) ▸ Ayarlar…** ile de açılır. Word sekmesinde ⌘, (Ctrl+,) alt simge olduğundan orada menüyü kullanın.
 
 **Hesap**, Claude, ChatGPT ve Codex bağlantılarınızın durumunu gösterir; **Bağlantıları yönet** AI bölümüne götürür. AI’ın kendi makaleleri var: [Abonelik bağlantısı](help://subscription) ve [AI modelleri ve ayarlar](help://ai-models).
 
@@ -59,7 +61,7 @@ Ayarlar, GenOffice’i `.docx` / `.xlsx` / `.pptx` / `.pdf` ve benzerleri için 
 ## Üçüncü taraf bildirimleri ve güncellemeler
 
 - Yardım ▸ Üçüncü taraf bildirimleri: uygulamayla birlikte gelen tam açık kaynak lisans envanteri.
-- Menü (☰) ▸ Güncellemeleri denetle (Mac’te Yardım ▸ Güncellemeleri denetle): elle bir denetim başlatır; daha yeni bir sürüm varsa kurmayı önerir.
+- Menü (☰) ▸ Güncellemeleri denetle (Mac’te Yardım ▸ Güncellemeleri denetle): elle bir denetim başlatır; daha yeni bir sürüm varsa kurmayı önerir. Mac’te bu komut uygulama menüsünde, GenOffice hakkında öğesinin hemen altında da bulunur.
 
 ## MCP entegrasyonu (ileri düzey kullanıcılar / AI istemcileri için)
 

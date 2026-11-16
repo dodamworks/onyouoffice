@@ -15,11 +15,11 @@ Una habilidad es un conjunto de instrucciones de trabajo para la IA. Anote una s
 | **Carpeta de habilidades de Codex**  | Las habilidades de `~/.agents/skills`                            | Desactivadas |
 
 - El interruptor activa o desactiva una habilidad. El mismo ajuste vale para el panel de IA de todos los editores, para Ask AI en Inicio y para la ventana del agente.
-- Para una habilidad activada, elija **Decide la IA** o **Solo cuando se llama**. Al principio está en Decide la IA. Con Solo cuando se llama, la habilidad solo se usa cuando usted mismo la llama.
+- Para una habilidad activada, elija **Decide la IA** o **Solo cuando se llama**. Al principio está en Decide la IA. Con Solo cuando se llama, la habilidad solo se usa cuando usted mismo la llama. En una habilidad desactivada esta opción sigue ahí, atenuada, para que pueda elegirla antes de volver a activarla.
 - Habilidades de orígenes distintos pueden tener el mismo nombre. La etiqueta de origen de cada fila las distingue. Cuando dos habilidades con el mismo nombre están activadas, solo una aparece en la lista `/` y se usa: la primera en el orden Mis habilidades, Integradas, Carpeta de habilidades de Claude, Carpeta de habilidades de Codex, Complementos de Claude. La fila de la otra indica qué habilidad se usa en su lugar.
 - El menú de más opciones tiene **Ver contenido**, **Editar** (solo mis habilidades), **Exportar (zip)** (solo mis habilidades) y **Abrir carpeta**. Las habilidades integradas no tienen **Abrir carpeta**. **Dónde se usa** abre directamente el lugar donde se eligen los editores en los que se usa la habilidad.
 - Mis habilidades están en la carpeta `~/.ieumoffice/skills`. En Windows es `C:\Users\<nombre de usuario>\.ieumoffice\skills`. **Abrir carpeta**, en el menú de más opciones, abre la carpeta de la habilidad.
-- **Mover a la papelera** lleva una de mis habilidades a la papelera del sistema, desde donde puede restaurarla.
+- **Mover a la papelera** lleva una de mis habilidades a la papelera del sistema, desde donde puede restaurarla. Si una habilidad con el mismo nombre de otro origen está desactivada, la confirmación muestra una casilla marcada para volver a activarla. Desmárquela para dejarla desactivada.
 - Una habilidad integrada se oculta en lugar de eliminarse: elija **Ocultar**. **Volver a mostrar**, al final de la lista, la recupera tal como era al principio.
 - Para cambiar una habilidad integrada o una de otro programa, elija **Copiar a mis habilidades**. La copia aparece en mis habilidades y la original se desactiva.
 - Al exportar una habilidad con plantilla, el documento de plantilla también va en el zip. Compruebe que el documento no contenga información personal antes de exportarlo.
@@ -47,6 +47,16 @@ Debajo de la vista previa siempre se lee: «Instala habilidades solo de fuentes 
 - Si no ha cambiado nada, aparece «Está al día». Si algo cambió, revise los archivos cambiados y la vista previa, y haga clic en **Actualizar**.
 - Si usted editó la habilidad después de instalarla, también aparece «Se perderán tus propios cambios».
 - Al actualizar se conservan el estado activado o desactivado de la habilidad, la elección entre Decide la IA y Solo cuando se llama y dónde se usa.
+
+## Volver a una versión anterior
+
+Cuando editas una de tus habilidades, instalas otra con el mismo nombre en su lugar o la actualizas, la versión anterior se conserva. No va a la papelera.
+
+- **Versiones anteriores**, al final de **Ver contenido** o de **Editar**, enumera las versiones guardadas, de la más reciente a la más antigua, con cuándo y por qué se guardó cada una y su tamaño.
+- **Ver diferencias** muestra qué líneas de `SKILL.md` volverían, cuáles desaparecerían y qué otros archivos cambiarían.
+- **Volver a esta versión** vuelve a poner los archivos de esa versión tal como estaban. La versión actual también se guarda, así que puedes volver a ella. Si la habilidad está activada y cuándo se usa quedan como los dejaste.
+- Las versiones guardadas permanecen hasta que las eliminas. **Eliminar** elimina una definitivamente.
+- Las versiones están en la carpeta `~/.ieumoffice/skill-history`. **Mover a la papelera** en una habilidad envía también sus versiones guardadas a la papelera.
 
 ## Llamar a una habilidad en el panel de IA
 

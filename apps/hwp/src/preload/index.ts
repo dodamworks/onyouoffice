@@ -32,6 +32,7 @@ import type { SubscriptionApi } from '../shared/subscription-api'
 import {
   SUBSCRIPTION_CONNECT_HELP_CHANNEL,
   SUBSCRIPTION_INSTALL_HELP_CHANNEL,
+  SUBSCRIPTION_USAGE_CHANNEL,
   subscriptionLaunchResultOf,
   subscriptionStatusMapOf,
 } from '../shared/subscription-api'
@@ -86,6 +87,11 @@ const aiSubscription: SubscriptionApi = {
       handler(subscriptionStatusMapOf(statuses))
     ipcRenderer.on(SUBSCRIPTION_IPC_CHANNELS.changed, listener)
     return () => ipcRenderer.removeListener(SUBSCRIPTION_IPC_CHANNELS.changed, listener)
+  },
+  onUsage(handler) {
+    const listener = (_event: unknown, usage: unknown) => handler(Array.isArray(usage) ? usage : [])
+    ipcRenderer.on(SUBSCRIPTION_USAGE_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(SUBSCRIPTION_USAGE_CHANNEL, listener)
   },
   async openInstallHelp(provider) {
     await ipcRenderer.invoke(SUBSCRIPTION_INSTALL_HELP_CHANNEL, provider)
@@ -243,6 +249,7 @@ const api: HwpApi = {
   aiStream: (request) => ipcRenderer.invoke(AI_CHANNELS.stream, request),
   aiStreamCancel: (requestId) => ipcRenderer.invoke(AI_CHANNELS.streamCancel, requestId),
   readUrl: (url, offset) => ipcRenderer.invoke(AI_CHANNELS.readUrl, url, offset),
+  webSearch: (query, maxResults) => ipcRenderer.invoke(AI_CHANNELS.webSearch, query, maxResults),
   imageSearch: (query, maxResults) =>
     ipcRenderer.invoke(AI_CHANNELS.imageSearch, query, maxResults),
   generateImage: (op) => ipcRenderer.invoke(HWP_CHANNELS.aiGenerateImage, op),

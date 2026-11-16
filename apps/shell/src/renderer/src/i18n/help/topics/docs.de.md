@@ -67,7 +67,7 @@ Rechtsklicken Sie irgendwo im Text — das Menü richtet sich nach dem, was Sie 
 ## KI
 
 - KI-Schaltfläche im Menüband und Seitenbereich: umformulieren, ausbauen, übersetzen, zusammenfassen, Tabellen-Voreinstellungen einfügen sowie freie Anweisungen.
-- Jeder KI-Durchgang legt zuerst einen Snapshot an; Sie können aus der Versionsliste zurückrollen, und auch das Zurückrollen lässt sich rückgängig machen.
+- Die Stellen, die die KI geändert hat, werden gelb markiert. **Diese Änderungen zurücknehmen** auf der Karte unter ihrer Antwort nimmt diesen Durchgang als Ganzes zurück (die späteren Durchgänge gehen mit zurück), und auch das Zurücknehmen lässt sich rückgängig machen.
 
 ## Speichern und exportieren
 

@@ -667,6 +667,13 @@ const homeApi: HomeApi = {
       ? { ok: true }
       : { ok: false, error: typeof raw.error === 'string' ? raw.error : 'Connection failed' }
   },
+  async aiToolCapabilities() {
+    const raw: unknown = await ipcRenderer.invoke('ai:tool-capabilities')
+    const image = (raw as { imageGeneration?: { available?: unknown } } | null)?.imageGeneration
+    return typeof image?.available === 'boolean'
+      ? { imageGeneration: { available: image.available } }
+      : null
+  },
   getAiMediaProviders() {
     return AI_MEDIA_PROVIDERS
   },

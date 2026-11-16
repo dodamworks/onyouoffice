@@ -37,10 +37,6 @@ export const ms = {
   aiRetry: 'Cuba lagi',
   aiCopyReplyTitle: 'Salin balasan',
   aiRegenerateTitle: 'Jana semula',
-  aiTurnsTitle: 'Buat asal giliran AI',
-  aiRollback: 'Kembalikan',
-  aiRollbackIncomplete:
-    'Sebahagian giliran itu tidak dapat dibuat asal: rajah telah diubah selepasnya. Gunakan Buat Asal dalam editor.',
   aiUnknownError: 'Permintaan AI gagal, cuba lagi',
   aiTimeoutError: 'Respons AI tamat masa',
   aiCreditsExhausted: 'Kredit habis — tambah nilai dengan penyedia AI anda',

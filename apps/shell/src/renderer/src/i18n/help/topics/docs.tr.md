@@ -67,7 +67,7 @@ Gövdenin herhangi bir yerine sağ tıklayın — menü tıkladığınız yeri i
 ## AI
 
 - Şerit AI düğmesi ve yan panel: yeniden yaz, genişlet, çevir, özetle, tablo ekle hazır ayarları ve serbest talimatlar.
-- Her AI turu önce anlık görüntü alır; sürüm listesinden geri dönün, geri dönmenin kendisi de geri alınabilir.
+- AI’ın değiştirdiği yerler sarıyla işaretlenir. Yanıtın altındaki karttaki **Bu değişiklikleri geri al** o turu bütünüyle geri alır (ondan sonraki turlar da geri döner), geri dönmenin kendisi de geri alınabilir.
 
 ## Kaydetme ve dışa aktarma
 

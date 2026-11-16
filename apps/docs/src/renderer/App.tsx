@@ -113,6 +113,7 @@ import {
 import { ZoteroDocumentController } from './zotero/controller'
 import { AiPanel, AI_REVISION_AUTHOR } from './ai/AiPanel'
 import { useAiDock } from './ai/use-ai-dock'
+import { isAiMarksClear, sliceWithoutAiMarks } from './ai/run-changes'
 import { useAiVisible } from './ai-visibility'
 import type { AiCommentsAccess, AiDocExtras, AiHeaderFooterAccess } from './ai/tools'
 import type { AiStyleInfo } from './ai/style-ops'
@@ -1240,6 +1241,8 @@ export function App() {
       // Word/web HTML cleanup: strip mso comments and <o:p>, unwrap <li><p>x</p></li>
       // (docListItem is an inline container; block-level p would shatter the list)
       transformPastedHTML: cleanPastedHtml,
+      // the AI's marks are the screen's: the clipboard gets the blocks without them
+      transformCopied: sliceWithoutAiMarks,
       // plain-text paste takes the insertion point's formatting like typing
       // (Word Keep Text Only) — the default parser misses storedMarks (r172)
       clipboardTextParser: (text, $context, _plain, view) => pasteTextSlice(text, $context, view),
@@ -1479,8 +1482,9 @@ export function App() {
     onSelectionUpdate: () => forceRender(),
     // typing in the main document takes ribbon routing back from any textbox
     onFocus: () => setActiveSubEditor(null),
-    onUpdate: () => {
-      dirtyRef.current = true
+    onUpdate: ({ transaction }) => {
+      // taking the AI's marks off is no change of the document
+      if (!isAiMarksClear(transaction)) dirtyRef.current = true
       forceRender()
     },
   })
@@ -7523,6 +7527,8 @@ export function App() {
 
   const docZoomClass = [
     'doc-zoom',
+    // the AI's marks show here, and the HTML export lifts the class to leave them out
+    'ai-marks',
     multipage ? 'multipage' : '',
     showMarks ? 'show-marks' : '',
     `view-${viewMode}`,

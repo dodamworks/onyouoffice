@@ -87,8 +87,6 @@ export const zhTW = {
   aiStopGeneration: '停止產生',
   aiStop: '停止',
   aiSend: '傳送',
-  aiSnapshotsTitle: '版本快照',
-  aiRollback: '還原',
   aiStarterPolishTitle: '最佳化這一頁的標題和文案',
   aiStarterTighten: '把本頁要點改得更精煉',
   aiStarterProofread: '檢查全篇錯別字並改正',

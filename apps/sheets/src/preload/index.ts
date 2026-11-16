@@ -72,6 +72,7 @@ import {
   SAVE_EDITS_CHUNK_JSON_MAX,
 } from '../shared/ipc-channels'
 import {
+  SUBSCRIPTION_USAGE_CHANNEL,
   isSubscriptionProviderId,
   subscriptionLaunchResultOf,
   subscriptionStatusMapOf,
@@ -136,6 +137,11 @@ const aiSubscription: SubscriptionApi = {
       handler(subscriptionStatusMapOf(statuses))
     ipcRenderer.on(SUBSCRIPTION_IPC_CHANNELS.changed, listener)
     return () => ipcRenderer.removeListener(SUBSCRIPTION_IPC_CHANNELS.changed, listener)
+  },
+  onUsage(handler) {
+    const listener = (_event: unknown, usage: unknown) => handler(Array.isArray(usage) ? usage : [])
+    ipcRenderer.on(SUBSCRIPTION_USAGE_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(SUBSCRIPTION_USAGE_CHANNEL, listener)
   },
 }
 

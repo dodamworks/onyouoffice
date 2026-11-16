@@ -37,10 +37,6 @@ export const tr = {
   aiRetry: 'Yeniden dene',
   aiCopyReplyTitle: 'Yanıtı kopyala',
   aiRegenerateTitle: 'Yeniden oluştur',
-  aiTurnsTitle: 'Bir yapay zekâ turunu geri al',
-  aiRollback: 'Geri Al',
-  aiRollbackIncomplete:
-    'O turun bir bölümü geri alınamadı: haritanın geri alma geçmişi artık o kadar geriye gitmiyor.',
   aiUnknownError: 'Yapay zekâ isteği başarısız oldu, lütfen yeniden deneyin',
   aiTimeoutError: 'Yapay zekâ yanıtı zaman aşımına uğradı',
   aiCreditsExhausted: 'Kredi bitti — yapay zekâ sağlayıcınızdan kredi yükleyin',

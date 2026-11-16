@@ -36,7 +36,7 @@ Edytor diagramów otwiera pliki draw.io na karcie. Rysujesz w nim schematy bloko
 
 - Poproś AI o narysowanie schematu blokowego, diagramu sekwencji lub schematu organizacyjnego, o wyjaśnienie diagramu, uporządkowanie strony albo dodanie kolejnego kroku po zaznaczonych kształtach.
 - AI czyta diagram jako tekst: strony, a dla każdego kształtu i łącznika jego id, tekst, kształt, położenie i połączenia, a do tego informację, które kształty zaznaczyłeś. Nie widzi diagramu jako obrazu.
-- Zmiany wprowadzone przez AI pojawiają się od razu. Każda zmiana to jeden krok cofania (Ctrl+Z), a lista „Cofnij turę AI” w panelu wycofuje całą turę AI. Jeśli którakolwiek część zmiany zostanie odrzucona, diagram pozostaje taki, jaki był.
+- Zmiany wprowadzone przez AI pojawiają się od razu. Każda zmiana to jeden krok cofania (Ctrl+Z), kształty i łączniki zmienione przez AI mają żółte obramowanie, a **Cofnij te zmiany** na karcie pod odpowiedzią wycofuje całą turę AI. Jeśli którakolwiek część zmiany zostanie odrzucona, diagram pozostaje taki, jaki był.
 - Przy nowym schemacie blokowym, diagramie sekwencji i podobnych AI pisze kod Mermaid, a GenOffice zamienia go na kształty na Twoim komputerze. Układ może się trochę różnić od tego, który tworzy witryna draw.io.
 - Diagramy można też załączać w panelu AI innych edytorów, wybierać przez `@` i znajdować wyszukiwaniem plików na stronie głównej. [Polecenia terminala](help://cli) również czytają, edytują i tworzą diagramy (`ieumoffice diagram read`, `ieumoffice diagram apply`, `ieumoffice create --type drawio`).
 

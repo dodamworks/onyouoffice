@@ -67,7 +67,7 @@ Haga clic derecho en cualquier parte del cuerpo: el menú se ajusta a lo que ha 
 ## IA
 
 - Botón de IA en la cinta y panel lateral: reescribir, ampliar, traducir, resumir, insertar tablas predeterminadas, además de instrucciones libres.
-- Cada turno de la IA guarda primero una instantánea; puede volver atrás desde la lista de versiones, y ese propio retroceso se puede deshacer.
+- Los lugares que cambió la IA se marcan en amarillo. **Deshacer estos cambios**, en la tarjeta bajo su respuesta, revierte ese turno entero (los turnos posteriores también se revierten), y ese propio retroceso se puede deshacer.
 
 ## Guardar y exportar
 

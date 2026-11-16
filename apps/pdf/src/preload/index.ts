@@ -35,6 +35,7 @@ import {
   SUBSCRIPTION_CONNECT_HELP_CHANNEL,
   SUBSCRIPTION_INSTALL_HELP_CHANNEL,
   imageGenerationAvailableOf,
+  SUBSCRIPTION_USAGE_CHANNEL,
   subscriptionLaunchResultOf,
   subscriptionMeteredResultOf,
   subscriptionStatusMapOf,
@@ -81,6 +82,11 @@ const subscription: SubscriptionApi = {
       handler(subscriptionStatusMapOf(statuses))
     ipcRenderer.on(SUBSCRIPTION_IPC_CHANNELS.changed, listener)
     return () => ipcRenderer.removeListener(SUBSCRIPTION_IPC_CHANNELS.changed, listener)
+  },
+  onUsage: (handler) => {
+    const listener = (_e: unknown, usage: unknown) => handler(Array.isArray(usage) ? usage : [])
+    ipcRenderer.on(SUBSCRIPTION_USAGE_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(SUBSCRIPTION_USAGE_CHANNEL, listener)
   },
   openInstallHelp: async (provider) => {
     await ipcRenderer.invoke(SUBSCRIPTION_INSTALL_HELP_CHANNEL, provider)
@@ -249,6 +255,7 @@ const api: PdfApi = {
     ),
   imageSearch: (query, maxResults) =>
     ipcRenderer.invoke(AI_CHANNELS.imageSearch, query, maxResults),
+  webSearch: (query, maxResults) => ipcRenderer.invoke(AI_CHANNELS.webSearch, query, maxResults),
   readUrl: (url, offset) => ipcRenderer.invoke(AI_CHANNELS.readUrl, url, offset),
   fetchImage: (url) => ipcRenderer.invoke(AI_CHANNELS.fetchImage, url),
   generateImage: (op) => ipcRenderer.invoke(PDF_CHANNELS.generateImage, op),

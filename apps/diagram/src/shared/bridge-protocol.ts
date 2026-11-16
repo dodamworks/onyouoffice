@@ -17,6 +17,7 @@
  * `MessageEvent`, so both sides and the tests share it.
  */
 import type { DiagramPrimitive } from '@genoffice/drawio-model'
+import type { DiagramCellRef } from './ai-marks'
 
 /** The custom scheme the draw.io files are served from (never `file://`). */
 export const DRAWIO_SCHEME = 'drawio-app'
@@ -117,6 +118,16 @@ export interface BridgeOps {
    * the ones taken back; it stops at the first batch something else covers.
    */
   undoBatches: { request: { tokens: string[] }; reply: { undone: number } }
+  /**
+   * Mark the cells the last AI run changed: draw.io highlights on its overlay
+   * layer (not cells: no undo step, nothing saved or exported), drawn for the
+   * page on screen and again when a page comes on screen. `fill` and `line`
+   * are CSS colours (the app's mark tokens). An empty list takes the marks off.
+   */
+  markCells: {
+    request: { cells: DiagramCellRef[]; fill: string; line: string }
+    reply: Record<string, never>
+  }
   /**
    * Convert a Visio drawing (`.vsdx` bytes) with draw.io's own importer.
    * Changes nothing on screen. `xml` is a draw.io file with uncompressed
@@ -222,6 +233,7 @@ const BRIDGE_OPS: ReadonlySet<string> = new Set<BridgeOp>([
   'convertMermaid',
   'importVisio',
   'undoBatches',
+  'markCells',
   'setDark',
   'setCompressed',
   'markSaved',

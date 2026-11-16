@@ -194,6 +194,15 @@ async function sendMessage(text: string): Promise<void> {
   await settle(16)
 }
 
+/** the titles of the topics on the sheet on screen that carry the AI's mark */
+const markedTitles = (): string[] =>
+  [...container.querySelectorAll<HTMLElement>('.mm-sheet-host:not([hidden]) me-tpc.mm-ai-changed')]
+    .map((topic) => topic.querySelector('.text')?.textContent ?? topic.textContent ?? '')
+    .sort()
+
+/** the cards under the replies of runs that changed the map */
+const cards = (): HTMLElement[] => [...container.querySelectorAll<HTMLElement>('.ai-run-changes')]
+
 /** the titles of the topics drawn on the sheet on screen, in the order of the page (sides first) */
 const drawnTitles = (): string[] =>
   [...container.querySelectorAll<HTMLElement>('.mm-sheet-host:not([hidden]) me-tpc')].map(
@@ -378,8 +387,13 @@ describe('a run', () => {
     expect(toolResult).toContain('2 of 3 edit(s) applied')
     expect(toolResult).toContain('FAILED')
     expect(drawnTitles()).toEqual(expect.arrayContaining(['From the AI', 'Below it']))
-    // the turn's undo point is listed
-    expect(container.querySelector('[data-action="ai-turn-undo"]')).not.toBeNull()
+    // the run's card sits under its last reply, with the topics it added; they are marked on the map
+    expect(cards()).toHaveLength(1)
+    const card = cards()[0]!
+    expect(card.closest('.ai-msg-assistant')?.textContent).toContain('Added two topics')
+    expect(card.dataset.state).toBe('applied')
+    expect(card.textContent).toContain('Changes made to the document: 2')
+    expect(markedTitles()).toEqual(['Below it', 'From the AI'])
 
     await act(async () => {
       document.body.dispatchEvent(
@@ -407,13 +421,114 @@ describe('a run', () => {
     expect(container.querySelectorAll('.mm-sheet-host')).toHaveLength(2)
     expect(drawnTitles().sort()).toEqual(['Ideas', 'First', 'Second'].sort())
 
+    // the whole written sheet is new: every topic of it is marked
+    expect(markedTitles()).toEqual(['First', 'Ideas', 'Second'])
+    expect(cards()[0]!.textContent).toContain('Changes made to the document: 3')
+
     await act(async () => {
-      container.querySelector<HTMLButtonElement>('[data-action="ai-turn-undo"]')!.click()
+      container.querySelector<HTMLButtonElement>('[data-action="ai-changes-revert"]')!.click()
     })
     await settle()
     expect(container.querySelectorAll('.mm-sheet-host')).toHaveLength(1)
     expect(drawnTitles().sort()).toEqual(['Center', 'One', 'Two'].sort())
-    expect(container.querySelector('[data-action="ai-turn-undo"]')).toBeNull()
+    // the card stays as a record of the run, taken back
+    expect(cards()[0]!.dataset.state).toBe('reverted')
+    expect(cards()[0]!.textContent).toContain('Changes undone')
+    expect(container.querySelector('[data-action="ai-changes-revert"]')).toBeNull()
+  })
+
+  it('marks only the last run, hides the marks on request, and takes later runs back with an earlier one', async () => {
+    const sheet = plainSheet()
+    const bytes = await (await documentOf(sheet)).save()
+    const rootId = sheet.rootTopic.id
+    const [one, two] = sheet.rootTopic.children!.attached!
+    const fake = fakeApi({
+      pending: 'C:/maps/a.xmind',
+      bytes,
+      statuses: statusMap('ready', 'ready'),
+      reply: (_request, nth) => {
+        if (nth === 1)
+          return toolCall('edit_map', {
+            edits: [{ op: 'set_title', id: one!.id, title: 'First run' }],
+          })
+        if (nth === 3) {
+          return toolCall('edit_map', {
+            edits: [
+              { op: 'add', parentId: rootId, title: 'Second run' },
+              { op: 'set_title', id: two!.id, title: 'Also second' },
+            ],
+          })
+        }
+        if (nth === 5) return [{ type: 'delta', text: 'Nothing to change.' }, { type: 'done' }]
+        return [{ type: 'delta', text: `Done ${nth}.` }, { type: 'done' }]
+      },
+    })
+    await mountApp(fake)
+    await sendMessage('rename one')
+    expect(markedTitles()).toEqual(['First run'])
+    await sendMessage('add one and rename two')
+    // the new run's marks replace the last run's; only the newest card offers to hide them
+    expect(markedTitles()).toEqual(['Also second', 'Second run'])
+    expect(cards()).toHaveLength(2)
+    expect(cards()[0]!.querySelector('[data-action="ai-changes-unmark"]')).toBeNull()
+    expect(cards()[1]!.textContent).toContain('Changes made to the document: 2')
+    // the earlier card says the later run goes back with it
+    expect(
+      cards()[0]!.querySelector('[data-action="ai-changes-revert"]')!.getAttribute('title'),
+    ).toBe('Undo this turn and every AI turn after it')
+    expect(
+      cards()[1]!.querySelector('[data-action="ai-changes-revert"]')!.getAttribute('title'),
+    ).toBe('Undo everything the AI changed in this turn')
+
+    act(() =>
+      cards()[1]!.querySelector<HTMLButtonElement>('[data-action="ai-changes-unmark"]')!.click(),
+    )
+    expect(markedTitles()).toEqual([])
+    expect(cards()[1]!.querySelector('[data-action="ai-changes-unmark"]')).toBeNull()
+    // hiding the marks keeps the changes
+    expect(drawnTitles()).toEqual(
+      expect.arrayContaining(['First run', 'Second run', 'Also second']),
+    )
+
+    await act(async () => {
+      cards()[0]!.querySelector<HTMLButtonElement>('[data-action="ai-changes-revert"]')!.click()
+    })
+    await settle()
+    expect(drawnTitles().sort()).toEqual(['Center', 'One', 'Two'].sort())
+    expect(cards().map((card) => card.dataset.state)).toEqual(['reverted', 'reverted'])
+
+    // a run that changes nothing has no card, and a new run takes the marks off
+    await sendMessage('look only')
+    expect(cards()).toHaveLength(2)
+  })
+
+  it('a new run and a new chat take the marks off', async () => {
+    const sheet = plainSheet()
+    const bytes = await (await documentOf(sheet)).save()
+    const [one] = sheet.rootTopic.children!.attached!
+    const fake = fakeApi({
+      pending: 'C:/maps/a.xmind',
+      bytes,
+      statuses: statusMap('ready', 'ready'),
+      reply: (_request, nth) =>
+        nth === 1 || nth === 4
+          ? toolCall('edit_map', {
+              edits: [{ op: 'set_title', id: one!.id, title: nth === 1 ? 'Marked' : 'Again' }],
+            })
+          : [{ type: 'delta', text: 'Done.' }, { type: 'done' }],
+    })
+    await mountApp(fake)
+    await sendMessage('rename one')
+    expect(markedTitles()).toEqual(['Marked'])
+    await sendMessage('just talk')
+    expect(markedTitles()).toEqual([])
+    expect(cards()).toHaveLength(1)
+
+    await sendMessage('rename it again')
+    expect(markedTitles()).toEqual(['Again'])
+    act(() => container.querySelector<HTMLButtonElement>('[aria-label="New chat"]')!.click())
+    expect(markedTitles()).toEqual([])
+    expect(cards()).toHaveLength(0)
   })
 
   it('fills a new untitled map and names its tab from the request', async () => {

@@ -67,7 +67,7 @@ Klik kanan di mana saja pada isi dokumen — menu menyesuaikan dengan yang Anda 
 ## AI
 
 - Tombol AI pada pita dan panel samping: tulis ulang, perluas, terjemahkan, ringkas, sisipkan tabel, ditambah instruksi bebas.
-- Setiap giliran AI menyimpan snapshot lebih dulu; gulir balik dari daftar versi, dan pengguliran balik itu sendiri bisa dibatalkan.
+- Bagian yang diubah AI ditandai kuning. **Batalkan perubahan ini** pada kartu di bawah balasannya membatalkan giliran itu secara utuh (giliran sesudahnya ikut dibatalkan), dan pengguliran balik itu sendiri bisa dibatalkan.
 
 ## Menyimpan dan mengekspor
 

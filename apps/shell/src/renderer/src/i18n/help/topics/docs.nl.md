@@ -80,7 +80,7 @@ Rechtermuisklik ergens in de tekst — het menu volgt waarop je klikte. Hoofdgro
 ## AI
 
 - AI-knop op het lint en het zijpaneel: herschrijven, uitbreiden, vertalen, samenvatten, kant-en-klare tabellen invoegen, plus vrije instructies.
-- Elke AI-beurt maakt eerst een momentopname; je kunt terug naar elke versie uit de versielijst, en die terugstap is zelf ongedaan te maken.
+- De plekken die de AI heeft veranderd, worden geel gemarkeerd. **Deze wijzigingen ongedaan maken** op de kaart onder het antwoord draait die beurt in zijn geheel terug (de beurten daarna gaan ook terug), en die terugstap is zelf ongedaan te maken.
 
 ## Opslaan en exporteren
 

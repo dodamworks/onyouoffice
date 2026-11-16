@@ -2,7 +2,9 @@
 
 ## Membuka tetapan
 
-Baris di penjuru kiri bawah pada Laman Utama akan membuka panel tetapan. Ia memaparkan Sambungkan AI sehingga ada AI yang disambungkan. Panel ini mempunyai lima bahagian: Akaun, AI, Umum, Integrasi dan Perihal.
+Baris di penjuru kiri bawah pada Laman Utama akan membuka panel tetapan. Baris di bawahnya menunjukkan sama ada AI telah disambungkan. Panel ini mempunyai lima bahagian: Akaun, AI, Umum, Integrasi dan Perihal.
+
+Anda juga boleh membukanya dari mana-mana tab dengan **⌘,** (Ctrl+, pada Windows dan Linux), daripada **Tetapan…** dalam menu aplikasi pada Mac (menu yang dinamakan sempena aplikasi, di kiri bar menu), atau daripada **Menu (☰) ▸ Tetapan…** pada Windows dan Linux. Dalam tab Word, ⌘, (Ctrl+,) ialah subskrip, jadi bukanya daripada menu.
 
 **Akaun** menunjukkan keadaan sambungan Claude, ChatGPT dan Codex anda, dan **Urus sambungan** membawa anda ke bahagian AI. AI mempunyai babnya sendiri: [Sambungan langganan](help://subscription) dan [Model AI dan tetapan](help://ai-models).
 
@@ -59,7 +61,7 @@ Tetapan boleh mendaftar GenOffice sebagai aplikasi yang mengendalikan fail .docx
 ## Notis perisian pihak ketiga dan kemas kini
 
 - Bantuan ▸ Notis Perisian Pihak Kedua memaparkan senarai penuh lesen perisian sumber terbuka yang disertakan dengan aplikasi.
-- Menu (☰) ▸ Semak Kemas Kini (pada Mac, Bantuan ▸ Semak Kemas Kini) memulakan pemeriksaan secara manual. Jika terdapat versi yang lebih baharu, aplikasi akan meminta anda memasangnya.
+- Menu (☰) ▸ Semak Kemas Kini (pada Mac, Bantuan ▸ Semak Kemas Kini) memulakan pemeriksaan secara manual. Jika terdapat versi yang lebih baharu, aplikasi akan meminta anda memasangnya. Pada Mac, ia juga ada dalam menu aplikasi, betul-betul di bawah Perihal GenOffice.
 
 ## Integrasi MCP
 

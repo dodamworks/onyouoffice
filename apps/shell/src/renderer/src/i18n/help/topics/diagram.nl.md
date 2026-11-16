@@ -36,7 +36,7 @@ De diagrameditor opent draw.io-bestanden in een tabblad. Je tekent er stroomdiag
 
 - Vraag de AI om een stroomdiagram, een sequentiediagram of een organigram te tekenen, het diagram uit te leggen, een pagina op te ruimen of de volgende stap toe te voegen na de vormen die je hebt geselecteerd.
 - De AI leest het diagram als tekst: de pagina's en, voor elke vorm en verbindingslijn, de id, tekst, vorm, positie en verbindingen, plus welke vormen je hebt geselecteerd. Het diagram als afbeelding ziet de AI niet.
-- Wijzigingen van de AI verschijnen meteen. Elke wijziging is één stap ongedaan maken (Ctrl+Z), en de lijst "Een AI-beurt ongedaan maken" in het paneel draait een hele beurt van de AI terug. Wordt een deel van een wijziging geweigerd, dan blijft het diagram zoals het was.
+- Wijzigingen van de AI verschijnen meteen. Elke wijziging is één stap ongedaan maken (Ctrl+Z), de vormen en verbindingslijnen die de AI heeft veranderd, krijgen een gele rand, en **Deze wijzigingen ongedaan maken** op de kaart onder het antwoord draait een hele beurt van de AI terug. Wordt een deel van een wijziging geweigerd, dan blijft het diagram zoals het was.
 - Voor een nieuw stroomdiagram, sequentiediagram en dergelijke schrijft de AI Mermaid en zet GenOffice dat op je pc om in vormen. De indeling kan iets afwijken van wat de website van draw.io maakt.
 - Diagrammen kun je ook als bijlage toevoegen in het AI-paneel van de andere editors, kiezen met `@` en vinden met het zoeken naar bestanden op Start. Ook de [terminalopdrachten](help://cli) lezen, bewerken en maken diagrammen (`ieumoffice diagram read`, `ieumoffice diagram apply`, `ieumoffice create --type drawio`).
 

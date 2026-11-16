@@ -23,6 +23,7 @@ shell과 에디터들의 메인 프로세스(일부는 preload)가 함께 쓰는
 - 창·탭·수명 주기의 소유는 이 모듈의 범위가 아니다. 창을 만들고, IPC 핸들러를 등록하고, 단일 인스턴스 잠금을 잡는 일은 `apps/shell`과 각 에디터의 `src/main`이 한다. 여기 함수는 호출자가 넘긴 창·`app`·`dialog`를 받아 쓴다.
 - headless 내보내기를 실제로 수행하는 호스트는 `apps/shell/src/main/headless-export.ts`이고, 형식별 내보내기는 각 에디터가 한다. 여기는 문법과 봉투만 정의한다.
 - 업데이트 확인의 구현은 shell(`updater.ts`)의 범위다. 메뉴는 `setUpdateCheckInvoker`로 주입된 함수를 클릭 시점에 부를 뿐이다. "업데이트 확인…"은 Windows·Linux에서 탭 줄 ☰ 팝업의 맨 아래 항목이고(`appMenuPopupTemplate`, shell의 `showAppMenu`가 붙인다), 도움말 메뉴에는 macOS에서만 들어간다(`helpCheckUpdatesItems`). 도움말 메뉴를 새로 만들 때 `checkUpdatesMenuItem`을 직접 넣지 않는다.
+- macOS의 앱 이름 메뉴는 `macAppMenuTemplate`으로 만든다. 맨 `role: 'appMenu'`에는 설정도 업데이트 확인도 없어서, Mac 사용자가 찾는 자리에 둘이 없었다(2026-11-15 신고). 이 메뉴에는 이음오피스 정보 → 업데이트 확인… → 설정…(⌘,) → 서비스·가리기·종료가 들어간다. "설정…"은 `setOpenSettingsInvoker`로 주입된 함수(shell이 홈의 설정을 연다)를 부른다. 단축키는 `SettingsShortcut`으로 고른다. `register`는 ⌘,를 메뉴에 묶고, `show`는 글자만 보이며(☰ 팝업. 키는 shell의 `tab-shortcuts.ts`가 받는다), `none`은 단축키를 두지 않는다. 워드 탭에서는 ⌘,·Ctrl+,가 아래 첨자라서 `none`이다. Windows·Linux의 ☰ 팝업은 창의 메뉴들 다음에 설정…, 업데이트 확인… 순서로 끝난다.
 - 제품 이름과 저장소 좌표의 정의는 `packages/i18n`의 범위다. `github-menu.ts`는 그 값으로 URL을 만들기만 한다.
 - AI 제공자, 구독 프로그램, 문서 엔진과는 무관하다. 구독 프로그램의 실행·종료를 여기에 두지 않는다.
 

@@ -185,18 +185,63 @@ describe('what the screen answers', () => {
     }
   }
 
-  it('is the canvas font after the studio’s substitution, without the engine’s aliases', () => {
+  it('is the canvas font after the studio’s substitution, without an alias nothing stands behind', () => {
     const doc = editor(
       'bold 14.667px "__rhwp_ttf__KoPub바탕체 Medium", KoPubBatang, "Haansoft Batang", serif',
       [],
     )
     const fonts = print.screenFonts(doc as never, () => true)!
     const font = fonts.font("bold 14.667px 'KoPub바탕체 Medium',serif")!
+    // no record of the font's file on this PC: the alias is dropped
     expect(font.families).toEqual(['KoPubBatang', 'Haansoft Batang', 'serif'])
     expect(font.measure('ab')).toBe(12)
     // one canvas per font, asked once
     fonts.font("bold 14.667px 'KoPub바탕체 Medium',serif")
     expect(doc.set.filter((value) => !value.startsWith('10px'))).toHaveLength(1)
+  })
+
+  it('turns the alias the screen draws through into the document’s font, named to its file', () => {
+    // the studio found the font's file on this PC; in Electron the print window does not
+    // find the font by its family name KoPubBatang, the next name of the screen's list
+    pc.installFontPresence({
+      resolveLocalFont: (name: string) =>
+        name === 'KoPub바탕체 Medium'
+          ? {
+              family: 'KoPubBatang',
+              fullName: 'KoPubBatang Medium',
+              postscriptName: 'KoPubBatangMedium',
+              detectionSource: 'local-font-access',
+            }
+          : null,
+      records: () => [],
+      detected: () => new Set<string>(),
+      state: () => ({ source: 'local-font-access', count: 1, detectedAt: 1 }),
+    } as never)
+    const doc = editor(
+      '14.667px "__rhwp_ttf__KoPub바탕체 Medium", KoPubBatang, "Haansoft Batang", serif',
+      [],
+    )
+    const fonts = print.screenFonts(doc as never)!
+    const font = fonts.font("14.667px 'KoPub바탕체 Medium',serif")!
+    expect(font.families).toEqual(['KoPub바탕체 Medium', 'KoPubBatang', 'Haansoft Batang', 'serif'])
+    // the studio holds that font as the alias's file, not as a FontFace of its own name
+    expect(fonts.faces(font.families)).toEqual([
+      {
+        family: 'KoPub바탕체 Medium',
+        local: ['KoPubBatangMedium', 'KoPubBatang Medium'],
+        unicodeRange: undefined,
+      },
+    ])
+    const page = print.printSvgForThisPc(
+      '<svg xmlns="http://www.w3.org/2000/svg"><text x="1" y="2" font-family="\'KoPub바탕체 Medium\',serif" font-size="14.667">가</text></svg>',
+      fonts,
+    )
+    expect(page).toContain(
+      "font-family=\"'KoPub바탕체 Medium','KoPubBatang','Haansoft Batang',serif\"",
+    )
+    expect(page).toContain(
+      'src:local(&quot;KoPubBatangMedium&quot;),local(&quot;KoPubBatang Medium&quot;)',
+    )
   })
 
   it('has no answer for a font the canvas refuses', () => {
@@ -311,5 +356,68 @@ describe('the engine’s alias for a document’s font program', () => {
         'const engineAliases = listed.filter(name => isEngineFontAlias(name));',
       )
     }
+  })
+})
+
+describe('waiting for the PC’s fonts before a print', () => {
+  const known = (source: string) =>
+    ({
+      resolveLocalFont: () => null,
+      records: () => [],
+      detected: () => new Set<string>(),
+      state: () => ({ source, count: 1, detectedAt: 1 }),
+    }) as never
+
+  it('waits for the start-up look, then says whether the screen’s fonts are known', async () => {
+    let finish!: () => void
+    const listed = new Promise<{ family: string; fullName: string; postscriptName: string }[]>(
+      (resolve) => {
+        finish = () => {
+          pc.installFontPresence(known('local-font-access'))
+          resolve([])
+        }
+      },
+    )
+    const visible = { visibilityState: 'visible', addEventListener() {}, removeEventListener() {} }
+    void pc.refreshPcFonts({
+      queryLocalFonts: () => listed,
+      loadStored: async () => {},
+      records: () => [],
+      detect: async () => {},
+      changed: () => {},
+      document: visible as never,
+    })
+    let answer: boolean | undefined
+    const ready = pc.printFontsReady({ doc: visible as never }).then((value) => (answer = value))
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    // still reading the PC's fonts: the print waits
+    expect(answer).toBeUndefined()
+    finish()
+    await ready
+    expect(answer).toBe(true)
+  })
+
+  it('answers at once for a page that is not shown, which never gets the PC’s list', async () => {
+    void pc.refreshPcFonts({
+      queryLocalFonts: () => new Promise(() => {}),
+      loadStored: async () => {},
+      records: () => [],
+      detect: async () => {},
+      changed: () => {},
+    })
+    const hidden = { visibilityState: 'hidden' }
+    await expect(pc.printFontsReady({ doc: hidden as never })).resolves.toBe(false)
+  })
+
+  it('goes on after the wait when the look takes too long', async () => {
+    void pc.refreshPcFonts({
+      queryLocalFonts: () => new Promise(() => {}),
+      loadStored: async () => {},
+      records: () => [],
+      detect: async () => {},
+      changed: () => {},
+    })
+    const visible = { visibilityState: 'visible' }
+    await expect(pc.printFontsReady({ wait: 10, doc: visible as never })).resolves.toBe(false)
   })
 })

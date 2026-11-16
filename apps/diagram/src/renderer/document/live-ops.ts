@@ -24,6 +24,7 @@ import {
   type DiagramState,
   type MermaidConverter,
 } from '@genoffice/drawio-model'
+import { cellChangesOf, type DiagramCellChanges, type DiagramCellRef } from '../../shared/ai-marks'
 import type { DiagramApplyStep } from '../../shared/bridge-protocol'
 import type { DrawioFrame } from '../drawio/frame-client'
 import { convertMermaidInEditor, plannedMermaidCells, type MermaidConversion } from './mermaid'
@@ -128,6 +129,8 @@ export interface LiveApplyOptions {
   mode?: DiagramApplyMode
   /** The page ops without `page` work on, instead of the page on screen (a windowless job's `--page`). */
   defaultPage?: string
+  /** Hears which cells an applied call added, changed and removed (the AI panel marks and counts them). */
+  onChanges?: (changes: DiagramCellChanges) => void
 }
 
 /**
@@ -188,6 +191,7 @@ export async function applyLiveOps(
 
   const { steps, drawingSteps } = stepsOfPlan(plan.primitives, drawings)
   const reply = await frame.request('applyBatch', { steps })
+  options.onChanges?.(cellChangesOf(steps, reply.steps))
 
   // the ids a drawing really got are draw.io's: they replace the plan's in what the call answers
   const realIds = drawingSteps.map((index) => reply.steps[index] ?? [])
@@ -210,6 +214,23 @@ export async function undoLiveBatches(frame: DrawioFrame, tokens: string[]): Pro
   if (tokens.length === 0) return true
   const { undone } = await frame.request('undoBatches', { tokens })
   return undone === tokens.length
+}
+
+/**
+ * Marks the cells on screen (the last AI run's changes) in the app's mark
+ * colours; an empty list takes the marks off. The marks are draw.io
+ * highlights, not cells: see `bridge/ai-marks.ts`.
+ */
+export async function markLiveCells(
+  frame: DrawioFrame,
+  cells: readonly DiagramCellRef[],
+): Promise<void> {
+  const tokens = getComputedStyle(document.documentElement)
+  await frame.request('markCells', {
+    cells: [...cells],
+    fill: tokens.getPropertyValue('--color-ai-changed-bg').trim(),
+    line: tokens.getPropertyValue('--color-ai-changed-line').trim(),
+  })
 }
 
 /**

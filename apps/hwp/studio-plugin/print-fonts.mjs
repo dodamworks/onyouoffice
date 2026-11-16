@@ -24,7 +24,7 @@
  * would lose fonts the engine's own list finds: such a page stays as the engine wrote it.
  */
 
-import { isEngineFontAlias, localFontFace, pcFontsKnown } from './pc-fonts.mjs'
+import { engineAliasTarget, localFontFace, pcFontsKnown } from './pc-fonts.mjs'
 
 const TEXT = /<text\b([^>]*)>([^<]*)<\/text>/g
 const FAMILY = /\sfont-family="([^"]*)"/
@@ -216,6 +216,8 @@ export function screenFonts(doc = globalThis.document, known = pcFontsKnown) {
   if (!doc || typeof doc.createElement !== 'function' || !known()) return null
   /** @type {Map<string, { families: string[], measure(text: string): number } | null>} */
   const fonts = new Map()
+  /** the document fonts an engine alias was turned into (lower case) */
+  const aliasTargets = new Set()
   return {
     font(descriptor) {
       if (fonts.has(descriptor)) return fonts.get(descriptor)
@@ -228,9 +230,22 @@ export function screenFonts(doc = globalThis.document, known = pcFontsKnown) {
         const set = String(context.font)
         const at = set.indexOf('px ')
         if (set !== '10px sans-serif' && at >= 0) {
-          const families = parseFamilies(set.slice(at + 3)).filter(
-            (name) => !isEngineFontAlias(name),
-          )
+          // The engine's alias for the document's font program leads the list, and the
+          // screen draws through it: the studio ties it to the font file it loaded for that
+          // font. A print window has no such alias, so it is given the font by the name the
+          // document uses, which faces() points at the installed file. Without a record of
+          // that file the alias is only dropped, and the print draws the next names as the
+          // screen then does.
+          const families = []
+          for (const name of parseFamilies(set.slice(at + 3))) {
+            const target = engineAliasTarget(name)
+            if (target === null) {
+              if (!families.includes(name)) families.push(name)
+            } else if (target && localFontFace(target)) {
+              aliasTargets.add(target.toLowerCase())
+              if (!families.includes(target)) families.push(target)
+            }
+          }
           const widths = new Map()
           font = {
             families,
@@ -262,9 +277,11 @@ export function screenFonts(doc = globalThis.document, known = pcFontsKnown) {
       const faces = []
       for (const name of names) {
         const face = loaded.get(name.toLowerCase())
-        const installed = face ? localFontFace(name) : null
+        // a font the studio loaded, or the one an alias it draws through stands for
+        if (!face && !aliasTargets.has(name.toLowerCase())) continue
+        const installed = localFontFace(name)
         if (!installed) continue
-        faces.push({ family: name, local: installed, unicodeRange: face.unicodeRange })
+        faces.push({ family: name, local: installed, unicodeRange: face?.unicodeRange })
       }
       return faces
     },

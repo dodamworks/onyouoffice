@@ -57,6 +57,7 @@ import {
   showOpenDialogWithMemory,
   showSaveDialogWithMemory,
   aboutMenuItem,
+  macAppMenuTemplate,
   helpCheckUpdatesItems,
   toggleDevToolsItem,
   windowMenuTemplate,
@@ -144,6 +145,7 @@ import {
   type AiStreamRequest,
   type AiSubscriptionCliId,
   type AiSubscriptionProviderId,
+  type AiSubscriptionUsage,
   sealAiSecrets,
   withMigratedSubscriptionNoticeVersion,
 } from '@genoffice/ai-provider'
@@ -163,7 +165,7 @@ import {
 import {
   abortMediaCalls,
   aiToolCapabilities,
-  createCodexImageCliGenerator,
+  createCodexImageGenerator,
   generateImageTool,
   registerCodexImageGenerator,
   testSearchProvider,
@@ -197,6 +199,7 @@ import type {
   SpellLanguages,
 } from '../shared/ipc'
 import { MARKDOWN_MEDIA_DIR_TOKEN } from '../shared/ipc'
+import { SUBSCRIPTION_USAGE_CHANNEL } from '../shared/subscription-api'
 import { MERGE_DATA_SOURCE_EXTENSIONS, readMergeDataSource } from './merge-data-source'
 import { mergeOutputFileName, mergeOutputPath } from './merge-output'
 import { ClickClaims } from '../shared/context-menu-claims'
@@ -4446,19 +4449,32 @@ function writeRendererAiSettings(settings: unknown): boolean {
 let codexImageRegistered = false
 
 /**
- * Codex image generation through the official CLI (the path the `codex-image` skill
- * documents): one `codex exec` per image, with the account's OAuth login and the built-in
- * image_gen tool, in a throw-away folder. The chat loop keeps every built-in tool off; this
- * is a separate call, so nothing of a conversation goes through it. Registered once per
- * process, before the capability report can be asked.
+ * The usage Codex reports while it draws a picture, to every window's AI pane.
+ * A picture call is no stream, so it has no chunk to carry it; the value is the
+ * account's, so every window takes it, like the subscription statuses. Same
+ * shape as the chat stream's subscription-usage chunk.
+ */
+function broadcastSubscriptionUsage(usage: AiSubscriptionUsage[]): void {
+  for (const wc of webContents.getAllWebContents())
+    if (!wc.isDestroyed()) wc.send(SUBSCRIPTION_USAGE_CHANNEL, usage)
+}
+
+/**
+ * Codex image generation through the subscription: one picture in a disposable
+ * thread of the app's `codex app-server` client, with the same locks as a chat
+ * thread and the image tool its only built-in tool. Every call reads the settings
+ * file again, so Codex turned off in this app (decision 0114) is not started; while
+ * AI is off (decision 0143) no picture call reaches the generator. Registered once
+ * per process, before the capability report can be asked; nothing starts until a
+ * request on the Codex route calls it.
  */
 function registerCodexImageBackend(): void {
   if (codexImageRegistered) return
   codexImageRegistered = true
   registerCodexImageGenerator(
-    createCodexImageCliGenerator({
+    createCodexImageGenerator({
       settingsPath: SETTINGS_PATH,
-      tempRoot: () => app.getPath('temp'),
+      onUsage: broadcastSubscriptionUsage,
     }),
   )
   setCodexImageGenerationAvailable(true)
@@ -4811,19 +4827,23 @@ export function registerAiIpc(): void {
   // registered once a slides view exists, so docs needs its own channel
   ipcMain.handle(
     'docs:ai-generate-image',
-    (event, op: { prompt?: unknown; aspectRatio?: unknown }) =>
-      screenMediaCall(event.sender.id, () =>
+    (event, op: { prompt?: unknown; aspectRatio?: unknown; model?: unknown }) => {
+      // the model the user named, as given: the shared tool decides whether the route offers it
+      const model = typeof op?.model === 'string' ? op.model.trim() : ''
+      return screenMediaCall(event.sender.id, () =>
         withMediaCallSignal(event.sender, (signal) =>
           generateImageTool(
             SETTINGS_PATH(),
             {
               prompt: String(op?.prompt ?? ''),
               aspectRatio: op?.aspectRatio ? String(op.aspectRatio) : undefined,
+              ...(model ? { model } : {}),
             },
             { mediaRoots: docsMediaRoots(event.sender.id), context: screenToolContext(), signal },
           ),
         ),
-      ),
+      )
+    },
   )
 
   ipcMain.handle('ai:search-test', (_event, input: unknown) => {
@@ -6890,24 +6910,13 @@ export function buildDocsMenu(): void {
       : [{ label: tm('menuNoRecent'), enabled: false }]
 
   const template: MenuItemConstructorOptions[] = [
+    // ⌘, stays subscript here (the Word tab's own chord), so Settings… shows no shortcut
     ...(isMac
       ? [
-          {
-            label: app.name,
-            submenu: [
-              { role: 'about' as const },
-              { type: 'separator' as const },
-              { label: tm('menuPreferences'), click: () => sendCommand('preferences') },
-              { type: 'separator' as const },
-              { role: 'services' as const },
-              { type: 'separator' as const },
-              { role: 'hide' as const },
-              { role: 'hideOthers' as const },
-              { role: 'unhide' as const },
-              { type: 'separator' as const },
-              { role: 'quit' as const },
-            ],
-          },
+          macAppMenuTemplate(appMenuLabels(getUiLang()), {
+            settingsShortcut: 'none',
+            extraItems: [{ label: tm('menuPreferences'), click: () => sendCommand('preferences') }],
+          }),
         ]
       : []),
     {

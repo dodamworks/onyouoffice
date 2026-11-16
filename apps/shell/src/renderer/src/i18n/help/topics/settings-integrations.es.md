@@ -2,7 +2,9 @@
 
 ## Abrir la configuración
 
-La fila de la parte inferior izquierda de Inicio abre el panel de configuración (muestra «Conectar IA» hasta que hay una IA conectada). Tiene cinco secciones: Cuenta, IA, General, Integraciones y Acerca de.
+La fila de la parte inferior izquierda de Inicio abre el panel de configuración (la línea de debajo muestra si hay una IA conectada). Tiene cinco secciones: Cuenta, IA, General, Integraciones y Acerca de.
+
+También puede abrirla desde cualquier pestaña con **⌘,** (Ctrl+, en Windows y Linux), desde **Configuración…** en el menú de la aplicación en un Mac (el menú con el nombre de la app, a la izquierda de la barra de menús) o desde **Menú (☰) ▸ Configuración…** en Windows y Linux. En una pestaña de Word, ⌘, (Ctrl+,) es subíndice, así que ábrala desde el menú.
 
 **Cuenta** muestra en qué estado están sus conexiones de Claude, ChatGPT y Codex, y **Gestionar conexiones** lleva a la sección IA. La IA tiene sus propios artículos: [Conexión por suscripción](help://subscription) y [Modelos de IA y ajustes](help://ai-models).
 
@@ -59,7 +61,7 @@ La configuración puede registrar GenOffice como programa predeterminado para .d
 ## Avisos de software de terceros y actualizaciones
 
 - Ayuda ▸ Avisos de software de terceros: el inventario completo de licencias de código abierto que se distribuye con la aplicación.
-- Menú (☰) ▸ Buscar actualizaciones (en un Mac, Ayuda ▸ Buscar actualizaciones): lanza una comprobación manual; si hay una versión más reciente, ofrece instalarla.
+- Menú (☰) ▸ Buscar actualizaciones (en un Mac, Ayuda ▸ Buscar actualizaciones): lanza una comprobación manual; si hay una versión más reciente, ofrece instalarla. En un Mac también está en el menú de la aplicación, justo debajo de «Acerca de GenOffice».
 
 ## Integración MCP (para usuarios avanzados / clientes de IA)
 

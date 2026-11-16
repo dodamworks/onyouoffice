@@ -67,9 +67,11 @@ async function asAiJob<T>(
 export function registerHwpImageIpc(options: HwpImageIpcOptions): void {
   ipcMain.handle(
     HWP_CHANNELS.aiGenerateImage,
-    (e, op: { prompt?: unknown; aspectRatio?: unknown }) => {
+    (e, op: { prompt?: unknown; aspectRatio?: unknown; model?: unknown }) => {
       const refusal = aiOffRefusal(e.sender.id)
       if (refusal) return { error: refusal }
+      // the model the user named, as given: the shared tool decides whether the route offers it
+      const model = typeof op?.model === 'string' ? op.model.trim() : ''
       // ends with its tab, or when the tab's AI run is stopped
       return asAiJob(e.sender, (signal) =>
         generateImageTool(
@@ -77,6 +79,7 @@ export function registerHwpImageIpc(options: HwpImageIpcOptions): void {
           {
             prompt: String(op?.prompt ?? ''),
             aspectRatio: op?.aspectRatio ? String(op.aspectRatio) : undefined,
+            ...(model ? { model } : {}),
           },
           {
             mediaRoots: documentMediaRoots(

@@ -47,7 +47,7 @@ vi.mock('@genoffice/ai-search', async () => ({
   generateImageTool: (...args: unknown[]) => generateImageTool(...args),
   analyzeMediaTool: (...args: unknown[]) => analyzeMediaTool(...args),
   documentMediaRoots: () => [],
-  createCodexImageCliGenerator: () => async () => ({ bytes: new Uint8Array(), mime: 'image/png' }),
+  createCodexImageGenerator: () => ({ generate: async () => null, models: async () => null }),
   registerCodexImageGenerator: () => {},
 }))
 

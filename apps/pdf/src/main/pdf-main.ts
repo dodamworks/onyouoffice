@@ -2814,10 +2814,12 @@ function registerPdfIpc(): void {
   // slides' ai:generate-image is only registered once a slides view exists, so pdf needs its own
   ipcMain.handle(
     PDF_CHANNELS.generateImage,
-    async (e, op: { prompt?: unknown; aspectRatio?: unknown }) => {
+    async (e, op: { prompt?: unknown; aspectRatio?: unknown; model?: unknown }) => {
       // the AI window is hidden while AI is off; a late call is refused, not run
       if (!aiFeaturesOn()) return { error: aiOffRefusal(e.sender.id) }
       const senderId = e.sender.id
+      // a model the user named: generateImageTool decides whether this route offers it
+      const model = typeof op?.model === 'string' ? op.model.trim() : ''
       // ends with its tab, or when the tab's AI run is stopped
       const run = withMediaCallSignal(e.sender, (signal) =>
         generateImageTool(
@@ -2825,6 +2827,7 @@ function registerPdfIpc(): void {
           {
             prompt: String(op?.prompt ?? ''),
             aspectRatio: op?.aspectRatio ? String(op.aspectRatio) : undefined,
+            ...(model ? { model } : {}),
           },
           {
             // pdf keeps its media (exported/edited images) beside the open file

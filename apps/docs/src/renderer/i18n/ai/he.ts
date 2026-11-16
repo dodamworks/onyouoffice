@@ -79,7 +79,6 @@ export const he = {
   aiCopied: 'הועתק',
   aiRegenerateTitle: 'יצירה מחדש',
   aiSnapshotsTitle: 'תמונות מצב של גרסאות',
-  aiRollback: 'שחזור',
   aiScopeSelected: 'נבחרו {count} פסקאות',
   aiScopeEmptyDoc: 'מסמך ריק',
   aiScopeCursor: 'במיקום הסמן',

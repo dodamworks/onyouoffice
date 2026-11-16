@@ -23,11 +23,16 @@ export {
   editMenuTemplate,
   helpCheckUpdatesItems,
   helpMenuTemplate,
+  macAppMenuTemplate,
+  SETTINGS_ACCELERATOR,
+  setOpenSettingsInvoker,
+  settingsMenuItem,
   setUpdateCheckInvoker,
   toggleDevToolsItem,
   viewMenuTemplate,
   windowMenuTemplate,
   type AppMenuLabels,
+  type SettingsShortcut,
   type ViewMenuOptions,
 } from './app-menu'
 export {

@@ -205,9 +205,12 @@ export interface PdfAiDeps {
   searchImages(query: string, maxResults: number): Promise<ImageSearchResponse>
   /** live predicate (a connected Codex subscription or a BYOK media key); false hides generate_image */
   imageGenAvailable?(): boolean
-  generateImage(op: { prompt: string; aspectRatio?: string }): Promise<{
+  /** model: only when the user named one; the app uses it if the current image route offers it */
+  generateImage(op: { prompt: string; aspectRatio?: string; model?: string }): Promise<{
     url?: string
     error?: string
+    /** passed on to the model with the URL */
+    note?: string
   }>
   /** Download a URL (main-process, SSRF-guarded) and re-encode as PNG; null on failure */
   fetchImage(url: string): Promise<{ png: string; width: number; height: number } | null>
@@ -300,6 +303,19 @@ export const AGENT_TOOLS: AgentToolDef[] = [
       type: 'object',
       properties: {
         query: { type: 'string', description: 'Text to search for (case-insensitive)' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'web_search',
+    description:
+      'Search the web for textual information (references/data/facts). Use when you need up-to-date information or are unsure about a fact. Returns titles/links/snippets.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search keywords' },
+        maxResults: { type: 'integer', description: 'Maximum number of results, default 6' },
       },
       required: ['query'],
     },
@@ -730,6 +746,11 @@ export const AGENT_TOOLS: AgentToolDef[] = [
         aspect_ratio: {
           type: 'string',
           description: 'Aspect ratio: 1:1|4:3|16:9|9:16|3:4|2:3|3:2|auto',
+        },
+        model: {
+          type: 'string',
+          description:
+            'Image model name; set it only when the user named a model. The app uses it if the current image route offers it, otherwise it answers with the models you can use. Omit it to use the model chosen in Settings.',
         },
       },
       required: ['prompt'],
@@ -1598,6 +1619,30 @@ async function readUrl(input: Record<string, unknown>): Promise<ToolExecution> {
       (result.truncated ? ' (continue with offset)' : ' (end)') +
       `\n${result.url}\n\n${result.text}`,
     summary: t('aiToolReadUrl', { host: hostForLabel(result.url), n: result.text.length }),
+  }
+}
+
+/**
+ * Search the web through the shared ai:web-search handler. The input, the
+ * failure wording and the result text match the other editors' web_search.
+ */
+async function webSearch(input: Record<string, unknown>): Promise<ToolExecution> {
+  const query = String(input.query ?? '').trim()
+  if (!query) return err('query must not be empty', t('aiToolWebSearch'))
+  const r = await window.pdfApi.webSearch(query, Number(input.maxResults) || 6)
+  // a backend failure must not read as "no results" — the model would fabricate conclusions
+  if (r.method === 'error') {
+    return err(
+      `web search failed (service error, not an empty result — you may retry): ${r.error ?? 'unknown error'}`,
+      t('aiToolWebSearch'),
+    )
+  }
+  const lines: string[] = []
+  if (r.answer) lines.push(`Direct answer: ${r.answer}\n`)
+  r.results.forEach((it, i) => lines.push(`${i + 1}. ${it.title}\n   ${it.url}\n   ${it.snippet}`))
+  return {
+    output: lines.join('\n') || '(no results)',
+    summary: t('aiToolWebSearchDone', { query, count: r.results.length }),
   }
 }
 
@@ -3126,13 +3171,18 @@ async function generateImageTool(
   const summary = t('aiToolGenImage')
   const prompt = String(input.prompt ?? '').trim()
   if (!prompt) return err('prompt must not be empty', summary)
+  // a model the user named; the main process decides whether the image route offers it
+  const model = typeof input.model === 'string' ? input.model.trim() : ''
   const r = await deps.generateImage({
     prompt,
     aspectRatio: input.aspect_ratio === undefined ? undefined : String(input.aspect_ratio),
+    ...(model ? { model } : {}),
   })
   if (!r.url) return err(`image generation failed: ${r.error ?? 'unknown error'}`, summary)
   return {
-    output: `Generated image URL: ${r.url}\nInsert it into the document with insert_image.`,
+    output:
+      `Generated image URL: ${r.url}\nInsert it into the document with insert_image.` +
+      (r.note ? `\nNote: ${r.note}` : ''),
     summary,
   }
 }
@@ -3873,6 +3923,8 @@ export async function executePdfTool(
       return readPages(deps, input, signal)
     case 'search_text':
       return searchText(deps, input)
+    case 'web_search':
+      return webSearch(input)
     case 'read_url':
       return readUrl(input)
     case 'goto_page': {

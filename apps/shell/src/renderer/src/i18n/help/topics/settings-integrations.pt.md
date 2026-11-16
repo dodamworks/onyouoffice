@@ -2,7 +2,9 @@
 
 ## Abrir as configurações
 
-A linha no canto inferior esquerdo do ecrã Início abre o painel de configurações (mostra Conectar IA enquanto não houver uma IA conectada). O painel tem cinco secções: Conta, IA, Geral, Integrações e Sobre.
+A linha no canto inferior esquerdo do ecrã Início abre o painel de configurações (a linha por baixo mostra se há uma IA conectada). O painel tem cinco secções: Conta, IA, Geral, Integrações e Sobre.
+
+Também pode abri-las a partir de qualquer separador com **⌘,** (Ctrl+, no Windows e no Linux), a partir de **Configurações…** no menu da aplicação num Mac (o menu com o nome da app, à esquerda da barra de menus) ou a partir de **Menu (☰) ▸ Configurações…** no Windows e no Linux. Num separador do Word, ⌘, (Ctrl+,) é subscrito, por isso abra-as pelo menu.
 
 **Conta** mostra em que estado estão as suas conexões do Claude, do ChatGPT e do Codex, e **Gerenciar conexões** leva à secção IA. A IA tem os seus próprios artigos: [Conexão por assinatura](help://subscription) e [Modelos de IA e configurações](help://ai-models).
 
@@ -59,7 +61,7 @@ As Configurações podem registar o GenOffice como a aplicação que abre fichei
 ## Avisos de software de terceiros e atualizações
 
 - Ajuda ▸ Avisos de software de terceiros: o inventário completo das licenças de código aberto que acompanha a aplicação.
-- Menu (☰) ▸ Procurar atualizações… (num Mac, Ajuda ▸ Procurar atualizações…): inicia uma verificação manual; e se houver uma versão mais recente, o GenOffice propõe a instalação.
+- Menu (☰) ▸ Procurar atualizações… (num Mac, Ajuda ▸ Procurar atualizações…): inicia uma verificação manual; e se houver uma versão mais recente, o GenOffice propõe a instalação. Num Mac também está no menu da aplicação, logo abaixo de «Sobre o GenOffice».
 
 ## Integração MCP (para utilizadores avançados / clientes de IA)
 

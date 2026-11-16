@@ -17,6 +17,7 @@
       "@genoffice/pptx-ops/op-docs": ["../pptx-ops/src/op-docs.ts"],
       "@genoffice/pptx-ops/font-size": ["../pptx-ops/src/font-size.ts"],
       "@genoffice/xlsx-gateway/*": ["../xlsx-gateway/src/*"],
+      "@genoffice/xmind-engine": ["../xmind-engine/src/index.ts"],
       "@genoffice/font-metrics": ["../font-metrics/src/index.ts"],
       "@genoffice/electron-utils": ["../electron-utils/src/index.ts"],
       "@genoffice/electron-utils/*": ["../electron-utils/src/*"],

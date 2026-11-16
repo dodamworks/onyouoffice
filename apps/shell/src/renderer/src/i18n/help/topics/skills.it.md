@@ -15,11 +15,11 @@ Un'abilità è un insieme di istruzioni di lavoro per l'IA. Scrivi una volta sol
 | **Cartella abilità di Codex**  | Le abilità in `~/.agents/skills`                              | Disattivate |
 
 - L'interruttore attiva o disattiva un'abilità. La stessa impostazione vale per il pannello IA di ogni editor, per Ask AI in Home e per la finestra dell'agente.
-- Per un'abilità attiva, scegli **Decide l'IA** o **Solo se richiamata**. All'inizio è impostata su Decide l'IA. Con Solo se richiamata, l'abilità viene usata solo quando la richiami tu.
+- Per un'abilità attiva, scegli **Decide l'IA** o **Solo se richiamata**. All'inizio è impostata su Decide l'IA. Con Solo se richiamata, l'abilità viene usata solo quando la richiami tu. Per un'abilità disattivata la scelta resta visibile, attenuata, così puoi impostarla prima di riattivarla.
 - Abilità di provenienze diverse possono avere lo stesso nome. L'etichetta della provenienza su ogni riga permette di distinguerle. Quando due abilità con lo stesso nome sono entrambe attive, solo una compare nell’elenco `/` e viene usata: la prima nell’ordine Le mie abilità, Integrate, Cartella abilità di Claude, Cartella abilità di Codex, Plugin di Claude. La riga dell’altra indica quale abilità viene usata al suo posto.
 - Il menu delle altre azioni contiene **Vedi contenuto**, **Modifica** (solo per le mie abilità), **Esporta (zip)** (solo per le mie abilità) e **Apri cartella**. Le abilità integrate non hanno **Apri cartella**. **Dove si usa** apre direttamente il punto in cui si scelgono gli editor in cui l’abilità viene usata.
 - Le mie abilità si trovano nella cartella `~/.ieumoffice/skills`. In Windows è `C:\Users\<nome utente>\.ieumoffice\skills`. **Apri cartella**, nel menu delle altre azioni, apre la cartella dell’abilità.
-- **Sposta nel cestino** sposta una delle mie abilità nel cestino del sistema, da cui puoi ripristinarla.
+- **Sposta nel cestino** sposta una delle mie abilità nel cestino del sistema, da cui puoi ripristinarla. Se un'abilità con lo stesso nome di un'altra fonte è disattivata, la conferma mostra una casella spuntata per riattivarla. Togli la spunta per lasciarla disattivata.
 - Un'abilità integrata non si elimina, si nasconde: scegli **Nascondi**. **Mostra di nuovo** in fondo all'elenco la riporta com'era all'inizio.
 - Per cambiare un'abilità integrata o una che viene da un altro programma, scegli **Copia nelle mie abilità**. La copia compare tra le mie abilità e l'originale viene disattivato.
 - Se esporti un'abilità con un modello, nello zip finisce anche il documento modello. Prima di esportarla, controlla che il documento non contenga dati personali.
@@ -47,6 +47,16 @@ Sotto l'anteprima compare sempre: «Installa abilità solo da fonti affidabili. 
 - Se non è cambiato nulla, compare «Aggiornata». Se qualcosa è cambiato, esamina i file modificati e l'anteprima, poi fai clic su **Aggiorna**.
 - Se hai modificato l'abilità dopo averla installata, compare anche «Le tue modifiche andranno perse».
 - L'aggiornamento conserva lo stato attivo/disattivo dell'abilità, la scelta tra Decide l'IA e Solo se richiamata e dove si usa.
+
+## Tornare a una versione precedente
+
+Quando modifichi una delle tue abilità, ne installi un’altra con lo stesso nome al suo posto o la aggiorni, la versione di prima viene conservata. Non finisce nel cestino.
+
+- **Versioni precedenti**, in fondo a **Vedi contenuto** o a **Modifica**, elenca le versioni conservate, dalla più recente, con quando e perché è stata conservata ciascuna e la sua dimensione.
+- **Vedi differenze** mostra quali righe di `SKILL.md` tornerebbero, quali sparirebbero e quali altri file cambierebbero.
+- **Torna a questa versione** rimette i file di quella versione esattamente com’erano. Anche la versione attuale viene conservata, quindi puoi tornarci. Se l’abilità è attiva e quando viene usata restano come li hai impostati.
+- Le versioni conservate restano finché non le elimini. **Elimina** ne elimina una definitivamente.
+- Le versioni si trovano nella cartella `~/.ieumoffice/skill-history`. **Sposta nel cestino** su un’abilità sposta nel cestino anche le sue versioni conservate.
 
 ## Richiamare un'abilità nel pannello IA
 

@@ -21,7 +21,30 @@ import {
   titleBoxCells,
   CELL_DIAGONALS,
   tabStopsOf,
+  MIN_TEXT_CONTRAST,
+  contrastRatio,
+  textColorOnFill,
+  rowEdgesAfterAdding,
 } from '../studio-plugin/document-looks.mjs'
+
+describe('the lines new rows of a table get', () => {
+  const line = (type: number, width: number) => ({ type, width, color: '#000000' })
+  const edge = (one: ReturnType<typeof line>) => [one, one, one]
+  const heavy = line(1, 6)
+  const thin = line(1, 1)
+  const none = line(0, 0)
+  /** The line a row added after the last of two rows gets. */
+  const added = (edges: ReturnType<typeof line>[][], verticals: ReturnType<typeof line>[]) =>
+    rowEdgesAfterAdding(edges, [false, false], verticals, 2, 1)?.[2]
+
+  it('never draws the outline between rows of a table with no line between two body rows', () => {
+    const outlined = [edge(heavy), edge(thin), edge(heavy)]
+    expect(added(outlined, [line(1, 3)])).toEqual(edge(line(1, 3)))
+    expect(added(outlined, [none, none])).toEqual(edge(thin))
+    expect(added([edge(heavy), edge(none), edge(line(1, 4))], [none])).toEqual(edge(line(1, 4)))
+    expect(added([edge(none), edge(none), edge(none)], [none])).toBeUndefined()
+  })
+})
 
 describe('border rules', () => {
   it('takes the nearest of the widths Hangul has', () => {
@@ -166,6 +189,28 @@ describe('title boxes', () => {
       borderTop: { type: 0 },
     })
     expect(titleBoxCells('shaded', '#e7edf5', '#1f3864').cells[0].borderTop.type).toBe(1)
+  })
+})
+
+describe('the colour of words on a fill', () => {
+  it('is white where black would be hard to read, when the call names none', () => {
+    expect(textColorOnFill('#1F3864')).toBe('#ffffff')
+    expect(textColorOnFill('#000000')).toBe('#ffffff')
+    expect(textColorOnFill('#404040')).toBe('#ffffff')
+  })
+
+  it('is left to the words on a fill black shows on', () => {
+    for (const fill of ['#FFFFFF', '#E5E5E5', '#D9E2F3', '#FFE699', '#5B9BD5', '#4472C4']) {
+      expect(textColorOnFill(fill), fill).toBeNull()
+    }
+  })
+
+  it('does not decide for a colour the call asks for: accent colours on white stay', () => {
+    for (const asked of ['#ED7D31', '#00B050', '#FF9900']) {
+      const contrast = contrastRatio(asked, '#ffffff')
+      expect(contrast, asked).toBeLessThan(3)
+      expect(contrast, asked).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST)
+    }
   })
 })
 

@@ -18,7 +18,8 @@
  * history, and answers the host's requests: the pages as model XML, the
  * selection, primitive changes and whole AI tool calls (with Mermaid drawings
  * converted by draw.io's own converter) as one undo step, taking an AI
- * call's step back, Visio drawings converted by draw.io's own importer, the dark view, page
+ * call's step back, marks around the cells the last AI run changed (highlights,
+ * never cells), Visio drawings converted by draw.io's own importer, the dark view, page
  * compression, and page pictures for exports.
  *
  * Messages: only from the parent window and the parent's origin; ours go to
@@ -34,6 +35,7 @@ import {
   type PageInfo,
 } from '../shared/bridge-protocol'
 import { DRAWIO_CONFIG, HIDDEN_ACTIONS, HIDE_CSS, REDIRECTED_ACTIONS } from '../shared/drawio-start'
+import { createCellMarks, type MarkPaint } from './ai-marks'
 import { applyPrimitivesLive, applyStepsLive } from './apply-primitives'
 import { lastContentEdit } from './dirty'
 import { liveDiagram, readPageXmls, type DrawioUi } from './drawio-adapter'
@@ -49,6 +51,7 @@ declare const mxConstants: any
 declare const Graph: any
 declare const Editor: any
 declare const mxResources: any
+declare const mxCellHighlight: any
 
 const w = window as any
 const hostOrigin: string = (() => {
@@ -215,7 +218,11 @@ function attach(made: DrawioUi): void {
     if (selectionTimer) clearTimeout(selectionTimer)
     selectionTimer = setTimeout(() => emit({ name: 'selection', ids: selectedIds() }), 50)
   })
-  ui.editor.addListener('pageSelected', () => emit({ name: 'currentPage', id: currentPageId() }))
+  ui.editor.addListener('pageSelected', () => {
+    emit({ name: 'currentPage', id: currentPageId() })
+    // the page's marks, once draw.io has drawn it
+    setTimeout(() => cellMarks.redraw(), 0)
+  })
   emit({ name: 'ready' })
 }
 
@@ -330,6 +337,43 @@ function undoBatches(tokens: unknown): BridgeOps['undoBatches']['reply'] {
   }
   return { undone }
 }
+
+// ---- marks around what the last AI run changed ----
+
+/** One mark: a soft wide outline and a thin line over it, on draw.io's overlay layer. */
+function drawCellMark(state: unknown, paint: MarkPaint): () => void {
+  const graph = ui.editor.graph
+  // made line first: each highlight goes in front of the overlay layer, so the halo ends up under the line
+  const line = new mxCellHighlight(graph, paint.line.color, 2)
+  line.opacity = paint.line.opacity
+  const halo = new mxCellHighlight(graph, paint.fill.color, 7)
+  halo.opacity = paint.fill.opacity
+  for (const highlight of [line, halo]) {
+    highlight.highlight(state)
+    // a mark never takes a click or a hover from the diagram
+    const node = highlight.shape?.node as HTMLElement | SVGElement | undefined
+    if (node) node.style.pointerEvents = 'none'
+  }
+  return () => {
+    halo.destroy()
+    line.destroy()
+  }
+}
+
+const cellMarks = createCellMarks({
+  currentPageId,
+  stateOf: (id) => {
+    const graph = ui?.editor?.graph
+    const cell = graph?.model.getCell(id)
+    if (!cell) return null
+    const state = graph.view.getState(cell)
+    if (!state) return null
+    // a drawing's group has no size of its own: its cells carry the marks
+    if (graph.model.isVertex(cell) && (state.width <= 0 || state.height <= 0)) return null
+    return state
+  },
+  draw: drawCellMark,
+})
 
 // ---- pictures of pages ----
 
@@ -510,6 +554,16 @@ async function answer(request: BridgeRequestMessage): Promise<unknown> {
       return importVisio(ui, args.bytes)
     case 'undoBatches':
       return undoBatches(args.tokens)
+    case 'markCells': {
+      if (!Array.isArray(args.cells)) throw new Error('cells must be a list')
+      const cells = (args.cells as unknown[]).filter(
+        (cell): cell is { page: string; id: string } =>
+          typeof (cell as { page?: unknown })?.page === 'string' &&
+          typeof (cell as { id?: unknown })?.id === 'string',
+      )
+      cellMarks.set(cells, String(args.fill ?? ''), String(args.line ?? ''))
+      return {}
+    }
     case 'setDark':
       ui.setDarkMode(args.dark === true)
       return {}

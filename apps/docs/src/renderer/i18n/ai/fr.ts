@@ -83,7 +83,6 @@ export const fr = {
   aiCopied: 'Copié',
   aiRegenerateTitle: 'Régénérer',
   aiSnapshotsTitle: 'Instantanés de version',
-  aiRollback: 'Restaurer',
   aiScopeSelected: '{count} paragraphe(s) sélectionné(s)',
   aiScopeEmptyDoc: 'Document vide',
   aiScopeCursor: 'Au curseur',

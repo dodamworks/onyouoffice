@@ -36,6 +36,7 @@ import type {
 } from '../shared/ipc'
 import {
   SUBSCRIPTION_INSTALL_HELP_CHANNEL,
+  SUBSCRIPTION_USAGE_CHANNEL,
   subscriptionLaunchResultOf,
   subscriptionMeteredResultOf,
   subscriptionStatusMapOf,
@@ -173,6 +174,10 @@ const subscription: EpubSubscriptionApi = {
   onChanged: (handler) =>
     listen<[unknown]>(SUBSCRIPTION_IPC_CHANNELS.changed, (statuses) =>
       handler(subscriptionStatusMapOf(statuses)),
+    ),
+  onUsage: (handler) =>
+    listen<[unknown]>(SUBSCRIPTION_USAGE_CHANNEL, (usage) =>
+      handler(Array.isArray(usage) ? usage : []),
     ),
   openInstallHelp: async (provider) => {
     await ipcRenderer.invoke(SUBSCRIPTION_INSTALL_HELP_CHANNEL, provider)

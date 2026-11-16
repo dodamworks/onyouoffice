@@ -15,11 +15,11 @@ Kemahiran ialah satu set arahan kerja untuk AI. Tulis sekali sahaja perkara yang
 | **Folder kemahiran Codex**  | Kemahiran dalam `~/.agents/skills`                            | Mati         |
 
 - Suis menghidupkan atau mematikan kemahiran. Tetapan yang sama terpakai pada panel AI setiap editor, Tanya AI di Laman Utama dan tetingkap ejen.
-- Bagi kemahiran yang hidup, pilih **AI tentukan** atau **Hanya apabila dipanggil**. Pada mulanya ia ditetapkan kepada AI tentukan. Dengan Hanya apabila dipanggil, kemahiran itu digunakan hanya apabila anda sendiri memanggilnya.
+- Bagi kemahiran yang hidup, pilih **AI tentukan** atau **Hanya apabila dipanggil**. Pada mulanya ia ditetapkan kepada AI tentukan. Dengan Hanya apabila dipanggil, kemahiran itu digunakan hanya apabila anda sendiri memanggilnya. Pada kemahiran yang mati, pilihan ini kekal kelihatan malap, jadi anda boleh menetapkannya sebelum menghidupkan kemahiran itu semula.
 - Kemahiran daripada sumber yang berlainan boleh mempunyai nama yang sama. Label sumber pada setiap baris membezakannya. Apabila dua kemahiran dengan nama yang sama kedua-duanya dihidupkan, hanya satu yang muncul dalam senarai `/` dan digunakan: yang pertama mengikut susunan Kemahiran saya, Terbina dalam, Folder kemahiran Claude, Folder kemahiran Codex, Pemalam Claude. Baris kemahiran yang satu lagi menyatakan kemahiran mana yang digunakan sebagai ganti.
 - Menu lagi mengandungi **Lihat kandungan**, **Sunting** (kemahiran saya sahaja), **Eksport (zip)** (kemahiran saya sahaja) dan **Buka folder**. Kemahiran terbina dalam tiada **Buka folder**. **Tempat digunakan** terus membuka tempat memilih editor yang menggunakan kemahiran itu.
 - Kemahiran saya berada dalam folder `~/.ieumoffice/skills`. Pada Windows, ia ialah `C:\Users\<nama pengguna>\.ieumoffice\skills`. **Buka folder** dalam menu lagi membuka folder kemahiran itu.
-- **Alih ke tong sampah** memindahkan salah satu kemahiran saya ke tong sampah sistem, dan anda boleh memulihkannya dari situ.
+- **Alih ke tong sampah** memindahkan salah satu kemahiran saya ke tong sampah sistem, dan anda boleh memulihkannya dari situ. Jika kemahiran dengan nama yang sama daripada sumber lain dimatikan, pengesahan menunjukkan kotak bertanda untuk menghidupkannya semula. Kosongkan kotak itu untuk membiarkannya mati.
 - Kemahiran terbina dalam tidak dibuang tetapi disembunyikan: pilih **Sembunyikan**. **Tunjukkan semula** di bahagian bawah senarai mengembalikannya seperti keadaan asal.
 - Untuk mengubah kemahiran terbina dalam atau kemahiran daripada program lain, pilih **Salin ke kemahiran saya**. Salinannya muncul dalam kemahiran saya dan kemahiran asal dimatikan.
 - Apabila kemahiran yang mempunyai templat dieksport, dokumen templat turut dimasukkan ke dalam fail zip. Pastikan dokumen itu tidak mengandungi maklumat peribadi sebelum anda mengeksportnya.
@@ -47,6 +47,16 @@ Di bawah pratonton sentiasa tertulis: "Pasang kemahiran hanya daripada sumber ya
 - Jika tiada perubahan, ia memaparkan "Terkini". Jika ada, semak fail yang berubah dan pratontonnya, kemudian klik **Kemas kini**.
 - Jika anda sendiri telah menyunting kemahiran itu selepas memasangnya, "Suntingan anda sendiri akan hilang" turut dipaparkan.
 - Kemas kini mengekalkan keadaan hidup/mati kemahiran itu, pilihan AI tentukan / Hanya apabila dipanggil serta tempat digunakan.
+
+## Kembali ke versi terdahulu
+
+Apabila anda menyunting kemahiran sendiri, memasang kemahiran lain dengan nama yang sama di tempatnya, atau mengemas kininya, versi sebelumnya disimpan. Ia tidak masuk ke tong sampah.
+
+- **Versi terdahulu** di bahagian bawah **Lihat kandungan** atau **Sunting** menyenaraikan versi yang disimpan, yang terbaharu dahulu, berserta bila dan mengapa setiap satu disimpan dan saiznya.
+- **Lihat perbezaan** menunjukkan baris `SKILL.md` yang akan kembali, yang akan hilang, dan fail lain yang akan berubah.
+- **Kembali ke versi ini** meletakkan semula fail versi itu tepat seperti asalnya. Versi sekarang juga disimpan, jadi anda boleh kembali kepadanya. Sama ada kemahiran dihidupkan dan bila ia digunakan kekal seperti yang anda tetapkan.
+- Versi yang disimpan kekal sehingga anda memadamnya. **Padam** memadam satu versi untuk selama-lamanya.
+- Versi-versi itu berada dalam folder `~/.ieumoffice/skill-history`. **Alih ke tong sampah** pada sesuatu kemahiran turut mengalihkan versi simpanannya ke tong sampah.
 
 ## Memanggil kemahiran dalam panel AI
 

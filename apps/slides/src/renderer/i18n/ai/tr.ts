@@ -91,8 +91,6 @@ export const tr = {
   aiStopGeneration: 'Oluşturmayı durdur',
   aiStop: 'Durdur',
   aiSend: 'Gönder',
-  aiSnapshotsTitle: 'Anlık görüntüler',
-  aiRollback: 'Geri al',
   aiStarterPolishTitle: 'Bu slaytın başlığını ve metnini iyileştir',
   aiStarterTighten: 'Bu slaytın maddelerini daha kısa hale getir',
   aiStarterProofread: 'Tüm sunumu yazım hataları için denetle ve düzelt',

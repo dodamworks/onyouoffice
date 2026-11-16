@@ -347,6 +347,8 @@ export function registerSlidesOnlyAiIpc(): void {
         transparentBackground?: boolean
       },
     ) => {
+      // the model the user named, as given: the shared tool decides whether the route offers it
+      const model = typeof op?.model === 'string' ? op.model.trim() : ''
       return screenMediaCall(
         event.sender,
         (signal) =>
@@ -354,7 +356,7 @@ export function registerSlidesOnlyAiIpc(): void {
             AI_SETTINGS_PATH(),
             {
               prompt: String(op.prompt),
-              model: op.model ? String(op.model) : undefined,
+              ...(model ? { model } : {}),
               referenceImageUrls: Array.isArray(op.referenceImageUrls)
                 ? op.referenceImageUrls.map(String)
                 : undefined,

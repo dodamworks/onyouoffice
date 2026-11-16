@@ -2,7 +2,9 @@
 
 ## Membuka pengaturan
 
-Baris di kiri bawah Beranda membuka panel pengaturan (bacaannya Hubungkan AI sampai ada AI yang terhubung). Panel ini punya lima bagian: Akun, AI, Umum, Integrasi, dan Tentang.
+Baris di kiri bawah Beranda membuka panel pengaturan (baris di bawahnya menunjukkan apakah ada AI yang terhubung). Panel ini punya lima bagian: Akun, AI, Umum, Integrasi, dan Tentang.
+
+Anda juga dapat membukanya dari tab mana pun dengan **⌘,** (Ctrl+, di Windows dan Linux), dari **Pengaturan…** di menu aplikasi di Mac (menu bernama aplikasi, di kiri bilah menu), atau dari **Menu (☰) ▸ Pengaturan…** di Windows dan Linux. Di tab Word, ⌘, (Ctrl+,) adalah subskrip, jadi bukalah dari menu.
 
 **Akun** menunjukkan keadaan koneksi Claude, ChatGPT, dan Codex Anda, dan **Kelola koneksi** membawa Anda ke bagian AI. AI punya artikel tersendiri: [Koneksi langganan](help://subscription) dan [Model AI dan pengaturan](help://ai-models).
 
@@ -59,7 +61,7 @@ Pengaturan dapat mendaftarkan GenOffice sebagai aplikasi penangan .docx / .xlsx 
 ## Pemberitahuan pihak ketiga dan pembaruan
 
 - Bantuan ▸ Pemberitahuan Perangkat Lunak Pihak Ketiga: inventaris lengkap lisensi OSS yang disertakan dengan aplikasi.
-- Menu (☰) ▸ Periksa Pembaruan… (di Mac: Bantuan ▸ Periksa Pembaruan…): memicu pemeriksaan manual; versi yang lebih baru menawarkan dipasang.
+- Menu (☰) ▸ Periksa Pembaruan… (di Mac: Bantuan ▸ Periksa Pembaruan…): memicu pemeriksaan manual; versi yang lebih baru menawarkan dipasang. Di Mac, perintah ini juga ada di menu aplikasi, tepat di bawah Tentang GenOffice.
 
 ## Integrasi MCP (untuk pengguna lanjutan / klien AI)
 

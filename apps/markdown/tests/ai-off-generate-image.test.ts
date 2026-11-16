@@ -127,3 +127,19 @@ describe('markdown:ai-generate-image and the AI switch', () => {
     expect(runningAiJobCount()).toBe(0)
   })
 })
+
+describe('markdown:ai-generate-image model and note', () => {
+  it("hands a named model to the tool trimmed, leaves a blank one out, and answers with the tool's note", async () => {
+    generateImageTool.mockResolvedValue({ url: 'file:///store/a.png', note: 'Codex picks' })
+    const sender = createMarkdownView(null).webContents as never
+    const generate = handlers.get(MARKDOWN_CHANNELS.aiGenerateImage)!
+    const result = await generate({ sender }, { prompt: 'a', model: ' gpt-image-2 ' })
+    expect(generateImageTool.mock.calls[0]![1]).toMatchObject({ model: 'gpt-image-2' })
+    expect(result).toEqual({ url: 'file:///store/a.png', note: 'Codex picks' })
+    // a non-string or blank model from the renderer is not a model name
+    await generate({ sender }, { prompt: 'a', model: 42 })
+    await generate({ sender }, { prompt: 'a', model: '   ' })
+    expect(generateImageTool.mock.calls[1]![1]).not.toHaveProperty('model')
+    expect(generateImageTool.mock.calls[2]![1]).not.toHaveProperty('model')
+  })
+})

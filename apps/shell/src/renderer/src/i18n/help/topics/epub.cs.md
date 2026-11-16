@@ -47,7 +47,7 @@ Editor e-knih otevírá knihy EPUB (`.epub`) na kartě. Knihu můžete číst, o
 ## Panel AI
 
 - Ptejte se na knihu, nechte si shrnout kapitolu nebo opravit či přepsat její text. AI čte obsah a kapitoly knihy a vyhledává v ní text.
-- Změny od AI se objeví hned a jedno vrácení (Ctrl+Z) vezme zpět vše, co AI v daném kole změnila. AI umí text zvýraznit tučně nebo kurzívou, ale nemůže přidávat obrázky, tabulky ani kapitoly.
+- Změny od AI se objeví hned, změněné bloky se označí žlutě a **Vrátit tyto změny** na kartě pod odpovědí vezme zpět vše, co AI v daném kole změnila (pokud jste knihu potom neupravovali). AI umí text zvýraznit tučně nebo kurzívou, ale nemůže přidávat obrázky, tabulky ani kapitoly.
 - Text knihy je pro AI materiál, ne pokyny.
 - Napište „Přelož tuto knihu do francouzštiny“ a AI otevře okno překladu s tímto jazykem už vyplněným. Dokud nestisknete **Spustit**, nic se neodešle.
 - Knihy EPUB lze také připojit v panelu AI ostatních editorů, vybrat přes `@` a najít vyhledáváním souborů na domovské stránce.

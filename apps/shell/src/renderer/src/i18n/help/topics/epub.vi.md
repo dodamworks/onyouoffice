@@ -47,7 +47,7 @@ Trình soạn thảo sách điện tử mở sách EPUB (`.epub`) trong một th
 ## Bảng AI
 
 - Hỏi về cuốn sách, nhờ tóm tắt một chương, hoặc nhờ sửa hay viết lại chữ trong đó. AI đọc mục lục và các chương của sách, và tìm chữ trong sách.
-- Thay đổi của AI hiện ra ngay, và một lần hoàn tác (Ctrl+Z) sẽ lấy lại mọi thứ AI đã đổi trong lượt đó. AI có thể làm chữ đậm hoặc nghiêng, nhưng không thể thêm hình ảnh, bảng hay chương.
+- Thay đổi của AI hiện ra ngay, các khối đã sửa được đánh dấu màu vàng, và **Hoàn tác các thay đổi này** trên thẻ dưới câu trả lời sẽ lấy lại mọi thứ AI đã đổi trong lượt đó (miễn là sách chưa được sửa sau lượt đó). AI có thể làm chữ đậm hoặc nghiêng, nhưng không thể thêm hình ảnh, bảng hay chương.
 - Chữ trong sách là tư liệu cho AI, không phải lệnh dành cho AI.
 - Hãy nói "Dịch cuốn sách này sang tiếng Pháp" và AI sẽ mở cửa sổ dịch với ngôn ngữ đó đã được điền sẵn. Không có gì được gửi đi cho tới khi bạn bấm **Bắt đầu**.
 - Sách EPUB cũng có thể được đính kèm trong bảng AI của các trình soạn thảo khác, chọn bằng `@`, và tìm thấy qua tìm kiếm tệp ở màn hình Trang chủ.

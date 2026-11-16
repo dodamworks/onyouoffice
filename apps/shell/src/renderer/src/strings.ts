@@ -279,11 +279,14 @@ export const strings = {
     setAiHeadlessDesc:
       '允许由终端命令或其他程序（MCP）发起的生图、图片解析、PDF 翻译、AI 页面识读和书籍（EPUB）翻译使用你的 Claude 或 Codex 订阅。关闭时，这类请求只使用 key 方式的服务商。',
     setAiHeadlessWarning:
-      '没有每小时次数上限，程序可以发送任意多的请求，请求中可能包含整份文档的文字和页面图片。两家公司都不建议让程序自动使用订阅，你的账号可能会受到限制。',
+      '没有每小时次数上限，程序可以发送任意多的请求（例如生图），请求中可能包含整份文档的文字和页面图片。两家公司都不建议让程序自动使用订阅，你的账号可能会受到限制。',
     setAiHeadlessConfirm: '仍然开启',
-    setAiImageCodex: 'Codex 订阅',
+    setAiImageCodex: 'ChatGPT 套餐（Codex 程序）',
     setAiImageCodexHint:
-      'Codex 订阅已连接时，用该订阅生成图片。无法使用时，改用已设置好的 key 方式服务商。',
+      '用登录了 Codex 程序的 ChatGPT 套餐（Plus 及以上）生成图片。OpenAI 不允许通过本应用直接连接的 ChatGPT 生成图片。Codex 无法使用时，改用已设置好的 key 方式服务商。',
+    setAiImageCodexConnect:
+      '要用 ChatGPT 套餐生成图片，请用同一个 ChatGPT 账号连接 Codex 程序。OpenAI 不允许通过本应用直接连接的 ChatGPT 生成图片。',
+    setAiImageCodexConnectAction: '连接 Codex',
     setAiMediaNone: '未选择',
     setAiImageNoneHint:
       '未选择服务商，因此使用第一个能够生成图片的服务商。如果都未设置，则无法生成图片。',
@@ -483,6 +486,7 @@ export const strings = {
     freeStatusConnected: '已连接',
     freeStatusInUse: '已连接 · 使用中',
     homeAiNeedsConnection: '需要连接',
+    homeEntryAiState: 'AI：{state}',
     freeUse: '使用此 AI',
     freeDisconnect: '断开连接',
     freeQuota: '今日免费请求剩余 {remaining} 次（共 {limit} 次）',
@@ -858,11 +862,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Allows image generation, image analysis, PDF translation, AI page reading and book (EPUB) translation requested by a terminal command or another program (MCP) to run on your Claude or Codex subscription. When off, those requests use key providers only.',
     setAiHeadlessWarning:
-      'There is no hourly limit, so a program can send as many requests as it likes, and they may carry the whole text of a document and images of its pages. Neither company recommends letting a program use your subscription automatically, and your account may be restricted.',
+      'There is no hourly limit, so a program can send as many requests as it likes, image generation included, and they may carry the whole text of a document and images of its pages. Neither company recommends letting a program use your subscription automatically, and your account may be restricted.',
     setAiHeadlessConfirm: 'Turn on anyway',
-    setAiImageCodex: 'Codex subscription',
+    setAiImageCodex: 'ChatGPT plan (Codex program)',
     setAiImageCodexHint:
-      'Images are generated on your Codex subscription while it is connected. When it cannot be used, a key provider that is set up is used instead.',
+      'Images are made on your ChatGPT plan (Plus or higher) signed in to the Codex program. OpenAI does not allow image generation through the app’s direct ChatGPT connection. When Codex cannot be used, a key provider that is set up is used instead.',
+    setAiImageCodexConnect:
+      'To make images with your ChatGPT plan, connect the Codex program with the same ChatGPT account. OpenAI does not allow image generation through the app’s direct ChatGPT connection.',
+    setAiImageCodexConnectAction: 'Connect Codex',
     setAiMediaNone: 'None selected',
     setAiImageNoneHint:
       'No provider is chosen, so the first one that can generate images is used. If none is set up, image generation is unavailable.',
@@ -1075,6 +1082,7 @@ export const strings = {
     freeStatusConnected: 'Connected',
     freeStatusInUse: 'Connected · in use',
     homeAiNeedsConnection: 'Needs connecting',
+    homeEntryAiState: 'AI: {state}',
     freeUse: 'Use this AI',
     freeDisconnect: 'Disconnect',
     freeQuota: '{remaining} of {limit} free requests left today',
@@ -1453,11 +1461,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Cho phép việc tạo hình ảnh, phân tích hình ảnh, dịch PDF, đọc trang bằng AI và dịch sách (EPUB) do lệnh terminal hoặc chương trình khác (MCP) yêu cầu chạy bằng gói đăng ký Claude hoặc Codex của bạn. Khi tắt, các yêu cầu đó chỉ dùng nhà cung cấp theo khóa.',
     setAiHeadlessWarning:
-      'Không có giới hạn theo giờ, nên chương trình có thể gửi bao nhiêu yêu cầu tùy ý, và các yêu cầu đó có thể chứa toàn bộ văn bản của tài liệu cùng hình ảnh các trang. Cả hai công ty đều không khuyến nghị để chương trình tự động dùng gói đăng ký, và tài khoản của bạn có thể bị hạn chế.',
+      'Không có giới hạn theo giờ, nên chương trình có thể gửi bao nhiêu yêu cầu tùy ý, kể cả yêu cầu tạo hình ảnh, và các yêu cầu đó có thể chứa toàn bộ văn bản của tài liệu cùng hình ảnh các trang. Cả hai công ty đều không khuyến nghị để chương trình tự động dùng gói đăng ký, và tài khoản của bạn có thể bị hạn chế.',
     setAiHeadlessConfirm: 'Vẫn bật',
-    setAiImageCodex: 'Gói đăng ký Codex',
+    setAiImageCodex: 'Gói ChatGPT (chương trình Codex)',
     setAiImageCodexHint:
-      'Hình ảnh được tạo bằng gói đăng ký Codex khi gói này đang kết nối. Khi không dùng được, nhà cung cấp theo khóa đã thiết lập sẽ được dùng thay thế.',
+      'Hình ảnh được tạo bằng gói ChatGPT (Plus trở lên) đã đăng nhập vào chương trình Codex. OpenAI không cho phép tạo hình ảnh qua kết nối ChatGPT trực tiếp của ứng dụng. Khi không dùng được Codex, nhà cung cấp theo khóa đã thiết lập sẽ được dùng thay thế.',
+    setAiImageCodexConnect:
+      'Để tạo hình ảnh bằng gói ChatGPT, hãy kết nối chương trình Codex bằng cùng tài khoản ChatGPT. OpenAI không cho phép tạo hình ảnh qua kết nối ChatGPT trực tiếp của ứng dụng.',
+    setAiImageCodexConnectAction: 'Kết nối Codex',
     setAiMediaNone: 'Chưa chọn',
     setAiImageNoneHint:
       'Chưa chọn nhà cung cấp nào, nên nhà cung cấp đầu tiên có thể tạo hình ảnh sẽ được dùng. Nếu chưa thiết lập nhà cung cấp nào thì không thể tạo hình ảnh.',
@@ -1673,6 +1684,7 @@ export const strings = {
     freeStatusConnected: 'Đã kết nối',
     freeStatusInUse: 'Đã kết nối · đang dùng',
     homeAiNeedsConnection: 'Cần kết nối',
+    homeEntryAiState: 'AI: {state}',
     freeUse: 'Dùng AI này',
     freeDisconnect: 'Ngắt kết nối',
     freeQuota: 'Hôm nay còn {remaining}/{limit} yêu cầu miễn phí',
@@ -2055,11 +2067,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Bir terminal komutu veya başka bir program (MCP) tarafından istenen görüntü oluşturma, görüntü analizi, PDF çevirisi, AI sayfa okuma ve kitap (EPUB) çevirisinin Claude veya Codex aboneliğinizde çalışmasına izin verir. Kapalıyken bu istekler yalnızca anahtar sağlayıcılarını kullanır.',
     setAiHeadlessWarning:
-      'Saatlik bir sınır yok, yani bir program istediği kadar istek gönderebilir ve bu istekler bir belgenin tüm metnini ve sayfa görüntülerini taşıyabilir. İki şirket de aboneliğinizin bir program tarafından otomatik kullanılmasını önermez ve hesabınız kısıtlanabilir.',
+      'Saatlik bir sınır yok, yani bir program görüntü oluşturma dahil istediği kadar istek gönderebilir ve bu istekler bir belgenin tüm metnini ve sayfa görüntülerini taşıyabilir. İki şirket de aboneliğinizin bir program tarafından otomatik kullanılmasını önermez ve hesabınız kısıtlanabilir.',
     setAiHeadlessConfirm: 'Yine de aç',
-    setAiImageCodex: 'Codex aboneliği',
+    setAiImageCodex: 'ChatGPT planı (Codex programı)',
     setAiImageCodexHint:
-      'Codex aboneliğiniz bağlıyken görüntüler orada oluşturulur. Kullanılamadığında ayarlanmış bir anahtar sağlayıcısı kullanılır.',
+      'Görüntüler, Codex programında oturum açılmış ChatGPT planınızla (Plus veya üstü) oluşturulur. OpenAI, uygulamanın doğrudan ChatGPT bağlantısıyla görüntü oluşturmaya izin vermez. Codex kullanılamadığında ayarlanmış bir anahtar sağlayıcısı kullanılır.',
+    setAiImageCodexConnect:
+      'ChatGPT planınızla görüntü oluşturmak için Codex programını aynı ChatGPT hesabıyla bağlayın. OpenAI, uygulamanın doğrudan ChatGPT bağlantısıyla görüntü oluşturmaya izin vermez.',
+    setAiImageCodexConnectAction: 'Codex’i bağla',
     setAiMediaNone: 'Hiçbiri seçilmedi',
     setAiImageNoneHint:
       'Sağlayıcı seçilmedi, bu yüzden görüntü oluşturabilen ilk sağlayıcı kullanılır. Hiçbiri ayarlanmamışsa görüntü oluşturma kullanılamaz.',
@@ -2276,6 +2291,7 @@ export const strings = {
     freeStatusConnected: 'Bağlandı',
     freeStatusInUse: 'Bağlı · kullanımda',
     homeAiNeedsConnection: 'Bağlantı gerekiyor',
+    homeEntryAiState: 'Yapay zekâ: {state}',
     freeUse: 'Bu AI ile devam et',
     freeDisconnect: 'Bağlantıyı kes',
     freeQuota: 'Bugün {limit} ücretsiz istekten {remaining} tanesi kaldı',
@@ -2666,11 +2682,14 @@ export const strings = {
     setAiHeadlessDesc:
       'ターミナルのコマンドや他のプログラム（MCP）から要求された画像生成、画像解析、PDF 翻訳、AI によるページ読み取り、書籍（EPUB）の翻訳を、Claude または Codex のサブスクリプションで処理できるようにします。オフの場合、こうした要求にはキー方式のプロバイダーだけが使われます。',
     setAiHeadlessWarning:
-      '1 時間あたりの上限はないため、プログラムはいくらでも要求を送ることができ、その要求には文書全体のテキストやページの画像が含まれることがあります。プログラムがサブスクリプションを自動的に使うことは両社とも推奨しておらず、アカウントが制限される可能性があります。',
+      '1 時間あたりの上限はないため、プログラムは画像生成などの要求をいくらでも送ることができ、その要求には文書全体のテキストやページの画像が含まれることがあります。プログラムがサブスクリプションを自動的に使うことは両社とも推奨しておらず、アカウントが制限される可能性があります。',
     setAiHeadlessConfirm: 'それでもオンにする',
-    setAiImageCodex: 'Codex のサブスクリプション',
+    setAiImageCodex: 'ChatGPT のプラン（Codex プログラム）',
     setAiImageCodexHint:
-      'Codex のサブスクリプションが接続されている間は、そのサブスクリプションで画像を生成します。使えないときは、設定済みのキー方式のプロバイダーを代わりに使います。',
+      'Codex プログラムにログインした ChatGPT のプラン（Plus 以上）で画像を生成します。アプリから直接接続した ChatGPT では、OpenAI が画像生成を許可していません。Codex を使えないときは、設定済みのキー方式のプロバイダーを代わりに使います。',
+    setAiImageCodexConnect:
+      'ChatGPT のプランで画像を生成するには、同じ ChatGPT アカウントで Codex プログラムを接続してください。アプリから直接接続した ChatGPT では、OpenAI が画像生成を許可していません。',
+    setAiImageCodexConnectAction: 'Codex を接続',
     setAiMediaNone: '選択なし',
     setAiImageNoneHint:
       'プロバイダーが選ばれていないため、画像を生成できる最初のプロバイダーを使います。設定済みのものがなければ、画像生成は利用できません。',
@@ -2889,6 +2908,7 @@ export const strings = {
     freeStatusConnected: '接続済み',
     freeStatusInUse: '接続済み · 使用中',
     homeAiNeedsConnection: '接続が必要',
+    homeEntryAiState: 'AI：{state}',
     freeUse: 'この AI を使う',
     freeDisconnect: '接続を解除',
     freeQuota: '今日の無料リクエスト残り {remaining} 回（{limit} 回中）',
@@ -3275,11 +3295,14 @@ export const strings = {
     setAiHeadlessDesc:
       '터미널 명령이나 다른 프로그램(MCP)이 요청한 이미지 생성·이미지 분석·PDF 번역·AI 페이지 읽기·책(EPUB) 번역을 Claude 또는 Codex 구독으로 처리하도록 허용합니다. 꺼져 있으면 그런 요청은 키 방식 제공업체만 씁니다.',
     setAiHeadlessWarning:
-      '시간당 한도가 없어 프로그램이 요청을 얼마든지 보낼 수 있고, 그 요청에 문서 전체의 글과 페이지 그림이 담길 수 있습니다. 프로그램이 자동으로 구독을 쓰는 것은 두 회사가 권장하지 않으며, 계정에 제한이 걸릴 수 있습니다.',
+      '시간당 한도가 없어 프로그램이 이미지 생성 같은 요청을 얼마든지 보낼 수 있고, 그 요청에 문서 전체의 글과 페이지 그림이 담길 수 있습니다. 프로그램이 자동으로 구독을 쓰는 것은 두 회사가 권장하지 않으며, 계정에 제한이 걸릴 수 있습니다.',
     setAiHeadlessConfirm: '그래도 켜기',
-    setAiImageCodex: 'Codex 구독',
+    setAiImageCodex: 'ChatGPT 요금제(Codex 프로그램)',
     setAiImageCodexHint:
-      'Codex 구독이 연결되어 있으면 그 구독으로 이미지를 만듭니다. 쓸 수 없을 때는 설정해 둔 키 방식 제공업체를 대신 씁니다.',
+      'Codex 프로그램에 로그인한 ChatGPT 요금제(Plus 이상)로 이미지를 만듭니다. 앱에서 바로 연결한 ChatGPT로는 OpenAI가 이미지 생성을 허용하지 않습니다. Codex를 쓸 수 없을 때는 설정해 둔 키 방식 제공업체를 대신 씁니다.',
+    setAiImageCodexConnect:
+      'ChatGPT 요금제로 이미지를 만들려면 같은 ChatGPT 계정으로 Codex 프로그램을 연결하세요. 앱에서 바로 연결한 ChatGPT로는 OpenAI가 이미지 생성을 허용하지 않습니다.',
+    setAiImageCodexConnectAction: 'Codex 연결하기',
     setAiMediaNone: '선택 없음',
     setAiImageNoneHint:
       '고른 제공업체가 없으므로, 이미지를 만들 수 있는 첫 번째 제공업체를 씁니다. 설정된 것이 없으면 이미지 생성을 쓸 수 없습니다.',
@@ -3487,6 +3510,7 @@ export const strings = {
     freeStatusConnected: '연결됨',
     freeStatusInUse: '연결됨 · 사용 중',
     homeAiNeedsConnection: '연결 필요',
+    homeEntryAiState: 'AI {state}',
     freeUse: '이 AI 쓰기',
     freeDisconnect: '연결 해제',
     freeQuota: '오늘 무료 요청 {limit}번 중 {remaining}번 남음',
@@ -3878,11 +3902,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Permet à la génération et à l’analyse d’images, à la traduction de PDF, à la lecture de pages par l’IA et à la traduction de livres (EPUB) demandées par une commande du terminal ou par un autre programme (MCP) de passer par votre abonnement Claude ou Codex. Lorsque l’option est désactivée, ces requêtes n’utilisent que les fournisseurs à clé.',
     setAiHeadlessWarning:
-      'Il n’y a pas de limite horaire : un programme peut envoyer autant de requêtes qu’il le souhaite, et elles peuvent contenir tout le texte d’un document et des images de ses pages. Aucune des deux entreprises ne recommande de laisser un programme utiliser automatiquement votre abonnement, et votre compte pourrait être restreint.',
+      'Il n’y a pas de limite horaire : un programme peut envoyer autant de requêtes qu’il le souhaite, génération d’images comprise, et elles peuvent contenir tout le texte d’un document et des images de ses pages. Aucune des deux entreprises ne recommande de laisser un programme utiliser automatiquement votre abonnement, et votre compte pourrait être restreint.',
     setAiHeadlessConfirm: 'Activer quand même',
-    setAiImageCodex: 'Abonnement Codex',
+    setAiImageCodex: 'Forfait ChatGPT (programme Codex)',
     setAiImageCodexHint:
-      'Les images sont générées avec votre abonnement Codex tant qu’il est connecté. S’il ne peut pas être utilisé, un fournisseur à clé déjà configuré prend le relais.',
+      'Les images sont générées avec votre forfait ChatGPT (Plus ou supérieur) connecté au programme Codex. OpenAI n’autorise pas la génération d’images via la connexion ChatGPT directe de l’application. Si Codex ne peut pas être utilisé, un fournisseur à clé déjà configuré prend le relais.',
+    setAiImageCodexConnect:
+      'Pour générer des images avec votre forfait ChatGPT, connectez le programme Codex avec le même compte ChatGPT. OpenAI n’autorise pas la génération d’images via la connexion ChatGPT directe de l’application.',
+    setAiImageCodexConnectAction: 'Connecter Codex',
     setAiMediaNone: 'Aucune sélection',
     setAiImageNoneHint:
       'Aucun fournisseur n’est choisi : le premier capable de générer des images est utilisé. Si aucun n’est configuré, la génération d’images est indisponible.',
@@ -4105,6 +4132,7 @@ export const strings = {
     freeStatusConnected: 'Connecté',
     freeStatusInUse: 'Connecté · en cours d’utilisation',
     homeAiNeedsConnection: 'Connexion requise',
+    homeEntryAiState: 'IA : {state}',
     freeUse: 'Utiliser cette IA',
     freeDisconnect: 'Déconnecter',
     freeQuota: '{remaining} requêtes gratuites restantes sur {limit} aujourd’hui',
@@ -4502,11 +4530,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Erlaubt, dass Bildgenerierung, Bildanalyse, PDF-Übersetzung, das Lesen von Seiten per KI und die Übersetzung von Büchern (EPUB), die ein Terminalbefehl oder ein anderes Programm (MCP) anfordert, über Ihr Claude- oder Codex-Abonnement laufen. Ist die Option aus, nutzen solche Anfragen nur Anbieter mit Schlüssel.',
     setAiHeadlessWarning:
-      'Es gibt kein stündliches Limit: Ein Programm kann beliebig viele Anfragen senden, und diese können den gesamten Text eines Dokuments und Bilder seiner Seiten enthalten. Keines der beiden Unternehmen empfiehlt, ein Programm das Abonnement automatisch nutzen zu lassen, und Ihr Konto kann eingeschränkt werden.',
+      'Es gibt kein stündliches Limit: Ein Programm kann beliebig viele Anfragen senden, etwa zur Bildgenerierung, und diese können den gesamten Text eines Dokuments und Bilder seiner Seiten enthalten. Keines der beiden Unternehmen empfiehlt, ein Programm das Abonnement automatisch nutzen zu lassen, und Ihr Konto kann eingeschränkt werden.',
     setAiHeadlessConfirm: 'Trotzdem einschalten',
-    setAiImageCodex: 'Codex-Abonnement',
+    setAiImageCodex: 'ChatGPT-Tarif (Codex-Programm)',
     setAiImageCodexHint:
-      'Bilder werden über Ihr Codex-Abonnement erzeugt, solange es verbunden ist. Kann es nicht genutzt werden, wird stattdessen ein eingerichteter Anbieter mit Schlüssel verwendet.',
+      'Bilder werden mit Ihrem ChatGPT-Tarif (Plus oder höher) erzeugt, mit dem das Codex-Programm angemeldet ist. Über die direkte ChatGPT-Verbindung der App erlaubt OpenAI keine Bildgenerierung. Kann Codex nicht genutzt werden, wird stattdessen ein eingerichteter Anbieter mit Schlüssel verwendet.',
+    setAiImageCodexConnect:
+      'Um Bilder mit Ihrem ChatGPT-Tarif zu erzeugen, verbinden Sie das Codex-Programm mit demselben ChatGPT-Konto. Über die direkte ChatGPT-Verbindung der App erlaubt OpenAI keine Bildgenerierung.',
+    setAiImageCodexConnectAction: 'Codex verbinden',
     setAiMediaNone: 'Keine Auswahl',
     setAiImageNoneHint:
       'Es ist kein Anbieter gewählt, daher wird der erste verwendet, der Bilder erzeugen kann. Ist keiner eingerichtet, steht die Bildgenerierung nicht zur Verfügung.',
@@ -4728,6 +4759,7 @@ export const strings = {
     freeStatusConnected: 'Verbunden',
     freeStatusInUse: 'Verbunden · wird verwendet',
     homeAiNeedsConnection: 'Verbindung nötig',
+    homeEntryAiState: 'KI: {state}',
     freeUse: 'Diese KI verwenden',
     freeDisconnect: 'Trennen',
     freeQuota: 'Heute noch {remaining} von {limit} kostenlosen Anfragen',
@@ -5128,11 +5160,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Permite que la generación y el análisis de imágenes, la traducción de PDF, la lectura de páginas con IA y la traducción de libros (EPUB) que pide un comando del terminal u otro programa (MCP) se ejecuten con tu suscripción de Claude o Codex. Si está desactivado, esas solicitudes solo usan proveedores con clave.',
     setAiHeadlessWarning:
-      'No hay límite por hora: un programa puede enviar tantas solicitudes como quiera, y estas pueden incluir todo el texto de un documento e imágenes de sus páginas. Ninguna de las dos empresas recomienda que un programa use tu suscripción automáticamente, y tu cuenta podría quedar restringida.',
+      'No hay límite por hora: un programa puede enviar tantas solicitudes como quiera, incluida la generación de imágenes, y estas pueden incluir todo el texto de un documento e imágenes de sus páginas. Ninguna de las dos empresas recomienda que un programa use tu suscripción automáticamente, y tu cuenta podría quedar restringida.',
     setAiHeadlessConfirm: 'Activar de todos modos',
-    setAiImageCodex: 'Suscripción de Codex',
+    setAiImageCodex: 'Plan de ChatGPT (programa Codex)',
     setAiImageCodexHint:
-      'Las imágenes se generan con tu suscripción de Codex mientras esté conectada. Si no se puede usar, se utiliza en su lugar un proveedor con clave ya configurado.',
+      'Las imágenes se generan con tu plan de ChatGPT (Plus o superior) con el que iniciaste sesión en el programa Codex. OpenAI no permite generar imágenes a través de la conexión directa de ChatGPT de la aplicación. Si no se puede usar Codex, se utiliza en su lugar un proveedor con clave ya configurado.',
+    setAiImageCodexConnect:
+      'Para generar imágenes con tu plan de ChatGPT, conecta el programa Codex con la misma cuenta de ChatGPT. OpenAI no permite generar imágenes a través de la conexión directa de ChatGPT de la aplicación.',
+    setAiImageCodexConnectAction: 'Conectar Codex',
     setAiMediaNone: 'Sin selección',
     setAiImageNoneHint:
       'No hay ningún proveedor elegido, así que se usa el primero que pueda generar imágenes. Si no hay ninguno configurado, la generación de imágenes no está disponible.',
@@ -5350,6 +5385,7 @@ export const strings = {
     freeStatusConnected: 'Conectado',
     freeStatusInUse: 'Conectado · en uso',
     homeAiNeedsConnection: 'Requiere conexión',
+    homeEntryAiState: 'IA: {state}',
     freeUse: 'Usar esta IA',
     freeDisconnect: 'Desconectar',
     freeQuota: 'Te quedan {remaining} de {limit} solicitudes gratuitas hoy',
@@ -5735,11 +5771,14 @@ export const strings = {
     setAiHeadlessDesc:
       'อนุญาตให้การสร้างภาพ การวิเคราะห์ภาพ การแปล PDF การอ่านหน้าด้วย AI และการแปลหนังสือ (EPUB) ที่ร้องขอจากคำสั่งในเทอร์มินัลหรือโปรแกรมอื่น (MCP) ทำงานด้วยการสมัครสมาชิก Claude หรือ Codex ของคุณ เมื่อปิดอยู่ คำขอเหล่านั้นจะใช้เฉพาะผู้ให้บริการแบบใช้คีย์',
     setAiHeadlessWarning:
-      'ไม่มีขีดจำกัดรายชั่วโมง โปรแกรมจึงส่งคำขอได้มากเท่าที่ต้องการ และคำขอเหล่านั้นอาจมีข้อความทั้งหมดของเอกสารและภาพของแต่ละหน้า ทั้งสองบริษัทไม่แนะนำให้โปรแกรมใช้การสมัครสมาชิกของคุณโดยอัตโนมัติ และบัญชีของคุณอาจถูกจำกัดการใช้งาน',
+      'ไม่มีขีดจำกัดรายชั่วโมง โปรแกรมจึงส่งคำขอได้มากเท่าที่ต้องการ รวมถึงคำขอสร้างภาพ และคำขอเหล่านั้นอาจมีข้อความทั้งหมดของเอกสารและภาพของแต่ละหน้า ทั้งสองบริษัทไม่แนะนำให้โปรแกรมใช้การสมัครสมาชิกของคุณโดยอัตโนมัติ และบัญชีของคุณอาจถูกจำกัดการใช้งาน',
     setAiHeadlessConfirm: 'เปิดต่อไป',
-    setAiImageCodex: 'การสมัครสมาชิก Codex',
+    setAiImageCodex: 'แพ็กเกจ ChatGPT (โปรแกรม Codex)',
     setAiImageCodexHint:
-      'ระบบจะสร้างภาพด้วยการสมัครสมาชิก Codex ของคุณขณะที่เชื่อมต่ออยู่ หากใช้ไม่ได้ จะใช้ผู้ให้บริการแบบใช้คีย์ที่ตั้งค่าไว้แทน',
+      'ระบบจะสร้างภาพด้วยแพ็กเกจ ChatGPT (Plus ขึ้นไป) ที่เข้าสู่ระบบไว้ในโปรแกรม Codex OpenAI ไม่อนุญาตให้สร้างภาพผ่านการเชื่อมต่อ ChatGPT โดยตรงของแอป หากใช้ Codex ไม่ได้ จะใช้ผู้ให้บริการแบบใช้คีย์ที่ตั้งค่าไว้แทน',
+    setAiImageCodexConnect:
+      'หากต้องการสร้างภาพด้วยแพ็กเกจ ChatGPT ให้เชื่อมต่อโปรแกรม Codex ด้วยบัญชี ChatGPT เดียวกัน OpenAI ไม่อนุญาตให้สร้างภาพผ่านการเชื่อมต่อ ChatGPT โดยตรงของแอป',
+    setAiImageCodexConnectAction: 'เชื่อมต่อ Codex',
     setAiMediaNone: 'ไม่ได้เลือก',
     setAiImageNoneHint:
       'ยังไม่ได้เลือกผู้ให้บริการ จึงใช้รายแรกที่สร้างภาพได้ หากยังไม่ได้ตั้งค่ารายใดไว้ จะไม่สามารถสร้างภาพได้',
@@ -5949,6 +5988,7 @@ export const strings = {
     freeStatusConnected: 'เชื่อมต่อแล้ว',
     freeStatusInUse: 'เชื่อมต่อแล้ว · กำลังใช้งาน',
     homeAiNeedsConnection: 'ต้องเชื่อมต่อ',
+    homeEntryAiState: 'AI: {state}',
     freeUse: 'ใช้ AI นี้',
     freeDisconnect: 'ยกเลิกการเชื่อมต่อ',
     freeQuota: 'วันนี้เหลือคำขอฟรี {remaining} จาก {limit} ครั้ง',
@@ -6338,11 +6378,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Mengizinkan pembuatan gambar, analisis gambar, terjemahan PDF, pembacaan halaman dengan AI, dan terjemahan buku (EPUB) yang diminta oleh perintah terminal atau program lain (MCP) berjalan dengan langganan Claude atau Codex Anda. Jika dimatikan, permintaan tersebut hanya memakai penyedia berbasis kunci.',
     setAiHeadlessWarning:
-      'Tidak ada batas per jam, jadi program dapat mengirim permintaan sebanyak yang diinginkan, dan permintaan itu dapat memuat seluruh teks dokumen serta gambar halamannya. Kedua perusahaan tidak menyarankan program memakai langganan Anda secara otomatis, dan akun Anda bisa dibatasi.',
+      'Tidak ada batas per jam, jadi program dapat mengirim permintaan sebanyak yang diinginkan, termasuk pembuatan gambar, dan permintaan itu dapat memuat seluruh teks dokumen serta gambar halamannya. Kedua perusahaan tidak menyarankan program memakai langganan Anda secara otomatis, dan akun Anda bisa dibatasi.',
     setAiHeadlessConfirm: 'Tetap aktifkan',
-    setAiImageCodex: 'Langganan Codex',
+    setAiImageCodex: 'Paket ChatGPT (program Codex)',
     setAiImageCodexHint:
-      'Gambar dibuat dengan langganan Codex Anda selama langganan itu terhubung. Jika tidak bisa digunakan, penyedia berbasis kunci yang sudah disiapkan dipakai sebagai gantinya.',
+      'Gambar dibuat dengan paket ChatGPT Anda (Plus atau lebih tinggi) yang masuk di program Codex. OpenAI tidak mengizinkan pembuatan gambar melalui koneksi ChatGPT langsung di aplikasi. Jika Codex tidak bisa digunakan, penyedia berbasis kunci yang sudah disiapkan dipakai sebagai gantinya.',
+    setAiImageCodexConnect:
+      'Untuk membuat gambar dengan paket ChatGPT, hubungkan program Codex dengan akun ChatGPT yang sama. OpenAI tidak mengizinkan pembuatan gambar melalui koneksi ChatGPT langsung di aplikasi.',
+    setAiImageCodexConnectAction: 'Hubungkan Codex',
     setAiMediaNone: 'Tidak ada yang dipilih',
     setAiImageNoneHint:
       'Tidak ada penyedia yang dipilih, jadi yang dipakai adalah penyedia pertama yang bisa membuat gambar. Jika belum ada yang disiapkan, pembuatan gambar tidak tersedia.',
@@ -6559,6 +6602,7 @@ export const strings = {
     freeStatusConnected: 'Terhubung',
     freeStatusInUse: 'Terhubung · sedang dipakai',
     homeAiNeedsConnection: 'Perlu dihubungkan',
+    homeEntryAiState: 'AI: {state}',
     freeUse: 'Pakai AI ini',
     freeDisconnect: 'Putuskan',
     freeQuota: 'Sisa {remaining} dari {limit} permintaan gratis hari ini',
@@ -6950,11 +6994,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Разрешает выполнять генерацию и анализ изображений, перевод PDF, чтение страниц с помощью ИИ и перевод книг (EPUB), запрошенные командой терминала или другой программой (MCP), по вашей подписке Claude или Codex. Если параметр выключен, такие запросы используют только провайдеров с ключом.',
     setAiHeadlessWarning:
-      'Почасового лимита нет: программа может отправлять сколько угодно запросов, и в них может попасть весь текст документа и изображения его страниц. Ни одна из двух компаний не рекомендует позволять программе автоматически использовать подписку, и ваш аккаунт может быть ограничен.',
+      'Почасового лимита нет: программа может отправлять сколько угодно запросов, в том числе на генерацию изображений, и в них может попасть весь текст документа и изображения его страниц. Ни одна из двух компаний не рекомендует позволять программе автоматически использовать подписку, и ваш аккаунт может быть ограничен.',
     setAiHeadlessConfirm: 'Всё равно включить',
-    setAiImageCodex: 'Подписка Codex',
+    setAiImageCodex: 'Тариф ChatGPT (программа Codex)',
     setAiImageCodexHint:
-      'Изображения создаются по вашей подписке Codex, пока она подключена. Если использовать её нельзя, вместо неё применяется настроенный провайдер с ключом.',
+      'Изображения создаются по вашему тарифу ChatGPT (Plus или выше), с которым выполнен вход в программу Codex. Через прямое подключение ChatGPT в приложении OpenAI не разрешает создавать изображения. Если Codex использовать нельзя, вместо него применяется настроенный провайдер с ключом.',
+    setAiImageCodexConnect:
+      'Чтобы создавать изображения по тарифу ChatGPT, подключите программу Codex с тем же аккаунтом ChatGPT. Через прямое подключение ChatGPT в приложении OpenAI не разрешает создавать изображения.',
+    setAiImageCodexConnectAction: 'Подключить Codex',
     setAiMediaNone: 'Не выбрано',
     setAiImageNoneHint:
       'Провайдер не выбран, поэтому используется первый, который может создавать изображения. Если ни один не настроен, генерация изображений недоступна.',
@@ -7173,6 +7220,7 @@ export const strings = {
     freeStatusConnected: 'Подключено',
     freeStatusInUse: 'Подключено · используется',
     homeAiNeedsConnection: 'Нужно подключение',
+    homeEntryAiState: 'ИИ: {state}',
     freeUse: 'Использовать этот ИИ',
     freeDisconnect: 'Отключить',
     freeQuota: 'Сегодня осталось {remaining} из {limit} бесплатных запросов',
@@ -7559,11 +7607,14 @@ export const strings = {
     setAiHeadlessDesc:
       'يسمح بتنفيذ توليد الصور وتحليلها وترجمة ملفات PDF وقراءة الصفحات بالذكاء الاصطناعي وترجمة الكتب (EPUB) التي يطلبها أمر في الطرفية أو برنامج آخر (MCP) عبر اشتراكك في Claude أو Codex. عند إيقاف هذا الخيار تستخدم تلك الطلبات المزوّدين الذين يعملون بمفتاح فقط.',
     setAiHeadlessWarning:
-      'لا يوجد حد بالساعة، لذا يمكن لبرنامج أن يرسل ما يشاء من الطلبات، وقد تتضمن هذه الطلبات النص الكامل للمستند وصور صفحاته. لا توصي أيٌّ من الشركتين بأن يستخدم برنامجٌ اشتراكك تلقائيًا، وقد تُفرض قيود على حسابك.',
+      'لا يوجد حد بالساعة، لذا يمكن لبرنامج أن يرسل ما يشاء من الطلبات، ومنها طلبات توليد الصور، وقد تتضمن هذه الطلبات النص الكامل للمستند وصور صفحاته. لا توصي أيٌّ من الشركتين بأن يستخدم برنامجٌ اشتراكك تلقائيًا، وقد تُفرض قيود على حسابك.',
     setAiHeadlessConfirm: 'تشغيل على أي حال',
-    setAiImageCodex: 'اشتراك Codex',
+    setAiImageCodex: 'خطة ChatGPT (برنامج Codex)',
     setAiImageCodexHint:
-      'تُولَّد الصور عبر اشتراكك في Codex ما دام متصلًا. وإذا تعذّر استخدامه يُستخدم بدلًا منه مزوّد يعمل بمفتاح تم إعداده.',
+      'تُولَّد الصور عبر خطتك في ChatGPT (Plus أو أعلى) التي سُجِّل بها الدخول إلى برنامج Codex. لا تسمح OpenAI بتوليد الصور عبر اتصال ChatGPT المباشر في التطبيق. وإذا تعذّر استخدام Codex يُستخدم بدلًا منه مزوّد يعمل بمفتاح تم إعداده.',
+    setAiImageCodexConnect:
+      'لتوليد الصور بخطتك في ChatGPT، اربط برنامج Codex بحساب ChatGPT نفسه. لا تسمح OpenAI بتوليد الصور عبر اتصال ChatGPT المباشر في التطبيق.',
+    setAiImageCodexConnectAction: 'ربط Codex',
     setAiMediaNone: 'لا يوجد اختيار',
     setAiImageNoneHint:
       'لم يُختر أي مزوّد، لذا يُستخدم أول مزوّد قادر على توليد الصور. وإذا لم يكن أي مزوّد مُعدًّا فلن يكون توليد الصور متاحًا.',
@@ -7773,6 +7824,7 @@ export const strings = {
     freeStatusConnected: 'متصل',
     freeStatusInUse: 'متصل · قيد الاستخدام',
     homeAiNeedsConnection: 'يحتاج إلى اتصال',
+    homeEntryAiState: 'الذكاء الاصطناعي: {state}',
     freeUse: 'استخدام هذا الذكاء الاصطناعي',
     freeDisconnect: 'قطع الاتصال',
     freeQuota: 'تبقّى {remaining} من {limit} طلبات مجانية اليوم',
@@ -8158,11 +8210,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Permite que a geração e a análise de imagens, a tradução de PDF, a leitura de páginas por IA e a tradução de livros (EPUB) pedidas por um comando do terminal ou por outro programa (MCP) sejam feitas com a sua assinatura do Claude ou do Codex. Quando desativado, essas solicitações usam apenas provedores com chave.',
     setAiHeadlessWarning:
-      'Não há limite por hora: um programa pode enviar quantas solicitações quiser, e elas podem conter todo o texto de um documento e imagens das suas páginas. Nenhuma das duas empresas recomenda deixar um programa usar a sua assinatura automaticamente, e a sua conta pode sofrer restrições.',
+      'Não há limite por hora: um programa pode enviar quantas solicitações quiser, inclusive de geração de imagens, e elas podem conter todo o texto de um documento e imagens das suas páginas. Nenhuma das duas empresas recomenda deixar um programa usar a sua assinatura automaticamente, e a sua conta pode sofrer restrições.',
     setAiHeadlessConfirm: 'Ativar mesmo assim',
-    setAiImageCodex: 'Assinatura do Codex',
+    setAiImageCodex: 'Plano do ChatGPT (programa Codex)',
     setAiImageCodexHint:
-      'As imagens são geradas com a sua assinatura do Codex enquanto ela estiver conectada. Quando ela não puder ser usada, um provedor com chave já configurado é usado no lugar.',
+      'As imagens são geradas com o seu plano do ChatGPT (Plus ou superior) conectado ao programa Codex. A OpenAI não permite gerar imagens pela conexão direta do ChatGPT no aplicativo. Quando o Codex não puder ser usado, um provedor com chave já configurado é usado no lugar.',
+    setAiImageCodexConnect:
+      'Para gerar imagens com o seu plano do ChatGPT, conecte o programa Codex com a mesma conta do ChatGPT. A OpenAI não permite gerar imagens pela conexão direta do ChatGPT no aplicativo.',
+    setAiImageCodexConnectAction: 'Conectar o Codex',
     setAiMediaNone: 'Nenhuma seleção',
     setAiImageNoneHint:
       'Nenhum provedor foi escolhido, então é usado o primeiro capaz de gerar imagens. Se nenhum estiver configurado, a geração de imagens fica indisponível.',
@@ -8379,6 +8434,7 @@ export const strings = {
     freeStatusConnected: 'Conectado',
     freeStatusInUse: 'Conectado · em uso',
     homeAiNeedsConnection: 'Requer conexão',
+    homeEntryAiState: 'IA: {state}',
     freeUse: 'Usar esta IA',
     freeDisconnect: 'Desconectar',
     freeQuota: 'Restam {remaining} de {limit} solicitações gratuitas hoje',
@@ -8765,11 +8821,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Consente alla generazione e all’analisi di immagini, alla traduzione di PDF, alla lettura delle pagine con l’IA e alla traduzione di libri (EPUB) richieste da un comando del terminale o da un altro programma (MCP) di usare il tuo abbonamento Claude o Codex. Se disattivata, queste richieste usano solo i provider con chiave.',
     setAiHeadlessWarning:
-      'Non c’è un limite orario: un programma può inviare tutte le richieste che vuole, e queste possono contenere l’intero testo di un documento e le immagini delle sue pagine. Nessuna delle due aziende consiglia di lasciare che un programma usi automaticamente il tuo abbonamento, e il tuo account potrebbe subire limitazioni.',
+      'Non c’è un limite orario: un programma può inviare tutte le richieste che vuole, compresa la generazione di immagini, e queste possono contenere l’intero testo di un documento e le immagini delle sue pagine. Nessuna delle due aziende consiglia di lasciare che un programma usi automaticamente il tuo abbonamento, e il tuo account potrebbe subire limitazioni.',
     setAiHeadlessConfirm: 'Attiva comunque',
-    setAiImageCodex: 'Abbonamento Codex',
+    setAiImageCodex: 'Piano ChatGPT (programma Codex)',
     setAiImageCodexHint:
-      'Le immagini vengono generate con il tuo abbonamento Codex finché è connesso. Se non può essere usato, viene utilizzato al suo posto un provider con chiave già configurato.',
+      'Le immagini vengono generate con il tuo piano ChatGPT (Plus o superiore) con cui hai effettuato l’accesso al programma Codex. OpenAI non consente di generare immagini tramite la connessione diretta a ChatGPT dell’app. Se Codex non può essere usato, viene utilizzato al suo posto un provider con chiave già configurato.',
+    setAiImageCodexConnect:
+      'Per generare immagini con il tuo piano ChatGPT, collega il programma Codex con lo stesso account ChatGPT. OpenAI non consente di generare immagini tramite la connessione diretta a ChatGPT dell’app.',
+    setAiImageCodexConnectAction: 'Collega Codex',
     setAiMediaNone: 'Nessuna selezione',
     setAiImageNoneHint:
       'Non è stato scelto alcun provider, quindi viene usato il primo in grado di generare immagini. Se non ne è configurato nessuno, la generazione di immagini non è disponibile.',
@@ -8987,6 +9046,7 @@ export const strings = {
     freeStatusConnected: 'Collegato',
     freeStatusInUse: 'Collegato · in uso',
     homeAiNeedsConnection: 'Da collegare',
+    homeEntryAiState: 'IA: {state}',
     freeUse: 'Usa questa IA',
     freeDisconnect: 'Scollega',
     freeQuota: 'Oggi restano {remaining} richieste gratuite su {limit}',
@@ -9372,11 +9432,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Pozwala, aby generowanie i analiza obrazów, tłumaczenie PDF, odczyt stron przez AI oraz tłumaczenie książek (EPUB) zlecane przez polecenie terminala lub inny program (MCP) korzystały z twojej subskrypcji Claude lub Codex. Gdy opcja jest wyłączona, takie żądania korzystają wyłącznie z dostawców z kluczem.',
     setAiHeadlessWarning:
-      'Nie ma limitu godzinowego: program może wysłać dowolnie wiele żądań, a mogą one zawierać cały tekst dokumentu i obrazy jego stron. Żadna z tych dwóch firm nie zaleca, aby program automatycznie korzystał z subskrypcji, a twoje konto może zostać ograniczone.',
+      'Nie ma limitu godzinowego: program może wysłać dowolnie wiele żądań, także do generowania obrazów, a mogą one zawierać cały tekst dokumentu i obrazy jego stron. Żadna z tych dwóch firm nie zaleca, aby program automatycznie korzystał z subskrypcji, a twoje konto może zostać ograniczone.',
     setAiHeadlessConfirm: 'Włącz mimo to',
-    setAiImageCodex: 'Subskrypcja Codex',
+    setAiImageCodex: 'Plan ChatGPT (program Codex)',
     setAiImageCodexHint:
-      'Obrazy są generowane w ramach twojej subskrypcji Codex, dopóki jest połączona. Gdy nie można jej użyć, zamiast niej używany jest skonfigurowany dostawca z kluczem.',
+      'Obrazy są generowane w ramach twojego planu ChatGPT (Plus lub wyższego), na który zalogowano program Codex. OpenAI nie pozwala generować obrazów przez bezpośrednie połączenie aplikacji z ChatGPT. Gdy nie można użyć Codex, zamiast niego używany jest skonfigurowany dostawca z kluczem.',
+    setAiImageCodexConnect:
+      'Aby generować obrazy w ramach planu ChatGPT, połącz program Codex z tym samym kontem ChatGPT. OpenAI nie pozwala generować obrazów przez bezpośrednie połączenie aplikacji z ChatGPT.',
+    setAiImageCodexConnectAction: 'Połącz Codex',
     setAiMediaNone: 'Nie wybrano',
     setAiImageNoneHint:
       'Nie wybrano dostawcy, więc używany jest pierwszy, który potrafi generować obrazy. Jeśli żaden nie jest skonfigurowany, generowanie obrazów jest niedostępne.',
@@ -9592,6 +9655,7 @@ export const strings = {
     freeStatusConnected: 'Połączono',
     freeStatusInUse: 'Połączono · w użyciu',
     homeAiNeedsConnection: 'Wymaga połączenia',
+    homeEntryAiState: 'AI: {state}',
     freeUse: 'Użyj tego AI',
     freeDisconnect: 'Rozłącz',
     freeQuota: 'Pozostało dziś {remaining} z {limit} darmowych żądań',
@@ -9926,11 +9990,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Umožní, aby generování a analýza obrázků, překlad PDF, čtení stránek pomocí AI a překlad knih (EPUB) vyžádané příkazem v terminálu nebo jiným programem (MCP) běžely na vašem předplatném Claude nebo Codex. Když je volba vypnutá, tyto požadavky používají jen poskytovatele s klíčem.',
     setAiHeadlessWarning:
-      'Neexistuje žádný hodinový limit: program může poslat libovolně mnoho požadavků a ty mohou obsahovat celý text dokumentu i obrázky jeho stránek. Ani jedna z obou společností nedoporučuje, aby program používal předplatné automaticky, a váš účet může být omezen.',
+      'Neexistuje žádný hodinový limit: program může poslat libovolně mnoho požadavků, třeba na generování obrázků, a ty mohou obsahovat celý text dokumentu i obrázky jeho stránek. Ani jedna z obou společností nedoporučuje, aby program používal předplatné automaticky, a váš účet může být omezen.',
     setAiHeadlessConfirm: 'Přesto zapnout',
-    setAiImageCodex: 'Předplatné Codex',
+    setAiImageCodex: 'Tarif ChatGPT (program Codex)',
     setAiImageCodexHint:
-      'Obrázky se generují přes vaše předplatné Codex, dokud je připojené. Když ho nelze použít, použije se místo něj nastavený poskytovatel s klíčem.',
+      'Obrázky se generují přes váš tarif ChatGPT (Plus nebo vyšší), ke kterému je přihlášen program Codex. Přes přímé připojení aplikace k ChatGPT OpenAI generování obrázků nepovoluje. Když Codex nelze použít, použije se místo něj nastavený poskytovatel s klíčem.',
+    setAiImageCodexConnect:
+      'Chcete-li generovat obrázky v rámci tarifu ChatGPT, připojte program Codex se stejným účtem ChatGPT. Přes přímé připojení aplikace k ChatGPT OpenAI generování obrázků nepovoluje.',
+    setAiImageCodexConnectAction: 'Připojit Codex',
     setAiMediaNone: 'Nic nevybráno',
     setAiImageNoneHint:
       'Není vybrán žádný poskytovatel, proto se použije první, který umí generovat obrázky. Pokud není nastaven žádný, generování obrázků není dostupné.',
@@ -10143,6 +10210,7 @@ export const strings = {
     freeStatusConnected: 'Připojeno',
     freeStatusInUse: 'Připojeno · používá se',
     homeAiNeedsConnection: 'Vyžaduje připojení',
+    homeEntryAiState: 'AI: {state}',
     freeUse: 'Použít tuto AI',
     freeDisconnect: 'Odpojit',
     freeQuota: 'Dnes zbývá {remaining} z {limit} bezplatných požadavků',
@@ -10574,11 +10642,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Staat toe dat het genereren en analyseren van afbeeldingen, het vertalen van pdf’s, het lezen van pagina’s met AI en het vertalen van boeken (EPUB), aangevraagd door een terminalopdracht of een ander programma (MCP), via je Claude- of Codex-abonnement verloopt. Als dit uit staat, gebruiken zulke verzoeken alleen providers met een sleutel.',
     setAiHeadlessWarning:
-      'Er is geen limiet per uur: een programma kan zoveel verzoeken sturen als het wil, en die kunnen de volledige tekst van een document en afbeeldingen van de pagina’s bevatten. Geen van beide bedrijven raadt aan een programma je abonnement automatisch te laten gebruiken, en je account kan worden beperkt.',
+      'Er is geen limiet per uur: een programma kan zoveel verzoeken sturen als het wil, ook om afbeeldingen te genereren, en die kunnen de volledige tekst van een document en afbeeldingen van de pagina’s bevatten. Geen van beide bedrijven raadt aan een programma je abonnement automatisch te laten gebruiken, en je account kan worden beperkt.',
     setAiHeadlessConfirm: 'Toch inschakelen',
-    setAiImageCodex: 'Codex-abonnement',
+    setAiImageCodex: 'ChatGPT-abonnement (Codex-programma)',
     setAiImageCodexHint:
-      'Afbeeldingen worden gegenereerd met je Codex-abonnement zolang het verbonden is. Als het niet kan worden gebruikt, wordt in plaats daarvan een ingestelde provider met een sleutel gebruikt.',
+      'Afbeeldingen worden gegenereerd met je ChatGPT-abonnement (Plus of hoger) waarmee het Codex-programma is aangemeld. Via de directe ChatGPT-verbinding van de app staat OpenAI het genereren van afbeeldingen niet toe. Als Codex niet kan worden gebruikt, wordt in plaats daarvan een ingestelde provider met een sleutel gebruikt.',
+    setAiImageCodexConnect:
+      'Om afbeeldingen te maken met je ChatGPT-abonnement, verbind je het Codex-programma met hetzelfde ChatGPT-account. Via de directe ChatGPT-verbinding van de app staat OpenAI het genereren van afbeeldingen niet toe.',
+    setAiImageCodexConnectAction: 'Codex verbinden',
     setAiMediaNone: 'Niets geselecteerd',
     setAiImageNoneHint:
       'Er is geen provider gekozen, dus de eerste die afbeeldingen kan genereren wordt gebruikt. Als er geen is ingesteld, is het genereren van afbeeldingen niet beschikbaar.',
@@ -10792,6 +10863,7 @@ export const strings = {
     freeStatusConnected: 'Verbonden',
     freeStatusInUse: 'Verbonden · in gebruik',
     homeAiNeedsConnection: 'Verbinding nodig',
+    homeEntryAiState: 'AI: {state}',
     freeUse: 'Deze AI gebruiken',
     freeDisconnect: 'Verbinding verbreken',
     freeQuota: 'Nog {remaining} van {limit} gratis verzoeken over vandaag',
@@ -11178,11 +11250,14 @@ export const strings = {
     setAiHeadlessDesc:
       'Membenarkan penjanaan imej, analisis imej, terjemahan PDF, pembacaan halaman dengan AI dan terjemahan buku (EPUB) yang diminta oleh arahan terminal atau program lain (MCP) dijalankan dengan langganan Claude atau Codex anda. Apabila dimatikan, permintaan tersebut hanya menggunakan penyedia berasaskan kunci.',
     setAiHeadlessWarning:
-      'Tiada had sejam, jadi program boleh menghantar seberapa banyak permintaan yang dikehendaki, dan permintaan itu mungkin mengandungi seluruh teks dokumen serta imej halamannya. Kedua-dua syarikat tidak mengesyorkan program menggunakan langganan anda secara automatik, dan akaun anda mungkin dihadkan.',
+      'Tiada had sejam, jadi program boleh menghantar seberapa banyak permintaan yang dikehendaki, termasuk penjanaan imej, dan permintaan itu mungkin mengandungi seluruh teks dokumen serta imej halamannya. Kedua-dua syarikat tidak mengesyorkan program menggunakan langganan anda secara automatik, dan akaun anda mungkin dihadkan.',
     setAiHeadlessConfirm: 'Hidupkan juga',
-    setAiImageCodex: 'Langganan Codex',
+    setAiImageCodex: 'Pelan ChatGPT (program Codex)',
     setAiImageCodexHint:
-      'Imej dijana dengan langganan Codex anda selagi langganan itu disambungkan. Apabila langganan itu tidak dapat digunakan, penyedia berasaskan kunci yang telah disediakan digunakan sebagai ganti.',
+      'Imej dijana dengan pelan ChatGPT anda (Plus atau lebih tinggi) yang dilog masuk dalam program Codex. OpenAI tidak membenarkan penjanaan imej melalui sambungan ChatGPT terus dalam aplikasi. Apabila Codex tidak dapat digunakan, penyedia berasaskan kunci yang telah disediakan digunakan sebagai ganti.',
+    setAiImageCodexConnect:
+      'Untuk menjana imej dengan pelan ChatGPT anda, sambungkan program Codex dengan akaun ChatGPT yang sama. OpenAI tidak membenarkan penjanaan imej melalui sambungan ChatGPT terus dalam aplikasi.',
+    setAiImageCodexConnectAction: 'Sambungkan Codex',
     setAiMediaNone: 'Tiada pilihan',
     setAiImageNoneHint:
       'Tiada penyedia dipilih, maka penyedia pertama yang boleh menjana imej digunakan. Jika tiada yang disediakan, penjanaan imej tidak tersedia.',
@@ -11400,6 +11475,7 @@ export const strings = {
     freeStatusConnected: 'Disambungkan',
     freeStatusInUse: 'Disambungkan · sedang digunakan',
     homeAiNeedsConnection: 'Perlu disambungkan',
+    homeEntryAiState: 'AI: {state}',
     freeUse: 'Guna AI ini',
     freeDisconnect: 'Putuskan sambungan',
     freeQuota: '{remaining} daripada {limit} permintaan percuma lagi hari ini',
@@ -11777,11 +11853,14 @@ export const strings = {
     setAiHeadlessDesc:
       'מאפשר ליצירת תמונות, לניתוח תמונות, לתרגום PDF, לקריאת עמודים בעזרת AI ולתרגום ספרים (EPUB) שמבקשים פקודת מסוף או תוכנה אחרת (MCP) לפעול דרך מינוי Claude או Codex שלכם. כשהאפשרות כבויה, בקשות כאלה משתמשות רק בספקים עם מפתח.',
     setAiHeadlessWarning:
-      'אין מגבלה שעתית, ולכן תוכנה יכולה לשלוח כמה בקשות שתרצה, והן עשויות לכלול את כל הטקסט של מסמך ותמונות של עמודיו. אף אחת משתי החברות אינה ממליצה לאפשר לתוכנה להשתמש במינוי באופן אוטומטי, והחשבון שלכם עלול להיות מוגבל.',
+      'אין מגבלה שעתית, ולכן תוכנה יכולה לשלוח כמה בקשות שתרצה, כולל יצירת תמונות, והן עשויות לכלול את כל הטקסט של מסמך ותמונות של עמודיו. אף אחת משתי החברות אינה ממליצה לאפשר לתוכנה להשתמש במינוי באופן אוטומטי, והחשבון שלכם עלול להיות מוגבל.',
     setAiHeadlessConfirm: 'להפעיל בכל זאת',
-    setAiImageCodex: 'מינוי Codex',
+    setAiImageCodex: 'תוכנית ChatGPT (תוכנת Codex)',
     setAiImageCodexHint:
-      'תמונות נוצרות דרך מינוי Codex שלכם כל עוד הוא מחובר. כשאי אפשר להשתמש בו, נעשה במקומו שימוש בספק עם מפתח שהוגדר.',
+      'תמונות נוצרות דרך תוכנית ה-ChatGPT שלכם (Plus ומעלה) שאיתה מחוברת תוכנת Codex. OpenAI לא מאפשרת ליצור תמונות דרך החיבור הישיר של האפליקציה ל-ChatGPT. כשאי אפשר להשתמש ב-Codex, נעשה במקומה שימוש בספק עם מפתח שהוגדר.',
+    setAiImageCodexConnect:
+      'כדי ליצור תמונות עם תוכנית ה-ChatGPT שלכם, חברו את תוכנת Codex עם אותו חשבון ChatGPT. OpenAI לא מאפשרת ליצור תמונות דרך החיבור הישיר של האפליקציה ל-ChatGPT.',
+    setAiImageCodexConnectAction: 'חיבור Codex',
     setAiMediaNone: 'לא נבחר דבר',
     setAiImageNoneHint:
       'לא נבחר ספק, ולכן נעשה שימוש בספק הראשון שמסוגל ליצור תמונות. אם לא הוגדר אף ספק, יצירת תמונות אינה זמינה.',
@@ -11983,6 +12062,7 @@ export const strings = {
     freeStatusConnected: 'מחובר',
     freeStatusInUse: 'מחובר · בשימוש',
     homeAiNeedsConnection: 'נדרש חיבור',
+    homeEntryAiState: 'בינה מלאכותית: {state}',
     freeUse: 'שימוש ב-AI הזה',
     freeDisconnect: 'ניתוק',
     freeQuota: 'נותרו היום {remaining} מתוך {limit} בקשות בחינם',
@@ -12363,11 +12443,14 @@ export const strings = {
     setAiHeadlessDesc:
       'टर्मिनल कमांड या किसी अन्य प्रोग्राम (MCP) द्वारा माँगे गए इमेज जनरेशन, इमेज विश्लेषण, PDF अनुवाद, AI से पेज पढ़ने और पुस्तक (EPUB) अनुवाद को आपकी Claude या Codex सदस्यता पर चलने देता है। बंद होने पर ऐसे अनुरोध केवल कुंजी वाले प्रदाताओं का उपयोग करते हैं।',
     setAiHeadlessWarning:
-      'प्रति घंटे की कोई सीमा नहीं है, इसलिए कोई प्रोग्राम जितने चाहे उतने अनुरोध भेज सकता है, और उनमें दस्तावेज़ का पूरा टेक्स्ट और उसके पेजों की छवियाँ शामिल हो सकती हैं। दोनों में से कोई भी कंपनी यह सुझाव नहीं देती कि कोई प्रोग्राम आपकी सदस्यता का अपने-आप उपयोग करे, और आपके खाते पर प्रतिबंध लग सकता है।',
+      'प्रति घंटे की कोई सीमा नहीं है, इसलिए कोई प्रोग्राम इमेज जनरेशन समेत जितने चाहे उतने अनुरोध भेज सकता है, और उनमें दस्तावेज़ का पूरा टेक्स्ट और उसके पेजों की छवियाँ शामिल हो सकती हैं। दोनों में से कोई भी कंपनी यह सुझाव नहीं देती कि कोई प्रोग्राम आपकी सदस्यता का अपने-आप उपयोग करे, और आपके खाते पर प्रतिबंध लग सकता है।',
     setAiHeadlessConfirm: 'फिर भी चालू करें',
-    setAiImageCodex: 'Codex सदस्यता',
+    setAiImageCodex: 'ChatGPT प्लान (Codex प्रोग्राम)',
     setAiImageCodexHint:
-      'जब तक आपकी Codex सदस्यता कनेक्ट है, इमेज उसी से बनाई जाती हैं। जब उसका उपयोग नहीं हो सकता, तो उसकी जगह सेट किया गया कुंजी वाला प्रदाता उपयोग होता है।',
+      'इमेज उस ChatGPT प्लान (Plus या उससे ऊपर) से बनाई जाती हैं जिससे Codex प्रोग्राम में साइन इन किया गया है। ऐप के सीधे ChatGPT कनेक्शन से OpenAI इमेज बनाने की अनुमति नहीं देता। जब Codex का उपयोग नहीं हो सकता, तो उसकी जगह सेट किया गया कुंजी वाला प्रदाता उपयोग होता है।',
+    setAiImageCodexConnect:
+      'अपने ChatGPT प्लान से इमेज बनाने के लिए, उसी ChatGPT खाते से Codex प्रोग्राम कनेक्ट करें। ऐप के सीधे ChatGPT कनेक्शन से OpenAI इमेज बनाने की अनुमति नहीं देता।',
+    setAiImageCodexConnectAction: 'Codex कनेक्ट करें',
     setAiMediaNone: 'कोई चयन नहीं',
     setAiImageNoneHint:
       'कोई प्रदाता नहीं चुना गया है, इसलिए इमेज बना सकने वाला पहला प्रदाता उपयोग होता है। यदि कोई भी सेट नहीं है, तो इमेज जनरेशन उपलब्ध नहीं है।',
@@ -12579,6 +12662,7 @@ export const strings = {
     freeStatusConnected: 'कनेक्ट है',
     freeStatusInUse: 'कनेक्ट है · उपयोग में',
     homeAiNeedsConnection: 'कनेक्ट करना ज़रूरी',
+    homeEntryAiState: 'AI: {state}',
     freeUse: 'यह AI उपयोग करें',
     freeDisconnect: 'डिस्कनेक्ट करें',
     freeQuota: 'आज {limit} में से {remaining} मुफ़्त अनुरोध बचे हैं',
@@ -12946,11 +13030,14 @@ export const strings = {
     setAiHeadlessDesc:
       '允許由終端機指令或其他程式（MCP）發起的生圖、圖片解析、PDF 翻譯、AI 頁面讀取和書籍（EPUB）翻譯使用你的 Claude 或 Codex 訂閱。關閉時，這類請求只使用 key 方式的服務商。',
     setAiHeadlessWarning:
-      '沒有每小時次數上限，程式可以傳送任意多的請求，請求中可能包含整份文件的文字和頁面圖片。兩家公司都不建議讓程式自動使用訂閱，你的帳號可能會受到限制。',
+      '沒有每小時次數上限，程式可以傳送任意多的請求（例如生圖），請求中可能包含整份文件的文字和頁面圖片。兩家公司都不建議讓程式自動使用訂閱，你的帳號可能會受到限制。',
     setAiHeadlessConfirm: '仍要開啟',
-    setAiImageCodex: 'Codex 訂閱',
+    setAiImageCodex: 'ChatGPT 方案（Codex 程式）',
     setAiImageCodexHint:
-      'Codex 訂閱已連線時，會用該訂閱產生圖片。無法使用時，改用已設定好的 key 方式服務商。',
+      '用登入了 Codex 程式的 ChatGPT 方案（Plus 以上）產生圖片。OpenAI 不允許透過本應用程式直接連線的 ChatGPT 產生圖片。Codex 無法使用時，改用已設定好的 key 方式服務商。',
+    setAiImageCodexConnect:
+      '要用 ChatGPT 方案產生圖片，請用同一個 ChatGPT 帳號連線 Codex 程式。OpenAI 不允許透過本應用程式直接連線的 ChatGPT 產生圖片。',
+    setAiImageCodexConnectAction: '連線 Codex',
     setAiMediaNone: '未選擇',
     setAiImageNoneHint:
       '未選擇服務商，因此使用第一個能夠產生圖片的服務商。如果都未設定，則無法產生圖片。',
@@ -13147,6 +13234,7 @@ export const strings = {
     freeStatusConnected: '已連線',
     freeStatusInUse: '已連線 · 使用中',
     homeAiNeedsConnection: '需要連線',
+    homeEntryAiState: 'AI：{state}',
     freeUse: '使用此 AI',
     freeDisconnect: '中斷連線',
     freeQuota: '今日免費請求剩餘 {remaining} 次（共 {limit} 次）',

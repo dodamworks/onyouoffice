@@ -2,7 +2,9 @@
 
 ## Apertura delle impostazioni
 
-La riga in basso a sinistra in Home apre il pannello delle impostazioni (finché non è collegata un'IA riporta Collega l’IA). Ha cinque sezioni: Account, IA, Generale, Integrazioni e Informazioni.
+La riga in basso a sinistra in Home apre il pannello delle impostazioni (la riga sotto indica se è collegata un'IA). Ha cinque sezioni: Account, IA, Generale, Integrazioni e Informazioni.
+
+Puoi aprirle anche da qualsiasi scheda con **⌘,** (Ctrl+, su Windows e Linux), da **Impostazioni…** nel menu dell’app su un Mac (il menu con il nome dell’app, a sinistra nella barra dei menu) o da **Menu (☰) ▸ Impostazioni…** su Windows e Linux. In una scheda Word ⌘, (Ctrl+,) è il pedice, quindi lì aprile dal menu.
 
 **Account** mostra a che punto sono le tue connessioni Claude, ChatGPT e Codex, e **Gestisci connessioni** porta alla sezione IA. L'IA ha i suoi articoli: [Connessione con abbonamento](help://subscription) e [Modelli IA e impostazioni](help://ai-models).
 
@@ -59,7 +61,7 @@ Le impostazioni possono registrare GenOffice come gestore dei file .docx / .xlsx
 ## Note sul software di terze parti e aggiornamenti
 
 - Aiuto ▸ Note sul software di terze parti: l'elenco completo delle licenze open source incluso nell'app.
-- Menu (☰) ▸ Controlla aggiornamenti… (su un Mac, Aiuto ▸ Controlla aggiornamenti…): avvia un controllo manuale; se c'è una versione più recente ti propone di installarla.
+- Menu (☰) ▸ Controlla aggiornamenti… (su un Mac, Aiuto ▸ Controlla aggiornamenti…): avvia un controllo manuale; se c'è una versione più recente ti propone di installarla. Su un Mac si trova anche nel menu dell’app, subito sotto Informazioni su GenOffice.
 
 ## Integrazione MCP (per utenti avanzati / client IA)
 

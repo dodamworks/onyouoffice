@@ -2,7 +2,9 @@
 
 ## Instellingen openen
 
-De regel linksonder op Start opent het instellingenpaneel (er staat AI koppelen tot er een AI is verbonden). Het paneel heeft vijf secties: Account, AI, Algemeen, Integraties en Over.
+De regel linksonder op Start opent het instellingenpaneel (de regel eronder laat zien of er een AI is verbonden). Het paneel heeft vijf secties: Account, AI, Algemeen, Integraties en Over.
+
+Je kunt ze ook vanuit elk tabblad openen met **⌘,** (Ctrl+, op Windows en Linux), op een Mac via **Instellingen…** in het app-menu (het menu met de naam van de app, links in de menubalk) of op Windows en Linux via **Menu (☰) ▸ Instellingen…**. In een Word-tabblad is ⌘, (Ctrl+,) subscript, dus open ze daar via het menu.
 
 **Account** laat zien hoe het met je verbindingen met Claude, ChatGPT en Codex staat, en **Verbindingen beheren** brengt je naar de sectie AI. Over AI zijn er eigen artikelen: [Abonnementsverbinding](help://subscription) en [AI-modellen en instellingen](help://ai-models).
 
@@ -59,7 +61,7 @@ Met de instellingen kun je GenOffice registreren als verwerker van .docx / .xlsx
 ## Mededelingen over software van derden en updates
 
 - Help ▸ Kennisgevingen over software van derden: het volledige overzicht van opensourcelicenties dat met de app is meegeleverd.
-- Menu (☰) ▸ Controleren op updates… (op een Mac Help ▸ Controleren op updates…): start een handmatige controle; bij een nieuwere versie wordt je gevraagd die te installeren.
+- Menu (☰) ▸ Controleren op updates… (op een Mac Help ▸ Controleren op updates…): start een handmatige controle; bij een nieuwere versie wordt je gevraagd die te installeren. Op een Mac staat het ook in het app-menu, direct onder Over GenOffice.
 
 ## MCP-integratie (voor gevorderde gebruikers / AI-clients)
 

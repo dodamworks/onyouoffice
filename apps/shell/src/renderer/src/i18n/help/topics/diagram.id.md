@@ -36,7 +36,7 @@ Editor diagram membuka file draw.io di sebuah tab. Anda bisa menggambar diagram 
 
 - Minta AI menggambar diagram alir, diagram urutan, atau bagan organisasi, menjelaskan diagram, merapikan sebuah halaman, atau menambahkan langkah berikutnya setelah bentuk yang Anda pilih.
 - AI membaca diagram sebagai teks: halaman-halamannya, dan untuk setiap bentuk dan konektor, id, teks, jenis bentuk, posisi, dan sambungannya, ditambah bentuk mana yang Anda pilih. AI tidak melihat diagram sebagai gambar.
-- Perubahan dari AI langsung terlihat. Setiap perubahan adalah satu langkah urungkan (Ctrl+Z), dan daftar giliran di panel membatalkan satu giliran AI secara utuh. Jika ada bagian perubahan yang ditolak, diagram tetap seperti semula.
+- Perubahan dari AI langsung terlihat. Setiap perubahan adalah satu langkah urungkan (Ctrl+Z), bentuk dan konektor yang diubah AI diberi garis tepi kuning, dan **Batalkan perubahan ini** pada kartu di bawah balasannya membatalkan satu giliran AI secara utuh. Jika ada bagian perubahan yang ditolak, diagram tetap seperti semula.
 - Untuk diagram alir baru, diagram urutan, atau yang serupa, AI menulis Mermaid lalu GenOffice mengubahnya menjadi bentuk di PC Anda. Tata letaknya bisa sedikit berbeda dari hasil situs web draw.io.
 - Diagram juga dapat dilampirkan di panel AI editor lain, dipilih dengan `@`, dan ditemukan lewat pencarian file di Beranda. [Perintah terminal](help://cli) juga dapat membaca, menyunting, dan membuat diagram (`ieumoffice diagram read`, `ieumoffice diagram apply`, `ieumoffice create --type drawio`).
 

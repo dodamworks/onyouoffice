@@ -49,6 +49,12 @@ let recordNames = { key: '', names: new Set() }
 /** Settles when the start-up look at the PC's fonts is over, however it ended. */
 let settled = Promise.resolve()
 /**
+ * The studio's work on the document's fonts that a font change set off (noteFontsApplying),
+ * while the change is being told; null when it set none off.
+ * @type {null | Promise<unknown>}
+ */
+let applying = null
+/**
  * The words a missing font is marked with, in the app's language (setMissingFontLabels).
  * @type {null | { tag: string, hint: string }}
  */
@@ -132,7 +138,14 @@ async function refresh(studio) {
     await studio.detect()
     // the PC's fonts changed: an equation font may have come or gone
     forgetEquationFonts()
+    // The studio hears of the change at once and works the document's fonts out again on
+    // its own time: until then its substitution and its lookup of a document's font name
+    // answer as before the look, so the look is over only once that work is.
+    applying = null
     studio.changed()
+    const work = applying
+    applying = null
+    if (work) await work.catch(() => {})
     return true
   } catch (error) {
     console.warn('[pc-fonts] PC font list not refreshed; the kept list stays:', error)
@@ -140,9 +153,47 @@ async function refresh(studio) {
   }
 }
 
+/**
+ * Takes the work the studio starts on the document's fonts when told the PC's fonts changed
+ * (the studio-pc-fonts patch hands it over from the studio's own listener) and gives it back.
+ */
+export function noteFontsApplying(work) {
+  applying = Promise.resolve(work)
+  return work
+}
+
 /** Hands over what the studio knows of the PC's fonts; the studio-pc-fonts patch calls it at start-up. */
 export function installFontPresence(probe) {
   presence = probe
+}
+
+/** How long a print waits for the start-up look at the PC's fonts before it goes on. */
+export const PRINT_FONTS_WAIT_MS = 30_000
+
+/**
+ * Whether the pages for print can be drawn in the fonts the screen shows (print-fonts.mjs),
+ * once the start-up look at the PC's fonts is over: a print asked for in the first seconds
+ * of a document would otherwise go out in the engine's fonts. A page that is not shown (a
+ * headless export, a tab behind another) is never given the PC's list, so it is answered
+ * at once; a look that takes longer than `wait` ms is not waited for further.
+ */
+export async function printFontsReady({
+  wait = PRINT_FONTS_WAIT_MS,
+  doc = globalThis.document,
+} = {}) {
+  if (doc?.visibilityState && doc.visibilityState !== 'visible') return pcFontsKnown()
+  let timer
+  try {
+    await Promise.race([
+      settled.catch(() => {}),
+      new Promise((resolve) => {
+        timer = setTimeout(resolve, wait)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+  return pcFontsKnown()
 }
 
 /** Resolves once the start-up look at the PC's fonts is over. */
@@ -295,4 +346,9 @@ const ENGINE_FONT_ALIAS = /^__rhwp_(?:ttf|intrinsic)__/
  */
 export function isEngineFontAlias(name) {
   return typeof name === 'string' && ENGINE_FONT_ALIAS.test(name)
+}
+
+/** The document's font name an engine alias stands for (`__rhwp_ttf__함초롬바탕` → 함초롬바탕). */
+export function engineAliasTarget(name) {
+  return isEngineFontAlias(name) ? name.replace(ENGINE_FONT_ALIAS, '') : null
 }

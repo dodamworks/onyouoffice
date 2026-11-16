@@ -37,10 +37,6 @@ export const ru = {
   aiRetry: 'Повторить',
   aiCopyReplyTitle: 'Копировать ответ',
   aiRegenerateTitle: 'Создать заново',
-  aiTurnsTitle: 'Отменить ход ИИ',
-  aiRollback: 'Откатить',
-  aiRollbackIncomplete:
-    'Часть этого хода не удалось отменить: после него диаграмма изменилась. Воспользуйтесь отменой в редакторе.',
   aiUnknownError: 'Сбой запроса ИИ, попробуйте ещё раз',
   aiTimeoutError: 'Тайм-аут ответа ИИ',
   aiCreditsExhausted: 'Кредиты закончились — пополните баланс у поставщика ИИ',

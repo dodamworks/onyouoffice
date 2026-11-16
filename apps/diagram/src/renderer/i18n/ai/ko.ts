@@ -36,10 +36,6 @@ export const ko = {
   aiRetry: '다시 시도',
   aiCopyReplyTitle: '답변 복사',
   aiRegenerateTitle: '다시 생성',
-  aiTurnsTitle: 'AI 차례 되돌리기',
-  aiRollback: '되돌리기',
-  aiRollbackIncomplete:
-    '그 차례의 일부를 되돌리지 못했습니다. 그 뒤에 다이어그램이 바뀌었습니다. 편집기의 실행 취소를 쓰세요.',
   aiUnknownError: 'AI 요청이 실패했습니다. 다시 시도하세요',
   aiTimeoutError: 'AI 응답 시간 초과',
   aiCreditsExhausted: '크레딧이 부족합니다. 사용 중인 AI 제공업체에서 충전하세요',

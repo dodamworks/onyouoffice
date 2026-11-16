@@ -665,8 +665,10 @@ export interface MarkdownApi {
   /** Download an image URL in the main process (CORS-free, scheme/target validated) */
   fetchImage(url: string): Promise<{ base64: string; mime: string } | null>
   /** AI image generation through the configured image route (markdown-owned channel) */
-  aiGenerateImage(op: { prompt: string; aspectRatio?: string }): Promise<{
+  aiGenerateImage(op: { prompt: string; aspectRatio?: string; model?: string }): Promise<{
     url?: string
     error?: string
+    /** the shared tool's remark for the model (e.g. Codex picked the image model) */
+    note?: string
   }>
 }

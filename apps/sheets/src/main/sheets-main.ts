@@ -68,6 +68,7 @@ import {
   showOpenDialogWithMemory,
   showSaveDialogWithMemory,
   helpMenuTemplate,
+  macAppMenuTemplate,
   viewMenuTemplate,
   windowMenuTemplate,
   installRendererProtocol,
@@ -4007,9 +4008,11 @@ export function registerSheetsIpc(): void {
   // owns its channel the way pdf does.
   ipcMain.handle(
     IPC_CHANNELS.aiGenerateImage,
-    (event, op: { prompt?: unknown; aspectRatio?: unknown }) =>
+    (event, op: { prompt?: unknown; aspectRatio?: unknown; model?: unknown }) => {
+      // the model the user named, as given: the shared tool decides whether the route offers it
+      const model = typeof op?.model === 'string' ? op.model.trim() : ''
       // ends with its tab, or when the tab's AI run is stopped; refused while AI is turned off
-      screenMediaCall(
+      return screenMediaCall(
         event.sender,
         (signal) =>
           generateImageTool(
@@ -4017,6 +4020,7 @@ export function registerSheetsIpc(): void {
             {
               prompt: String(op?.prompt ?? ''),
               ...(op?.aspectRatio ? { aspectRatio: String(op.aspectRatio) } : {}),
+              ...(model ? { model } : {}),
             },
             {
               mediaRoots: sheetsMediaRoots(event.sender.id),
@@ -4025,7 +4029,8 @@ export function registerSheetsIpc(): void {
             },
           ),
         (error) => ({ error, errorCode: 'unavailable' as const }),
-      ),
+      )
+    },
   )
 
   // What the image and search tools can do right now. Registered here for the
@@ -6657,7 +6662,7 @@ function installApplicationMenu(): void {
   const labels = appMenuLabels(getUiLang())
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
-      ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
+      ...(process.platform === 'darwin' ? [macAppMenuTemplate(labels)] : []),
       {
         label: tm('menuFile'),
         submenu: [

@@ -91,8 +91,6 @@ export const es = {
   aiStopGeneration: 'Detener generación',
   aiStop: 'Detener',
   aiSend: 'Enviar',
-  aiSnapshotsTitle: 'Instantáneas de versión',
-  aiRollback: 'Revertir',
   aiStarterPolishTitle: 'Mejorar el título y el texto de esta diapositiva',
   aiStarterTighten: 'Hacer más concisas las viñetas de esta diapositiva',
   aiStarterProofread: 'Revisar y corregir las erratas de toda la presentación',

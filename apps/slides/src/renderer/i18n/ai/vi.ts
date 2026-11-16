@@ -90,8 +90,6 @@ export const vi = {
   aiStopGeneration: 'Dừng tạo',
   aiStop: 'Dừng',
   aiSend: 'Gửi',
-  aiSnapshotsTitle: 'Bản chụp nhanh',
-  aiRollback: 'Hoàn nguyên',
   aiStarterPolishTitle: 'Cải thiện tiêu đề và nội dung trang chiếu này',
   aiStarterTighten: 'Làm cho các gạch đầu dòng của trang chiếu này ngắn gọn hơn',
   aiStarterProofread: 'Kiểm tra lỗi chính tả trên toàn bộ bản trình bày và sửa lại',

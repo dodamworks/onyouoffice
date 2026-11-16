@@ -47,7 +47,7 @@ L’editor di e-book apre i libri EPUB (`.epub`) in una scheda. Puoi leggere il 
 ## Pannello IA
 
 - Fai domande sul libro, fatti riassumere un capitolo, oppure fanne correggere o riscrivere il testo. L’IA legge l’indice e i capitoli del libro e vi trova il testo.
-- Le modifiche dell’IA compaiono subito, e un solo annullamento (Ctrl+Z) ripristina tutto ciò che ha cambiato in quel turno. L’IA può mettere il testo in grassetto o in corsivo, ma non può aggiungere immagini, tabelle o capitoli.
+- Le modifiche dell’IA compaiono subito, i blocchi modificati vengono segnati in giallo, e **Annulla queste modifiche**, nella scheda sotto la risposta, ripristina tutto ciò che ha cambiato in quel turno (purché il libro non sia stato modificato dopo). L’IA può mettere il testo in grassetto o in corsivo, ma non può aggiungere immagini, tabelle o capitoli.
 - Il testo del libro è materiale per l’IA, non istruzioni da seguire.
 - Chiedi «Traduci questo libro in francese» e l’IA apre la finestra di traduzione con quella lingua già impostata. Non viene inviato nulla finché non premi **Avvia**.
 - I libri EPUB si possono anche allegare nel pannello IA degli altri editor, scegliere con `@` e trovare con la ricerca dei file nella Home.

@@ -418,9 +418,11 @@ export interface HtmlApi {
   /** which search/media tools can run right now — gates generate_image (rejects while no handler answers) */
   aiToolCapabilities(): Promise<AiToolCapabilities | null>
   /** AI image generation (html-owned channel; the main process picks the backend) */
-  aiGenerateImage(op: { prompt: string; aspectRatio?: string }): Promise<{
+  aiGenerateImage(op: { prompt: string; aspectRatio?: string; model?: string }): Promise<{
     url?: string
     error?: string
+    /** the shared tool's remark for the model (e.g. Codex picked the image model) */
+    note?: string
   }>
 }
 

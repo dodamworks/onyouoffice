@@ -89,8 +89,6 @@ export const pl = {
   aiStopGeneration: 'Zatrzymaj generowanie',
   aiStop: 'Zatrzymaj',
   aiSend: 'Wyślij',
-  aiSnapshotsTitle: 'Migawki wersji',
-  aiRollback: 'Przywróć',
   aiStarterPolishTitle: 'Popraw tytuł i tekst tego slajdu',
   aiStarterTighten: 'Skróć punkty tego slajdu, aby były zwięźlejsze',
   aiStarterProofread: 'Sprawdź literówki w całej prezentacji i popraw je',

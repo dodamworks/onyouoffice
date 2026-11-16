@@ -58,6 +58,7 @@ import type {
   AiSearchSettings,
   AiSettings,
   AiSubscriptionProviderId,
+  AiSubscriptionStatuses,
 } from '@genoffice/ai-provider'
 import { useI18n } from './locale'
 import type { StringKey, TFunc } from './locale'
@@ -87,6 +88,7 @@ import {
   advancedPaneUseChoice,
   advancedProviderIds,
   changeAiSettings,
+  chatGptImageConnectShown,
   initialAdvancedProvider,
   mediaKeyProviders,
   mediaSelection,
@@ -1037,14 +1039,16 @@ const DECISION_ENDPOINTS: { value: DecisionEndpoint; label: string }[] = [
  * and base URL are stored once and shared by every block that picks it.
  * Saved into the same ai-settings.json as the chat provider.
  *
- * The media blocks also offer what needs no key: the Codex subscription for
- * image generation (only in a build that can do it), the chat AI itself for
- * image analysis, and nothing at all.
+ * The media blocks also offer what needs no key: the ChatGPT plan through the
+ * Codex program for image generation (only in a build that can do it), the
+ * chat AI itself for image analysis, and nothing at all.
  */
 function AiMediaPane({
   t,
   lang,
   codexImageAvailable,
+  statuses,
+  onShowCodex,
   onFileSearchChange,
   focusBlock,
 }: {
@@ -1052,6 +1056,10 @@ function AiMediaPane({
   lang: Lang
   /** the main process can generate images through the Codex subscription */
   codexImageAvailable: boolean
+  /** the live subscription statuses, for the line about the ChatGPT plan */
+  statuses: AiSubscriptionStatuses
+  /** bring up the Codex card, the existing place to connect Codex */
+  onShowCodex: () => void
   onFileSearchChange?: () => void
   focusBlock?: TestedBlock
 }) {
@@ -1062,6 +1070,8 @@ function AiMediaPane({
     () => window.aiOffice.getAiSearchProviders?.() ?? [],
   )
   const [settings, setSettings] = useState<AiSettings | null>(null)
+  /** the tool report's word on image generation; null until it answered */
+  const [imageAvailable, setImageAvailable] = useState<boolean | null>(null)
   const [fileSearch, setFileSearchState] = useState<FileSearchSettings | null>(null)
   const [dirty, setDirty] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -1104,6 +1114,29 @@ function AiMediaPane({
       off?.()
     }
   }, [])
+
+  // The tool report decides the ChatGPT plan line, not the stored selection: read it
+  // again whenever a status or the saved settings change what it would say.
+  useEffect(() => {
+    let alive = true
+    // only the latest read lands: an earlier answer arriving late says nothing about now
+    let seq = 0
+    const read = () => {
+      const mine = ++seq
+      const land = (available: boolean | null) => {
+        if (alive && mine === seq) setImageAvailable(available)
+      }
+      void Promise.resolve(window.aiOffice.aiToolCapabilities?.())
+        .then((report) => land(report ? report.imageGeneration.available : null))
+        .catch(() => land(null))
+    }
+    read()
+    const off = window.aiOffice.onAiSettingsChanged?.(read)
+    return () => {
+      alive = false
+      off?.()
+    }
+  }, [statuses])
 
   if (!settings?.media || !settings.search) return null
   const media: AiMediaSettings = settings.media
@@ -1468,6 +1501,16 @@ function AiMediaPane({
           {meta ? meta.description : specialHint(cap, current as MediaSpecialChoice)}
         </div>
         {specials.includes('codex') && <AiCodexNotice lang={lang} />}
+        {cap === 'image' && chatGptImageConnectShown(statuses, imageAvailable) && (
+          <div className="set-field" data-image-codex-connect="">
+            <div className="set-field-text">
+              <div className="set-field-desc">{t('setAiImageCodexConnect')}</div>
+            </div>
+            <button type="button" className="set-btn" onClick={onShowCodex}>
+              {t('setAiImageCodexConnectAction')}
+            </button>
+          </div>
+        )}
         {meta && (
           <>
             {modelRow(
@@ -1963,7 +2006,7 @@ export function SettingsModal({
                         lang={lang}
                         connection={connection}
                         openTab={section === 'aiMedia' ? 'media' : undefined}
-                        advanced={(tab) =>
+                        advanced={(tab, showCard) =>
                           tab === 'model' ? (
                             <AiModelPane t={t} onCliPathSaved={connection.recheck} />
                           ) : (
@@ -1971,6 +2014,8 @@ export function SettingsModal({
                               t={t}
                               lang={lang}
                               codexImageAvailable={connection.codexImageAvailable}
+                              statuses={connection.statuses}
+                              onShowCodex={() => showCard('codex')}
                               onFileSearchChange={onFileSearchChange}
                               focusBlock={target?.block}
                             />

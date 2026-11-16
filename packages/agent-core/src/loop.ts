@@ -366,6 +366,49 @@ export function coerceArgumentFields(
 }
 
 /**
+ * Walks a tool call's input beside the tool's JSON Schema, outside in: `visit` gets the
+ * input itself (path `''`) and then every value under it that the schema declares, through
+ * `properties` and single-schema `items` at any depth (`styles[0].size`). What `visit`
+ * returns stands in for the value, and the walk goes on into that; a key the schema does
+ * not declare is neither visited nor touched, so a skill that wants to rename or refuse
+ * one does it when it is handed the object that holds it. Untouched input comes back as
+ * the same object. This is the mechanism only: unlike coerceArgumentFields it repairs
+ * nothing by itself, and it is not part of the loop's own checks.
+ */
+export function walkArgumentFields(
+  tool: AgentToolDef | undefined,
+  input: Record<string, unknown>,
+  visit: (value: unknown, schema: Record<string, unknown>, path: string) => unknown,
+): Record<string, unknown> {
+  const walk = (value: unknown, schema: unknown, path: string): unknown => {
+    if (!isPlainRecord(schema)) return value
+    const seen = visit(value, schema, path)
+    if (Array.isArray(seen)) {
+      let out: unknown[] = seen
+      seen.forEach((item, index) => {
+        const next = walk(item, schema.items, `${path}[${index}]`)
+        if (next === item) return
+        if (out === seen) out = [...seen]
+        out[index] = next
+      })
+      return out
+    }
+    if (!isPlainRecord(seen) || !isPlainRecord(schema.properties)) return seen
+    let out = seen
+    for (const [key, declared] of Object.entries(schema.properties)) {
+      if (!Object.hasOwn(seen, key)) continue
+      const next = walk(seen[key], declared, path ? `${path}.${key}` : key)
+      if (next === seen[key]) continue
+      if (out === seen) out = { ...seen }
+      out[key] = next
+    }
+    return out
+  }
+  const walked = walk(input, tool?.inputSchema, '')
+  return isPlainRecord(walked) ? walked : input
+}
+
+/**
  * Degenerate-loop guards. Weak models (BYOK/local endpoints especially) can
  * repeat the exact same turn forever or keep issuing failing tool calls; with
  * a large turn budget these must abort early instead of burning it.
@@ -405,18 +448,18 @@ export const TOOLS_UNAVAILABLE_NOTE =
 export const TOOL_ABORTED_OUTPUT =
   '(the user stopped the run while this tool was still executing; its result was discarded)'
 
-const TOOL_ABORTED = Symbol('tool-aborted')
+const ABORTED = Symbol('aborted')
 
-async function awaitToolOrAbort(
-  tool: ToolExecution | Promise<ToolExecution>,
+async function awaitOrAbort<T>(
+  work: T | Promise<T>,
   signal: AbortSignal | undefined,
-): Promise<ToolExecution | typeof TOOL_ABORTED> {
-  if (!signal) return tool
-  if (signal.aborted) return TOOL_ABORTED
-  const running = Promise.resolve(tool)
-  return new Promise<ToolExecution | typeof TOOL_ABORTED>((resolve, reject) => {
+): Promise<T | typeof ABORTED> {
+  if (!signal) return work
+  if (signal.aborted) return ABORTED
+  const running = Promise.resolve(work)
+  return new Promise<T | typeof ABORTED>((resolve, reject) => {
     const onAbort = (): void => {
-      resolve(TOOL_ABORTED)
+      resolve(ABORTED)
       running.catch(() => undefined)
     }
     signal.addEventListener('abort', onAbort, { once: true })
@@ -1181,13 +1224,18 @@ export class AgentLoop<TSnapshot = unknown> {
     // A returned correction forces one more model turn (tools stay available,
     // so the model can perform the missing action or reword its claim).
     if (toolCalls.length === 0 && !this.cancelled && !this.finalizing) {
+      const generation = this.generation
       // snapshot copy: the live array keeps growing if the corrective turn
       // runs more tools, and the hook must see the state at check time
       const correction =
         !this.verifyRetryUsed && this.turnText && skill.verifyResponse
-          ? skill.verifyResponse(this.turnText, [...this.executedCalls])
+          ? await awaitOrAbort(
+              skill.verifyResponse(this.turnText, [...this.executedCalls]),
+              this.abortController?.signal,
+            )
           : null
-      if (correction) {
+      if (generation !== this.generation) return
+      if (correction && correction !== ABORTED && !this.cancelled) {
         this.verifyRetryUsed = true
         this.history.push({ role: 'assistant', text: this.turnText })
         this.history.push({ role: 'user', text: correction })
@@ -1312,9 +1360,9 @@ export class AgentLoop<TSnapshot = unknown> {
       executedInTurn = true
       events?.onToolStart?.(call)
       const snapshot = !this.mutationSeen ? captureSnapshot?.() : undefined
-      let raced: ToolExecution | typeof TOOL_ABORTED
+      let raced: ToolExecution | typeof ABORTED
       try {
-        raced = await awaitToolOrAbort(
+        raced = await awaitOrAbort(
           skill.executeTool(call, this.abortController?.signal),
           this.abortController?.signal,
         )
@@ -1326,7 +1374,7 @@ export class AgentLoop<TSnapshot = unknown> {
         }
       }
       if (generation !== this.generation) return // reset while a tool was running
-      if (raced === TOOL_ABORTED) {
+      if (raced === ABORTED) {
         const aborted: ToolExecution = {
           output: TOOL_ABORTED_OUTPUT,
           isError: true,

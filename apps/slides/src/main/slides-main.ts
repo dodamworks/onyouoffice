@@ -60,6 +60,7 @@ import {
   showOpenDialogWithMemory,
   showSaveDialogWithMemory,
   helpMenuTemplate,
+  macAppMenuTemplate,
   toggleDevToolsItem,
   installRendererProtocol,
   registerRendererScheme,
@@ -4858,6 +4859,16 @@ export function registerSlidesIpc(): void {
     return buildAllRenderSlides(session.opened, session.fitWidthPx)
   })
 
+  // Which AI rollback points are still in the ring: the panel tells a point
+  // pushed out by newer runs from one that only cannot be used right now
+  ipcMain.handle('slides:ai-snapshot-alive', (e, ids: unknown) => {
+    const session = sessions.get(e.sender.id)
+    if (!session || !Array.isArray(ids)) return []
+    return ids.filter(
+      (id): id is number => typeof id === 'number' && session.aiSnapshots?.has(id) === true,
+    )
+  })
+
   ipcMain.handle('slides:undo', (e) => {
     const session = sessions.get(e.sender.id)
     // Undo disabled in master view: the masterEdit.slide model cannot roll back with snapshots (v1 trade-off; undoable after exiting)
@@ -5570,7 +5581,7 @@ export function buildSlidesMenu(): Menu {
   const isMac = process.platform === 'darwin'
   const labels = appMenuLabels(getUiLang())
   const template: Electron.MenuItemConstructorOptions[] = [
-    ...(isMac ? [{ role: 'appMenu' as const }] : []),
+    ...(isMac ? [macAppMenuTemplate(labels)] : []),
     {
       label: tm('menuFile'),
       submenu: [

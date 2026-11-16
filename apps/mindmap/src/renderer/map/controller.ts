@@ -79,6 +79,7 @@ import {
   XMIND_ID,
 } from '../document/convert'
 import type { DocumentSession } from '../document/session'
+import { drawAiMarks } from './ai-marks'
 import { type BoundaryRefusal, boundaryPlaceFor } from './boundary-edit'
 import { BoundaryRoom } from './boundary-room'
 import { oneLineTitle, openBoundaryTitleBox } from './boundary-title'
@@ -362,6 +363,8 @@ export class MapController {
   #relinkTimer: ReturnType<typeof setTimeout> | null = null
   /** the lines have to be drawn again, but the sheet was not on screen to be measured */
   #relinkWhenShown = false
+  /** the topics the last AI run added or changed: marked on screen only (`ai-marks.ts`) */
+  #aiMarked: ReadonlySet<string> = new Set()
   #destroyed = false
   readonly #dispose: Array<() => void> = []
 
@@ -433,6 +436,7 @@ export class MapController {
       this.#decorator.after(mainNode)
       this.#relations.drawAll()
       this.#markBoundary()
+      if (this.#aiMarked.size > 0) drawAiMarks(mind.nodes, this.#aiMarked)
     }
     mind.keypress = {
       // Space edits, like F2: a summary or a relationship when one is selected, else the topic
@@ -1797,6 +1801,14 @@ export class MapController {
     if (box.isConnected) box.dispatchEvent(new FocusEvent('blur'))
     this.#composing = false
     return true
+  }
+
+  /** The topics the AI panel marks as the last run's changes; an empty list takes the marks off. */
+  setAiMarks(ids: Iterable<string>): void {
+    const next = new Set(ids)
+    if (next.size === 0 && this.#aiMarked.size === 0) return
+    this.#aiMarked = next
+    if (!this.#destroyed) drawAiMarks(this.mind.nodes, next)
   }
 
   /** Draws the sheet again from the source tree. */

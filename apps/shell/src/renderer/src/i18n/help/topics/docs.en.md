@@ -76,7 +76,7 @@ Right-click anywhere in the body — the menu follows what you clicked. Main gro
 ## AI
 
 - Ribbon AI button and the side panel: rewrite, expand, translate, summarize, insert-table presets plus free-form instructions.
-- Every AI turn snapshots first; roll back from the version list, and the rollback itself is undoable.
+- The places the AI changed are marked in yellow. **Undo these changes** on the card under its reply takes that turn back as a whole (the turns after it go back too), and the rollback itself is undoable.
 
 ## Saving and export
 

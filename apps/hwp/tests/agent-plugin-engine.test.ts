@@ -361,16 +361,25 @@ describe('adding a table', () => {
     expect(editor.reopened()).toContain('신청서 <제출>')
   })
 
-  it('gives the cells the font of the paragraph beside it and lines around them', () => {
-    const editor = openEditor()
-    // the second paragraph in 16pt: the table put after it should not come out in 10pt
-    editor
-      .doc()
-      .applyCharFormat(0, 1, 0, editor.doc().getParagraphLength(0, 1), '{"fontSize":1600}')
-    editor.plugin.insertTable('첫째 문단', null, 'after', [['항목', '기한']])
-    const cell = JSON.parse(editor.doc().getCellCharPropertiesAt(0, 2, 0, 1, 0, 0))
+  it('gives the cells the font of the body text, not of the line beside it, and lines around them', () => {
+    const enlarge = (doc: ReturnType<ReturnType<typeof openEditor>['doc']>, para: number) =>
+      doc.applyCharFormat(0, para, 0, doc.getParagraphLength(0, para), '{"fontSize":1600}')
+    const heading = openEditor()
+    // the line the table goes after is 16pt, as a heading would be; the body is 10pt
+    enlarge(heading.doc(), 1)
+    heading.plugin.insertTable('첫째 문단', null, 'after', [['항목', '기한']])
+    const small = JSON.parse(heading.doc().getCellCharPropertiesAt(0, 2, 0, 1, 0, 0))
+    expect(small.fontSize).toBe(1000)
+    expect(JSON.parse(heading.doc().getCellParaPropertiesAt(0, 2, 0, 1, 0)).alignment).toBe('left')
+
+    const large = openEditor()
+    for (let para = 0; para < large.doc().getParagraphCount(0); para++) {
+      if (large.doc().getParagraphLength(0, para) > 0) enlarge(large.doc(), para)
+    }
+    large.plugin.insertTable('첫째 문단', null, 'after', [['항목', '기한']])
+    const cell = JSON.parse(large.doc().getCellCharPropertiesAt(0, 2, 0, 1, 0, 0))
     expect(cell.fontSize).toBe(1600)
-    const props = JSON.parse(editor.doc().getCellProperties(0, 2, 0, 0))
+    const props = JSON.parse(large.doc().getCellProperties(0, 2, 0, 0))
     expect(JSON.stringify(props)).toMatch(/border/i)
     // a row high enough for one line of that size (16pt × 1.6 + margins), in 1/100 pt
     expect(props.height).toBeGreaterThan(2500)
@@ -735,6 +744,23 @@ describe('adding a picture', () => {
         'png',
       ),
     ).toThrow(/not a PNG/)
+    expect(editor.steps()).toBe(steps)
+  })
+
+  it('refuses an occurrence of 0 for its anchor instead of taking the first', () => {
+    const editor = openEditor()
+    const steps = editor.steps()
+    const result = editor.plugin.insertPicture(
+      '첫째 문단',
+      0,
+      'after',
+      PNG.toString('base64'),
+      240,
+      1,
+      1,
+      'png',
+    )
+    expect(result).toMatchObject({ ok: false, reason: 'no_such_occurrence' })
     expect(editor.steps()).toBe(steps)
   })
 })

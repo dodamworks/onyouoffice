@@ -86,8 +86,6 @@ export const zh = {
   aiStopGeneration: '停止生成',
   aiStop: '停止',
   aiSend: '发送',
-  aiSnapshotsTitle: '版本快照',
-  aiRollback: '回滚',
   aiStarterPolishTitle: '优化这一页的标题和文案',
   aiStarterTighten: '把本页要点改得更精炼',
   aiStarterProofread: '检查全篇错别字并改正',

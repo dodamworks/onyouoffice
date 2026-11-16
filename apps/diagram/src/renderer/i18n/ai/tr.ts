@@ -37,10 +37,6 @@ export const tr = {
   aiRetry: 'Yeniden dene',
   aiCopyReplyTitle: 'Yanıtı kopyala',
   aiRegenerateTitle: 'Yeniden oluştur',
-  aiTurnsTitle: 'Bir AI turunu geri al',
-  aiRollback: 'Geri al',
-  aiRollbackIncomplete:
-    'O turun bir kısmı geri alınamadı: diyagram sonrasında değiştirildi. Bunun yerine düzenleyicideki Geri Al’ı kullanın.',
   aiUnknownError: 'AI isteği başarısız oldu. Yeniden deneyin',
   aiTimeoutError: 'AI yanıtı zaman aşımına uğradı',
   aiCreditsExhausted: 'Krediniz bitti. AI sağlayıcınızdan kredi yükleyin',

@@ -25,7 +25,8 @@ import '@genoffice/ui/ai-panel-prefs.css'
 import './ai-panel.css'
 import type { DiagramAiApi } from '../../shared/ipc'
 import type { DrawioFrame } from '../drawio/frame-client'
-import { applyLiveOps, liveDiagramRead, undoLiveBatches } from '../document/live-ops'
+import type { DiagramCellChanges } from '../../shared/ai-marks'
+import { applyLiveOps, liveDiagramRead, markLiveCells, undoLiveBatches } from '../document/live-ops'
 import { useI18n } from '../i18n/locale'
 import { AiPanel } from './AiPanel'
 import type { DiagramAiHost } from './diagram-tools'
@@ -56,8 +57,18 @@ export function diagramAiHost(wiring: DiagramAiWiring): DiagramAiHost {
   return {
     ready: () => wiring.client() !== null && wiring.ready(),
     read: (page) => liveDiagramRead(frame(), page),
-    apply: (ops) => applyLiveOps(frame(), ops),
+    apply: async (ops) => {
+      let changes: DiagramCellChanges | undefined
+      const result = await applyLiveOps(frame(), ops, {
+        onChanges: (made) => {
+          changes = made
+        },
+      })
+      return changes ? { ...result, changes } : result
+    },
     undo: (tokens) => undoLiveBatches(frame(), tokens),
+    // a frame that is not up answers with a refusal, never a throw into the run
+    mark: async (cells) => markLiveCells(frame(), cells),
   }
 }
 

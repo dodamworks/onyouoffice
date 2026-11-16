@@ -17,7 +17,7 @@ import { IconChevronLeft, IconChevronRight } from '@genoffice/ui/icons'
 import type { AgentBridge } from '../ai/agent-bridge'
 import { useI18n } from '../i18n/locale'
 import type { HwpApi, PrintJob, PrintMode, PrintResult } from '../../shared/ipc'
-import { createJobCache, gatherPageSizes } from '../print-flow'
+import { createJobCache, gatherPageSizes, whenPrintFontsReady } from '../print-flow'
 import { LruPages } from './preview-cache'
 import {
   MAX_ZOOM,
@@ -59,7 +59,8 @@ let rememberedZoom: ZoomMode = 'fit-page'
 let rememberedMargins = false
 
 interface Props {
-  bridge: Pick<AgentBridge, 'previewPage' | 'printPageSizes' | 'documentRevision'>
+  bridge: Pick<AgentBridge, 'previewPage' | 'printPageSizes' | 'documentRevision'> &
+    Partial<Pick<AgentBridge, 'printFontsReady'>>
   /** 0-based page the cursor was on; clamped once the document's count is known. */
   initialPage: number
   /** A File > Print / Ctrl+P that arrived while the preview was open. */
@@ -140,6 +141,8 @@ export function PrintPreview({
       loadingRef.current.add(target)
       setLoading(new Set(loadingRef.current))
       try {
+        // drawn in the screen's fonts, as the print and the PDF will be
+        await whenPrintFontsReady(bridge)
         const result = await bridge.previewPage(target)
         if (!mountedRef.current) return
         if (pageCountRef.current === null) {

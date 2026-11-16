@@ -82,7 +82,6 @@ export const pt = {
   aiCopied: 'Copiado',
   aiRegenerateTitle: 'Gerar novamente',
   aiSnapshotsTitle: 'Instantâneos de versão',
-  aiRollback: 'Reverter',
   aiScopeSelected: '{count} parágrafo(s) selecionado(s)',
   aiScopeEmptyDoc: 'Documento em branco',
   aiScopeCursor: 'No cursor',

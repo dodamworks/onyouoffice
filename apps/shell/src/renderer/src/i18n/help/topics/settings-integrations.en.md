@@ -2,7 +2,9 @@
 
 ## Opening settings
 
-The row at the bottom left of Home opens the settings panel (it reads Connect AI until an AI is connected). It has five sections: Account, AI, General, Integrations and About.
+The row at the bottom left of Home opens the settings panel (the line under it shows whether an AI is connected). It has five sections: Account, AI, General, Integrations and About.
+
+You can also open it from any tab with **⌘,** (Ctrl+, on Windows and Linux), from **Settings…** in the app menu on a Mac (the menu named after the app, at the left of the menu bar), or from **Menu (☰) ▸ Settings…** on Windows and Linux. In a Word tab ⌘, (Ctrl+,) is subscript, so open it from the menu there.
 
 **Account** shows where your Claude, ChatGPT and Codex connections stand, and **Manage connections** leads to the AI section. AI has its own articles: [Subscription connection](help://subscription) and [AI models and settings](help://ai-models).
 
@@ -59,7 +61,7 @@ Settings can register GenOffice as the handler for .docx / .xlsx / .pptx / .pdf 
 ## Third-party notices and updates
 
 - Help ▸ Third-party notices: the full OSS license inventory shipped with the app.
-- Menu (☰) ▸ Check for updates (Help ▸ Check for updates on a Mac): triggers a manual check; a newer version prompts to install.
+- Menu (☰) ▸ Check for updates (Help ▸ Check for updates on a Mac): triggers a manual check; a newer version prompts to install. On a Mac the app menu has it too, right under About.
 
 ## MCP integration (for advanced users / AI clients)
 

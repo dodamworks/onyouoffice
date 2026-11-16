@@ -187,6 +187,24 @@ draw.io 다이어그램(`.drawio`, `.dio`, `.drawio.svg`, `.drawio.png`)을 읽�
 - 성공 `detail`: `diagram apply`는 `{ format, via?, results, created, batch, failures? }`다. `results[]`는 연산마다 `{ index, op, status, created?, error?, read? }`이고, `created`는 이 묶음이 만든 id 전부다. `create --type drawio`는 같은 모양에 `mermaid: { created }`가 더해지고, `results`의 `index`는 `--ops` 안의 차례다. `convert`는 `{ pages, output_paths? }`이고 `output_paths`는 파일이 여럿일 때만 있다.
 - 이미 있는 다른 파일 위에 쓰기와 앱이 탭으로 연 파일은 공통 규칙(`--force`)을 따른다. `convert`는 쓸 파일마다 검사하고, 하나라도 걸리면 앱을 띄우지 않는다.
 
+## 마인드맵 명령
+
+마인드맵(`.xmind`)을 앱 없이 읽고 고치고 만든다(결정 0150). 모두 `@genoffice/xmind-engine`으로 돈다. 고치기는 편집기와 같은 길(`sheetToView` → 편집 → `reconcileSheet`)을 타므로 고치지 않은 `content.json`의 키와 다른 압축 항목은 바이트 그대로 남는다. 연산의 이름과 입력은 이 명령의 것이고, 앱 AI의 편집 도구와 이름이 다르다.
+
+| 명령                                                                                                | 동작                                                                                                                                                                 |
+| --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `map read <파일>`                                                                                   | 시트마다 `# ` 머리글이 있는 개요 글. `--json`의 `detail`은 `{ sheets: [{ index, id, title, root, topics: [{ id, title, note, link, children, summaries? }] }] }`이다 |
+| `map apply <파일> --ops <JSON\|@파일\|-> [--out <경로>] [--best-effort\|--stop-on-error] [--force]` | 연산 여섯(`add_topic`, `rename_topic`, `move_topic`, `delete_topic`, `set_note`, `set_link`)을 주제 id로 겨냥해 적용하고 쓴다                                        |
+| `map create --outline <파일\|-> [--out <경로.xmind>] [--force]`                                     | 개요 글에서 새 `.xmind`를 만든다. `--out`이 없으면 개요 파일 이름에 `.xmind`를 붙인다. 표준 입력에서 읽을 때는 `--out`이 있어야 한다                                 |
+| `guide map`                                                                                         | 연산 목록. `src/formats/map.ts`의 정의에서 만든다                                                                                                                    |
+
+- 앱은 필요 없다. 바뀐 것이 없는 묶음은 파일을 쓰지 않는다(`--out`이 다른 파일이면 그대로 복사해 쓴다).
+- 묶음은 기본으로 모두 아니면 아무것도 아니다. 하나라도 거절되면 쓰지 않고 종료 코드 1이며, `detail.failures`·`detail.batch`·`detail.results`에 모든 연산의 결과가 있다. `--best-effort`·`--stop-on-error`는 다른 문서 명령과 같다.
+- 성공 `detail`: `map apply`는 `{ changed, results, batch, failures? }`다. `results[]`는 연산마다 `{ index, op, status, created?, error?, reason?, detail? }`이고, `add_topic`이 만든 주제의 id는 `created`다. 같은 묶음의 뒤 연산은 새 id를 겨냥하지 못한다.
+- 주제 id는 한 시트 안에서만 하나다. 같은 id가 여러 시트에 있으면 그 id를 겨냥한 연산은 거절된다.
+- `delete_topic`은 지우면 보존 요소(경계, 부유 주제, 부름말, 요약 아래 가지)를 잃는 주제를 개수와 함께 거절한다(`op_rejected`, `detail.preserved`). 가운데 주제는 지우거나 옮기지 못한다.
+- MCP 도구는 `map_read`, `map_apply`, `map_create`다. `map_create`는 `out`이 꼭 있어야 한다.
+
 ## 웹 페이지 읽기 (`read-url`)
 
 `ieumoffice read-url <url> [--offset <n>]`은 http(s) 주소 하나를 그 사이트에서 받아 읽을 수 있는 글로 돌려준다. HTML은 글자로 바꾸고, GitHub `blob` 주소는 raw 주소로 바꿔 읽는다. 주소는 `fetchWithSsrfGuard`를 지나며 사설·루프백 주소와 그런 곳으로 가는 리다이렉트는 거절한다. 한 번에 50,000자를 주고, 이어 읽기는 `--offset`(기본 0)으로 한다. 제공자·구독·자동 호출 장부를 쓰지 않는다. 비공개 GitHub 파일은 설정의 읽기 토큰을 쓰며, 그 토큰은 `api.github.com` 요청에만 실린다.
@@ -212,11 +230,11 @@ draw.io 다이어그램(`.drawio`, `.dio`, `.drawio.svg`, `.drawio.png`)을 읽�
 
 이 셋은 자동 호출이다. 화면을 보는 사람이 없는 요청이므로 갈 수 있는 길이 제한된다.
 
-| 명령     | 가는 길                                                                                                                                                       |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `search` | 기본은 무료 경로(Parallel 무료 검색 → DuckDuckGo). 이미지 검색은 DuckDuckGo. 앱 설정에서 고른 키 방식 검색 제공자가 있고 키가 있으면 그것. 구독은 쓰지 않는다 |
-| `image`  | 키 방식 이미지 제공자만. 없으면 "쓸 수 없음". `--model`은 무시된다(성공 결과의 `detail.note`에 적힌다)                                                        |
-| `media`  | 사진은 대화에 쓰는 AI 제공자 또는 고른 키 방식 분석 제공자. 영상·소리는 영상 분석이 되는 키 방식 제공자만                                                     |
+| 명령     | 가는 길                                                                                                                                                                                                                                                                                                    |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `search` | 기본은 무료 경로(Parallel 무료 검색 → DuckDuckGo). 이미지 검색은 DuckDuckGo. 앱 설정에서 고른 키 방식 검색 제공자가 있고 키가 있으면 그것. 구독은 쓰지 않는다                                                                                                                                              |
+| `image`  | 앱 설정의 이미지 생성 선택(`resolveImageBackend`). Codex(ChatGPT 요금제)는 자동 호출 규칙 아래에서만, 아니면 키 방식 이미지 제공자. 둘 다 없으면 "쓸 수 없음". `--ref`의 참조 그림은 두 길 모두 받는다. `--model`은 그 경로가 내주는 모델이면 쓰고, 아니면 쓸 수 있는 모델 이름과 함께 거절한다(결정 0145) |
+| `media`  | 사진은 대화에 쓰는 AI 제공자 또는 고른 키 방식 분석 제공자. 영상·소리는 영상 분석이 되는 키 방식 제공자만                                                                                                                                                                                                  |
 
 - 구독은 사용자가 설정에서 허용했을 때만 쓰인다(기본 꺼짐). 꺼져 있으면 구독이 없는 것처럼 답한다. 켜져 있으면 모든 명령 실행과 MCP 호출을 통틀어 AI 요청을 하나씩 차례로 처리한다. 차례의 단위는 작업이 아니라 요청 하나라서, 긴 PDF 작업도 다른 호출자와 요청마다 번갈아 처리된다. 시간당 한도는 없다.
 - 시간당 한도가 있던 예전 경고에 동의해 켜 둔 스위치는 꺼진 것으로 읽는다. 새 경고에 다시 동의해야 켜진다(설정 파일의 `headlessSubscriptionConsentVersion`).
@@ -242,6 +260,7 @@ draw.io 다이어그램(`.drawio`, `.dio`, `.drawio.svg`, `.drawio.png`)을 읽�
 
 - `media_analysis`는 예전 호출자를 위해 남긴 항목이다. `image_analysis`와 같고, 영상만 될 때는 `video_analysis`와 같다.
 - 웹·이미지 검색은 키 제공자를 고르지 않는 한 항상 `available`이고 `route`는 `free`다.
+- `image_generation`은 자동 호출 스위치와 지금 판의 동의가 있고 Codex가 구독으로 연결돼 있으면 `{ available: true, via: "codex", route: "subscription" }`일 수 있다(결정 0145). 전에는 Codex가 이 답에 오지 않았다. 바뀐 것은 값뿐이고 모양은 그대로다.
 - `automatic_calls.used`는 최근 한 시간 동안 처리한 자동 호출 수이고 정보용이다. 한도가 없으므로 `limit`, `remaining`은 `null`이고 `resetsAt`은 오지 않는다.
 
 **실패.** 세 명령이 실행될 수 없으면 종료 코드 4, `error: "app_unavailable"`.
@@ -261,13 +280,13 @@ draw.io 다이어그램(`.drawio`, `.dio`, `.drawio.svg`, `.drawio.png`)을 읽�
 
 - 표준 입출력으로 같은 명령들을 도구로 내놓는다. `--http <포트>`를 주면 Streamable HTTP로 내놓는다(`--host`, `--token`).
 - 등록 예: `claude mcp add --transport stdio ieumoffice -- ieumoffice mcp`. `ieumoffice mcp install <에이전트|all>`이 각 에이전트의 설정 파일에 `ieumoffice` 항목만 쓴다. 같은 이름의 항목이 다른 프로그램을 가리키면 `occupied`로 알리고 `--force` 없이는 건드리지 않는다.
-- 도구는 명령 동사마다 하나다(`docs_read`, `docs_apply`, `hwp_read`, `hwp_apply`, `diagram_read`, `diagram_apply`, `create_drawio`, `sheet_apply`, `slides_render`, `convert`, `read_url`, `pdf_read`, `pdf_images`, `pdf_ai_read`, `pdf_translate`, `pdf_status`, `epub_translate`, `epub_status` 등). 매개변수는 명령의 옵션 목록에서 그대로 나온다(`allow-paid`는 `allow_paid`, `no-cover`는 `no_cover`). 두 표면이 어긋나지 않는다. `diagram_read`·`diagram_apply`·`convert`의 `page`는 다이어그램 쪽의 id나 이름(글자)이고, `create_drawio`의 `mermaid`는 Mermaid 글 그대로다.
+- 도구는 명령 동사마다 하나다(`docs_read`, `docs_apply`, `hwp_read`, `hwp_apply`, `diagram_read`, `diagram_apply`, `create_drawio`, `map_read`, `map_apply`, `map_create`, `sheet_apply`, `slides_render`, `convert`, `read_url`, `pdf_read`, `pdf_images`, `pdf_ai_read`, `pdf_translate`, `pdf_status`, `epub_translate`, `epub_status` 등). 매개변수는 명령의 옵션 목록에서 그대로 나온다(`allow-paid`는 `allow_paid`, `no-cover`는 `no_cover`). 두 표면이 어긋나지 않는다. `diagram_read`·`diagram_apply`·`convert`의 `page`는 다이어그램 쪽의 id나 이름(글자)이고, `create_drawio`의 `mermaid`는 Mermaid 글 그대로다.
 - `pdf_ai_read`·`pdf_translate`·`epub_translate`는 `yes`가 없으면 명령처럼 예상만 답한다. `yes`가 있으면 작업을 MCP 서버 프로세스 안에서 띄우고 바로 답한다(`detail.started: true`, `detail.estimate`). 진행, 멈춘 이유, `resetsAt`, 결과 파일 경로는 `pdf_status`(EPUB은 `epub_status`)의 `job`으로 본다. 이어하기는 같은 도구를 다시 부르면 된다.
 - 그 결과 파일은 작업이 끝날 때 쓴다. `partial: true`로 부른 작업은 멈출 때 끝난 부분만 반영해 쓴다. 위치 규칙은 명령어와 같고, 경로는 `job.outputs`로 알려 준다.
 - 서버가 끝나면 그 작업도 멈춘다(`last_error: "interrupted"`). 보관된 결과는 남는다.
 - 결과는 `--json`이 내는 것과 같은 객체다. 실패는 `isError`와 같은 `error` 이유로 온다.
 - 환경변수 `GENOFFICE_MCP_COMPACT_SCHEMAS`는 예전 철자를 유지한다. `--http`의 토큰은 `--token`, 없으면 `GENOFFICE_MCP_TOKEN`에서 읽고, 둘 다 없으면 인증 없이 받는다. 인증 없이 받는 것은 이 PC 주소(`127.0.0.1`, `localhost`, `::1`)에서 열 때뿐이다. 그 밖의 `--host`에 토큰이 없으면 서버를 열지 않고 종료 코드 1, `error: "invalid_argument"`로 끝난다. 에이전트 설정 폴더를 찾을 때의 홈 폴더는 `GENOFFICE_HOME`으로 바꿀 수 있다.
-- 안내 자료는 리소스로도 내놓는다(`ieumoffice://guide/docs`, `…/sheets`, `…/hwp`, `…/diagram`, `…/slides`, `…/slides/design`, `…/slides/spec`, `…/slides/templates`, 내장 템플릿마다 `…/slides/templates/<id>`).
+- 안내 자료는 리소스로도 내놓는다(`ieumoffice://guide/docs`, `…/sheets`, `…/hwp`, `…/diagram`, `…/map`, `…/slides`, `…/slides/design`, `…/slides/spec`, `…/slides/templates`, 내장 템플릿마다 `…/slides/templates/<id>`).
 - 내장 디자인 템플릿은 `ieumoffice guide slides templates [<id>]`로 고른다. 목록의 `--json`은 `detail.templates`(`[{ id, name, scheme, description, fonts }]`, 정해진 순서), 템플릿 하나는 `detail`(`{ id, name, scheme, description, fonts, styleSheet }`)이다. 모르는 id는 종료 코드 1, `error: "invalid_argument"`, `detail.templates`에 쓸 수 있는 id 목록이다. MCP `guide` 도구는 세 번째 위치 인자 `name`으로 id를 받는다.
 - 앱의 설정 → 연동 화면이 지금 설치본에 맞는 등록 예시를 보여 준다.
 
@@ -331,6 +350,8 @@ metadata:
 
 **받는 주소.** 깃허브 링크 칸은 결정 0048의 다섯 꼴(저장소, `tree/…`, `blob/…/SKILL.md`, `owner/repo`, `owner/repo@이름`)에 더해 스킬 목록 사이트의 쪽 주소 `https://skills.sh/<owner>/<repo>/<skill>`을 받는다. 이 주소는 `owner/repo@skill`과 같게 읽는다. 끝의 `/`와 `#…`는 무시하고, 그 아래 쪽과 물음표가 붙은 주소는 받지 않는다.
 
+**이전 판(`~/.ieumoffice/skill-history/〈이름〉/〈UTC 시각〉-〈까닭〉.zip`, 결정 0129).** 내 스킬 하나의 이전 판 하나가 zip 하나다. 〈이름〉은 소문자, 〈UTC 시각〉은 `20261111T093015123Z` 꼴(밀리초까지), 〈까닭〉은 `edit`·`replace`·`update`·`restore` 가운데 하나다. zip 안의 꼴은 스킬 하나를 내보낸 zip과 같고, 깃허브 출처 기록이 있었으면 함께 든다. 다른 기록 파일은 없다. 이름 꼴에 맞지 않는 파일은 판으로 보지 않는다. 앱만 읽고 쓰는 폴더라 다른 프로그램은 읽지 않는다.
+
 **깃허브 출처 기록(`〈스킬 폴더〉/.ieum-source.json`).** 깃허브에서 설치한 스킬에만 있다. 내보내기(zip)에는 들어가지 않는다.
 
 ```json
@@ -387,7 +408,7 @@ metadata:
 - 키와 토큰(`providers.*.apiKey`, `customEndpoints[].apiKey`, `media.providers.*.apiKey`, `search.providers.*.apiKey`, `readUrl.githubToken`)은 Windows와 Linux(GNOME 키링·KWallet이 있을 때)에서 앱이 저장할 때 `sealed:v1:<base64>`로 봉인된다(결정 0063). 사람이 평문으로 적어 넣어도 읽히고, 앱이 다음에 저장하거나 시작할 때 봉인된다. 명령어와 MCP는 봉인된 값을 앱에게 풀어 받아 쓰고(처음 한 번 1~2초), 풀지 못한 값은 빈 키로 읽는다. 명령어는 봉인하지 않는다. macOS는 봉인하지 않는다.
 - `readUrl.githubToken`은 비공개 GitHub 파일을 읽는 읽기 토큰이다. 키와 같은 방식으로 저장되고, `api.github.com` 요청에만 실린다. 다른 사이트나 리다이렉트 홉에는 보내지 않는다.
 - `headlessSubscriptionEnabled`가 참이어도 `headlessSubscriptionConsentVersion`이 지금 경고의 판(2)보다 작거나 없으면 꺼진 것으로 읽는다. 판 1은 시간당 한도가 있던 예전 경고이고, 그때는 판을 저장하지 않았다.
-- 이미지 생성 제공자의 저장값 기본은 `codex`다. Codex 구독 이미지 생성이 들어 있지 않은 지금은 `none`(선택 없음)과 똑같이 동작한다.
+- 이미지 생성 제공자의 저장값 기본은 `codex`다. 화면 이름은 "ChatGPT 요금제(Codex 프로그램)"이다. 앱에서는 Codex 프로그램에 로그인한 ChatGPT 요금제로 만든다(결정 0145, 0076을 대체). 터미널 명령어와 MCP도 같은 길을 쓰되, `headlessSubscriptionEnabled`와 지금 판의 동의(`headlessSubscriptionConsentVersion` ≥ 2)가 있을 때만이다. 없으면 Codex는 쓸 수 없는 것으로 치고 키 방식 이미지 제공자를 본다. 동의 판은 그림 때문에 올리지 않았다.
 - 구독 제공자의 식별자는 `claude-code`, `chatgpt`, `codex`다. 인증 방식은 `claude-subscription`, `chatgpt-plan`, `codex-chatgpt`, `api-key` 넷이다. `provider`에 `chatgpt`를 저장할 수 있고, `providers.chatgpt.model`이 그 모델이다(빈 값은 요금제 목록의 첫 모델). `meteredAccepted`에는 `chatgpt` 항목이 없다(요금제 범위 연결이라 종량 로그인이 없다).
 - ChatGPT 직접 연결(결정 0081)의 토큰은 이 파일이 아니라 같은 폴더의 `chatgpt-connection.json`에 있다. 앱만 읽고 쓴다. 손으로 고치거나 옮기지 않는다(다른 PC·계정에서는 봉인이 풀리지 않아 연결이 없는 것으로 읽힌다). 터미널 명령어와 MCP는 이 파일을 읽지 않는다. 명령어에서 `chatgpt`는 늘 로그인되지 않은 상태이고, `auto`는 Claude, Codex 순으로 고른다.
 - 모르는 제공자 식별자나 없어진 값이 있어도 오류 없이 읽는다. 그 자리는 기본값이 되고, 다음에 앱이 저장할 때 지워진다.
@@ -531,7 +552,7 @@ metadata:
 같은 데이터 폴더에 둘이 있다. 터미널 명령어와 MCP는 둘 다 읽지도 쓰지도 않는다.
 
 - `google-drive.json`: `{ "version": 1, "token": "<base64>" }`. `token`은 운영체제 암호화(Electron `safeStorage`: Windows는 DPAPI, macOS는 키체인, Linux는 키링이 있을 때만)로 감싼 갱신 토큰이다. 다른 사용자나 다른 PC에서는 풀리지 않고, 풀리지 않는 파일은 연결이 없는 것으로 읽는다. 암호화를 쓸 수 없는 PC에서는 이 파일을 만들지 않는다. 연결 끊기와 Google의 연결 종료(`invalid_grant`)에 지운다.
-- `drive-cache/`: 연 드라이브 파일의 PC 사본. 파일마다 `drive-cache/<드라이브 파일 id>/<이름>`이고, `drive-cache/index.json`이 사본과 드라이브 파일을 잇는다. 항목에는 드라이브 파일 id, 이름, 상위 폴더 id, PC 경로, 마지막으로 맞춘 내용의 해시(SHA-256)와 드라이브 쪽 해시(MD5)·변경 시각, 저장이 갈 드라이브 파일 id, "이 PC에만 저장"을 골랐는지, 마지막으로 연 시각이 있다. 문서 내용은 사본 파일에만 있다. 한 달 동안 열지 않았고 올리지 못한 변경이 없는 사본은 시작할 때 지운다.
+- `drive-cache/`: 연 드라이브 파일의 PC 사본. 파일마다 `drive-cache/<드라이브 파일 id>/<이름>`이고, `drive-cache/index.json`이 사본과 드라이브 파일을 잇는다. 항목에는 드라이브 파일 id, 이름, 상위 폴더 id, PC 경로, 마지막으로 맞춘 내용의 해시(SHA-256)와 드라이브 쪽 해시(MD5)·변경 시각, 저장이 갈 드라이브 파일 id, "이 PC에만 저장"을 골랐는지, 마지막으로 연 시각이 있다. 문서 내용은 사본 파일에만 있다. 한 달 동안 열지 않았고 올리지 못한 변경이 없는 사본은 시작할 때 지운다. "이 PC에만 저장"을 고른 사본은 드라이브가 받지 못한 변경을 담고 있으므로 지우지 않는다.
 
 `app-settings.json`의 `driveAiAccess`(참/거짓, 기본 참)는 편집기의 AI가 드라이브를 찾고 읽어도 되는지다. 드라이브가 연결돼 있을 때만 뜻이 있다. `driveTrainingAck`(참일 때만 확인, 기본 없음)는 사람이 "드라이브 파일과 함께 쓰는 AI 계정에서 모델 학습을 껐습니다"에 체크했는지다. 참이 아니면 연결, 고르기, 첨부, AI의 드라이브 도구가 멈춘다.
 
@@ -636,7 +657,9 @@ metadata:
 - `account`와 `models`는 `ready`·`metered`일 때만 있다. `account`는 이메일 주소 모양이 아니면 빠진다.
 - `programPath`는 버전이 낮은 `error`(`needs-update`)일 때만 있다. 한 줄짜리 절대 경로(드라이브, `\\` 공유, `/`로 시작)가 아니면 빠진다.
 - `models`의 `id`는 프로그램이 받는 값이자 저장되는 선택값이다. 빈 `id`는 프로그램의 기본 모델을 뜻하고, 그것이 가리키는 모델이 `resolved`에 온다. 목록은 50개까지다.
-- 창구 이름은 `ai:subscription-statuses`, `-recheck`, `-login`, `-logout`, `-install`, `-metered`, `-codex-image`와 변경 알림 `ai:subscription-changed`다. `-logout`은 껍데기 앱의 화면에서만 부른다.
+- 창구 이름은 `ai:subscription-statuses`, `-recheck`, `-login`, `-logout`, `-install`, `-metered`, `-off`, `-codex-image`와 변경 알림 `ai:subscription-changed`다. `-logout`과 `-off`는 껍데기 앱의 화면에서만 부른다.
+- 사용량 알림 `ai:subscription-usage-update`(결정 0145)는 메인이 모든 창에 보낸다. 값은 채팅 조각의 사용량과 같은 모양(`IpcSubscriptionUsage[]`)이다. 지금은 그림 요청 중에 Codex가 알린 사용량이 이 길로 온다.
+- `off`(결정 0114)는 이 앱에서 끈 `claude-code`·`codex`에만 온다. 다른 항목은 없다(`meteredAccepted`는 거짓). `-off`는 `{ provider, off }`(CLI 식별자와 참/거짓)를 받아 `{ ok, statuses }`로 답한다. 끈 프로그램에 대한 `-login`·`-logout`·`-install`·`-update`는 `invalid`, `-metered`는 `ok: false`다.
 - `chatgpt`의 `state`는 `checking`, `signed-out`, `ready`, `error`뿐이다. `-login`은 앱 자신의 브라우저 로그인을 시작하고, `-logout`은 이 앱의 연결만 끊는다. `-install`·`-update`는 `invalid`로 답한다. 답에 `chatgpt` 항목이 없으면(예전 앱) `signed-out`으로 읽는다.
 
 ## 라벨 규격 (`print-label-spec.json`, 결정 0141)
@@ -658,7 +681,22 @@ metadata:
 - 저장한 스타일 파일(`<데이터 폴더>/style-templates/<이름>.json`)에는 선택 항목 `basedOn`(기본 템플릿의 id)이 붙을 수 있다. 이 값을 모르는 예전 버전은 무시하고 그대로 읽는다.
 - 한글 문서(`.hwp`·`.hwpx`)는 연 형식 그대로 저장한다. 파일이 없는 새 문서의 첫 저장은 설정 → 일반의 "새 한글 문서 저장 형식"(기본 HWP)을 먼저 제안한다. 한 탭이 파일을 처음 덮어쓰기 전에 원본을 같은 폴더에 `<파일 이름>.bak`으로 남긴다. 암호가 걸린 문서는 저장하지 않는다. AI는 한글 문서에서 글자를 바꾸고, 문단을 넣고 지우고, 본문에 표를 넣고, 있는 표의 빈 칸을 채우고(글자가 있는 칸은 사용자가 바꾸라고 했을 때만 덮어쓰고, 그림이 든 칸은 쓰지 않는다), 본문의 표에 행과 열을 넣고 빼고, 첨부한 파일(한글·워드·엑셀·파워포인트·PDF·글자 파일·그림)을 참고 자료로 읽고, 사용자가 편집기에서 선택한 부분만 고치고, 글자 모양 일부(굵게·기울임·밑줄·취소선·크기·색·형광펜)와 문단의 정렬·줄 간격을 바꾸고, 본문을 다단으로 나누고 문단 앞에 쪽·단 나누기를 넣고, 본문에 수식을 넣고, 쪽 테두리를 두르고, 문단에 탭 자리와 채움선을 주고, 표 칸에 대각선을 긋고, 본문 그림의 너비를 바꾸고, 누름틀을 채운다. 표·그림·누름틀이 놓인 문단은 지우지 않는다. 양식 없이 처음부터 쓴 문서에는 그 종류의 문서가 갖는 꼴을 준다(결정 0137): 문단 스타일을 만들어 줄 머리 기호별로 한 번에 걸고, 표 칸의 테두리·배경·세로 정렬과 새 표의 꼴(옆이 트인 표, 열 너비, 머리줄 색)을 정하고, 제목 문단을 제목 상자(한 열짜리 표)로 바꾸고, 쪽 번호를 매기고, 한 줄짜리 머리말·꼬리말을 쓴다. 꼴의 글꼴이 이 PC에 없으면 같은 계열의 있는 글꼴로 쓴다. 이미 꼴이 있는 문서는 다시 꾸미지 않는다.
 - 앱 안에서 한글 문서는 편집기 밖에서 읽기만 한다. 홈의 파일 검색과 지식 자료, 다른 편집기 AI의 첨부, 터미널 명령어(`ieumoffice hwp read`, `info`), MCP(앱의 `read_hwp`, 명령어 쪽의 `hwp_read`)가 글자를 읽는다. 문단은 한 줄로, 표는 행마다 칸을 `|`로 이어 적는다. MCP의 열린 문서 읽기는 한글 탭의 저장하지 않은 내용까지 읽고, 저장은 하지 않는다. 앱 안 MCP로는 한글 문서를 고치지 않는다. 암호가 걸린 문서는 읽지 않는다.
-- **터미널 명령어로 한글 문서를 만들고 고친다(결정 0079).** `ieumoffice hwp apply <파일> --ops`(MCP `hwp_apply`)와 `ieumoffice create --type hwp|hwpx --ops`(MCP `create_hwp`)다. 연산은 한글 편집기 AI의 도구 그대로이고(이름, 입력, 답한 글), 앱의 플러그인이 같은 엔진에서 한다. 그래서 찾은 말이 여러 곳이면 고르지 않고, 표·그림·누름틀·메모를 잃는 변경은 되돌리고 거절한다. 그림 넣기, 웹 읽기와 그림 찾기·만들기, 편집기 선택 도구는 명령어에 없다(`unsupported`). 연산 목록은 `ieumoffice guide hwp`이고 도구 정의에서 만든다. 저장은 앱의 저장과 같다. 연 형식 그대로(`--out`이면 그 확장자로) 쓰고, `.hwp`는 엔진이 다시 읽어 쪽수가 같을 때만 쓰며, 새 탭 폭·필드 종류·바탕쪽과 메모를 바로잡고(결정 0024·0026·0028), 덮어쓰는 파일은 먼저 `<파일 이름>.bak`으로 남긴다. 변경 추적이 든 `.hwp`는 지금의 내용으로 고치고(결정 0027) `detail.warnings`로 알린다. 읽기 연산만 든 묶음은 파일을 쓰지 않는다. 암호가 걸린 문서는 `unsupported`다. 앱이 탭으로 연 파일은 다른 형식처럼 `--force` 없이 쓰지 않는다.
+- **터미널 명령어로 한글 문서를 만들고 고친다(결정 0079).** `ieumoffice hwp apply <파일> --ops`(MCP `hwp_apply`)와 `ieumoffice create --type hwp|hwpx --ops`(MCP `create_hwp`)다. 연산은 한글 편집기 AI의 도구 그대로이고(이름, 입력, 답한 글), 앱의 플러그인이 같은 엔진에서 한다. 그래서 찾은 말이 여러 곳이면 고르지 않고, 표·그림·누름틀·메모를 잃는 변경은 되돌리고 거절한다. 수식이나 각주 표시처럼 줄 안에 놓인 개체에 걸친 글 바꾸기도 문서를 바꾸지 않고 거절한다. 이미 쪽이나 단을 시작하는 문단에 같은 나누기를 다시 청하면 오류가 아니라 "바꾼 것이 없다"는 답이 온다. 그림 넣기, 웹 검색(`web_search`, `ieumoffice search`를 쓰라고 답한다)·웹 읽기와 그림 찾기·만들기, 편집기 선택 도구는 명령어에 없다(`unsupported`). 연산 목록은 `ieumoffice guide hwp`이고 도구 정의에서 만든다. 저장은 앱의 저장과 같다. 연 형식 그대로(`--out`이면 그 확장자로) 쓰고, `.hwp`는 엔진이 다시 읽어 쪽수가 같을 때만 쓰며, 새 탭 폭·필드 종류·바탕쪽과 메모를 바로잡고(결정 0024·0026·0028), 덮어쓰는 파일은 먼저 `<파일 이름>.bak`으로 남긴다. 변경 추적이 든 `.hwp`는 지금의 내용으로 고치고(결정 0027) `detail.warnings`로 알린다. 읽기 연산만 든 묶음은 파일을 쓰지 않는다. 암호가 걸린 문서는 `unsupported`다. 앱이 탭으로 연 파일은 다른 형식처럼 `--force` 없이 쓰지 않는다.
+- **한글 연산의 인수와 답.** 앱의 AI 도구와 명령어의 연산이 같은 규칙을 지난다.
+  - 문서를 바꾸는 연산은 선언하지 않은 인수가 있으면 문서를 바꾸지 않고 거절한다(`op_rejected`). 안쪽 객체와 목록 항목의 인수도 본다. 답에는 모르는 이름(`border.side` 같은 경로), 가까운 선언 이름, 그 자리에서 받는 이름이 있고, 받는 이름은 `detail.failures[].usage`로도 온다. 값이 `null`인 인수는 주지 않은 것으로 본다.
+  - 읽기 연산은 거절하지 않고 답 끝에 쓰지 않은 인수를 적는다.
+  - 숫자와 참거짓을 문자열로 준 값(`"15"`, `"true"`)은 안쪽 값까지 고쳐 받는다. 고칠 수 없는 값은 버리지 않고 거절한다. 목록에 없는 낱말, 숫자 자리에 온 글, 참거짓 자리에 온 글, 목록 자리에 온 글, 목록 안의 빈 항목이 그렇고, 안쪽 객체와 목록 항목의 값도 본다. 답은 그 인수의 경로와 받는 값이다(`equations[0].keep_text must be true or false, not "yes".`). 읽기 연산도 이런 값은 거절한다.
+  - 범위를 벗어난 수는 가까운 값으로 바꾸지 않는다. 1부터 세는 번호에 0을 주면 그 연산이 거절하고, 줄·칸·단 수 같은 수가 범위를 벗어나도 범위를 말하며 거절한다. 그림 너비 `width_pt`(24~600)와 읽기 시작 자리 `offset`(0부터 세는 정수)도 같다.
+  - 읽기 연산의 답은 쓰기 연산이 받는 이름으로 온다. `line_spacing`, `margin_left`, `margin_right`, `space_before`, `space_after`, `list_level`, `english_name`, `next_style`, `number_format`, `start_number`, `gap_mm`이고, 쪽 여백은 `margins` 안이 아니라 `margin_left`부터 `margin_gutter`까지 일곱 이름으로 온다. `read_formatting`이 묶은 모양의 번호는 `id`가 아니라 `look`이다. `set_page_setup`과 `set_note_settings`가 바꾼 뒤 답 끝에 붙이는 "Now: {...}"도 같은 이름이다. 쪽 설정은 `margin_left`부터 `margin_gutter`까지, 각주·미주 설정은 `number_format`, `start_number`로 온다. 영어 이름이 없는 스타일의 답에는 `english_name`이 없다. 예전 이름(`lineSpacing`, `marginLeft`, `marginRight`, `spacingBefore`, `spacingAfter`, `listLevel`, `englishName`, `nextStyle`, `numberFormat`, `startNumber`, `gapMm`, 쪽 설정의 `margins`, 탭 자리의 `atMm`)은 인수로 계속 받는다. `format_look`은 모양 번호를 `look`으로만 받고, `id`로 오면 두 길 모두 `look`을 말하며 거절한다. 옛 이름과 새 이름을 함께 주면 고르지 않고 거절한다.
+  - 읽은 답은 쓰기 연산에 그대로 넘길 수 있다. `read_style`의 답은 `edit_style`·`create_style`에(모양이 든 `look`은 풀어서 받는다), `read_formatting`의 모양 하나는 `format_look`·`format_paragraph`에, `read_page_setup`의 답은 `set_page_setup`에(용지 이름과 그 용지의 너비·높이가 함께 와도 받는다), `read_note_settings`의 각주·미주 몫은 `kind`를 붙여 `set_note_settings`에, `read_page_layout`의 `columns`는 `set_columns`에, 머리말·꼬리말 몫은 `kind`를 붙여 `set_header_footer`에 넘긴다. 답에 함께 든 설명 값은 그 답을 넘겨받는 연산의 맨 위에서만 거절하지 않고 답 끝에 쓰지 않았다고 적는다. `format_look`·`format_paragraph`·`edit_style`·`create_style`의 `paragraphs`, `samples`, `mixedFormatting`, `lineSpacingKind`, `format_paragraph`·`edit_style`·`create_style`의 모양 번호 `look`, `edit_style`·`create_style`의 `style`, `edit_style`의 `kind`, `set_header_footer`의 `exists`, `plain`이다. 다른 연산이나 안쪽 자리에 온 같은 이름은 모르는 인수로 거절한다.
+  - 읽은 답을 그대로 넘길 수 없는 경우가 있다. `format_look`·`format_paragraph`는 문단 안에서 낱말마다 다른 글자 서식(`font`, `size`, `bold`, `char_style` 등)을 모든 낱말에 입히는 호출을 거절하고 그 서식의 이름을 답에 적는다. 달리 꾸민 낱말이 그 서식을 잃기 때문이다. 판정은 문서를 보고 하므로 `mixedFormatting`이 있든 없든 같다. 그 서식을 빼고 넘기면 나머지가 들어가고, 일부러 모든 낱말에 입히려면 `every_word: true`를 함께 준다. 쓰기 연산이 받지 않는 값(개요 번호 `list: "outline"`, 배분·나눔 정렬)이 든 답은 그 값을 빼고 넘긴다. `create_style`은 이미 있는 영어 이름을 거절하므로 `english_name`을 빼거나 바꿔 넘긴다. 머리말·꼬리말이 없다는 답(`exists: false`)은 넘길 것이 없다.
+  - 글머리표 문단의 모양에는 글머리표 글자 `bullet`이 함께 온다. 같은 글머리표 꼴이라도 글자가 다르면 다른 모양이다.
+  - `format_cells`는 블록을 맨 위의 `from_row`·`from_col`·`to_row`·`to_col` 넷으로 주거나 칸 하나를 맨 위의 `row`·`col`로 줘도 받고, 답에 서식을 건 범위를 적는다. 넷 가운데 일부만 주거나 `cells`·`range`와 함께 주면 거절한다.
+  - `read_page_layout`의 답은 첫 줄이 설정의 JSON이고, 그다음 줄부터 쪽 지도의 글이다. 주의할 것(쪽 끝에 홀로 남은 줄, 쪽 끝 아래로 나간 표와 글, 여러 쪽에 걸친 표, 빈 쪽)이 먼저 오고, `Pages as printed:` 뒤에 쪽마다 한 줄이 온다. 밖에서 읽는 도구는 첫 줄만 JSON으로 읽는다. 문서를 바꾸는 연산의 답은 쪽 수가 바뀌었을 때 끝에 `Pages a -> b.`를 붙이고, `insert_table`·`insert_toc`·`insert_title_box`는 새 표의 번호(`It is table n`)를 적는다.
+  - `read_page_layout`은 같은 실행에서 쓴 머리말·꼬리말의 쪽 번호 필드를 `{page}`·`{pages}`로 답하고, 한 줄짜리 머리말·꼬리말의 정렬(`align`)과 글자 크기(`size`)도 답한다. `set_header_footer`는 `align`이 없으면 있던 줄의 정렬을 지킨다. 저장했다 다시 연 문서에서는 엔진이 필드 자리를 빈칸으로 돌려줘 필드를 알려 주지 못한다(`docs/tracking/findings.md`).
+  - 이미 쓴 문서를 고치는 길. 이 도구가 만든 표를 기록해 두는 것이 없어서(엔진이 표마다 고유 번호를 갖고 있지만 표의 번호를 돌려주는 호출이 없다, `docs/tracking/findings.md`) 표를 제자리에서 다시 그리지 않는다. `insert_title_box`는 표 안 글이면 이 도구가 만든 제목 상자라도 `in_table`로 거절하고, 그 표의 번호와 함께 `format_cells`(선·채움)와 `delete_table` 뒤 제목을 상자가 있던 자리에 새 문단으로 다시 넣어 `insert_title_box`를 부르는 길을 알린다. 이 길은 AI가 이 대화에서 만든 상자의 꼴을 사용자가 바꾸라 했을 때만 쓴다. 새 문단은 상자 위 줄 다음에(상자가 문서의 첫 문단이었으면 아래 줄 앞에) 넣고, 그쪽 줄이 표면 그 칸에 들어가므로 사용자에게 알린다. 상자가 첫 문단이었으면 빈 첫 줄이 남고 이를 지울 도구는 없다. 그 밖의 자리에는 빈 줄이 남지 않는다. `refresh_toc`는 쪽 번호만 다시 쓴다. 원래대로 어느 표든 받은 줄 바로 다음 두 칸 표에 쓰고, 머리글을 본문에서 찾은 줄의 쪽 번호만 고친다. `entries`는 받지 않는다. `insert_toc`는 문서를 연 뒤 자기가 만든 차례(첫째 칸이 그때 쓴 머리글 줄과 같은 두 칸 표)가 있거나, `차례`·`목차` 줄 아래 첫 글 줄이 탭과 쪽 번호로 끝나면(한글의 줄 차례) `toc_exists`로 거절하고, 표면 바로 위 문단이 글 줄일 때만 그 줄(`title`)을 적어 `refresh_toc`와 `delete_table` 뒤 그 줄 다음에 다시 만드는 길을 알린다. 바로 위가 빈 줄이나 표면 줄을 적지 않고 `delete_table` 뒤 그 자리에 다시 만드는 길만 알린다. 차례가 문서의 첫 문단이면(`first`) 지운 자리에 빈 첫 줄이 남고 이를 지울 도구가 없다고 덧붙인다. 문서를 다시 열면 앞서 만든 차례는 알아보지 못한다. `replace_text`·`replace_all`의 새 글에는 탭을 쓸 수 있다. `format_cells`의 `column_widths`는 표 전체의 열 너비 비율이고(표 너비는 그대로), 답에 열 너비(mm)를 적는다. `list_equations`는 본문 수식을 번호·앞뒤 낱말·스크립트로 보여 주고(`1. (in "넓이는 … 이다.") x^2`), 앞뒤 낱말이 동그라미 번호나 열 글자 미만뿐이면 같은 구역에서 위로 가장 가까운 문제 줄의 첫머리를 붙인다(`3. (in "① …", under "1. 다음 중 …") x=1`). 문제 줄은 문제 번호(`1.`, `1)`, `(1)`, `가.`, `(가)`, `문 1`)로 시작하는 줄이고, 뒤에 동그라미 번호가 있어도 된다. 위의 문제와 같은 꼴로 번호를 단 줄(`1)` 다음 `2)`, `(1)` 다음 `(2)`, `1.` 다음 `2.`)은 다음 문제다. 동그라미 번호로 시작하는 줄과, 다른 꼴의 문제 줄이나 그런 보기 바로 다음에 `1)`·`(1)`로 시작하는 줄은 보기다. `Ⅰ.`·`Ⅱ.`로 시작하는 줄은 문제가 아니라 부분의 시작이고, 그 위의 문제 줄은 붙이지 않는다. 수식이 든 문단이 문제 줄이거나 위에 문제 줄이 없으면 붙이지 않는다. `edit_equation`은 그 번호로 스크립트를 바꾸거나 수식을 지운다. 표 칸·각주·글상자 안의 수식은 수만 센다.
+  - 새 표는 붙인 문단이 평범한 본문(개요 수준·제목 스타일이 아니고, 굵지 않다)이고 크기가 본문이 가장 많이 쓴 크기(평범한 본문 문단의 수로 세고, 같으면 작은 쪽, 그래서 "(단위: 명)" 같은 8pt 줄이 10pt 본문 줄만큼 있으면 8pt다)와 같으면 그 문단의 글꼴·크기로, 아니면 본문 글자가 가장 많이 쓴 글꼴·크기(제목 문단과 굵은 문단은 빼고 센다, 그래서 짧은 문서에서 굵지 않은 큰 제목 바로 뒤의 표는 제목 글자가 많으면 제목의 꼴이다)로, 그런 본문이 없으면 굵지 않은 글자가 가장 많이 쓴 것으로, 그것도 없으면 붙인 문단의 꼴로 쓰고, `align`이 없으면 본문 칸을 왼쪽에 맞추며, 빈 칸에도 표의 글꼴·크기·정렬을 둔다. 차례는 쓰는 수준마다 `차례 1`~`차례 3` 스타일이 있으면 그 스타일로(제목은 `차례 제목`의 글자 모양, 가운데), 없으면 본문 꼴에 수준마다 들여쓰기를 더해 쓴다. `add_to_table`로 줄을 더하면 표의 가로선을 다시 써서 맨 위·맨 아래 선은 표 끝에, 머리 줄(머리줄 표시가 있거나 아래 선이 그 아래 줄의 선과 다른 첫 줄들, 두 줄짜리 표에서는 아래 선이 표 맨 위 선과 다른 첫 줄) 아래 선은 그 밑에 두고, 새 경계에는 본문 두 줄 사이의 선을 쓴다. 그런 경계가 없으면 표의 테두리는 쓰지 않고 가장 가는 세로 안쪽 선, 없으면 테두리가 아닌 가장 가는 가로선, 없으면 표가 쓰는 가장 가는 굵기의 실선을 쓴다. 합친 칸이 가로지르는 열은 같은 경계에서 가장 가까운 열의 선을 쓴다. 한 줄짜리 표는 엔진이 베낀 선 그대로다.
+  - 성공한 답도 하지 않은 것을 적는다. 머리줄이 없는 표의 `header_color`·`repeat_header`, 1단 문서의 `across_columns`, 단에 걸친 표의 `width_percent`·`place`가 그렇다. 글자색을 주지 않은 표 머리줄과 채운 제목 상자는 채움색 위에서 검은 글자가 잘 보이지 않으면 흰 글자로 쓰고 답에 적는다. 제목 상자에 준 글자색이 채움색 위에서 보이지 않아 버려졌을 때도 같다.
 - **한글 메모(결정 0072).** `.hwp`·`.hwpx`의 메모는 본문·표 칸·글상자에서 읽고, 앱의 메모 패널에서 평문으로 넣고 고치고 지운다(한 영역에 새 메모 하나, 서식 있는 메모는 읽기 전용). 작성자는 사용자 이름 설정 → PC 계정 이름 → `IeumOffice`(제품 이름), 새 메모의 날짜는 파일이 담고 있을 때만 보인다. 메모 편집기가 열려 있는 동안 저장은 `메모 작성을 먼저 저장하거나 취소해 주세요.`로 막고, 탭 닫기·종료는 메모를 버리고 닫을지 묻는다. AI는 메모를 읽을 수 있지만 쓰는 도구가 없고, 앵커를 지우는 편집은 그 요청에 한해 사람의 승인을 받는다. 저장은 연 형식 그대로 하고, `.hwpx`에서 실제로 빠진 메모가 있을 때만 수와 함께 HWP 저장을 안내한다. 메모가 없는 문서의 저장 결과는 예전과 같다.
 - **한글 문서를 PDF로 바꾼다.** `ieumoffice convert <파일.hwp|.hwpx> --to pdf`(MCP `convert`)는 창 없는 앱(`--headless-export`)에서 한글 편집기의 PDF 내보내기를 그대로 돌린다. 파일 메뉴의 "PDF로 내보내기", 다른 이름으로 저장의 PDF와 같은 인쇄 작업이라 쪽 모양과 글자 층이 같다. 한글 문서가 받는 경로는 PDF 하나다. 파일은 디스크에 있는 그대로 읽는다. 앱이 그 파일의 저장하지 않은 변경을 복구 사본으로 갖고 있어도 묻지 않고, 쓰지 않고, 지우지 않는다. 열리지 않는 파일은 종료 코드 3(`the input document did not open`)이고 PDF를 쓰지 않는다. 암호가 걸린 문서는 답할 사람이 없어 시간 초과로 실패한다.
 - **한글 읽기의 메모.** `hwpToText`와 `parseFileToText`는 메모가 있으면 본문과 표 뒤에 `### Comments` 블록을 붙인다. 첫 줄은 `- 작성자 (p.N): 첫 줄`, 이어지는 줄은 두 칸 들여쓰며, 작성자가 없으면 `unknown`, 쪽을 모르면 `(p.N)`을 뺀다. 메모가 없으면 블록을 붙이지 않는다. 같은 읽기를 쓰는 터미널 명령어(`ieumoffice hwp read`, `info`)와 MCP(`read_hwp`, `hwp_read`)의 출력에도 이 블록이 붙는다. 메모를 읽지 못하면 블록 없이 본문만 돌려준다. 이미 색인된 파일의 메모는 그 파일이 바뀌어 다시 색인될 때 검색에 들어간다. `hwpMemosOf`는 저장 검증을 위해 메모를 구조로 돌려주며, 엔진이 모델에 담지 못한 원시 기록은 세지 않는다.

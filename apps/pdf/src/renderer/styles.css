@@ -6455,6 +6455,19 @@ button.ai-overview-term-page:hover {
   animation: pdf-quote-flash 2s ease-out forwards;
 }
 
+/* what the last AI run changed (screen only, like the search hits); the look is the
+   shared .ai-changed-mark */
+.pdf-ai-marks-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pdf-ai-mark {
+  position: absolute;
+}
+
 @keyframes pdf-quote-flash {
   0%,
   70% {

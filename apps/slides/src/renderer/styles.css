@@ -1292,6 +1292,21 @@ body.vib .slide-list {
   border-color: var(--accent);
 }
 
+/* A slide the AI panel's last run changed: a small dot in the corner, screen only
+   (the thumbnail picture itself is drawn from the deck and never carries it) */
+.thumb.thumb-ai-changed::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-ai-changed-line);
+  box-shadow: 0 0 0 1.5px var(--slides-paper);
+  pointer-events: none;
+}
+
 .thumb-num {
   position: absolute;
   left: 4px;
@@ -1754,14 +1769,6 @@ body.vib .slide-list {
 .ai-header-btn:hover {
   background: var(--hover);
   color: var(--text);
-}
-
-.ai-header-btn.ai-undo-btn {
-  width: auto;
-  gap: 4px;
-  padding: 0 7px;
-  font: inherit;
-  font-size: 12px;
 }
 
 .ai-header-btn:disabled {
@@ -2503,46 +2510,6 @@ body.vib .slide-list {
 
 .ai-msg-tool-btn:disabled {
   opacity: 0.45;
-  cursor: default;
-}
-
-/* Hairline before the roll-back action; hidden unless an icon action precedes it */
-.ai-rollback-sep {
-  display: none;
-  width: 1px;
-  height: 14px;
-  align-self: center;
-  background: var(--border);
-}
-
-.ai-msg-tool-btn ~ .ai-rollback-sep {
-  display: block;
-}
-
-/* Quiet roll-back in the message toolbar (after copy/regenerate): dim at rest, solid on hover */
-.ai-rollback-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  height: 30px;
-  border: none;
-  background: none;
-  color: var(--text-dim);
-  font-size: 12px;
-  font-family: inherit;
-  padding: 0 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.ai-rollback-btn:hover:not(:disabled) {
-  color: var(--text);
-  background: var(--hover);
-}
-
-.ai-rollback-btn:disabled {
-  opacity: 0.5;
   cursor: default;
 }
 

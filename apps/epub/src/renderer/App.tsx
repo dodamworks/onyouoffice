@@ -62,6 +62,7 @@ import {
   scrollToEnd,
   scrollToStart,
   showHit,
+  showAiMarks,
   topBlockId,
   type ChapterTarget,
 } from './reader/frame-dom'
@@ -277,6 +278,14 @@ export default function App(): React.JSX.Element {
     frameDoc: frameDocRef,
     startBookTranslation,
   })
+  const aiMarksRef = useRef(ai.marks)
+  aiMarksRef.current = ai.marks
+  /** marks what the last AI run changed in the chapter on screen (a highlight, not the chapter's DOM) */
+  const paintAiMarks = useCallback((doc: Document | null) => {
+    const current = shownRef.current
+    if (!doc || !current) return
+    showAiMarks(doc, aiMarksRef.current?.get(current.spineIndex) ?? null)
+  }, [])
 
   const flash = useCallback((next: Notice | null) => {
     if (noticeTimerRef.current !== null) window.clearTimeout(noticeTimerRef.current)
@@ -830,10 +839,13 @@ export default function App(): React.JSX.Element {
       // the app losing focus while the chapter holds it (auto save)
       doc.defaultView?.addEventListener('blur', () => frameBlurRef.current?.())
       applyTarget(doc, pendingTargetRef.current)
+      paintAiMarks(doc)
       schedulePosition()
     },
-    [applyTarget, schedulePosition, editor],
+    [applyTarget, schedulePosition, editor, paintAiMarks],
   )
+  // again after every edit: a redrawn chapter body drops the old ranges
+  useEffect(() => paintAiMarks(frameDocRef.current), [ai.marks, editState, paintAiMarks])
 
   /** An outside address from a link in the book: only safe ones open, in the browser. */
   const openOutside = useCallback(

@@ -50,8 +50,9 @@ import {
   placeRemoteEntries,
   useProjectPanel,
   type ProjectPanel,
+  useSubscriptionUsageUpdates,
+  AiChangesCard,
 } from '@genoffice/ui'
-import { IconPicture, IconTable } from '@genoffice/ui/icons'
 import { useEffect, useId, useRef, useState } from 'react'
 import type {
   DragEvent as ReactDragEvent,
@@ -81,7 +82,7 @@ import sendStop from '../assets/send-stop.png'
 import attachIcon from '../assets/attach-icon.png'
 import { ATTACHMENT_IMAGE_EXTS } from '../../shared/ipc'
 import type { AttachmentAddResult, AttachmentMeta } from '../../shared/ipc'
-import type { AgentMemoRemovalRefusal, AgentPlace } from '../../../studio-plugin/agent-plugin.mjs'
+import type { AgentMemoRemovalRefusal } from '../../../studio-plugin/agent-plugin.mjs'
 import type { AgentBridge } from './agent-bridge'
 import type { AiPrefill } from './easy-words'
 import { blockedRunOf, type AiBlockedRun } from './ai-connection'
@@ -96,6 +97,13 @@ import {
   type SelectionScope,
 } from './selection-scope'
 import { createHwpSkill, type HwpChange } from './hwp-skill'
+import {
+  hwpChangeCount,
+  hwpChangeLine,
+  revertableIndex,
+  undoOutcome,
+  type HwpRunState,
+} from './run-changes'
 import { MemoApprovalGate, memoApprovalPreview } from './memo-approval'
 import { unfinishedSteps, type RunStep } from './unfinished-steps'
 import { useSubscriptionConnection } from './subscription-client'
@@ -143,7 +151,7 @@ interface RunChanges {
   items: HwpChange[]
   /** the editor's count of changes made by anyone else, read when the run began */
   foreign: number
-  state: 'applied' | 'reverted' | 'refused'
+  state: HwpRunState
 }
 
 interface ChatEntry {
@@ -552,6 +560,25 @@ export function AiPanel({
       window.clearInterval(timer)
     }
   }, [busy])
+  // the plugin takes the marks off by itself when the user edits the document: the card's
+  // button to clear them goes with them
+  useEffect(() => {
+    if (busy || !marksShown) return
+    let stopped = false
+    const readMarks = async (): Promise<void> => {
+      try {
+        const result = await bridgeRef.current.hasMarks()
+        if (!stopped && !result.shown) setMarksShown(false)
+      } catch {
+        // the editor is not ready, or is gone: the button stays as it is
+      }
+    }
+    const timer = window.setInterval(() => void readMarks(), SELECTION_POLL_MS)
+    return () => {
+      stopped = true
+      window.clearInterval(timer)
+    }
+  }, [busy, marksShown])
   const scope = selected && selected.key !== scopeCleared ? selected : null
   const scopeRef = useRef(scope)
   scopeRef.current = scope
@@ -661,6 +688,9 @@ export function AiPanel({
   const streamErrorRef = useRef<IpcStreamError | null>(null)
   /** usage windows the subscription program reported last */
   const [subscriptionUsage, setSubscriptionUsage] = useState<AiSubscriptionUsage[]>([])
+  // usage a picture request reported reaches every window (the chat stream only its own);
+  // the shared merge keeps the windows a report does not name
+  useSubscriptionUsageUpdates(() => window.hwpApi.aiSubscription, setSubscriptionUsage)
   /** the input of the last run was cut to fit a limit */
   const [inputTruncated, setInputTruncated] = useState(false)
   const langRef = useRef(lang)
@@ -1160,16 +1190,8 @@ export function AiPanel({
     window.setTimeout(() => setCopiedIdx((cur) => (cur === idx ? null : cur)), 1200)
   }
 
-  // The editor's history is one stack: only the newest run still in the document can be
-  // taken back, and a run that could not be taken back whole blocks the ones under it.
-  const revertableIdx = (() => {
-    for (let i = chat.length - 1; i >= 0; i--) {
-      const state = chat[i]!.changes?.state
-      if (state === 'applied') return i
-      if (state === 'refused') return -1
-    }
-    return -1
-  })()
+  // the editor's history is one stack: only the newest run still in the document can be taken back
+  const revertableIdx = revertableIndex(chat.map((entry) => entry.changes?.state))
   /** the newest user message: the one the last run (and its skills) belongs to */
   const lastUserIdx = chat.map((entry) => entry.role).lastIndexOf('user')
 
@@ -1184,17 +1206,17 @@ export function AiPanel({
           i === idx && entry.changes ? { ...entry, changes: { ...entry.changes, state } } : entry,
         ),
       )
-      if (state === 'reverted') {
+      if (state === 'reverted' || state === 'partial') {
         revertedNoteDueRef.current = true
-        // what they marked was taken back
+        // what they marked was taken back, or moved under them
         clearMarks()
       }
       setReverting(false)
     }
     setReverting(true)
     bridgeRef.current.undo(changes.items.length, changes.foreign).then(
-      (result) => settle(result.ok ? 'reverted' : 'refused'),
-      () => settle('refused'),
+      (result) => settle(undoOutcome(result)),
+      () => settle(undoOutcome(null)),
     )
   }
 
@@ -1505,12 +1527,18 @@ export function AiPanel({
               {project.messageParts(entry)}
               {entry.skillProposals?.map((key) => skillCards.render(key))}
               {entry.changes && (
-                <RunChangesCard
-                  changes={entry.changes}
+                <AiChangesCard
+                  lang={lang}
+                  state={entry.changes.state}
+                  count={hwpChangeCount(entry.changes.items)}
+                  lines={entry.changes.items.map(hwpChangeLine)}
                   canRevert={i === revertableIdx && !busy && !reverting}
                   onRevert={() => revert(i)}
                   onClearMarks={i === revertableIdx && marksShown ? clearMarks : null}
-                  onShow={(place) => void bridgeRef.current.reveal(place).catch(() => {})}
+                  onShowLine={(index) => {
+                    const place = entry.changes?.items[index]?.place
+                    if (place) void bridgeRef.current.reveal(place).catch(() => {})
+                  }}
                 />
               )}
               <AiReplyProgress reply={entry} thinking={t('aiThinking')} working={t('aiWorking')} />
@@ -1742,112 +1770,6 @@ export function AiPanel({
         </div>
       )}
     </aside>
-  )
-}
-
-/** What a run changed in the document, with the button that takes the whole run back. */
-function RunChangesCard({
-  changes,
-  canRevert,
-  onRevert,
-  onClearMarks,
-  onShow,
-}: {
-  changes: RunChanges
-  canRevert: boolean
-  onRevert: () => void
-  /** set while the editor marks these changes on the pages */
-  onClearMarks: (() => void) | null
-  onShow: (place: AgentPlace) => void
-}): ReactElement {
-  const { t } = useI18n()
-  const count = changes.items.reduce((sum, item) => sum + item.count, 0)
-  return (
-    <div className={`ai-changes ai-changes-${changes.state}`}>
-      <div className="ai-changes-head">
-        <span className="ai-changes-title">
-          {changes.state === 'reverted' ? t('aiReverted') : t('aiChangesTitle', { count })}
-        </span>
-        {onClearMarks && changes.state === 'applied' && (
-          <button className="ai-changes-unmark" onClick={onClearMarks}>
-            {t('aiClearMarks')}
-          </button>
-        )}
-        {changes.state === 'applied' && (
-          <button className="ai-changes-revert" disabled={!canRevert} onClick={onRevert}>
-            {t('aiRevert')}
-          </button>
-        )}
-      </div>
-      <ul className="ai-changes-list">
-        {changes.items.map((item, j) => (
-          <li key={j} className="ai-change" dir="auto">
-            {item.place && changes.state !== 'reverted' ? (
-              // a place that was taken back is no longer there to show
-              <button
-                type="button"
-                className="ai-change-go"
-                data-tip={t('aiShowChange')}
-                onClick={() => onShow(item.place!)}
-              >
-                <ChangeLine item={item} />
-              </button>
-            ) : (
-              <ChangeLine item={item} />
-            )}
-          </li>
-        ))}
-      </ul>
-      {changes.state === 'refused' && (
-        <div className="ai-changes-note" role="status">
-          {t('aiRevertRefused')}
-        </div>
-      )}
-    </div>
-  )
-}
-
-/** One change as a line: what went (struck through), what came, marked the same in every language. */
-function ChangeLine({ item }: { item: HwpChange }): ReactElement {
-  if (item.kind === 'insert' || item.kind === 'table' || item.kind === 'image') {
-    return (
-      <>
-        <span className="ai-change-mark" aria-hidden>
-          +{item.kind === 'table' && <IconTable size={12} />}
-          {item.kind === 'image' && <IconPicture size={12} />}
-        </span>
-        <ins className="ai-change-to">{item.to}</ins>
-      </>
-    )
-  }
-  if (item.kind === 'delete') {
-    return (
-      <>
-        <span className="ai-change-mark" aria-hidden>
-          −
-        </span>
-        <del className="ai-change-from">{item.from}</del>
-      </>
-    )
-  }
-  return (
-    <>
-      {item.kind === 'field' ||
-      item.kind === 'format' ||
-      item.kind === 'cells' ||
-      item.kind === 'lines' ||
-      item.kind === 'note' ? (
-        // named, not struck through: this text stays, it is what the change was done to
-        <span className="ai-change-field">{item.from}</span>
-      ) : (
-        <del className="ai-change-from">{item.from}</del>
-      )}
-      <span className="ai-change-arrow" aria-hidden>
-        →
-      </span>
-      <ins className="ai-change-to">{item.to}</ins>
-      {item.count > 1 && <span className="ai-change-count">×{item.count}</span>}
-    </>
   )
 }
 

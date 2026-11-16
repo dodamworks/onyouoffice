@@ -789,7 +789,7 @@ export interface DesktopApi {
   }): Promise<{ text?: string; error?: string; errorCode?: MediaToolErrorCode; resetsAt?: number }>
   fetchImage(url: string): Promise<{ base64: string; mime: string } | null>
   /** AI image generation via the Codex subscription or a key image provider (see aiToolCapabilities) */
-  aiGenerateImage(op: { prompt: string; aspectRatio?: string }): Promise<{
+  aiGenerateImage(op: { prompt: string; aspectRatio?: string; model?: string }): Promise<{
     url?: string
     error?: string
     errorCode?: MediaToolErrorCode

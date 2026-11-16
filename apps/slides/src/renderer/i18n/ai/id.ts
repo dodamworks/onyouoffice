@@ -91,8 +91,6 @@ export const id = {
   aiStopGeneration: 'Hentikan pembuatan',
   aiStop: 'Berhenti',
   aiSend: 'Kirim',
-  aiSnapshotsTitle: 'Snapshot versi',
-  aiRollback: 'Kembalikan',
   aiStarterPolishTitle: 'Perbaiki judul dan teks slide ini',
   aiStarterTighten: 'Buat poin-poin slide ini lebih ringkas',
   aiStarterProofread: 'Periksa salah ketik di seluruh presentasi dan perbaiki',

@@ -46,7 +46,7 @@ vi.mock('electron', () => ({
   webContents: { getAllWebContents: () => [], fromId: () => null },
 }))
 vi.mock('@genoffice/ai-search', () => ({
-  createCodexImageCliGenerator: () => async () => ({ bytes: new Uint8Array(), mime: 'image/png' }),
+  createCodexImageGenerator: () => ({ generate: async () => null, models: async () => null }),
   registerCodexImageGenerator: () => {},
 }))
 vi.mock('@genoffice/ai-provider/subscription', () => ({

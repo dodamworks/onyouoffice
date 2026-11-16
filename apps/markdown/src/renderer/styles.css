@@ -11,7 +11,6 @@
   --md-code-bg: #f6f8fa;
   --md-code-inline-bg: rgb(129 139 152 / 14%);
   --md-table-header-bg: #f6f8fa;
-  --md-ai-changed: rgb(255 213 79 / 40%);
   --md-ai-anchor-bg: rgb(80 128 220 / 14%);
   --md-ai-anchor-line: #5080dc;
   --md-on-accent: #ffffff;
@@ -54,7 +53,6 @@
   --md-code-bg: #23272e;
   --md-code-inline-bg: rgb(129 139 152 / 22%);
   --md-table-header-bg: #282c32;
-  --md-ai-changed: rgb(255 213 79 / 28%);
   --md-ai-anchor-bg: rgb(96 148 240 / 22%);
   --md-ai-anchor-line: #6a9aec;
   --md-on-accent: #ffffff;
@@ -91,7 +89,6 @@
     --md-code-bg: #23272e;
     --md-code-inline-bg: rgb(129 139 152 / 22%);
     --md-table-header-bg: #282c32;
-    --md-ai-changed: rgb(255 213 79 / 28%);
     --md-ai-anchor-bg: rgb(96 148 240 / 22%);
     --md-ai-anchor-line: #6a9aec;
     --md-on-accent: #ffffff;
@@ -243,7 +240,6 @@ html[data-doc-theme='light'] .doc-page {
   --md-code-bg: #f6f8fa;
   --md-code-inline-bg: rgb(129 139 152 / 14%);
   --md-table-header-bg: #f6f8fa;
-  --md-ai-changed: rgb(255 213 79 / 40%);
   --md-ai-anchor-bg: rgb(80 128 220 / 14%);
   --md-ai-anchor-line: #5080dc;
   --md-selection: color-mix(in srgb, var(--accent) 10%, transparent);
@@ -2182,82 +2178,6 @@ html.markdown-graph-open .ribbon-tabs {
   transform: scale(0.98);
 }
 
-/* Version snapshots footer (same as docs) */
-.ai-versions {
-  border-top: 1px solid var(--border);
-  padding: 8px 14px 10px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-
-.ai-versions-title {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-dim);
-  margin-bottom: 4px;
-}
-
-.ai-version-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  padding: 4px 8px;
-  margin: 0 -8px;
-  border-radius: 6px;
-}
-
-.ai-version-row:hover {
-  background: var(--hover);
-}
-
-.ai-version-label {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  overflow: hidden;
-  white-space: nowrap;
-  color: var(--text);
-  min-width: 0;
-}
-
-.ai-version-label > :last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ai-version-time {
-  flex-shrink: 0;
-  font-size: 11px;
-  color: var(--text-dim);
-  font-variant-numeric: tabular-nums;
-}
-
-.ai-version-rollback {
-  flex-shrink: 0;
-  border: none;
-  background: none;
-  color: var(--word-blue);
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.ai-version-rollback:hover {
-  background: var(--active-bg);
-}
-
-.ai-version-rollback:disabled {
-  color: var(--text-dim);
-  cursor: default;
-  background: none;
-}
-
 /* Composer floats over the chat scroll area — no top border (agent-shell §4.6) */
 .ai-composer {
   border-top: none;
@@ -2611,14 +2531,6 @@ html.markdown-graph-open .ribbon-tabs {
 
 .md-outline-item:hover {
   background: var(--hover);
-}
-
-/* ---- transient AI-change highlight ---- */
-
-.doc-editor .ai-changed {
-  background: var(--md-ai-changed);
-  border-radius: 2px;
-  transition: background 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ---- code block chrome ---- */

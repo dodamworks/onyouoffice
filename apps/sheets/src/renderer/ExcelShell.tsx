@@ -327,6 +327,10 @@ interface ExcelShellProps {
   readonly onStop: () => void
   readonly onNewChat: () => void
   readonly onUndo: (steps?: number) => void
+  /// The changes card of the AI reply at this chat index takes its run back.
+  readonly onRevertAiChanges: (index: number) => Promise<void>
+  /// "Hide marks" on a changes card: the grid drops the last run's marks.
+  readonly onClearAiMarks: () => void
   /// A1 notation of the selected AI scope, including an explicitly requested
   /// single cell, or null when there is no scope.
   readonly aiScopeRange: string | null
@@ -366,7 +370,7 @@ interface ExcelShellProps {
   readonly canSaveAs: boolean
   readonly onSaveAs: () => void
   /// QAT redo (workbook history, same path as the app menu's ⇧⌘Z); undo
-  /// shares the AI panel's onUndo above.
+  /// is onUndo above.
   readonly onRedo: () => void
   /// Undo/redo stack occupancy: the QAT buttons grey out when there is nothing to apply.
   readonly canUndo: boolean
@@ -599,6 +603,8 @@ export function ExcelShell({
   onStop,
   onNewChat,
   onUndo,
+  onRevertAiChanges,
+  onClearAiMarks,
   aiScopeRange,
   aiScopeColumns,
   aiScopeLocked,
@@ -1168,7 +1174,8 @@ export function ExcelShell({
             }}
             onStop={onStop}
             onNewChat={onNewChat}
-            onUndo={onUndo}
+            onRevertChanges={onRevertAiChanges}
+            onClearMarks={onClearAiMarks}
             scopeRange={aiScopeRange}
             scopeColumns={aiScopeColumns}
             scopeLocked={aiScopeLocked}

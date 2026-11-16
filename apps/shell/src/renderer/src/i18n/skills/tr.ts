@@ -48,6 +48,7 @@ export const tr = {
   unhide: 'Yeniden göster',
   confirmRemove:
     '“{title}” becerisi Geri Dönüşüm Kutusu’na taşınsın mı? Oradan geri yükleyebilirsiniz.',
+  removeTurnOn: '{name} becerisini ({source}) yeniden aç',
   confirmHide:
     'Yerleşik “{title}” becerisi gizlensin mi? Gizlenen beceri kapatılır; listenin altından yeniden gösterebilirsiniz.',
   cancel: 'İptal',
@@ -181,4 +182,28 @@ export const tr = {
   builtinBodyNote: 'Aşağıdaki talimatlar AI’ya verilen metindir, yazıldığı gibi gösterilir',
   pasteUnclosed:
     'Kapanış --- satırı eksik. Metin kesilmiş olabilir; baştan sona yeniden kopyalayın.',
+  versionsTitle: 'Önceki sürümler',
+  versionsNone:
+    'Henüz önceki sürüm yok. Bu beceriyi düzenlediğinizde, değiştirdiğinizde veya güncellediğinizde önceki sürüm burada saklanır.',
+  versionsTotal: '{n} sürüm saklanıyor, toplam {size}. Siz silene kadar kalırlar.',
+  versionReasonEdit: 'Düzenlemeden önce',
+  versionReasonReplace: 'Değiştirilmeden önce',
+  versionReasonUpdate: 'Güncellemeden önce',
+  versionReasonRestore: 'Geri dönmeden önce',
+  versionCompare: 'Farkları gör',
+  versionRestore: 'Bu sürüme geri dön',
+  versionRestoreNote: 'Şu anki sürüm de burada saklanır; ona yeniden dönebilirsiniz.',
+  versionRestoreUnsaved:
+    'Kaydedilmemiş değişiklikleriniz var. Önce kaydedin ya da iptal edin, sonra geri dönün.',
+  versionRemove: 'Sil',
+  versionRemoveAsk: 'Bu sürüm silinsin mi? Geri getirilemez.',
+  versionSame: 'Şu anki sürümle aynı içeriği taşıyor.',
+  versionDiffLegend: '+ geri dönerseniz geri gelen satırlar, − kaybolan satırlar',
+  versionDiffGap: '{n} değişmeyen satır',
+  versionFileAdded: 'geri gelir',
+  versionFileRemoved: 'kaybolur',
+  versionFileModified: 'değişir',
+  versionRestored: 'Önceki sürüme geri dönüldü',
+  replacedKept:
+    'Yerine geçtiği sürüm bu becerinin “Önceki sürümler” bölümünde saklanır ve ona geri dönebilirsiniz.',
 } satisfies Record<keyof typeof zh, string>

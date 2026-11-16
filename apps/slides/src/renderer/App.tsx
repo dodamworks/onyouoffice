@@ -124,6 +124,7 @@ import { ToastHost } from './components/toast'
 import { showToast } from './components/toast-bus'
 import { t, useI18n } from './i18n/locale'
 import { AiPanel } from './ai/AiPanel'
+import { markedNodeIds, slideKey, type DeckMarks } from './ai/run-changes'
 import { useAiDock } from './ai/use-ai-dock'
 import { ChartDataDialog } from './components/ChartDataDialog'
 import type { BrushFormat } from './format-brush'
@@ -405,6 +406,8 @@ export function App() {
   const [editingCell, setEditingCell] = useState<EditingCellState | null>(null)
   /** Element-scoped AI edits waiting to be submitted (session-only, see the queue helpers below) */
   const [editQueue, setEditQueue] = useState<EditQueueItem[]>([])
+  /** What the AI panel's last run changed: marked on the canvas and the thumbnails, screen only */
+  const [aiMarks, setAiMarks] = useState<DeckMarks | null>(null)
   // Armed shape draw mode (ribbon gallery pick); null = normal selection behavior
   const [drawKind, setDrawKind] = useState<InsertKind | null>(null)
   /** Latest-state bundle for the extracted action modules; refreshed every render (see action-context.ts). */
@@ -3791,7 +3794,7 @@ export function App() {
                 open={aiDock.open}
                 onExpand={aiDock.onExpand}
                 onCollapse={toggleAi}
-                onUndo={() => void undo()}
+                onAiMarks={setAiMarks}
                 onPathChange={(p) => {
                   setPath(p)
                   setDirty(false)
@@ -3961,7 +3964,7 @@ export function App() {
                               data-index={i}
                               role="option"
                               aria-selected={selectedSlides.includes(i)}
-                              className={`thumb ${i === current ? 'active' : selectedSlides.includes(i) ? 'selected' : ''} ${s.hidden ? 'thumb-hidden' : ''}${thumbDragCls(i)}`}
+                              className={`thumb ${i === current ? 'active' : selectedSlides.includes(i) ? 'selected' : ''} ${s.hidden ? 'thumb-hidden' : ''}${aiMarks?.has(slideKey(s, i)) ? ' thumb-ai-changed' : ''}${thumbDragCls(i)}`}
                               data-tip={s.hidden ? t('appThumbHiddenTitle') : undefined}
                               {...thumbDragProps(i)}
                               onClick={(e) => selectThumb(i, e)}
@@ -4242,6 +4245,7 @@ export function App() {
                               ref={canvasRef}
                               slide={slide}
                               selectedIds={selectedIds}
+                              aiMarkedIds={markedNodeIds(slide, current, aiMarks)}
                               onSelect={handleCanvasSelect}
                               onEditText={startEdit}
                               onTransform={onTransform}

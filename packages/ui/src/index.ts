@@ -455,6 +455,13 @@ export {
   type UseSubscriptionConnectionOptions,
 } from './use-subscription-connection'
 export {
+  mergeLatestSubscriptionUsage,
+  subscriptionUsageOf,
+  useSubscriptionUsageUpdates,
+  type SubscriptionUsageMerge,
+  type SubscriptionUsageSource,
+} from './use-subscription-usage-updates'
+export {
   AI_SUBSCRIPTION_STRINGS,
   aiSubscriptionText,
   type AiSubscriptionStringKey,
@@ -506,6 +513,15 @@ export {
   type RunStopNotice,
 } from './run-stop'
 export { AI_RUN_STOP_LABELS, type AiRunStopLabels } from './strings-run-stop'
+export {
+  AiChangesCard,
+  aiChangesLabels,
+  aiChangesNote,
+  aiChangesTitle,
+  type AiChangeLine,
+  type AiChangesState,
+} from './AiChangesCard'
+export { AI_CHANGES_LABELS, type AiChangesLabels } from './strings-ai-changes'
 export { AiSubscriptionUsageLine } from './AiSubscriptionUsageLine'
 export {
   AiCodexNotice,

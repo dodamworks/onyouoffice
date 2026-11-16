@@ -115,6 +115,7 @@ import type {
 } from '../shared/ipc'
 import { SUBSCRIPTION_IPC_CHANNELS } from '@genoffice/ai-provider/browser'
 import {
+  SUBSCRIPTION_USAGE_CHANNEL,
   subscriptionLaunchResultOf,
   subscriptionStatusMapOf,
   type SubscriptionApi,
@@ -171,6 +172,11 @@ const subscriptionApi: SubscriptionApi = {
       handler(subscriptionStatusMapOf(statuses))
     ipcRenderer.on(SUBSCRIPTION_IPC_CHANNELS.changed, listener)
     return () => ipcRenderer.removeListener(SUBSCRIPTION_IPC_CHANNELS.changed, listener)
+  },
+  onUsage(handler) {
+    const listener = (_event: unknown, usage: unknown) => handler(Array.isArray(usage) ? usage : [])
+    ipcRenderer.on(SUBSCRIPTION_USAGE_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(SUBSCRIPTION_USAGE_CHANNEL, listener)
   },
 }
 
@@ -410,6 +416,7 @@ const api: SlidesApi = {
   applyEditScript: (op: ApplyEditScriptOp) => ipcRenderer.invoke('slides:apply-edit-script', op),
   applyTxn: (op: ApplyTxnOp) => ipcRenderer.invoke('slides:apply-txn', op),
   aiSnapshotRestore: (id: number) => ipcRenderer.invoke('slides:ai-snapshot-restore', id),
+  aiSnapshotAlive: (ids: number[]) => ipcRenderer.invoke('slides:ai-snapshot-alive', ids),
   undo: () => ipcRenderer.invoke('slides:undo'),
   redo: () => ipcRenderer.invoke('slides:redo'),
   pickExportDir: () => ipcRenderer.invoke('slides:pick-export-dir'),

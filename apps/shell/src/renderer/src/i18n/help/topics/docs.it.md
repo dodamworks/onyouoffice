@@ -80,7 +80,7 @@ Fai clic destro ovunque nel corpo del testo — il menu si adatta all'elemento s
 ## IA
 
 - Pulsante IA nella barra multifunzione e pannello laterale: riscrittura, espansione, traduzione, sintesi, inserimento di tabelle preimpostate, più istruzioni libere.
-- Ogni intervento dell'IA crea prima uno snapshot; puoi tornare indietro dall'elenco delle versioni e il ripristino stesso è annullabile.
+- I punti modificati dall'IA sono segnati in giallo. **Annulla queste modifiche**, nella scheda sotto la risposta, annulla quell'intervento per intero (tornano indietro anche gli interventi successivi), e il ripristino stesso è annullabile.
 
 ## Salvataggio ed esportazione
 

@@ -43,6 +43,7 @@ Markdown 에디터다. 일반 `.md` 파일 위에서 TipTap 블록 편집기를 
 - 없는 노트를 가리키는 링크에서 노트를 만드는 일(`wiki-create.ts`, `markdown:create-wiki-note`)은 빈 파일 하나를 쓴다. 폴더가 붙은 이름은 vault 아래에, 맨 이름은 열린 문서 옆에 만든다. `..`, 절대 경로, Windows 장치 이름(`CON`, `NUL`, `COM1` 등), 노트가 아닌 확장자(`.md`·`.markdown`·`.txt` 밖, 예: `[[tool.exe]]`)는 거절하고, 이미 있는 파일은 열기만 하고 덮어쓰지 않는다(배타적 만들기).
 - TipTap 패키지는 `electron.vite.config.ts`의 `dedupe`로 이 앱의 사본 하나에 고정한다. 문서 에디터가 다른 버전을 쓰고 npm이 일부를 저장소 루트로 올리기 때문에, 고정하지 않으면 번들에 코어가 둘 들어간다. TipTap 확장을 추가하면 이 목록에도 넣는다.
 - 패널은 다른 에디터와 같은 부품으로 조립한다(`AiConnectPrompt`, `AiFirstConnectionNotice`, `AiBlockedNotice`, `aiRunErrorText`). 막힌 실행의 원인은 전송이 기록한 마지막 실패가 그 메시지의 실패일 때만 쓴다.
+- **AI가 바꾼 곳과 되돌리기.** 문서를 바꾼 실행의 마지막 답 아래에 공용 `AiChangesCard`가 하나 붙는다(옛 "버전 스냅샷" 띠는 없앴다). 되돌리기는 그대로 스냅샷 복원이다. 실행의 첫 변경 직전에 찍은 본문·속성 블록으로 돌아가므로 그 뒤의 실행(과 그 사이 사람이 고친 것)도 함께 사라지고, 그 카드들도 '되돌림'이 된다(`revertsLater`). 스냅샷은 실행 20개까지 두고, 밀려난 실행의 카드는 'expired'다. 개수는 표시가 걸린 최상위 블록 수이고, 표시 없는 변경(지우기, 속성 블록)이 섞이면 뺀다. 표시(`editor/aiHighlight.ts`, 공용 `.ai-changed-mark`)는 실행이 끝나도 남고 다음 실행 시작, "표시 지우기", 되돌리기, 새 대화에서 걷힌다. 화면 장식이라 Markdown·클립보드·모델에 가지 않고, 인쇄·PDF·쪽 그림·HTML 사본은 `buildPrintHtml`이 그 span을 벗겨 낸다. 카드는 대화 기록에 저장하지 않는다.
 - `odt-export.ts`는 HTML 편집기의 같은 이름 파일과 내용이 같다. 한쪽을 고치면 다른 쪽도 고친다.
 - 복구 사본: 저장하지 않은 변경이 있으면 화면이 약 30초마다 저장할 때 쓸 글자 그대로를 뒷단에 넘기고(`src/renderer/recovery-copy.ts`, 자동 저장 스위치와 무관), 뒷단이 공용 저장소로 `<userData>/markdown-autosave`에 둔다(`src/main/recovery.ts`). 원본 파일과 사용자 폴더에는 쓰지 않는다(제목 없는 문서 포함). 저장(자동 저장·다른 이름·MCP 포함)은 사본을 지우고, "저장 안 함"과 MCP의 저장 없이 닫기는 `dontSave`로, 깨끗하게 닫힌 탭은 자기가 쓴 사본만 지운다. 화면이 죽은 탭과 앱이 끝나는 중의 닫기는 지우지 않는다. 사본이 있는 파일을 열면 내용을 읽기 전에 `recoveryOpen`이 공용 물음(Esc는 되살리기)을 거치고, 되살린 글은 원래 경로를 저장 대상으로 둔 채 "바뀜" 상태로 열린다. 껍데기 앱은 `markdownRecoveryEditor`(약속), `markdownRecoveryIdentity`, `setMarkdownRecoveryTitleSource`를 쓴다. `recovery.ts`와 `recovery-copy.ts`는 HTML 편집기의 같은 이름 파일과 내용이 같다.
 - 문자열은 `src/renderer/i18n/strings.ts` 한 파일에 22개 언어가 있고 `zh`가 키 집합을 정한다. 구독 연결 문장과 AI 진입 이름은 `@genoffice/ui`의 것을 쓴다.
@@ -58,6 +59,7 @@ Markdown 에디터다. 일반 `.md` 파일 위에서 TipTap 블록 편집기를 
 - 실행: `npm run test -w @genoffice/markdown`(또는 이 폴더에서 `npx vitest run`), `npm run typecheck -w @genoffice/markdown`. 환경은 `jsdom`이다.
 - 저장 경로를 바꾸면 "고치지 않은 블록의 바이트가 그대로인지"를 테스트한다. 링크 참조 정의, 각주, 원시 HTML 블록, CRLF 파일, BOM이 있는 파일을 포함한다.
 - 가림을 바꾸면 쪼개진 표식, 가려진 범위를 가로지르는 선택, 모르는 노드 형태에서 원문이 모델용 글에 남지 않는지 테스트한다.
+- AI가 바꾼 곳(`tests/ai-marks.test.ts`, `tests/ai-changes-card.test.ts`): 표시가 실행 뒤에도 남고 언제 걷히는지, 블록 수, 인쇄 사본에 표시가 없는지, 카드의 상태(되돌림, 뒤 실행까지 되돌림, 20개 밖의 expired).
 - 노트에 넣기(`tests/note-append.test.ts`, `tests/note-append-editor.test.ts`): 그 노트를 보여 주는 탭만 한 번 가져가는지, 문서 끝에 넣고 바뀜이 되는지, 파일은 그대로인지.
 - Save As › PDF(`tests/save-as-pdf.test.ts`, `tests/save-as-pdf-wiring.test.ts`): 고른 `.pdf`가 PDF로만 쓰이고 Markdown 원본·경로가 그대로인지, 다음 저장이 계속 `.md`로 가는지, 화면에 그릴 문서가 없으면 PDF 선택지를 내놓지 않는지.
 - Save As의 다른 형식(`tests/save-as-formats.test.ts`, `tests/save-as-formats-wiring.test.ts`): 형식 목록과 순서, Word·ODT·쪽 이미지가 허락받은 경로에만 두 번째 창 없이 쓰이는지, 쪽 이미지의 번호 붙은 이름, 문서의 경로·바뀜 상태·복구 사본이 그대로인지.

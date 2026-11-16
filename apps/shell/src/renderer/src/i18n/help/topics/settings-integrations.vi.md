@@ -2,7 +2,9 @@
 
 ## Mở cài đặt
 
-Hàng ở góc dưới bên trái của Trang chủ mở bảng cài đặt (hàng đó ghi "Kết nối AI" cho đến khi có một AI được kết nối). Bảng đó có năm mục: Tài khoản, AI, Chung, Tích hợp và Giới thiệu.
+Hàng ở góc dưới bên trái của Trang chủ mở bảng cài đặt (dòng bên dưới cho biết đã có AI được kết nối hay chưa). Bảng đó có năm mục: Tài khoản, AI, Chung, Tích hợp và Giới thiệu.
+
+Bạn cũng có thể mở từ bất kỳ thẻ nào bằng **⌘,** (Ctrl+, trên Windows và Linux), trên Mac bằng **Cài đặt…** trong menu ứng dụng (menu mang tên ứng dụng, ở bên trái thanh menu), hoặc trên Windows và Linux bằng **Menu (☰) ▸ Cài đặt…**. Trong thẻ Word, ⌘, (Ctrl+,) là chỉ số dưới, nên hãy mở từ menu.
 
 **Tài khoản** cho biết tình trạng các kết nối Claude, ChatGPT và Codex của bạn, còn **Quản lý kết nối** dẫn tới mục AI. AI có các bài riêng: [Kết nối gói đăng ký](help://subscription) và [Mô hình AI và cài đặt](help://ai-models).
 
@@ -59,7 +61,7 @@ Cài đặt có thể đăng ký GenOffice làm ứng dụng xử lý .docx / .x
 ## Thông báo bên thứ ba và cập nhật
 
 - Trợ giúp ▸ Thông báo của bên thứ ba: danh mục giấy phép nguồn mở đầy đủ đi kèm ứng dụng.
-- Menu (☰) ▸ Kiểm tra bản cập nhật (trên Mac là Trợ giúp ▸ Kiểm tra bản cập nhật): kích hoạt một lần kiểm tra thủ công; nếu có bản mới sẽ nhắc cài đặt.
+- Menu (☰) ▸ Kiểm tra bản cập nhật (trên Mac là Trợ giúp ▸ Kiểm tra bản cập nhật): kích hoạt một lần kiểm tra thủ công; nếu có bản mới sẽ nhắc cài đặt. Trên Mac, lệnh này cũng có trong menu ứng dụng, ngay dưới mục Giới thiệu GenOffice.
 
 ## Tích hợp MCP (dành cho người dùng nâng cao / ứng dụng AI)
 

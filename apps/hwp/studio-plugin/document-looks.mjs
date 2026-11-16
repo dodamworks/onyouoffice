@@ -182,6 +182,91 @@ export function tableLookBlocks(look, header) {
   return []
 }
 
+/**
+ * Rows of a table's head: flagged as header, or with a line under them unlike the line under
+ * the next row (a first row styled by hand, a head of two rows) while that next line still
+ * lies between two rows. In a table of two rows, the first is a head when the line under it
+ * is unlike the line over the table.
+ */
+export function headRowsOf(edges, flagged) {
+  const rows = edges.length - 1
+  const same = (one, other) =>
+    one.every((line, col) => {
+      const below = other[col]
+      if (!line || !below) return true
+      if (line.type === 0 || below.type === 0) return line.type === below.type
+      return (
+        line.type === below.type &&
+        line.width === below.width &&
+        String(line.color).toLowerCase() === String(below.color).toLowerCase()
+      )
+    })
+  const drawnByHand = (head) =>
+    head + 2 < rows
+      ? !same(edges[head + 1], edges[head + 2])
+      : rows === 2 && head === 0 && !same(edges[1], edges[0])
+  let head = 0
+  while (head < rows && (flagged[head] === true || drawnByHand(head))) head += 1
+  return head
+}
+
+/** `edge` with each merged-cell gap (null) filled from the nearest column that has a line, else with `fallback`. */
+function filledEdge(edge, fallback) {
+  return edge.map((line, col) => {
+    if (line) return line
+    for (let step = 1; step < edge.length; step++) {
+      const near = edge[col - step] ?? edge[col + step]
+      if (near) return near
+    }
+    return fallback
+  })
+}
+
+/** The thinnest drawn line of `lines` (border type 0 is no line); null when none is. */
+function thinnestOf(lines) {
+  let thin = null
+  for (const line of lines) {
+    if (line && line.type !== 0 && (!thin || line.width < thin.width)) thin = line
+  }
+  return thin
+}
+
+/**
+ * The line new rows get when the table has none between two body rows. Never the outline:
+ * forms draw it heavy, and it must not show up inside the table.
+ */
+function innerLineOf(edges, verticals) {
+  const any = thinnestOf([...edges.flat(), ...verticals])
+  return (
+    thinnestOf(verticals) ??
+    thinnestOf(edges.slice(1, -1).flat()) ??
+    (any ? { ...any, type: 1 } : null)
+  )
+}
+
+/**
+ * The horizontal lines of a table once `count` rows were added at row `first` (zero-based,
+ * the first new row). `edges` are the lines before: one list per edge from the top of the
+ * table (0) to its bottom (one more than the rows), each a line per column (null where a
+ * merged cell runs across the edge); `flagged` says which rows carry the header flag;
+ * `verticals` are the lines between its columns. The outline stays with the edge of the
+ * table and the lines of the head (headRowsOf) with the head; every line the new rows bring
+ * is the line between the first two body rows, or, without two body rows, innerLineOf.
+ * Null for a table of one row, or one that draws no line: the lines are then left as the
+ * engine copied them.
+ */
+export function rowEdgesAfterAdding(edges, flagged, verticals, first, count) {
+  const rows = edges.length - 1
+  const between = headRowsOf(edges, flagged) + 1
+  if (rows < 2) return null
+  const fallback = innerLineOf(edges, verticals)
+  if (!fallback) return null
+  const inner =
+    between < rows ? filledEdge(edges[between], fallback) : Array(edges[0].length).fill(fallback)
+  const at = Math.min(first, rows - 1)
+  return [...edges.slice(0, at + 1), ...Array(count).fill(inner), ...edges.slice(at + 1)]
+}
+
 /** The looks a title box can be given. */
 export const TITLE_BOX_LOOKS = ['bands', 'lines', 'box', 'shaded']
 
@@ -500,6 +585,19 @@ export function contrastRatio(one, other) {
 
 /** Below this contrast words cannot be told from what is behind them (white on a pale fill). */
 export const MIN_TEXT_CONTRAST = 1.6
+
+/** Black words on a fill they have less contrast with than this are hard to read. */
+export const MIN_BLACK_ON_FILL = 3
+
+/**
+ * The colour words take on a fill (#RRGGBB) when the call names none that shows on it: white
+ * where black and the colour they have (`current`, black when not known) would both be hard
+ * to read, else null for the colour they have.
+ */
+export function textColorOnFill(fill, current) {
+  const shows = (color) => contrastRatio(color, fill) >= MIN_BLACK_ON_FILL
+  return shows('#000000') || (typeof current === 'string' && shows(current)) ? null : '#ffffff'
+}
 
 /** How text sits at a tab stop, and what fills the way to it, with the engine's codes. */
 export const TAB_ALIGNS = { left: 0, right: 1, center: 2, decimal: 3 }

@@ -82,7 +82,6 @@ export const tr = {
   aiCopied: 'Kopyalandı',
   aiRegenerateTitle: 'Yeniden oluştur',
   aiSnapshotsTitle: 'Anlık görüntüler',
-  aiRollback: 'Geri Dön',
   aiScopeSelected: '{count} paragraf seçildi',
   aiScopeEmptyDoc: 'Boş belge',
   aiScopeCursor: 'İmleç konumunda',

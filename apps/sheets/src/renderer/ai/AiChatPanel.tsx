@@ -1,4 +1,5 @@
 import {
+  AiChangesCard,
   aiPanelWidthAtPointer,
   AiPanelSideButton,
   AiPanelFontSizeButtons,
@@ -52,6 +53,7 @@ import type {
 } from '@genoffice/ai-provider/browser'
 import { localModelCapabilities } from '@genoffice/ai-provider/browser'
 import type { AiBlockedRun } from './subscription-state'
+import { receiptState, type AiRunReceipt } from './ai-run-receipt'
 import type { ChangePlan } from '@genoffice/xlsx-gateway/domain/workbook.types'
 import { ATTACHMENT_IMAGE_EXTS, type AttachmentMeta } from '../../shared/desktop-api'
 import { useI18n, type TFunc } from '../i18n/locale'
@@ -257,8 +259,8 @@ export interface AiChatMessage {
   readonly persisted?: boolean | undefined
   /** the run stopped because its connection cannot go on — render the blocked notice */
   readonly blocked?: AiBlockedRun | undefined
-  /** Set when this message reflects an auto-applied plan; renders an inline [Undo] button. */
-  readonly autoApplied?: { readonly opCount: number; readonly undoSteps: number } | undefined
+  /** Set when this message's run applied plans; renders the run's changes card. */
+  readonly autoApplied?: AiRunReceipt | undefined
   /** attachments consumed from the composer by this user message (read-only echo chips) */
   readonly attachments?: readonly AttachmentMeta[] | undefined
   /** the range this user message targeted, frozen at send */
@@ -361,7 +363,8 @@ export function AiChatPanel({
   onSend,
   onStop,
   onNewChat,
-  onUndo,
+  onRevertChanges,
+  onClearMarks,
   scopeRange,
   scopeColumns,
   scopeLocked,
@@ -426,7 +429,10 @@ export function AiChatPanel({
   ) => boolean
   readonly onStop: () => void
   readonly onNewChat: () => void
-  readonly onUndo: (steps: number) => void
+  /** the changes card of the reply at this chat index takes its run back */
+  readonly onRevertChanges: (index: number) => Promise<void>
+  /** the grid drops the last run's marks */
+  readonly onClearMarks: () => void
   /** A1 notation of the selected range or explicitly requested single cell;
    *  dismissing the chip clears it until the next selection or explicit request. */
   readonly scopeRange: string | null
@@ -449,6 +455,8 @@ export function AiChatPanel({
   // message does not run into the same wall. Declared ahead of the queue so that it runs before
   // the queue's own settle pump when both land in one commit.
   const msgQueueRef = useRef<ChatRunQueue<QueuedMeta> | null>(null)
+  /** the chat index whose changes card is taking its run back */
+  const [reverting, setReverting] = useState<number | null>(null)
   const lastEntry = chat.at(-1)
   const lastReplyBlocked = lastEntry?.role === 'assistant' && lastEntry.blocked !== undefined
   useEffect(() => {
@@ -880,23 +888,19 @@ export function AiChatPanel({
                   )
                 )}
                 {entry.autoApplied && (
-                  <div className="ai-auto-applied">
-                    <span className="ai-auto-applied-text">
-                      {t('aiAutoApplied', { count: entry.autoApplied.opCount })}
-                    </span>
-                    {/* undoSteps 0 = the batch exceeded the undo budget and
-                        kept no stack entry; a forced 1-step undo would revert
-                        the user's own previous action instead. */}
-                    {(entry.autoApplied.undoSteps ?? 1) > 0 && (
-                      <button
-                        className="ai-undo-btn"
-                        onClick={() => onUndo(Math.max(1, entry.autoApplied?.undoSteps ?? 1))}
-                        data-tip={t('aiUndoTitle')}
-                      >
-                        {t('aiUndo')}
-                      </button>
-                    )}
-                  </div>
+                  // undoSteps 0 = the batch exceeded the undo budget and kept no
+                  // stack entry: the card says it can no longer go back (expired)
+                  <AiChangesCard
+                    lang={lang}
+                    state={receiptState(entry.autoApplied)}
+                    count={entry.autoApplied.opCount}
+                    canRevert={!aiBusy && reverting === null}
+                    onRevert={() => {
+                      setReverting(index)
+                      void onRevertChanges(index).finally(() => setReverting(null))
+                    }}
+                    onClearMarks={entry.autoApplied.marked ? onClearMarks : undefined}
+                  />
                 )}
                 <AiReplyProgress
                   reply={entry}

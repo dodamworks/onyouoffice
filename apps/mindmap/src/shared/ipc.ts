@@ -79,7 +79,7 @@ export const MINDMAP_CHANNELS = {
   filesReadImage: 'mindmap:files-read-image',
   /** renderer → main(title): name an untitled map's tab from the first AI request. T12 */
   provisionalTitle: 'mindmap:provisional-title',
-  /** invoke({prompt, aspectRatio}) → `{url?, error?, errorCode?}`: one AI picture */
+  /** invoke({prompt, aspectRatio, model}) → `{url?, error?, errorCode?}`: one AI picture */
   aiGenerateImage: 'mindmap:ai-generate-image',
   /** invoke(url) → `{base64, mime} | null`: a web image or a file of the generated-image store */
   fetchImage: 'mindmap:fetch-image',
@@ -514,10 +514,12 @@ export interface MindmapAiApi {
   readUrl(url: string, offset?: number): Promise<ReadUrlResult>
   imageSearch(query: string, maxResults?: number): Promise<ImageSearchResult>
   /** AI image generation (mindmap-owned channel; the main process picks the backend) */
-  generateImage(op: { prompt: string; aspectRatio?: string }): Promise<{
+  generateImage(op: { prompt: string; aspectRatio?: string; model?: string }): Promise<{
     url?: string
     error?: string
     errorCode?: string
+    /** the shared tool's remark for the model (e.g. Codex picked the image model) */
+    note?: string
   }>
   /** Download an image URL (or a file of the generated-image store) in the main process */
   fetchImage(url: string): Promise<{ base64: string; mime: string } | null>

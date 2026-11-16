@@ -78,7 +78,7 @@ Kliknij prawym przyciskiem w dowolnym miejscu tekstu — menu dostosowuje się d
 ## AI
 
 - Przycisk AI na wstążce i panel boczny: przepisanie, rozwinięcie, tłumaczenie, streszczenie, wstawianie tabel z gotowych wzorców oraz dowolne polecenia.
-- Każda tura AI najpierw tworzy migawkę; możesz cofnąć się do dowolnej z listy wersji, a samo cofnięcie można jeszcze cofnąć.
+- Miejsca zmienione przez AI są oznaczone na żółto. **Cofnij te zmiany** na karcie pod odpowiedzią wycofuje całą tę turę (tury po niej też są wycofywane), a samo cofnięcie można jeszcze cofnąć.
 
 ## Zapisywanie i eksport
 

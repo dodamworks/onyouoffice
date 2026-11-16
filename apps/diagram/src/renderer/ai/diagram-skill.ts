@@ -13,6 +13,7 @@
 import type { AgentSkill } from '@genoffice/agent-core'
 import { brandText } from '@genoffice/i18n'
 import { t } from '../i18n/locale'
+import type { DiagramCellChanges } from '../../shared/ai-marks'
 import type { LivePageRead } from '../document/live-ops'
 import {
   DIAGRAM_TOOL_NAMES,
@@ -65,8 +66,8 @@ export interface DiagramSkillDeps {
   host(): DiagramAiHost
   /** the context read for the request in flight (`diagramContext`); '' before the first */
   context(): string
-  /** an applied call: its undo token, for taking the AI's turn back */
-  onApplied?(token: string): void
+  /** an applied call: its undo token, for taking the AI's turn back, and the cells it changed */
+  onApplied?(token: string, changes: DiagramCellChanges | undefined): void
 }
 
 function summaryOf(name: string, result: DiagramToolResult): string {
@@ -95,7 +96,7 @@ export function createDiagramSkill(deps: DiagramSkillDeps): AgentSkill {
         return { output: `unknown tool: ${call.name}`, isError: true, summary: call.name }
       }
       const result = await runDiagramTool(deps.host(), call.name, call.input)
-      if (result.token) deps.onApplied?.(result.token)
+      if (result.token) deps.onApplied?.(result.token, result.changes)
       return {
         output: result.output,
         isError: result.isError,

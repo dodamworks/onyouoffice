@@ -2,7 +2,9 @@
 
 ## Otevření nastavení
 
-Řádek vlevo dole na domovské stránce otevře panel nastavení (dokud není připojena žádná AI, ukazuje Připojit AI). Má pět částí: Účet, AI, Obecné, Integrace a O aplikaci.
+Řádek vlevo dole na domovské stránce otevře panel nastavení (řádek pod ním ukazuje, zda je připojena AI). Má pět částí: Účet, AI, Obecné, Integrace a O aplikaci.
+
+Otevřít je můžete také z libovolné karty zkratkou **⌘,** (Ctrl+, ve Windows a Linuxu), na Macu položkou **Nastavení…** v nabídce aplikace (nabídka s názvem aplikace vlevo na řádku nabídek) a ve Windows a Linuxu přes **Nabídka (☰) ▸ Nastavení…**. Na kartě Word je ⌘, (Ctrl+,) dolní index, proto je tam otevřete z nabídky.
 
 **Účet** ukazuje, jak jsou na tom vaše připojení Claude, ChatGPT a Codex, a **Spravovat připojení** vás zavede do části AI. AI má vlastní kapitoly: [Připojení předplatného](help://subscription) a [Modely AI a nastavení](help://ai-models).
 
@@ -59,7 +61,7 @@ Nastavení může zaregistrovat GenOffice jako aplikaci pro soubory .docx / .xls
 ## Informace o softwaru třetích stran a aktualizace
 
 - Nápověda ▸ Informace o softwaru třetích stran: úplný přehled licencí open source dodávaných s aplikací.
-- Nabídka (☰) ▸ Zkontrolovat aktualizace… (na počítači Mac Nápověda ▸ Zkontrolovat aktualizace…): spustí ruční kontrolu; novější verze vyzve k instalaci.
+- Nabídka (☰) ▸ Zkontrolovat aktualizace… (na počítači Mac Nápověda ▸ Zkontrolovat aktualizace…): spustí ruční kontrolu; novější verze vyzve k instalaci. Na Macu je příkaz také v nabídce aplikace, hned pod položkou O aplikaci GenOffice.
 
 ## Integrace MCP (pro pokročilé uživatele a klienty AI)
 

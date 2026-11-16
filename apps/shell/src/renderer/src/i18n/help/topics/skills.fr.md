@@ -15,11 +15,11 @@ Une compétence est un ensemble d’instructions de travail pour l’IA. Notez u
 | **Dossier des compétences Codex**  | Les compétences de `~/.agents/skills`                                     | Désactivées |
 
 - L’interrupteur active ou désactive une compétence. Le même réglage s’applique au panneau IA de chaque éditeur, à Ask AI dans l’accueil et à la fenêtre de l’agent.
-- Pour une compétence activée, choisissez **L’IA décide** ou **Seulement sur appel**. Au départ, c’est L’IA décide. Avec Seulement sur appel, la compétence n’est utilisée que lorsque vous l’appelez vous-même.
+- Pour une compétence activée, choisissez **L’IA décide** ou **Seulement sur appel**. Au départ, c’est L’IA décide. Avec Seulement sur appel, la compétence n’est utilisée que lorsque vous l’appelez vous-même. Pour une compétence désactivée, ce choix reste affiché, grisé, et vous pouvez le régler avant de la réactiver.
 - Des compétences de provenances différentes peuvent porter le même nom. L’étiquette de provenance de chaque ligne permet de les distinguer. Quand deux compétences du même nom sont activées, une seule figure dans la liste `/` et est utilisée : la première dans l’ordre Mes compétences, Intégrées, Dossier des compétences Claude, Dossier des compétences Codex, Plugins Claude. La ligne de l’autre indique quelle compétence est utilisée à sa place.
 - Le menu d’options contient **Voir le contenu**, **Modifier** (mes compétences uniquement), **Exporter (zip)** (mes compétences uniquement) et **Ouvrir le dossier**. Les compétences intégrées n’ont pas **Ouvrir le dossier**. **Où l’utiliser** ouvre directement l’endroit où l’on choisit les éditeurs dans lesquels la compétence est utilisée.
 - Mes compétences se trouvent dans le dossier `~/.ieumoffice/skills`. Sous Windows, il s’agit de `C:\Users\<nom d’utilisateur>\.ieumoffice\skills`. **Ouvrir le dossier**, dans le menu d’options, ouvre le dossier de la compétence.
-- **Mettre à la corbeille** déplace une de mes compétences dans la corbeille du système, d’où vous pouvez la restaurer.
+- **Mettre à la corbeille** déplace une de mes compétences dans la corbeille du système, d’où vous pouvez la restaurer. Si une compétence du même nom venant d’une autre source est désactivée, la confirmation affiche une case cochée pour la réactiver. Décochez-la pour la laisser désactivée.
 - Une compétence intégrée se masque au lieu d’être supprimée : choisissez **Masquer**. **Afficher à nouveau**, en bas de la liste, la rétablit telle qu’elle était au départ.
 - Pour modifier une compétence intégrée ou issue d’un autre programme, choisissez **Copier dans mes compétences**. La copie apparaît dans mes compétences et l’original est désactivé.
 - Quand vous exportez une compétence qui a un modèle, le document modèle est aussi placé dans le zip. Vérifiez qu’il ne contient aucune information personnelle avant de l’exporter.
@@ -47,6 +47,16 @@ Sous l’aperçu figure toujours ce message : « N’installez que des compéten
 - Si rien n’a changé, le message « À jour » s’affiche. Sinon, examinez les fichiers modifiés et l’aperçu, puis cliquez sur **Mettre à jour**.
 - Si vous avez vous-même modifié la compétence après l’avoir installée, « Vos propres modifications seront perdues » s’affiche aussi.
 - La mise à jour conserve l’état activé ou désactivé de la compétence, le choix L’IA décide / Seulement sur appel et où l’utiliser.
+
+## Revenir à une version précédente
+
+Quand vous modifiez l’une de vos compétences, en installez une autre du même nom à sa place ou la mettez à jour, la version d’avant est conservée. Elle ne va pas à la corbeille.
+
+- **Versions précédentes**, en bas de **Voir le contenu** ou de **Modifier**, liste les versions conservées, de la plus récente à la plus ancienne, avec la date, la raison et la taille de chacune.
+- **Voir les différences** montre quelles lignes de `SKILL.md` reviendraient, lesquelles disparaîtraient et quels autres fichiers changeraient.
+- **Revenir à cette version** remet les fichiers de cette version tels qu’ils étaient. La version actuelle est conservée elle aussi : vous pourrez y revenir. L’état activé ou non et le moment d’utilisation restent tels que vous les avez réglés.
+- Les versions conservées restent tant que vous ne les supprimez pas. **Supprimer** en supprime une définitivement.
+- Les versions se trouvent dans le dossier `~/.ieumoffice/skill-history`. **Mettre à la corbeille** sur une compétence envoie aussi ses versions conservées à la corbeille.
 
 ## Appeler une compétence dans le panneau IA
 

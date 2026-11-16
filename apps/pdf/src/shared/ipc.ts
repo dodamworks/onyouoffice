@@ -1657,9 +1657,19 @@ export const AI_CHANNELS = {
   streamChunk: 'ai:stream-chunk',
   streamCancel: 'ai:stream-cancel',
   imageSearch: 'ai:image-search',
+  webSearch: 'ai:web-search',
   readUrl: 'ai:read-url',
   fetchImage: 'ai:fetch-image',
 } as const
+
+/** One web search for the AI (the shared ai:web-search handler) */
+export interface WebSearchResult {
+  answer?: string
+  results: Array<{ title: string; url: string; snippet: string }>
+  method: string
+  /** failure reason when method === 'error' */
+  error?: string
+}
 
 export interface ImageSearchResponse {
   images: Array<{
@@ -1894,14 +1904,19 @@ export interface PdfApi {
   openInPdfTools(path: string, tool: PdfToolsHandoffTool): Promise<boolean>
   /** Web image search for AI tools (app-wide ai:image-search handler) */
   imageSearch(query: string, maxResults?: number): Promise<ImageSearchResponse>
+  /** Web search for AI tools (app-wide ai:web-search handler) */
+  webSearch(query: string, maxResults?: number): Promise<WebSearchResult>
   /** Read one web page as text for AI tools (app-wide ai:read-url handler), paged by offset */
   readUrl(url: string, offset?: number): Promise<ReadUrlResult>
   /** Download an image URL in the main process (SSRF-guarded, avoids CORS); null on failure */
   fetchImage(url: string): Promise<{ base64: string; mime: string } | null>
-  /** AI image generation (Codex subscription or a media API key); returns a downloadable URL or an error message */
-  generateImage(op: { prompt: string; aspectRatio?: string }): Promise<{
+  /** AI image generation (Codex subscription or a media API key); returns a downloadable URL or an error message.
+      model: only when the user named one; the main process uses it if the image route offers it */
+  generateImage(op: { prompt: string; aspectRatio?: string; model?: string }): Promise<{
     url?: string
     error?: string
+    /** something the request asked for that the app passes on to the model with the URL */
+    note?: string
   }>
   /** Read and verify the digital (certificate) signatures embedded in a granted PDF */
   listDigitalSignatures(path: string): Promise<PdfSignatureInfo[]>

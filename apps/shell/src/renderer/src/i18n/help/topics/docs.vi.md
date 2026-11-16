@@ -67,7 +67,7 @@ Nhấp chuột phải ở bất kỳ đâu trong nội dung — menu đi theo th
 ## AI
 
 - Nút AI trên dải ruy-bâng và bảng bên: viết lại, mở rộng, dịch, tóm tắt, các mẫu chèn bảng, cùng các chỉ dẫn tự do.
-- Mỗi lượt AI đều chụp ảnh trước; có thể quay lui từ danh sách phiên bản, và bản thân thao tác quay lui cũng có thể hoàn tác.
+- Những chỗ AI đã sửa được đánh dấu màu vàng. **Hoàn tác các thay đổi này** trên thẻ dưới câu trả lời lấy lại trọn lượt đó (các lượt sau nó cũng được lấy lại), và bản thân thao tác quay lui cũng có thể hoàn tác.
 
 ## Lưu và xuất
 

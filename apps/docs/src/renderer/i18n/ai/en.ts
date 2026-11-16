@@ -80,7 +80,6 @@ export const en = {
   aiCopied: 'Copied',
   aiRegenerateTitle: 'Regenerate',
   aiSnapshotsTitle: 'Snapshots',
-  aiRollback: 'Roll back',
   aiScopeSelected: 'Selected {count} paragraph(s)',
   aiScopeEmptyDoc: 'Blank document',
   aiScopeCursor: 'At cursor',

@@ -3266,7 +3266,11 @@ export interface DesktopApi {
   /// Image search (same shared main-process channel as docs/slides)
   imageSearch(query: string, maxResults?: number): Promise<ImageSearchResponse>
   /// AI image generation (sheets-owned channel)
-  generateImage(op: { prompt: string; aspectRatio?: string }): Promise<GenerateImageResult>
+  generateImage(op: {
+    prompt: string
+    aspectRatio?: string
+    model?: string
+  }): Promise<GenerateImageResult>
   /// Downloads an image URL in the main process (SSRF-guarded); null on failure
   fetchImage(url: string): Promise<{ base64: string; mime: string } | null>
   onAiStream(handler: (chunk: AiStreamChunk) => void): () => void
@@ -3338,4 +3342,6 @@ export type ReadUrlResult =
 export interface GenerateImageResult {
   url?: string
   error?: string
+  /** the shared tool's remark for the model (e.g. Codex picked the image model) */
+  note?: string
 }

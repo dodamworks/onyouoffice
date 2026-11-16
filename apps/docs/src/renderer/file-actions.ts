@@ -98,6 +98,7 @@ import {
 import { t, getLang } from './i18n/locale'
 import { isBlankDocument, parseHtmlFragment, replaceBlockRange } from './ai/protocol'
 import { carryDocSeen } from './ai/tools'
+import { docWithoutAiMarks } from './ai/run-changes'
 import { isDocDirty, resetCrossDocEditState } from './doc-dirty'
 import { pruneUnreferencedNumbering } from './numbering-actions'
 import { sameRecoveryCopy } from './recovery-copy-compare'
@@ -1464,7 +1465,8 @@ async function saveOnce(
     const rebasedPm = blocksToPmDoc(reparsed.blocks, readSections(reparsed), pmDocOptions(reparsed))
     let unchanged = false
     try {
-      unchanged = editor.state.doc.eq(editor.schema.nodeFromJSON(rebasedPm))
+      // the AI's marks are not in the file: a save keeps them, and the undo history with them
+      unchanged = docWithoutAiMarks(editor.state.doc).eq(editor.schema.nodeFromJSON(rebasedPm))
     } catch {
       /* unrepresentable → rewrite */
     }

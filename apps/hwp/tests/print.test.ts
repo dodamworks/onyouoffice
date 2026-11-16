@@ -312,6 +312,42 @@ describe('the pages for print', () => {
     }
   })
 
+  it('are gathered only after the plugin can draw them in the screen’s fonts', async () => {
+    const { plugin } = open(2)
+    const calls: string[] = []
+    let ready!: () => void
+    const bridge: Pick<AgentBridge, 'printPages' | 'printPageSizes' | 'printFontsReady'> = {
+      printFontsReady: () =>
+        new Promise<boolean>((resolve) => {
+          calls.push('fonts?')
+          ready = () => {
+            calls.push('fonts ready')
+            resolve(true)
+          }
+        }),
+      printPages: async (from) => (calls.push(`pages ${from}`), plugin.printPages(from)),
+      printPageSizes: async (from) => (calls.push(`sizes ${from}`), plugin.printPageSizes(from)),
+    }
+    const job = gatherPrintJob(bridge, 'pdf', () => {})
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    expect(calls).toEqual(['fonts?'])
+    ready()
+    expect((await job).pages).toHaveLength(2)
+    expect(calls.slice(0, 3)).toEqual(['fonts?', 'fonts ready', 'pages 0'])
+
+    calls.length = 0
+    const sizes = gatherPageSizes(bridge)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    ready()
+    expect(await sizes).toHaveLength(2)
+    expect(calls[0]).toBe('fonts?')
+    expect(calls.indexOf('fonts ready')).toBeLessThan(calls.indexOf('sizes 0'))
+
+    // a plugin without the call, or one that fails it, is printed from as before
+    const failing = { ...bridge, printFontsReady: () => Promise.reject(new Error('no')) }
+    expect((await gatherPrintJob(failing, 'pdf', () => {})).pages).toHaveLength(2)
+  })
+
   it('are gathered call by call, and the job keeps each picture once', async () => {
     const { plugin } = open(5)
     const logo = 'data:image/png;base64,iVBORw0KGgo='

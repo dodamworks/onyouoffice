@@ -15,6 +15,7 @@ import {
   type DiagramOpDefinition,
   type OpPropertySchema,
 } from '@genoffice/drawio-model'
+import type { DiagramCellChanges, DiagramCellRef } from '../../shared/ai-marks'
 import { formatApplyResult, type LiveApplyResult, type LivePageRead } from '../document/live-ops'
 
 export const DIAGRAM_TOOL_NAMES = {
@@ -28,10 +29,12 @@ export interface DiagramAiHost {
   ready(): boolean
   /** one page as the read table (the page on screen when `page` is left out) */
   read(page?: string): Promise<LivePageRead>
-  /** plans and applies a list of ops as one undo step (all or nothing) */
-  apply(ops: unknown[]): Promise<LiveApplyResult>
+  /** plans and applies a list of ops as one undo step (all or nothing), with the cells it changed */
+  apply(ops: unknown[]): Promise<LiveApplyResult & { changes?: DiagramCellChanges }>
   /** takes AI calls back, newest first; false when something else came after one of them */
   undo(tokens: string[]): Promise<boolean>
+  /** marks these cells on screen as the last run's changes (an empty list takes the marks off) */
+  mark?(cells: readonly DiagramCellRef[]): Promise<void>
 }
 
 const READ_OP = DIAGRAM_OPS.find((op) => op.name === 'read')!
@@ -134,6 +137,8 @@ export interface DiagramToolResult {
   mutated?: boolean
   /** the undo token of an applied call */
   token?: string | null
+  /** the cells an applied call added, changed and removed */
+  changes?: DiagramCellChanges
   detail?: { page?: string; count?: number; mermaid?: boolean }
 }
 
@@ -158,7 +163,7 @@ export async function runDiagramTool(
     if (!Array.isArray(ops) || ops.length === 0) {
       return { output: 'ops must be a non-empty list of ops', isError: true }
     }
-    let result: LiveApplyResult
+    let result: LiveApplyResult & { changes?: DiagramCellChanges }
     try {
       result = await host.apply(ops)
     } catch (err) {
@@ -172,6 +177,7 @@ export async function runDiagramTool(
       isError: result.status !== 'ok',
       mutated: result.status === 'ok' && result.changed,
       token: result.token,
+      ...(result.changes ? { changes: result.changes } : {}),
       detail: { count: result.results.length, mermaid },
     }
   }

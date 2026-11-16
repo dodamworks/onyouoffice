@@ -79,7 +79,6 @@ export const ar = {
   aiCopied: 'تم النسخ',
   aiRegenerateTitle: 'إعادة الإنشاء',
   aiSnapshotsTitle: 'لقطات الإصدارات',
-  aiRollback: 'استرجاع',
   aiScopeSelected: 'تم تحديد {count} فقرة',
   aiScopeEmptyDoc: 'مستند فارغ',
   aiScopeCursor: 'عند المؤشر',

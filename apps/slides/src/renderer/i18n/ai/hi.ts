@@ -90,8 +90,6 @@ export const hi = {
   aiStopGeneration: 'जनरेशन रोकें',
   aiStop: 'रोकें',
   aiSend: 'भेजें',
-  aiSnapshotsTitle: 'संस्करण स्नैपशॉट',
-  aiRollback: 'रोलबैक',
   aiStarterPolishTitle: 'इस स्लाइड के शीर्षक और टेक्स्ट को बेहतर बनाएँ',
   aiStarterTighten: 'इस स्लाइड के बुलेट पॉइंट अधिक संक्षिप्त करें',
   aiStarterProofread: 'पूरे प्रेज़ेंटेशन में वर्तनी की गलतियाँ जाँचें और सुधारें',

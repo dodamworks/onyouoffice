@@ -205,6 +205,16 @@ import {
   useQuoteFlash,
 } from './ai/QuoteFlash'
 import type { PdfNavTarget } from './ai/pdf-nav'
+import {
+  remapMarks,
+  revertedStacks,
+  runMarks,
+  runRevertVerdict,
+  withAiEditScope,
+  type PdfAiMark,
+  type PdfAiRun,
+} from './ai/ai-run-changes'
+import type { PdfAiChanges } from './ai/AiPanel'
 import { PassageReading, type PassageReadingHandle } from './reading/PassageReading'
 import { IconPassageMarks, PassageUnderlines } from './reading/PassageUnderlines'
 import { createSaveConfirmations } from './reading/save-confirmations'
@@ -1921,6 +1931,8 @@ export default function App() {
               : [ni === mark.pageIndex ? mark : { ...mark, pageIndex: ni }]
           }),
         )
+        // the AI marks stay over what the save wrote, on the pages as the file has them now
+        setAiMarks((prev) => (prev ? { ...prev, marks: remapMarks(prev.marks, remap) } : prev))
         setMarkups((prev) =>
           prev.flatMap((mk) => {
             if (saved.markupIds.has(mk.id)) return []
@@ -2087,6 +2099,8 @@ export default function App() {
         setOutline(null)
         setOutlineGenerated(false)
         setPendingOutline(null)
+        // another document: the marks named this one's pages
+        setAiMarks(null)
       }
       void loaded
         .getOutline()
@@ -2214,6 +2228,13 @@ export default function App() {
     revision: docReloadRev,
   })
   const quoteFlash = useQuoteFlash()
+  /** marks over the places the last AI run changed (a screen layer, never part of the PDF) */
+  const [aiMarks, setAiMarks] = useState<{ run: number; marks: PdfAiMark[] } | null>(null)
+  /** the AI run in flight: the undo snapshots its edit batches pushed and their op count */
+  const aiRunRef = useRef<{ id: number; snaps: EditSnapshot[]; ops: number } | null>(null)
+  const aiRunSeqRef = useRef(0)
+  /** > 0 while a call of the AI's capability surface runs (its batches are the run's) */
+  const aiEditDepthRef = useRef(0)
   const [passageMarks, setPassageMarks] = useState(loadPassageMarks)
   useEffect(() => savePassageMarks(passageMarks), [passageMarks])
   // ── AI highlights: the start window's handle and the preview switch (screen only) ──
@@ -2928,13 +2949,14 @@ export default function App() {
     metadata: metadataRef.current,
   })
 
-  const pushUndo = (coalesceKey?: string) => {
-    if (coalesceKey && coalesceKeyRef.current === coalesceKey) return
+  const pushUndo = (coalesceKey?: string): EditSnapshot | null => {
+    if (coalesceKey && coalesceKeyRef.current === coalesceKey) return null
     coalesceKeyRef.current = coalesceKey ?? null
     const snap = snapshot()
     setUndoStack((prev) => [...prev.slice(-49), snap])
     setRedoStack([])
     if (writtenRef.current.redo.length > 0) setWritten({ ...writtenRef.current, redo: [] })
+    return snap
   }
 
   const newId = () => `d${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
@@ -2986,7 +3008,13 @@ export default function App() {
     }
     const plan = planEditOps(ops, editOpContext(), newId)
     if (plan.failures.length > 0 || plan.ops.length === 0) return plan
-    pushUndo(opts?.coalesceKey)
+    const pushed = pushUndo(opts?.coalesceKey)
+    // a batch the AI applied belongs to its run's changes card
+    const aiRun = aiRunRef.current
+    if (aiRun && aiEditDepthRef.current > 0) {
+      if (pushed) aiRun.snaps.push(pushed)
+      aiRun.ops += plan.ops.length
+    }
     const base = snapshot()
     const { ops: planned, touched } = plan
     const reduce = <K extends Bucket>(bucket: K, prev: EditSnapshot[K]) =>
@@ -3121,6 +3149,8 @@ export default function App() {
   const undo = () => {
     const top = undoStack[undoStack.length - 1]
     if (!top) return void stepWritten('undo')
+    // the marked places may be the ones this takes back
+    setAiMarks(null)
     // Taken before applySnapshot rewrites the refs; the updater may run after it
     const cur = snapshot()
     setRedoStack((r) => [...r, cur])
@@ -3132,6 +3162,7 @@ export default function App() {
   const redo = () => {
     const top = redoStack[redoStack.length - 1]
     if (!top) return void stepWritten('redo')
+    setAiMarks(null)
     const cur = snapshot()
     setUndoStack((u) => [...u, cur])
     setRedoStack((r) => r.slice(0, -1))
@@ -8656,6 +8687,47 @@ export default function App() {
     splitPages: splitPagesToFile,
     mergePages: mergePagesToFile,
   }
+  /** the AI panel's surface: the edit batches its calls apply count as the run's */
+  const aiPanelApi = withAiEditScope(aiApi, aiEditDepthRef)
+
+  /** A pending text insert's line width in PDF pt, in the face its preview uses */
+  const measureInsertLine = (line: string, fontSize: number, insert: LocalTextInsert): number => {
+    const family =
+      (insert.input.font ? EDIT_FONT_BY_ID.get(insert.input.font)?.css : undefined) ??
+      getComputedStyle(document.body).fontFamily
+    const style = `${insert.input.italic ? 'italic ' : ''}${insert.input.bold ? 'bold ' : ''}`
+    // the preview draws at 0.92 of the size (textInsertPreviewStyle)
+    return measureTextWidth(line, `${style}${fontSize * 0.92}px ${family}`)
+  }
+
+  /** The changes card of an AI run: what it applied, taking it back, its marks. */
+  const aiChanges: PdfAiChanges = {
+    begin: () => {
+      setAiMarks(null)
+      aiRunRef.current = { id: ++aiRunSeqRef.current, snaps: [], ops: 0 }
+    },
+    end: () => {
+      const run = aiRunRef.current
+      aiRunRef.current = null
+      if (!run || run.snaps.length === 0) return null
+      const marks = runMarks(run.snaps[0]!, snapshot(), measureInsertLine)
+      setAiMarks(marks.length > 0 ? { run: run.id, marks } : null)
+      return { id: run.id, snaps: run.snaps, ops: run.ops }
+    },
+    revert: (run: PdfAiRun) => {
+      const verdict = runRevertVerdict(run.snaps, undoStack)
+      if (verdict !== 'ok') return verdict
+      const next = revertedStacks(run.snaps, undoStack, redoStack, snapshot())
+      setUndoStack(next.undo)
+      setRedoStack(next.redo)
+      applySnapshot(next.restore)
+      coalesceKeyRef.current = null
+      setAiMarks((prev) => (prev?.run === run.id ? null : prev))
+      return 'reverted'
+    },
+    clearMarks: () => setAiMarks(null),
+    markedRun: aiMarks?.run ?? null,
+  }
 
   /**
    * After an AI run that mutated a shell-created blank still carrying its untitled
@@ -11169,7 +11241,8 @@ export default function App() {
               </button>
             )}
             <AiPanel
-              api={aiApi}
+              api={aiPanelApi}
+              aiChanges={aiChanges}
               filePath={filePath}
               preset={aiPreset}
               onCollapse={() => setAiCollapsed(true)}
@@ -12787,6 +12860,21 @@ export default function App() {
                                 geom={geom}
                                 scale={scale}
                               />
+                              {aiMarks?.marks.some((mark) => mark.pageIndex === origIdx) && (
+                                // what the last AI run changed: a screen layer, never saved,
+                                // printed or exported (those draw from the document)
+                                <div className="pdf-ai-marks-layer" aria-hidden="true">
+                                  {aiMarks.marks.map((mark, mi) =>
+                                    mark.pageIndex === origIdx ? (
+                                      <div
+                                        key={mi}
+                                        className="pdf-ai-mark ai-changed-mark"
+                                        style={pdfRectToCss(geom, mark.rect, scale)}
+                                      />
+                                    ) : null,
+                                  )}
+                                </div>
+                              )}
                               {(() => {
                                 const ocr = ocrPages.get(origIdx)
                                 return ocr ? (

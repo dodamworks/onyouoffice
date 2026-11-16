@@ -90,8 +90,6 @@ export const en = {
   aiStopGeneration: 'Stop generating',
   aiStop: 'Stop',
   aiSend: 'Send',
-  aiSnapshotsTitle: 'Snapshots',
-  aiRollback: 'Roll back',
   aiStarterPolishTitle: "Improve this slide's title and copy",
   aiStarterTighten: "Make this slide's bullets more concise",
   aiStarterProofread: 'Check the whole deck for typos and fix them',

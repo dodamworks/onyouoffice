@@ -2,7 +2,9 @@
 
 ## Otwieranie ustawień
 
-Wiersz w lewym dolnym rogu strony głównej otwiera panel ustawień (dopóki żadne AI nie jest połączone, pokazuje Połącz AI). Ma pięć sekcji: Konto, AI, Ogólne, Integracje i O aplikacji.
+Wiersz w lewym dolnym rogu strony głównej otwiera panel ustawień (wiersz pod nim pokazuje, czy AI jest połączone). Ma pięć sekcji: Konto, AI, Ogólne, Integracje i O aplikacji.
+
+Można je też otworzyć z dowolnej karty skrótem **⌘,** (Ctrl+, w systemach Windows i Linux), na Macu poleceniem **Ustawienia…** w menu aplikacji (menu z nazwą aplikacji, po lewej stronie paska menu), a w systemach Windows i Linux przez **Menu (☰) ▸ Ustawienia…**. W karcie Word ⌘, (Ctrl+,) oznacza indeks dolny, więc tam otwórz je z menu.
 
 **Konto** pokazuje stan twoich połączeń Claude, ChatGPT i Codex, a **Zarządzaj połączeniami** prowadzi do sekcji AI. AI ma własne artykuły: [Połączenie z subskrypcją](help://subscription) oraz [Modele AI i ustawienia](help://ai-models).
 
@@ -59,7 +61,7 @@ Ustawienia mogą zarejestrować GenOffice jako obsługę plików .docx / .xlsx /
 ## Informacje o oprogramowaniu innych firm i aktualizacje
 
 - Pomoc ▸ Informacje o oprogramowaniu innych firm: pełny wykaz licencji open source dołączony do aplikacji.
-- Menu (☰) ▸ Sprawdź aktualizacje… (na komputerze Mac Pomoc ▸ Sprawdź aktualizacje…): uruchamia ręczne sprawdzenie; nowsza wersja wyświetla monit o instalacji.
+- Menu (☰) ▸ Sprawdź aktualizacje… (na komputerze Mac Pomoc ▸ Sprawdź aktualizacje…): uruchamia ręczne sprawdzenie; nowsza wersja wyświetla monit o instalacji. Na Macu polecenie jest też w menu aplikacji, tuż pod pozycją „O programie GenOffice”.
 
 ## Integracja MCP (dla zaawansowanych użytkowników i klientów AI)
 

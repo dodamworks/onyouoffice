@@ -10,7 +10,13 @@ import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import init, { HwpDocument } from '@rhwp/core'
-import { agentPlugin, type AgentPluginHost } from '../studio-plugin/agent-plugin.mjs'
+import {
+  agentPlugin,
+  splitsWord,
+  type AgentMapPage,
+  type AgentPageEnd,
+  type AgentPluginHost,
+} from '../studio-plugin/agent-plugin.mjs'
 import { installFontPresence } from '../studio-plugin/pc-fonts.mjs'
 
 const require = createRequire(import.meta.url)
@@ -34,6 +40,22 @@ const LINES = [
   '□ 세부 일정',
   '○ 참가 동의서는 담임 교사에게 제출',
 ]
+
+const ONE_PIXEL = new Uint8Array(
+  Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+  ),
+)
+
+/** The text drawn on each page, page numbers and list numbers with it. */
+function drawnPages(doc: HwpDocument): string[] {
+  return Array.from({ length: doc.pageCount() }, (_, page) =>
+    [...doc.renderPageSvgWithProfile(page, 'print').matchAll(/<text[^>]*>([^<]*)<[/]text>/g)]
+      .map((run) => run[1])
+      .join(''),
+  )
+}
 
 function blank(lines: string[] = LINES): HwpDocument {
   const doc = HwpDocument.createEmpty()
@@ -237,6 +259,439 @@ describe('insertTable: looks', () => {
     expect(table.cell(4).fillType).not.toBe('solid')
   })
 
+  it('sets body cells left and gives empty cells the size, font and alignment of the table text', () => {
+    const rows = [
+      ['구분', ''],
+      ['1주', ''],
+      ['', '직무 과정'],
+    ]
+    const looks = (source: HwpDocument, para: number) => {
+      const table = tableIn(source, para)
+      return Array.from({ length: table.cells }, (_, cell) => {
+        const chars = JSON.parse(
+          source.getCellCharPropertiesAt(0, para, table.control, cell, 0, 0),
+        ) as { fontSize: number; fontFamily: string; bold: boolean }
+        const { alignment } = JSON.parse(
+          source.getCellParaPropertiesAt(0, para, table.control, cell, 0),
+        ) as { alignment: string }
+        return `${chars.fontFamily} ${chars.fontSize / 100}${chars.bold ? ' bold' : ''} ${alignment}`
+      })
+    }
+    const { plugin, doc } = open()
+    plugin.insertTable('□ 세부 일정', null, 'after', rows, {
+      header: true,
+      size: 9,
+      font: '함초롬돋움',
+    })
+    expect(looks(doc(), 5)).toEqual([
+      '함초롬돋움 9 bold center',
+      '함초롬돋움 9 bold center',
+      '함초롬돋움 9 left',
+      '함초롬돋움 9 left',
+      '함초롬돋움 9 left',
+      '함초롬돋움 9 left',
+    ])
+    plugin.fillCells(1, [{ row: 2, col: 2, text: '공통 과정' }], false)
+    for (const source of [
+      doc(),
+      new HwpDocument(doc().exportHwpx()),
+      new HwpDocument(doc().exportHwp()),
+    ]) {
+      expect(looks(source, 5)[3]).toBe('함초롬돋움 9 left')
+    }
+    const centred = open()
+    centred.plugin.insertTable('□ 세부 일정', null, 'after', rows, { align: 'center' })
+    expect(looks(centred.doc(), 5).slice(2)).toEqual(Array(4).fill('함초롬바탕 10 center'))
+  })
+
+  it('sets a new table in the font most body characters have, headings left out', () => {
+    const cellFont = (source: HwpDocument, para: number) => {
+      const table = tableIn(source, para)
+      const chars = JSON.parse(
+        source.getCellCharPropertiesAt(0, para, table.control, table.cols, 0, 0),
+      ) as { fontSize: number; fontFamily: string }
+      return `${chars.fontFamily} ${chars.fontSize / 100}`
+    }
+    // bold headings of 15 pt, and body lines of 12 pt in two indents of a look each
+    const lines = [
+      '1. 추진 배경',
+      '○ 첫째 내용을 적는다.',
+      '- 세부 하나를 적는다.',
+      '2. 추진 내용',
+      '○ 둘째 내용을 적는다.',
+      '- 세부 둘을 적는다.',
+    ]
+    const { plugin, doc } = open(blank(lines))
+    plugin.styleParagraphs({
+      styles: [
+        { name: '장제목', format: { size: 15, bold: true, font: '함초롬돋움' } },
+        { name: '본문하나', format: { size: 12, marginLeft: 5 } },
+        { name: '본문둘', format: { size: 12, marginLeft: 10 } },
+      ],
+      apply: [
+        { style: '장제목', startsWith: '1.' },
+        { style: '장제목', startsWith: '2.' },
+        { style: '본문하나', startsWith: '○' },
+        { style: '본문둘', startsWith: '-' },
+      ],
+    })
+    plugin.insertTable(
+      '- 세부 하나',
+      null,
+      'after',
+      [
+        ['구분', '내용'],
+        ['1주', '공통 과정'],
+      ],
+      true,
+    )
+    expect(cellFont(doc(), 3)).toBe('함초롬바탕 12')
+    // a form of Hangul whose body is 10 pt under big headings and boxes
+    const form = open(
+      new HwpDocument(readFileSync(join(__dirname, 'fixtures', 'title-table-zone-fill.hwpx'))),
+    )
+    expect(
+      form.plugin.insertTable(
+        '가나다라마 사아 차카타파하',
+        null,
+        'after',
+        [
+          ['구분', '내용'],
+          ['1주', '공통'],
+        ],
+        true,
+      ),
+    ).toMatchObject({ ok: true })
+    const found = JSON.parse(form.doc().getControls()) as {
+      ctrlId: string
+      para: number
+      list: number
+    }[]
+    const paras = found
+      .filter((one) => one.ctrlId === 'tbl' && one.list === 0)
+      .map((one) => one.para)
+    expect(cellFont(form.doc(), Math.max(...paras))).toBe('나눔스퀘어 10')
+  })
+
+  describe('the font of a new table', () => {
+    const cellFont = (source: HwpDocument, para: number) => {
+      const table = tableIn(source, para)
+      const chars = JSON.parse(
+        source.getCellCharPropertiesAt(0, para, table.control, table.cols, 0, 0),
+      ) as { fontSize: number; fontFamily: string }
+      return `${chars.fontFamily} ${chars.fontSize / 100}`
+    }
+    const TITLE_LINE = '2026학년도 1학기 학부모 상담 주간 운영 계획 안내'
+    const ROWS_2 = [
+      ['날짜', '내용'],
+      ['11. 20.', '1학년 상담'],
+    ]
+
+    it('leaves out a 20 pt bold title longer than the 10 pt lines under it', () => {
+      const { plugin, doc } = open(blank([TITLE_LINE, '일정', '상담은 교실에서 합니다.']))
+      plugin.formatText(TITLE_LINE, null, false, { size: 20, bold: true })
+      plugin.insertTable('일정', null, 'after', ROWS_2, true)
+      expect(cellFont(doc(), 2)).toBe('함초롬바탕 10')
+    })
+
+    it('takes the body line it follows when a longer title of a size of its own is not bold', () => {
+      const { plugin, doc } = open(blank([TITLE_LINE, '상담은 아래와 같이 합니다.']))
+      plugin.formatText(TITLE_LINE, null, false, { size: 20, font: '돋움' })
+      plugin.insertTable('상담은 아래와', null, 'after', ROWS_2, true)
+      expect(cellFont(doc(), 2)).toBe('함초롬바탕 10')
+    })
+
+    it('takes the look of the body after a small plain line such as a unit note', () => {
+      const { plugin, doc } = open(
+        blank([
+          '학교 현황 보고',
+          '학생 수는 학년마다 다르다. 올해는 학생이 조금 늘었고 내년에도 늘 것이다.',
+          '교사 수는 작년과 같고 교실도 그대로이다.',
+          '(단위: 명)',
+        ]),
+      )
+      plugin.formatText('(단위: 명)', null, false, { size: 8, font: '돋움' })
+      plugin.insertTable('(단위: 명)', null, 'after', ROWS_2, true)
+      expect(cellFont(doc(), 4)).toBe('함초롬바탕 10')
+    })
+
+    it('takes the look of text that is not bold when every line is a heading', () => {
+      const { plugin, doc } = open(
+        blank([
+          '1. 추진 배경',
+          '가. 학생 수가 늘어 교실이 모자라 수업 공간을 새로 마련해야 한다.',
+          '나. 교사 연수 공간이 필요하다.',
+          '2. 추진 계획',
+        ]),
+      )
+      plugin.styleParagraphs({
+        styles: [
+          { name: '개요 1', format: { font: '함초롬돋움', size: 15, bold: true } },
+          { name: '개요 2', format: { font: '함초롬돋움', size: 13 } },
+        ],
+        apply: [
+          { style: '개요 1', startsWith: '1.' },
+          { style: '개요 1', startsWith: '2.' },
+          { style: '개요 2', startsWith: '가.' },
+          { style: '개요 2', startsWith: '나.' },
+        ],
+      })
+      plugin.insertTable('나. 교사 연수', null, 'after', ROWS_2, true)
+      expect(cellFont(doc(), 3)).toBe('함초롬돋움 13')
+    })
+
+    it('takes the look of the line it follows when the document has only a bold line', () => {
+      const { plugin, doc } = open(blank(['2026학년도 학교 운영 계획']))
+      plugin.formatText('2026학년도 학교 운영 계획', null, false, {
+        size: 15,
+        bold: true,
+        font: '함초롬돋움',
+      })
+      plugin.insertTable('2026학년도 학교 운영 계획', null, 'after', ROWS_2, true)
+      expect(cellFont(doc(), 1)).toBe('함초롬돋움 15')
+    })
+
+    it('takes the look of the body after a plain line larger than the body', () => {
+      const { plugin, doc } = open(
+        blank(['본문 첫째 줄입니다.', '본문 둘째 줄입니다.', '큰 줄', '끝 줄']),
+      )
+      plugin.formatText('큰 줄', null, false, { size: 14 })
+      plugin.insertTable('큰 줄', null, 'after', ROWS_2, true)
+      expect(cellFont(doc(), 3)).toBe('함초롬바탕 10')
+    })
+  })
+
+  it('keeps the outline at the edge of an open table and the header line under the header when rows are added', () => {
+    /** The line under each row of column 1, and the line over the table, as widths. */
+    const lines = (source: HwpDocument) => {
+      const table = tableIn(source, 5)
+      const under = Array.from({ length: table.rows }, (_, row) => {
+        for (let cell = 0; cell < table.cells; cell++) {
+          const info = JSON.parse(source.getCellInfo(0, 5, table.control, cell)) as {
+            row: number
+            col: number
+            rowSpan: number
+          }
+          if (info.col === 0 && info.row + info.rowSpan - 1 === row) {
+            return table.cell(cell).borderBottom.width
+          }
+        }
+        return null
+      })
+      return [table.cell(0).borderTop.width, ...under]
+    }
+    const heavy = 7
+    const header = 5
+    const look = { header: true, look: 'open' as const }
+    const appended = withTable(look)
+    const inner = lines(appended.doc())[2]
+    expect(lines(appended.doc())).toEqual([heavy, header, inner, heavy])
+    expect(appended.plugin.addTableLines(1, 'rows', 3, 'after', 1)).toMatchObject({ ok: true })
+    appended.plugin.addTableLines(1, 'rows', 4, 'after', 2)
+    expect(lines(appended.doc())).toEqual([heavy, header, inner, inner, inner, inner, heavy])
+    for (const bytes of [appended.doc().exportHwpx(), appended.doc().exportHwp()]) {
+      expect(lines(new HwpDocument(bytes))).toEqual([
+        heavy,
+        header,
+        inner,
+        inner,
+        inner,
+        inner,
+        heavy,
+      ])
+    }
+
+    const first = withTable(look)
+    first.plugin.addTableLines(1, 'rows', 1, 'before', 1)
+    expect(lines(first.doc())).toEqual([heavy, inner, header, inner, heavy])
+
+    const merged = withTable(look)
+    merged.plugin.mergeCells(1, { row: 3, col: 1 }, { row: 3, col: 3 })
+    merged.plugin.addTableLines(1, 'rows', 3, 'after', 1)
+    expect(lines(merged.doc())).toEqual([heavy, header, inner, inner, heavy])
+
+    // a header and one row: no line between two body rows, so new rows take the line between the columns
+    const short = open()
+    short.plugin.insertTable('□ 세부 일정', null, 'after', ROWS.slice(0, 2), look)
+    short.plugin.addTableLines(1, 'rows', 2, 'after', 2)
+    expect(lines(short.doc())).toEqual([heavy, header, inner, inner, heavy])
+  })
+
+  it('draws no outline line inside a two-row table with a heavy outline', () => {
+    const { plugin, doc } = open()
+    plugin.insertTable('□ 세부 일정', null, 'after', [
+      ['김민수', '90'],
+      ['이서연', '80'],
+    ])
+    plugin.formatCells(1, null, { borders: [{ sides: 'outer', width: 0.4 }] })
+    const under = () => {
+      const table = tableIn(doc(), 5)
+      return Array.from({ length: table.rows }, (_, row) => table.cell(row * 2).borderBottom.width)
+    }
+    const [thin, heavy] = under()
+    expect(heavy).toBeGreaterThan(thin)
+    plugin.addTableLines(1, 'rows', 2, 'after', 2)
+    expect(under()).toEqual([thin, thin, thin, heavy])
+  })
+
+  it('copies the line between two body rows, not the line under a head the user drew', () => {
+    const NAMES = [
+      ['번호', '이름', '부서'],
+      ['1', '김', '총무'],
+      ['2', '이', '교무'],
+      ['3', '박', '연구'],
+    ]
+    /** The line under each row of the first column, as type/width. */
+    const under = (source: HwpDocument) => {
+      const table = tableIn(source, 5)
+      return Array.from({ length: table.rows }, (_, row) => {
+        const line = table.cell(row * table.cols).borderBottom
+        return `${line.type}/${line.width}`
+      })
+    }
+    const double = { sides: 'bottom', line: 'double', width: 0.5 } as const
+    // a double line under the first row, no header flag
+    const drawn = open()
+    drawn.plugin.insertTable('□ 세부 일정', null, 'after', NAMES)
+    drawn.plugin.formatCells(
+      1,
+      { fromRow: 1, fromCol: 1, toRow: 1, toCol: 3 },
+      {
+        borders: [double],
+      },
+    )
+    const [head, thin] = under(drawn.doc())
+    drawn.plugin.addTableLines(1, 'rows', 4, 'after', 2)
+    expect(under(drawn.doc())).toEqual([head, thin, thin, thin, thin, under(drawn.doc())[5]])
+    expect(head).not.toBe(thin)
+    // the same with a grey fill on the first row
+    const grey = open()
+    grey.plugin.insertTable('□ 세부 일정', null, 'after', NAMES)
+    grey.plugin.formatCells(
+      1,
+      { fromRow: 1, fromCol: 1, toRow: 1, toCol: 3 },
+      {
+        borders: [double],
+        background: '#D9D9D9',
+      },
+    )
+    grey.plugin.addTableLines(1, 'rows', 4, 'after', 2)
+    expect(under(grey.doc()).slice(1, 5)).toEqual([thin, thin, thin, thin])
+    // a head of two flagged rows with a double line under the second
+    const two = open()
+    two.plugin.insertTable('□ 세부 일정', null, 'after', [['구분', '', ''], ...NAMES], true)
+    const table = tableIn(two.doc(), 5)
+    for (let cell = 0; cell < 6; cell++) {
+      two.doc().setCellProperties(0, 5, table.control, cell, JSON.stringify({ isHeader: true }))
+    }
+    two.plugin.formatCells(
+      1,
+      { fromRow: 2, fromCol: 1, toRow: 2, toCol: 3 },
+      {
+        borders: [double],
+      },
+    )
+    const before = under(two.doc())
+    two.plugin.addTableLines(1, 'rows', 5, 'after', 2)
+    const after = under(two.doc())
+    expect(after.slice(0, 2)).toEqual(before.slice(0, 2))
+    expect(after.slice(2, 6)).toEqual([before[2], before[2], before[2], before[2]])
+    expect(after[1]).not.toBe(after[2])
+  })
+
+  it('keeps a line drawn under the first of two rows under that row only', () => {
+    const under = (source: HwpDocument) => {
+      const table = tableIn(source, 5)
+      return Array.from({ length: table.rows }, (_, row) => {
+        const line = table.cell(row * table.cols).borderBottom
+        return `${line.type}/${line.width}`
+      })
+    }
+    const { plugin, doc } = open()
+    plugin.insertTable('□ 세부 일정', null, 'after', [
+      ['회의록', '2026. 11. 15.'],
+      ['안건', '내용'],
+    ])
+    plugin.formatCells(
+      1,
+      { fromRow: 1, fromCol: 1, toRow: 1, toCol: 2 },
+      { borders: [{ sides: 'bottom', line: 'double', width: 0.5 }] },
+    )
+    const [head, bottom] = under(doc())
+    plugin.addTableLines(1, 'rows', 2, 'after', 2)
+    expect(under(doc())).toEqual([head, bottom, bottom, bottom])
+    expect(head).not.toBe(bottom)
+  })
+
+  it('gives a new line under a merged cell the line of the nearest column, no line the table lacks', () => {
+    const { plugin, doc } = open()
+    plugin.insertTable('□ 세부 일정', null, 'after', [
+      ['구분', '내용', '비고'],
+      ['가', '나', '다'],
+      ['라', '마', '바'],
+    ])
+    plugin.formatCells(1, null, { borders: [{ sides: 'all', line: 'solid', width: 0.4 }] })
+    plugin.mergeCells(1, { row: 1, col: 2 }, { row: 2, col: 2 })
+    const widths = () => {
+      const source = doc()
+      const table = tableIn(source, 5)
+      const all = new Set<number>()
+      for (let cell = 0; cell < table.cells; cell++) {
+        all.add(table.cell(cell).borderTop.width)
+        all.add(table.cell(cell).borderBottom.width)
+      }
+      return all
+    }
+    const before = widths()
+    plugin.addTableLines(1, 'rows', 3, 'after', 1)
+    expect(widths()).toEqual(before)
+    const table = tableIn(doc(), 5)
+    const last = table.cell(table.cells - 2)
+    expect(last.borderTop.width).toBe(table.cell(0).borderBottom.width)
+  })
+
+  it('writes the words of a header row white on a dark fill, in the document and in both files', () => {
+    const { doc, para } = withTable({ header: true, headerColor: '#1F3864' })
+    const colours = (source: HwpDocument) => {
+      const table = tableIn(source, para)
+      return [0, 2, 3].map(
+        (cell) =>
+          (
+            JSON.parse(source.getCellCharPropertiesAt(0, para, table.control, cell, 0, 0)) as {
+              textColor: string
+            }
+          ).textColor,
+      )
+    }
+    expect(colours(doc())).toEqual(['#ffffff', '#ffffff', '#000000'])
+    for (const bytes of [doc().exportHwpx(), doc().exportHwp()]) {
+      expect(colours(new HwpDocument(bytes))).toEqual(['#ffffff', '#ffffff', '#000000'])
+    }
+  })
+
+  it('says that it chose white for the header row, and leaves black where black shows', () => {
+    const insert = (look: Parameters<typeof withTable>[0]) =>
+      open().plugin.insertTable('□ 세부 일정', null, 'after', ROWS, look)
+    expect(insert({ header: true, headerColor: '#1F3864' })).toMatchObject({
+      ok: true,
+      headerTextColor: '#ffffff',
+    })
+    for (const look of [
+      { header: true, headerColor: '#D9E2F3' },
+      { header: true },
+      { header: true, headerColor: 'none' },
+      { headerColor: '#1F3864' },
+    ]) {
+      expect(insert(look), JSON.stringify(look)).not.toHaveProperty('headerTextColor')
+    }
+    const { doc, para } = withTable({ header: true, headerColor: '#D9E2F3' })
+    const table = tableIn(doc(), para)
+    const chars = JSON.parse(doc().getCellCharPropertiesAt(0, para, table.control, 0, 0, 0)) as {
+      textColor: string
+    }
+    expect(chars.textColor).toBe('#000000')
+  })
+
   it('gives the columns their shares of the width and the text its size', () => {
     const { doc, para } = withTable({
       header: true,
@@ -257,6 +712,49 @@ describe('insertTable: looks', () => {
       alignment: string
     }
     expect(paragraph.alignment).toBe('center')
+  })
+
+  it('gives the columns of a table that is there new shares, merged cells and all, its width kept', () => {
+    const { plugin, doc, para } = withTable(true)
+    const address = '신청자 연락처 haneul.kim@example.org 로 회신'
+    plugin.fillCells(1, [{ row: 2, col: 3, text: address }], true)
+    const widths = (source: HwpDocument) => {
+      const table = tableIn(source, para)
+      return [0, 1, 2].map((cell) => table.cell(cell).width)
+    }
+    const lineCount = () =>
+      (
+        JSON.parse(doc().getLineInfoInCell(0, para, tableIn(doc(), para).control, 5, 0, 0)) as {
+          lineCount: number
+        }
+      ).lineCount
+    const before = widths(doc())
+    const wrapped = lineCount()
+    expect(wrapped).toBeGreaterThan(1)
+    const result = plugin.formatCells(1, null, { columnWidths: [1, 1, 4] })
+    expect(result).toMatchObject({ ok: true })
+    const after = widths(doc())
+    expect(after.reduce((a, b) => a + b)).toBe(before.reduce((a, b) => a + b))
+    expect(after[2] / after[0]).toBeGreaterThan(3.9)
+    expect(after[2] / after[0]).toBeLessThan(4.1)
+    expect(result.ok && result.columnWidthsMm).toHaveLength(3)
+    // the engine wraps the text again for the new width
+    expect(lineCount()).toBeLessThan(wrapped)
+    for (const bytes of [doc().exportHwpx(), doc().exportHwp()]) {
+      expect(widths(new HwpDocument(bytes))).toEqual(after)
+    }
+    // a merged cell takes the sum of the columns it spans
+    plugin.mergeCells(1, { row: 1, col: 1 }, { row: 1, col: 2 })
+    plugin.formatCells(1, null, { columnWidths: [2, 1, 3] })
+    const table = tableIn(doc(), para)
+    const merged = table.cell(0).width
+    const [left, middle] = [table.cell(2).width, table.cell(3).width]
+    expect(Math.abs(merged - (left + middle))).toBeLessThan(5)
+    expect(plugin.formatCells(1, null, { columnWidths: [1, 2] })).toEqual({
+      ok: false,
+      reason: 'column_count',
+      cols: 3,
+    })
   })
 
   it('refuses widths that do not fit the columns', () => {
@@ -476,6 +974,81 @@ describe('insertTitleBox', () => {
     }
   })
 
+  it('refuses the text of any table, whatever its shape, and leaves it as it was', () => {
+    const boxes: [string, string[][], (plugin: ReturnType<typeof open>['plugin']) => void][] = [
+      ['안전 교육은 출발 전날에 합니다.', [['안전 교육은 출발 전날에 합니다.']], () => {}],
+      [
+        '서류는 행정실로',
+        [['서류는 행정실로 제출합니다.']],
+        (plugin) =>
+          plugin.formatCells(1, null, {
+            borders: [{ sides: 'all', line: 'double', width: 0.7, color: '#2F5597' }],
+            heightMm: 25,
+            verticalAlign: 'top',
+            background: '#FFF2CC',
+          }),
+      ],
+      ['안내 사항', [['안내 사항'], [''], ['']], () => {}],
+      ['의견', [['의견'], [''], [''], ['']], () => {}],
+      [
+        '네 칸 상자',
+        [['네 칸 상자']],
+        (plugin) =>
+          plugin.formatCells(1, null, {
+            borders: [{ sides: 'all', line: 'solid', width: 0.4, color: '#000000' }],
+            verticalAlign: 'middle',
+          }),
+      ],
+      [
+        '알려 드립니다',
+        [['알려 드립니다']],
+        (plugin) => plugin.formatCells(1, null, { borders: [{ sides: 'all', width: 0.5 }] }),
+      ],
+      [
+        '채운 상자',
+        [['채운 상자']],
+        (plugin) =>
+          plugin.formatCells(1, null, {
+            borders: [{ sides: 'all', line: 'none' }],
+            background: '#E7EDF5',
+          }),
+      ],
+    ]
+    for (const [text, rows, shape] of boxes) {
+      const { plugin, doc, steps } = open()
+      plugin.insertTable('□ 세부 일정', null, 'after', rows)
+      shape(plugin)
+      const was = doc().exportHwp()
+      const before = steps()
+      expect(plugin.insertTitleBox(text, null, { look: 'shaded', color: '#C00000' })).toMatchObject(
+        { ok: false, reason: 'in_table', table: 1 },
+      )
+      expect(steps()).toBe(before)
+      expect(doc().exportHwp()).toEqual(was)
+    }
+  })
+
+  it('refuses the text of a title box it made too, before and after the user changed it', () => {
+    const { plugin, doc, steps } = open()
+    plugin.insertTitleBox(TITLE, null, { look: 'box' })
+    for (const change of [
+      () => {},
+      () => plugin.formatCells(1, null, { borders: [{ sides: 'all', color: '#C00000' }] }),
+      () => plugin.formatCells(1, null, { background: '#FFF2CC' }),
+      () => plugin.formatCells(1, null, { verticalAlign: 'top' }),
+    ]) {
+      change()
+      const was = doc().exportHwp()
+      const before = steps()
+      expect(plugin.insertTitleBox(TITLE, null, { look: 'lines' })).toMatchObject({
+        ok: false,
+        reason: 'in_table',
+        table: 1,
+      })
+      expect([steps(), doc().exportHwp()]).toEqual([before, was])
+    }
+  })
+
   it('refuses text in a table cell and a look it does not know', () => {
     const { plugin, steps } = withTable()
     const before = steps()
@@ -537,9 +1110,20 @@ describe('page number, header and footer', () => {
       kind: 'footer',
     })
     const layout = plugin.pageLayout()
-    expect(layout.header).toEqual({ exists: true, text: '○○초등학교 교무기획부', plain: true })
-    expect(layout.footer).toMatchObject({ exists: true, plain: true })
-    expect((layout.footer as { text: string }).text).toBe('운영 계획 | {field} / {field}')
+    expect(layout.header).toEqual({
+      exists: true,
+      text: '○○초등학교 교무기획부',
+      plain: true,
+      align: 'right',
+      size: 9,
+    })
+    expect(layout.footer).toEqual({
+      exists: true,
+      text: '운영 계획 | {page} / {pages}',
+      plain: true,
+      align: 'center',
+      size: 10,
+    })
     for (const bytes of [doc().exportHwpx(), doc().exportHwp()]) {
       const again = new HwpDocument(bytes)
       expect((JSON.parse(again.getHeaderFooter(0, true, 0)) as { text: string }).text).toBe(
@@ -549,9 +1133,13 @@ describe('page number, header and footer', () => {
         true,
       )
     }
-    // the same call again replaces the text instead of adding to it
     plugin.setHeaderFooter('header', { text: '교무기획부' })
-    expect(plugin.pageLayout().header).toMatchObject({ text: '교무기획부' })
+    expect(plugin.pageLayout().header).toMatchObject({ text: '교무기획부', align: 'right' })
+    plugin.setHeaderFooter('header', { text: '교무기획부', align: 'left' })
+    expect(plugin.pageLayout().header).toMatchObject({ align: 'left' })
+    expect(() =>
+      plugin.setHeaderFooter('header', { text: '교무기획부', align: 'justify' as never }),
+    ).toThrow(/align must be one of left, center, right/)
     expect(plugin.setHeaderFooter('header', { text: '' })).toMatchObject({
       ok: true,
       removed: true,
@@ -561,6 +1149,32 @@ describe('page number, header and footer', () => {
       ok: false,
       reason: 'not_there',
     })
+  })
+
+  it('takes a footer back as it was read, page fields and all', () => {
+    const { plugin, doc } = open()
+    plugin.setHeaderFooter('footer', { text: '{page} / {pages}', align: 'right', size: 9 })
+    const {
+      exists: _exists,
+      plain: _plain,
+      ...read
+    } = plugin.pageLayout().footer as {
+      exists: true
+      plain: boolean
+      text: string
+      align?: 'left' | 'center' | 'right'
+      size?: number
+    }
+    expect(read).toEqual({ text: '{page} / {pages}', align: 'right', size: 9 })
+    plugin.setHeaderFooter('footer', { text: '다른 글', align: 'left', size: 12 })
+    plugin.setHeaderFooter('footer', read)
+    expect(plugin.pageLayout().footer).toMatchObject(read)
+    for (const bytes of [doc().exportHwpx(), doc().exportHwp()]) {
+      const page = new HwpDocument(bytes).renderPageSvgWithProfile(0, 'print')
+      const drawn = [...page.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]).join('')
+      expect(drawn.endsWith('1/1')).toBe(true)
+      expect(drawn).not.toContain('{')
+    }
   })
 
   it('leaves a header someone laid out by hand alone', () => {
@@ -852,6 +1466,224 @@ describe('columns and breaks', () => {
       reason: 'not_found',
     })
   })
+
+  it('puts the break on the paragraph itself and says so when it starts its page or column already', () => {
+    const { plugin, doc, steps } = open(blank(PAPER))
+    const paragraphs = doc().getParagraphCount(0)
+    expect(plugin.insertBreak('5. 다음 글을', null, 'page')).toMatchObject({
+      ok: true,
+      kind: 'page',
+      place: { para: PAPER.indexOf('5. 다음 글을 읽고 물음에 답하시오.') },
+    })
+    expect(doc().getParagraphCount(0)).toBe(paragraphs)
+    const pages = doc().pageCount()
+    const before = steps()
+    expect(plugin.insertBreak('5. 다음 글을', null, 'page')).toEqual({
+      ok: true,
+      kind: 'page',
+      already: 'page',
+    })
+    expect(plugin.insertBreak('5. 다음 글을', null, 'column')).toEqual({
+      ok: true,
+      kind: 'column',
+      already: 'page',
+    })
+    expect(doc().pageCount()).toBe(pages)
+    expect(doc().getParagraphCount(0)).toBe(paragraphs)
+    expect(steps()).toBe(before)
+
+    plugin.setColumns({ count: 2 })
+    expect(plugin.insertBreak('3. 다음 글을', null, 'column')).toMatchObject({ ok: true })
+    const inColumns = doc().pageCount()
+    const again = steps()
+    expect(plugin.insertBreak('3. 다음 글을', null, 'column')).toEqual({
+      ok: true,
+      kind: 'column',
+      already: 'column',
+    })
+    expect(doc().pageCount()).toBe(inColumns)
+    expect(steps()).toBe(again)
+    expect(plugin.insertBreak('3. 다음 글을', null, 'page')).toMatchObject({ ok: true })
+    expect(doc().pageCount()).toBe(inColumns + 1)
+    expect(doc().getParagraphCount(0)).toBe(paragraphs)
+    for (const bytes of [doc().exportHwpx(), doc().exportHwp()]) {
+      const saved = new HwpDocument(bytes)
+      expect(saved.getParagraphCount(0)).toBe(paragraphs)
+      expect(saved.pageCount()).toBe(inColumns + 1)
+    }
+  })
+
+  it('leaves a table on its page when it shrinks after a break was put behind it', () => {
+    const LONG =
+      '이 칸에는 여러 줄로 접히는 긴 설명이 들어갑니다. 조사 대상과 방법, 기간, 그리고 결과를 한 칸에 모두 적어 줄 수가 늘어나게 합니다. 한 줄로는 다 들어가지 않습니다. 세 줄이 넘도록 조금 더 적습니다. 마지막 문장입니다.'
+    const ADDED = ['칸 안에 더한 줄 A', '칸 안에 더한 줄 B', '칸 안에 더한 줄 C']
+    const LAST = 32
+    const rows = Array.from({ length: LAST }, (_, row) => [`항목 ${row + 1}`, `값 ${row + 1}`])
+    type Plugin = ReturnType<typeof open>['plugin']
+    const fillLast = (text: string) => (plugin: Plugin) =>
+      plugin.fillCells(1, [{ row: LAST, col: 2, text }], true)
+    const changes: Array<{
+      grow: (plugin: Plugin) => unknown
+      shrink: (plugin: Plugin) => unknown
+    }> = [
+      { grow: fillLast(LONG), shrink: fillLast('짧은 값') },
+      { grow: fillLast(LONG), shrink: (plugin) => plugin.removeTableLines(1, 'rows', LAST, 1) },
+      { grow: fillLast(LONG), shrink: (plugin) => plugin.replaceText(LONG, '짧은 값', null) },
+      {
+        grow: (plugin) => plugin.insertParagraphs(`값 ${LAST}`, null, 'after', ADDED),
+        shrink: (plugin) => ADDED.map((line) => plugin.deleteParagraph(line, null)),
+      },
+    ]
+    for (const { grow, shrink } of changes) {
+      const { plugin, doc } = open(
+        blank(['보고서 제목', '표 앞 문단입니다.', '다음 장 제목', '다음 장 본문']),
+      )
+      plugin.insertTable('표 앞 문단입니다.', null, 'after', rows, true)
+      const TABLE = 2
+      const pageOf = (from: HwpDocument, para: number) =>
+        (JSON.parse(from.getPageOfPosition(0, para)) as { page: number }).page
+      expect(pageOf(doc(), TABLE)).toBe(0)
+      grow(plugin)
+      expect(plugin.insertBreak('다음 장 제목', null, 'page')).toMatchObject({ ok: true })
+      shrink(plugin)
+      expect([doc().pageCount(), pageOf(doc(), TABLE)]).toEqual([2, 0])
+      for (const bytes of [doc().exportHwpx(), doc().exportHwp()]) {
+        const saved = new HwpDocument(bytes)
+        expect([saved.pageCount(), pageOf(saved, TABLE)]).toEqual([2, 0])
+      }
+    }
+  })
+
+  it('leaves one empty paragraph behind a table, and keeps the start of a part with other columns', () => {
+    const start = blank(['머리', '표 앞', '표 뒤 문단', '단이 바뀌는 문단 앞'])
+    // a paragraph that starts a part of the document laid out in other columns, as Hangul
+    // marks it: made through the engine's split, which takes the mark of the new paragraph
+    start.splitParagraph(
+      0,
+      3,
+      start.getParagraphLength(0, 3),
+      JSON.stringify({
+        para_shape_id: 0,
+        style_id: 0,
+        column_type: 'MultiColumn',
+        raw_break_type: 2,
+        numbering_restart: null,
+        raw_header_extra: [],
+        tab_extended: [],
+      }),
+    )
+    start.insertText(0, 4, 0, '단이 바뀌는 문단')
+    const { plugin, doc, steps } = open(start)
+    plugin.insertTable('표 앞', null, 'after', [['a', 'b']], false)
+    const paragraphs = doc().getParagraphCount(0) + 1
+    expect(plugin.insertBreak('표 뒤 문단', null, 'page')).toMatchObject({
+      ok: true,
+      place: { para: 4 },
+    })
+    expect(doc().getParagraphCount(0)).toBe(paragraphs)
+    expect(doc().getParagraphLength(0, 3)).toBe(0)
+    expect(plugin.insertBreak('표 뒤 문단', null, 'page')).toEqual({
+      ok: true,
+      kind: 'page',
+      already: 'page',
+    })
+    expect(doc().getParagraphCount(0)).toBe(paragraphs)
+    expect(tableIn(doc(), 2).cols).toBe(2)
+    expect(doc().pageCount()).toBe(2)
+    const before = steps()
+    expect(plugin.insertBreak('단이 바뀌는 문단', 2, 'page')).toEqual({
+      ok: false,
+      reason: 'layout_start',
+      count: 1,
+    })
+    expect(steps()).toBe(before)
+    expect(doc().getParagraphCount(0)).toBe(paragraphs)
+    expect(doc().pageCount()).toBe(2)
+  })
+
+  it('keeps the numbering behind a table, and refuses a mark of the place there as elsewhere', () => {
+    const { plugin, doc } = open(blank(['머리', '표 앞', '첫째 항목', '둘째 항목', '끝']))
+    for (const item of ['첫째 항목', '둘째 항목']) {
+      plugin.formatParagraph(item, null, { list: 'number' })
+    }
+    plugin.insertTable('표 앞', null, 'after', [['a', 'b']], false)
+    doc().setNumberingRestart(0, 3, 2, 5)
+    expect(drawnPages(doc())[0]).toContain('5.첫째항목6.둘째항목')
+    expect(plugin.insertBreak('첫째 항목', null, 'page')).toMatchObject({
+      ok: true,
+      place: { para: 4 },
+    })
+    const pages = drawnPages(doc())
+    expect(pages).toHaveLength(2)
+    expect(pages[1]).toContain('5.첫째항목6.둘째항목')
+
+    const marked = open(blank(['머리', '표 앞', '둘째 장', '끝']))
+    marked.plugin.insertTable('표 앞', null, 'after', [['a', 'b']], false)
+    marked.doc().addBookmark(0, 3, 0, 'ch2')
+    const paragraphs = marked.doc().getParagraphCount(0)
+    const before = marked.steps()
+    expect(marked.plugin.insertBreak('둘째 장', null, 'page')).toEqual({
+      ok: false,
+      reason: 'holds_mark',
+      count: 1,
+    })
+    expect(marked.steps()).toBe(before)
+    expect(marked.doc().getParagraphCount(0)).toBe(paragraphs)
+  })
+
+  it('keeps the numbering of an item that starts its numbers anew', () => {
+    const { plugin, doc } = open(
+      blank(['머리', '첫째 항목', '둘째 항목', '셋째 항목', '넷째 항목', '끝']),
+    )
+    for (const item of ['첫째 항목', '둘째 항목', '셋째 항목', '넷째 항목']) {
+      plugin.formatParagraph(item, null, { list: 'number' })
+    }
+    doc().setNumberingRestart(0, 3, 2, 5)
+    const drawn = () => drawnPages(doc())
+    expect(drawn()).toHaveLength(1)
+    expect(drawn()[0]).toContain('2.둘째항목5.셋째항목6.넷째항목')
+    const paragraphs = doc().getParagraphCount(0)
+    expect(plugin.insertBreak('셋째 항목', null, 'page')).toMatchObject({ ok: true, kind: 'page' })
+    expect(doc().getParagraphCount(0)).toBe(paragraphs)
+    const pages = drawn()
+    expect(pages).toHaveLength(2)
+    expect(pages[0]).toContain('1.첫째항목2.둘째항목')
+    expect(pages[0]).not.toContain('5.')
+    expect(pages[1]).toContain('5.셋째항목6.넷째항목')
+
+    doc().setNumberingRestart(0, 4, 1, 0)
+    expect(plugin.insertBreak('넷째 항목', null, 'page')).toMatchObject({ ok: true })
+    // the engine tells what a paragraph carries only in the answer of a join
+    doc().insertPageBreak(0, 4, 0)
+    expect(JSON.parse(doc().mergeParagraph(0, 4)).removedParaMeta.numbering_restart).toBe(
+      'ContinuePrevious',
+    )
+  })
+
+  it('leaves a paragraph that holds a mark of its place as it is', () => {
+    const marks: Array<(doc: HwpDocument) => unknown> = [
+      (doc) => doc.insertNewNumber(0, 2, 0, 7),
+      (doc) => doc.setPageHide(0, 2, false, false, false, false, false, true),
+      (doc) => doc.addBookmark(0, 2, 0, 'ch2'),
+    ]
+    for (const mark of marks) {
+      const { plugin, doc, steps } = open(blank(['머리', '앞 문단', '둘째 장', '본문', '끝']))
+      plugin.setPageNumber({ position: 'bottom_center', dashes: false })
+      mark(doc())
+      const controls = () => [1, 2].map((para) => doc().getControlTextPositions(0, para))
+      const drawnBefore = drawnPages(doc())
+      const controlsBefore = controls()
+      const stepsBefore = steps()
+      expect(plugin.insertBreak('둘째 장', null, 'page')).toEqual({
+        ok: false,
+        reason: 'holds_mark',
+        count: 1,
+      })
+      expect(steps()).toBe(stepsBefore)
+      expect(drawnPages(doc())).toEqual(drawnBefore)
+      expect(controls()).toEqual(controlsBefore)
+    }
+  })
 })
 
 describe('writing into an empty document', () => {
@@ -1137,6 +1969,70 @@ describe('a title box and the colour of its words', () => {
     ).toMatchObject({ ok: true, textColorDropped: true })
   })
 
+  it('writes the title white on a dark fill when the call names no colour for it', () => {
+    const dark = open()
+    expect(
+      dark.plugin.insertTitleBox(TITLE, null, { look: 'shaded', color: '#1F3864' }),
+    ).toMatchObject({ ok: true, textColor: '#ffffff' })
+    expect(titleColor(dark.doc())).toBe('#ffffff')
+    for (const bytes of [dark.doc().exportHwpx(), dark.doc().exportHwp()]) {
+      expect(titleColor(new HwpDocument(bytes))).toBe('#ffffff')
+    }
+    for (const box of [
+      { look: 'shaded' as const, color: '#D9E2F3' },
+      { look: 'shaded' as const },
+      { look: 'bands' as const, color: '#1F3864' },
+      { look: 'lines' as const, color: '#1F3864' },
+    ]) {
+      const light = open()
+      const made = light.plugin.insertTitleBox(TITLE, null, box)
+      expect(made, JSON.stringify(box)).not.toHaveProperty('textColor')
+      expect(titleColor(light.doc()), JSON.stringify(box)).toBe('#000000')
+    }
+    const asked = open()
+    const kept = asked.plugin.insertTitleBox(TITLE, null, {
+      look: 'shaded',
+      color: '#1F3864',
+      textColor: '#FFC000',
+    })
+    expect(kept).not.toHaveProperty('textColor')
+    expect(titleColor(asked.doc())).toBe('#ffc000')
+  })
+
+  it('writes the title white when the colour the call names would not show on the dark fill', () => {
+    for (const [color, textColor] of [
+      ['#1F3864', '#1F3864'],
+      ['#1F3864', '#203A6A'],
+      ['#000000', '#111111'],
+    ]) {
+      const { plugin, doc } = open()
+      expect(
+        plugin.insertTitleBox(TITLE, null, { look: 'shaded', color, textColor }),
+        `${textColor} on ${color}`,
+      ).toMatchObject({ ok: true, textColorDropped: true, textColor: '#ffffff' })
+      expect(titleColor(doc())).toBe('#ffffff')
+    }
+    // on a pale fill black shows, so the title keeps the colour it has
+    const pale = open()
+    const made = pale.plugin.insertTitleBox(TITLE, null, {
+      look: 'shaded',
+      color: '#D9E2F3',
+      textColor: '#DDE6F5',
+    })
+    expect(made).toMatchObject({ ok: true, textColorDropped: true })
+    expect(made).not.toHaveProperty('textColor')
+    expect(titleColor(pale.doc())).toBe('#000000')
+  })
+
+  it('names the text colour, not the colour of the box, when the text colour is no colour', () => {
+    const { plugin, steps } = open()
+    const before = steps()
+    expect(() => plugin.insertTitleBox(TITLE, null, { look: 'lines', textColor: 'navy' })).toThrow(
+      /textColor must look like #RRGGBB/,
+    )
+    expect(steps()).toBe(before)
+  })
+
   it('takes white words on a dark fill, and a dark colour anywhere', () => {
     const dark = open()
     const made = dark.plugin.insertTitleBox(TITLE, null, {
@@ -1335,6 +2231,42 @@ describe('equations, a diagonal, the page border, tab stops, the size of a pictu
     expect(() => plugin.formatText('끝', null, false, { tabs: [{}] })).toThrow(/whole paragraph/)
   })
 
+  it('replaces text on a line that holds a tab, with a tab in find and in the new text', () => {
+    const lines = ['식순', '개회 및 국민의례\t10:00', '연혁 보고\t10:10', '끝']
+    const { plugin, doc } = open(blank(lines))
+    plugin.formatParagraph('연혁 보고', null, { tabs: [{ leader: 'dots' }] })
+    const line = (source: HwpDocument) =>
+      source.getTextRange(0, 2, 0, source.getParagraphLength(0, 2))
+    expect(plugin.replaceText('연혁 보고', '연혁 및 경과 보고', null)).toMatchObject({ ok: true })
+    expect(
+      plugin.replaceText('연혁 및 경과 보고\t10:10', '연혁 및 경과 보고\t10:15', null),
+    ).toMatchObject({ ok: true })
+    expect(line(doc())).toBe('연혁 및 경과 보고\t10:15')
+    for (const saved of [doc().exportHwpx(), doc().exportHwp()]) {
+      expect(line(new HwpDocument(saved))).toBe('연혁 및 경과 보고\t10:15')
+    }
+    expect(plugin.replaceAllText('10:00', '10:00\t(예정)')).toMatchObject({ ok: true })
+    expect(doc().getTextRange(0, 1, 0, doc().getParagraphLength(0, 1))).toBe(
+      '개회 및 국민의례\t10:00\t(예정)',
+    )
+    expect(() => plugin.replaceText('끝', '끝\n다음', null)).toThrow(/one line/)
+  })
+
+  it('writes a tab into a table cell in front of the head the engine replaces at once', () => {
+    const { plugin, doc } = open()
+    plugin.insertTable('□ 세부 일정', null, 'after', [['개회 10:00', '연혁 보고 10:10']])
+    const cell = (index: number) => {
+      const table = tableIn(doc(), 5)
+      const length = doc().getCellParagraphLength(0, 5, table.control, index, 0)
+      return doc().getTextInCell(0, 5, table.control, index, 0, 0, length)
+    }
+    expect(plugin.replaceText('개회 10:00', '개회\t10:05', null)).toMatchObject({ ok: true })
+    expect(cell(0)).toBe('개회\t10:05')
+    // a new text that starts with the tab
+    expect(plugin.replaceText(' 10:10', '\t10:15', null)).toMatchObject({ ok: true })
+    expect(cell(1)).toBe('연혁 보고\t10:15')
+  })
+
   it('takes a tab in the text of a new paragraph, and no other control character', () => {
     const { plugin, doc } = open()
     expect(plugin.insertParagraphs('', null, 'end', ['부록 1\t21'])).toMatchObject({ ok: true })
@@ -1425,6 +2357,73 @@ describe('equations, a diagonal, the page border, tab stops, the size of a pictu
     }
   })
 
+  it('lists the equations with the words round them, changes one and removes another', () => {
+    const lines = [
+      '넓이는 [[1]] 이다.',
+      '비는 [[2]] 이다.',
+      '근은 [[3]] 이다.',
+      '합은 [[4]] 이다.',
+      '원의 넓이는 [[5]] 이다.',
+    ]
+    const { plugin, doc, steps } = open(blank(lines))
+    expect(plugin.listEquations()).toEqual({ count: 0, elsewhere: 0, equations: [] })
+    plugin.insertEquations(
+      ['x^2', '{a} over {b}', 'sqrt {x}', 'x_1 + x_2', 'pi r^2'].map((script, index) => ({
+        find: `[[${index + 1}]]`,
+        script,
+      })),
+    )
+    const listed = plugin.listEquations()
+    expect(listed).toMatchObject({ count: 5, elsewhere: 0 })
+    expect(listed.equations[0]).toEqual({
+      equation: 1,
+      before: '넓이는 ',
+      after: ' 이다.',
+      script: 'x^2',
+    })
+    expect(listed.equations.map((equation) => equation.script)).toEqual([
+      'x^2',
+      '{a} over {b}',
+      'sqrt {x}',
+      'x_1 + x_2',
+      'pi r^2',
+    ])
+    const before = steps()
+    expect(plugin.editEquation(2, '{1} over {2}')).toMatchObject({
+      ok: true,
+      removed: false,
+      was: '{a} over {b}',
+    })
+    const second = equationsOf(doc())[1]
+    expect(
+      (
+        JSON.parse(doc().getEquationProperties(0, second.para, second.controlIndex, -1, -1)) as {
+          script: string
+        }
+      ).script,
+    ).toBe('{1} over {2}')
+    expect(plugin.editEquation(4, null)).toMatchObject({
+      ok: true,
+      removed: true,
+      was: 'x_1 + x_2',
+    })
+    expect(steps()).toBe(before + 2)
+    expect(textOf(doc(), 3)).toBe('합은  이다.')
+    expect(plugin.listEquations().equations.map((equation) => equation.script)).toEqual([
+      'x^2',
+      '{1} over {2}',
+      'sqrt {x}',
+      'pi r^2',
+    ])
+    for (const saved of [doc().exportHwpx(), doc().exportHwp()]) {
+      expect(equationsOf(new HwpDocument(saved))).toHaveLength(4)
+    }
+    // the line that held it holds no object now, so it can go
+    expect(plugin.deleteParagraph('합은', null)).toMatchObject({ ok: true })
+    expect(plugin.editEquation(9, 'x')).toEqual({ ok: false, reason: 'no_such_equation', count: 4 })
+    expect(() => plugin.editEquation(1, 'x\ny')).toThrow(/one line/)
+  })
+
   it('keeps the text when asked to, and leaves the document alone when one cannot be placed', () => {
     const { plugin, doc, steps } = withTable(false)
     const before = steps()
@@ -1460,5 +2459,758 @@ describe('equations, a diagonal, the page border, tab stops, the size of a pictu
     expect(() => plugin.insertEquations([])).toThrow(/equations/)
     expect(() => plugin.insertEquations([{ find: '세부 일정', script: '  ' }])).toThrow(/script/)
     expect(() => plugin.insertEquations([{ find: '', script: 'x' }])).toThrow(/find/)
+  })
+})
+
+describe('where an equation of a choice is', () => {
+  it('names the line above an equation that has only a circled number round it', () => {
+    const lines = [
+      '1. 다음 중 이차방정식의 근은?',
+      '① [[1]]',
+      '② [[2]]',
+      '넓이는 [[3]] 이다. 둘레는 따로 구한다.',
+    ]
+    const { plugin } = open(blank(lines))
+    plugin.insertEquations(
+      ['x=1', 'x=2', 'pi r^2'].map((script, index) => ({ find: `[[${index + 1}]]`, script })),
+    )
+    const listed = plugin.listEquations().equations
+    expect(listed[0]).toMatchObject({ before: '① ', previous: '1. 다음 중 이차방정식의 근은?' })
+    expect(listed[1]).toMatchObject({ before: '② ', previous: '1. 다음 중 이차방정식의 근은?' })
+    expect(listed[2]).not.toHaveProperty('previous')
+  })
+
+  it('names the question each short choice stands under, and none outside a question', () => {
+    const lines = [
+      '1. 다음 중 가장 큰 수를 고르시오.',
+      '① [[1]]',
+      '③ 3과 5의 최소공배수는 15이다.',
+      '2) 계산하면?',
+      '① [[2]]',
+      '(3) [[3]]의 값은?',
+      '문 4. 다음을 보고 답하시오.',
+      '① [[4]] ② [[5]]',
+    ]
+    const { plugin } = open(blank(lines))
+    plugin.insertEquations(
+      ['{1} over {2}', '3 times 4', 'sqrt {16}', 'a', 'b'].map((script, index) => ({
+        find: `[[${index + 1}]]`,
+        script,
+      })),
+    )
+    const previous = plugin.listEquations().equations.map((equation) => equation.previous ?? null)
+    expect(previous).toEqual([
+      '1. 다음 중 가장 큰 수를 고르시오…',
+      '2) 계산하면?',
+      null,
+      '문 4. 다음을 보고 답하시오.',
+      '문 4. 다음을 보고 답하시오.',
+    ])
+    const plain = open(blank(['○ 회의 안내를 적는 줄입니다.', '① [[1]]']))
+    plain.plugin.insertEquations([{ find: '[[1]]', script: 'x' }])
+    expect(plain.plugin.listEquations().equations[0]).not.toHaveProperty('previous')
+  })
+
+  const previousOf = (lines: string[], count: number) => {
+    const { plugin } = open(blank(lines))
+    plugin.insertEquations(
+      Array.from({ length: count }, (_, index) => ({ find: `[[${index + 1}]]`, script: 'x' })),
+    )
+    return plugin.listEquations().equations.map((equation) => equation.previous ?? null)
+  }
+
+  it('takes 가. for questions, a question that names a circled mark, and 1) choices', () => {
+    expect(
+      previousOf(
+        [
+          'Ⅰ. 선택형',
+          '1. 다음 식을 계산한 값은?',
+          '① [[1]]',
+          'Ⅱ. 서답형',
+          '가. 다음 방정식의 해를 구하시오.',
+          '① [[2]]',
+          '(나) 다음 부등식을 푸시오.',
+          '① [[3]]',
+        ],
+        3,
+      ),
+    ).toEqual([
+      '1. 다음 식을 계산한 값은?',
+      '가. 다음 방정식의 해를 구하시오.',
+      '(나) 다음 부등식을 푸시오.',
+    ])
+    expect(
+      previousOf(['1. 다음 식의 값은?', '① [[1]]', '2. 옳은 것을 ①~③에서 고르시오.', '① [[2]]'], 2),
+    ).toEqual(['1. 다음 식의 값은?', '2. 옳은 것을 ①~③에서 고르시오.'])
+    expect(
+      previousOf(['1. 다음 중 옳은 식을 고르시오.', '1) [[1]]  2) [[2]]', '3) [[3]]'], 3),
+    ).toEqual(Array(3).fill('1. 다음 중 옳은 식을 고르시오.'))
+  })
+
+  it('takes a line numbered like the question above for the next question', () => {
+    expect(
+      previousOf(
+        ['[서답형] 각 2점', '1) [[1]]을 구하시오.', '2) [[2]]을 구하시오.', '3) [[3]]을 구하시오.'],
+        3,
+      ),
+    ).toEqual([null, null, null])
+    expect(
+      previousOf(
+        [
+          '1) 다음 값을 구하시오.',
+          '[[1]]',
+          '2) 다음 식을 줄이시오.',
+          '[[2]]',
+          '3) 방정식을 푸시오.',
+          '[[3]]',
+        ],
+        3,
+      ),
+    ).toEqual(['1) 다음 값을 구하시오.', '2) 다음 식을 줄이시오.', '3) 방정식을 푸시오.'])
+    expect(
+      previousOf(
+        [
+          '(1) 다음 값을 구하시오. [[1]]',
+          '(2) 다음 값을 구하시오.',
+          '① [[2]] ② [[3]]',
+          '(3) 방정식을 푸시오.',
+          '① [[4]]',
+        ],
+        4,
+      ),
+    ).toEqual([null, '(2) 다음 값을 구하시오.', '(2) 다음 값을 구하시오.', '(3) 방정식을 푸시오.'])
+    expect(
+      previousOf(
+        [
+          '1. 다음 글을 읽고 답하시오.',
+          '글이 여기에 온다.',
+          '(1) [[1]]의 값은?',
+          '① [[2]]',
+          '2. 다음 값은?',
+          '1) [[3]]',
+        ],
+        3,
+      ),
+    ).toEqual([null, '(1) 의 값은?', '2. 다음 값은?'])
+  })
+
+  it('takes Ⅰ. and Ⅱ. for the start of a part, not a question', () => {
+    expect(previousOf(['Ⅰ. 선택형', '[[1]]'], 1)).toEqual([null])
+    expect(previousOf(['1. 다음 값은?', '① [[1]]', 'Ⅱ. 서답형', '[[2]]'], 2)).toEqual([
+      '1. 다음 값은?',
+      null,
+    ])
+  })
+})
+
+describe('a paragraph that holds an object of its line', () => {
+  const textOf = (doc: HwpDocument, para: number) =>
+    doc.getTextRange(0, para, 0, doc.getParagraphLength(0, para))
+  const bodyText = (doc: HwpDocument) =>
+    Array.from({ length: doc.getParagraphCount(0) }, (_, para) => textOf(doc, para))
+  const controlsOf = (doc: HwpDocument, id: string) =>
+    (JSON.parse(doc.getControls()) as { ctrlId: string; list: number; para: number }[])
+      .filter((control) => control.list === 0 && control.ctrlId === id)
+      .map((control) => control.para)
+  const places = (doc: HwpDocument, para: number) =>
+    JSON.parse(doc.getControlTextPositions(0, para)) as number[]
+
+  it('adds paragraphs after a line with equations and leaves the line whole', () => {
+    const { plugin, doc } = open(
+      blank([
+        '머리',
+        '넓이는 [[1]] 이다.',
+        '두 개: [[2]] 와 [[3]] 끝.',
+        '끝자리 수식 [[4]]',
+        '끝 문단.',
+      ]),
+    )
+    plugin.insertEquations([
+      { find: '[[1]]', script: 'x^2' },
+      { find: '[[2]]', script: 'a' },
+      { find: '[[3]]', script: 'b' },
+      { find: '[[4]]', script: 'y^2' },
+    ])
+    expect(plugin.insertParagraphs('넓이는', null, 'after', ['가운데.'])).toMatchObject({
+      ok: true,
+    })
+    expect(plugin.insertParagraphs('두 개:', null, 'after', ['둘째.'])).toMatchObject({ ok: true })
+    expect(plugin.insertParagraphs('끝자리', null, 'after', ['셋째.'])).toMatchObject({ ok: true })
+    expect(plugin.insertParagraphs('', null, 'end', ['맨 끝.'])).toMatchObject({ ok: true })
+    expect(bodyText(doc())).toEqual([
+      '머리',
+      '넓이는  이다.',
+      '가운데.',
+      '두 개:  와  끝.',
+      '둘째.',
+      '끝자리 수식 ',
+      '셋째.',
+      '끝 문단.',
+      '맨 끝.',
+    ])
+    expect(controlsOf(doc(), 'eqed')).toEqual([1, 3, 3, 5])
+    expect(places(doc(), 1)).toEqual([4])
+    expect(places(doc(), 3)).toEqual([5, 8])
+  })
+
+  it('adds a paragraph or a table after a line with a footnote mark or a picture in it', () => {
+    const start = blank([
+      '머리',
+      '각주가 붙는 낱말 뒤의 글.',
+      '그림 앞 글과 그림 뒤 글.',
+      '표가 올 낱말 줄.',
+      '끝',
+    ])
+    start.insertPicture(0, 2, 5, '', ONE_PIXEL, 2000, 2000, 1, 1, 'png', '')
+    start.setPictureProperties(0, 2, 0, JSON.stringify({ treatAsChar: true }))
+    const { plugin, doc } = open(start)
+    plugin.insertNote('footnote', '붙는 낱말', null, '첫 각주')
+    plugin.insertNote('footnote', '올 낱말', null, '둘째 각주')
+    expect(plugin.insertParagraphs('각주가 붙는', null, 'after', ['각주 뒤.'])).toMatchObject({
+      ok: true,
+    })
+    expect(plugin.insertParagraphs('그림 앞 글', null, 'after', ['그림 뒤.'])).toMatchObject({
+      ok: true,
+    })
+    expect(plugin.insertTable('표가 올', null, 'after', [['a', 'b']], false)).toMatchObject({
+      ok: true,
+    })
+    expect(bodyText(doc())).toEqual([
+      '머리',
+      '각주가 붙는 낱말 뒤의 글.',
+      '각주 뒤.',
+      '그림 앞 글과 그림 뒤 글.',
+      '그림 뒤.',
+      '표가 올 낱말 줄.',
+      '',
+      '끝',
+    ])
+    expect(controlsOf(doc(), 'fn')).toEqual([1, 5])
+    expect(controlsOf(doc(), 'tbl')).toEqual([6])
+    expect(places(doc(), 3)).toEqual([5])
+  })
+
+  it('adds a paragraph in a table cell after a line with an object, and refuses to split such a line in the middle', () => {
+    const { plugin, doc, steps } = open(blank(['머리', '표 앞', '끝']))
+    plugin.insertTable('표 앞', null, 'after', [['셀 글과 뒤 글.', 'b']], false)
+    const cell = (paragraph: number) =>
+      JSON.stringify([{ controlIndex: 0, cellIndex: 0, cellParaIndex: paragraph }])
+    const cellText = (paragraph: number) => doc().getTextInCellByPath(0, 2, cell(paragraph), 0, 40)
+    doc().insertCharOverlapByPath(
+      0,
+      2,
+      cell(0),
+      2,
+      JSON.stringify({ text: '1', shape: 1, innerSize: 0, overlap: true }),
+    )
+    expect(plugin.insertParagraphs('셀 글과', null, 'after', ['칸 새 줄.'])).toMatchObject({
+      ok: true,
+      inTable: true,
+    })
+    expect(doc().getCellParagraphCountByPath(0, 2, cell(0))).toBe(2)
+    expect(cellText(0)).toBe('셀 글과 뒤 글.')
+    expect(cellText(1)).toBe('칸 새 줄.')
+    const before = steps()
+    const selected = {
+      sec: 0,
+      para: 2,
+      path: JSON.parse(cell(0)),
+      offset: 5,
+      length: 1,
+      text: '뒤',
+    }
+    expect(plugin.replaceSelection([selected], ['앞', '새 문단'])).toEqual({
+      ok: false,
+      reason: 'has_objects',
+      count: 1,
+    })
+    expect(steps()).toBe(before)
+    expect(doc().getCellParagraphCountByPath(0, 2, cell(0))).toBe(2)
+    expect(cellText(0)).toBe('셀 글과 뒤 글.')
+  })
+
+  it('replaces words beside an equation and leaves the equation where it stands', () => {
+    const { plugin, doc } = open(
+      blank(['머리', '가나[[1]]다라', '마바[[2]]사아', '7. [[3]]를 계산하면?', '끝']),
+    )
+    plugin.insertEquations([
+      { find: '[[1]]', script: 'a' },
+      { find: '[[2]]', script: 'b' },
+      { find: '[[3]]', script: '12x^3 div 4x' },
+    ])
+    expect(plugin.replaceText('가나', 'AAAA', null)).toMatchObject({ ok: true })
+    expect(textOf(doc(), 1)).toBe('AAAA다라')
+    expect(places(doc(), 1)).toEqual([4])
+    expect(plugin.replaceText('사아', 'BBBB', null)).toMatchObject({ ok: true })
+    expect(textOf(doc(), 2)).toBe('마바BBBB')
+    expect(places(doc(), 2)).toEqual([2])
+    expect(plugin.replaceText('B', 'C', 1)).toMatchObject({ ok: true })
+    expect(textOf(doc(), 2)).toBe('마바CBBB')
+    expect(places(doc(), 2)).toEqual([2])
+    expect(plugin.replaceText('CBBB', '', null)).toMatchObject({ ok: true })
+    expect(textOf(doc(), 2)).toBe('마바')
+    expect(places(doc(), 2)).toEqual([2])
+    expect(plugin.replaceText('7. ', '8. ', null)).toMatchObject({ ok: true })
+    expect(textOf(doc(), 3)).toBe('8. 를 계산하면?')
+    expect(places(doc(), 3)).toEqual([3])
+    expect(controlsOf(doc(), 'eqed')).toEqual([1, 2, 3])
+  })
+
+  it('refuses a replacement across an equation and changes nothing', () => {
+    const { plugin, doc, steps } = open(
+      blank(['머리', '7. [[1]]를 계산하면?', '파하[[2]]거너', '하거 하거', '끝']),
+    )
+    plugin.insertEquations([
+      { find: '[[1]]', script: '12x^3 div 4x' },
+      { find: '[[2]]', script: 'd' },
+    ])
+    const before = steps()
+    expect(plugin.replaceText('7. 를 계산', '8. 를 계산', null)).toEqual({
+      ok: false,
+      reason: 'spans_object',
+      count: 1,
+    })
+    expect(steps()).toBe(before)
+    expect(textOf(doc(), 1)).toBe('7. 를 계산하면?')
+    expect(places(doc(), 1)).toEqual([3])
+    expect(plugin.replaceAllText('하거', 'DD')).toMatchObject({ ok: true, count: 2, skipped: 1 })
+    expect(textOf(doc(), 2)).toBe('파하거너')
+    expect(places(doc(), 2)).toEqual([2])
+    expect(textOf(doc(), 3)).toBe('DD DD')
+    const after = steps()
+    expect(plugin.replaceAllText('하거', 'EE')).toEqual({
+      ok: false,
+      reason: 'spans_object',
+      count: 1,
+    })
+    expect(steps()).toBe(after)
+    const run = { sec: 0, para: 2, offset: 0, length: 4, text: '파하거너' }
+    expect(plugin.replaceSelection([run], ['새 글'])).toEqual({
+      ok: false,
+      reason: 'spans_object',
+      count: 1,
+    })
+    expect(steps()).toBe(after)
+    expect(textOf(doc(), 2)).toBe('파하거너')
+  })
+})
+
+describe('removing what follows a table', () => {
+  const textOf = (doc: HwpDocument, para: number) =>
+    doc.getTextRange(0, para, 0, doc.getParagraphLength(0, para))
+  const bodyText = (doc: HwpDocument) =>
+    Array.from({ length: doc.getParagraphCount(0) }, (_, para) => textOf(doc, para))
+  const tableParagraphs = (doc: HwpDocument) =>
+    (JSON.parse(doc.getControls()) as { ctrlId: string; list: number; para: number }[])
+      .filter((control) => control.list === 0 && control.ctrlId === 'tbl')
+      .map((control) => control.para)
+
+  it('removes a body paragraph that follows a table, and a table that follows another', () => {
+    const { plugin, doc, steps } = open(blank(['머리', '표 앞', '표 뒤 문단', '다음 글', '끝']))
+    plugin.insertTable('표 앞', null, 'after', [['a', 'b']], false)
+    plugin.insertTable('표 뒤 문단', null, 'before', [['c', 'd']], false)
+    expect(bodyText(doc())).toEqual(['머리', '표 앞', '', '', '표 뒤 문단', '다음 글', '끝'])
+    expect(tableParagraphs(doc())).toEqual([2, 3])
+    const before = steps()
+    expect(plugin.deleteParagraph('표 뒤 문단', null)).toMatchObject({
+      ok: true,
+      text: '표 뒤 문단',
+      emptied: false,
+    })
+    expect(steps()).toBe(before + 1)
+    expect(bodyText(doc())).toEqual(['머리', '표 앞', '', '', '다음 글', '끝'])
+    expect(tableParagraphs(doc())).toEqual([2, 3])
+    expect(plugin.deleteTable(2)).toMatchObject({ ok: true, table: 2, rows: 1, cols: 2 })
+    expect(bodyText(doc())).toEqual(['머리', '표 앞', '', '다음 글', '끝'])
+    expect(tableParagraphs(doc())).toEqual([2])
+    expect(plugin.listTables().count).toBe(1)
+    expect(plugin.readTable(1)).toMatchObject({ ok: true, cells: [{ text: 'a' }, { text: 'b' }] })
+  })
+
+  it('removes the title line of a table of contents once its table is gone', () => {
+    const { plugin, doc } = open(
+      blank(['보고서 제목', '1. 추진 배경', '배경 글입니다.', '2. 추진 계획', '계획 글입니다.']),
+    )
+    plugin.insertTitleBox('보고서 제목', null, { look: 'box' })
+    plugin.insertToc('1. 추진 배경', null, 'before', '차 례', [
+      { find: '1. 추진 배경', level: 1 },
+      { find: '2. 추진 계획', level: 1 },
+    ])
+    expect(plugin.listTables().count).toBe(2)
+    expect(bodyText(doc()).slice(0, 3)).toEqual(['', '차 례', ''])
+    expect(plugin.deleteTable(2)).toMatchObject({ ok: true })
+    expect(plugin.deleteParagraph('차 례', null)).toMatchObject({ ok: true, text: '차 례' })
+    expect(bodyText(doc())).toEqual([
+      '',
+      '1. 추진 배경',
+      '배경 글입니다.',
+      '2. 추진 계획',
+      '계획 글입니다.',
+    ])
+    expect(tableParagraphs(doc())).toEqual([0])
+    expect(plugin.readText()).toContain('보고서 제목')
+  })
+
+  it('removes a selected paragraph behind a line that ends in a picture', () => {
+    const start = blank(['머리', '그림이 끝에 놓인 줄', '지울 문단', '끝'])
+    start.insertPicture(
+      0,
+      1,
+      start.getParagraphLength(0, 1),
+      '',
+      ONE_PIXEL,
+      2000,
+      2000,
+      1,
+      1,
+      'png',
+      '',
+    )
+    const { plugin, doc } = open(start)
+    const pictures = () =>
+      (JSON.parse(doc().getControls()) as { ctrlId: string; list: number; para: number }[])
+        .filter((control) => control.list === 0 && control.ctrlId === 'gso')
+        .map((control) => control.para)
+    expect(pictures()).toEqual([1])
+    const selected = [
+      { sec: 0, para: 1, offset: 0, length: 11, text: '그림이 끝에 놓인 줄' },
+      { sec: 0, para: 2, offset: 0, length: 5, text: '지울 문단' },
+    ]
+    expect(plugin.replaceSelection(selected, ['그림이 끝에 놓인 줄'])).toMatchObject({ ok: true })
+    expect(bodyText(doc())).toEqual(['머리', '그림이 끝에 놓인 줄', '끝'])
+    expect(pictures()).toEqual([1])
+    expect(plugin.deleteParagraph('끝', 2)).toMatchObject({ ok: true, text: '끝' })
+    expect(bodyText(doc())).toEqual(['머리', '그림이 끝에 놓인 줄'])
+    expect(pictures()).toEqual([1])
+  })
+})
+
+describe('what a change leaves on the pages', () => {
+  const lines = (count: number, word = '본문 줄') =>
+    Array.from({ length: count }, (_, k) => `${word} ${k + 1}`)
+  const rows = (count: number) => Array.from({ length: count }, (_, k) => [`${k + 1}행`, '값'])
+
+  it('maps the pages: the words each starts and ends with, and a caption left at the foot', () => {
+    const { plugin } = open(blank([...lines(36), '<표 1> 일정']))
+    expect(plugin.insertTable('<표 1> 일정', null, 'after', rows(10), false)).toMatchObject({
+      ok: true,
+    })
+    const { pages, map } = plugin.pageLayout()
+    expect(pages).toBe(2)
+    expect(map.pages).toEqual([
+      { page: 1, first: { text: '본문 줄 1' }, last: { text: '<표 1> 일정' } },
+      { page: 2, first: { table: 1 }, last: { table: 1 } },
+    ])
+    expect(map.alone).toEqual([
+      { page: 1, kind: 'caption', text: '<표 1> 일정', style: '바탕글', nextPage: 2 },
+    ])
+    expect([map.spans, map.past]).toEqual([[], []])
+  })
+
+  it('names a heading that ends a page while its text starts the next one', () => {
+    const { plugin } = open(blank(lines(70)))
+    const foot = plugin.pageLayout().map.pages[0]
+    if (!('last' in foot) || !('text' in foot.last)) throw new Error('page 1 ends with no text')
+    expect(plugin.pageLayout().map.alone).toEqual([])
+    plugin.styleParagraphs({
+      styles: [{ name: '머리', format: {}, keepWithNext: true }],
+      apply: [{ style: '머리', find: foot.last.text }],
+    })
+    expect(plugin.pageLayout().map.alone).toEqual([
+      { page: 1, kind: 'line', text: foot.last.text, style: '머리', nextPage: 2, kept: true },
+    ])
+  })
+
+  it('looks past empty lines after a lone line, and calls a caption only what is one', () => {
+    const { plugin } = open(blank([...lines(40), '□ 머리 제목', '', ...lines(20, '다음 줄')]))
+    plugin.styleParagraphs({
+      styles: [{ name: '머리', format: {}, keepWithNext: true }],
+      apply: [{ style: '머리', find: '□ 머리 제목' }],
+    })
+    const { map } = plugin.pageLayout()
+    expect(map.pages[1]).toMatchObject({ first: { text: '다음 줄 1' } })
+    expect(map.alone).toEqual([
+      { page: 1, kind: 'line', text: '□ 머리 제목', style: '머리', nextPage: 2, kept: true },
+    ])
+    const before = open(blank([...lines(36), '이용자 수는 아래와 같다']))
+    before.plugin.insertTable('이용자 수는 아래와 같다', null, 'after', rows(10), false)
+    before.plugin.styleParagraphs({
+      styles: [{ name: '앞줄', format: {}, keepWithNext: true }],
+      apply: [{ style: '앞줄', find: '이용자 수는 아래와 같다' }],
+    })
+    expect(before.plugin.pageLayout().map.alone).toEqual([
+      {
+        page: 1,
+        kind: 'line',
+        text: '이용자 수는 아래와 같다',
+        style: '앞줄',
+        nextPage: 2,
+        kept: true,
+      },
+    ])
+  })
+
+  it('keeps a kept line apart from its text only when the empty line after it stays on its page', () => {
+    const { plugin } = open(blank([...lines(39), '□ 추진 배경', '', ...lines(10, '다음 줄')]))
+    plugin.styleParagraphs({
+      styles: [{ name: '소제목', format: {}, keepWithNext: true }],
+      apply: [{ style: '소제목', find: '□ 추진 배경' }],
+    })
+    const { map } = plugin.pageLayout()
+    expect(map.pages[0]).toMatchObject({ last: { text: '□ 추진 배경' } })
+    expect(map.pages[1]).toMatchObject({ first: { text: '다음 줄 1' } })
+    expect(map.alone).toEqual([
+      {
+        page: 1,
+        kind: 'line',
+        text: '□ 추진 배경',
+        style: '소제목',
+        nextPage: 2,
+        kept: true,
+        apart: true,
+      },
+    ])
+  })
+
+  it('takes a line of only spaces between a caption and its table for an empty line', () => {
+    const { plugin } = open(blank([...lines(36), '<표 1> 일정', ' ', '표 뒤']))
+    plugin.insertTable('표 뒤', null, 'before', rows(10), false)
+    const { map } = plugin.pageLayout()
+    expect(map.pages[1]).toMatchObject({ first: { table: 1 } })
+    expect(map.alone).toEqual([
+      {
+        page: 1,
+        kind: 'caption',
+        text: '<표 1> 일정',
+        style: '바탕글',
+        nextPage: 2,
+        apart: true,
+      },
+    ])
+  })
+
+  it('quotes the words a page starts with when its paragraph began on the page before', () => {
+    const long = Array.from(
+      { length: 30 },
+      (_, k) => `긴 문단의 ${k + 1}번째 마디가 이어집니다.`,
+    ).join(' ')
+    const { plugin } = open(blank([...lines(36), long, '마지막 줄']))
+    const { map } = plugin.pageLayout()
+    expect(map.pages).toHaveLength(2)
+    const [one, two] = map.pages as Extract<AgentMapPage, { first: unknown }>[]
+    expect(one!.last).toEqual({ text: expect.stringMatching(/^긴 문단의 1번째/) })
+    expect(two!.first).toEqual({
+      text: expect.not.stringMatching(/^긴 문단의 1번째/),
+      continues: true,
+    })
+    expect('text' in two!.first && long.includes(two!.first.text.replace(/…$/, ''))).toBe(true)
+  })
+
+  it('counts the start of a page in characters of the text, past an object before it', () => {
+    const long = Array.from(
+      { length: 30 },
+      (_, k) => `긴 문단의 ${k + 1}번째 마디가 이어집니다.`,
+    ).join(' ')
+    const { plugin } = open(blank([...lines(36), long, '마지막 줄']))
+    const startOf = () => (plugin.pageLayout().map.pages[1] as { first: AgentPageEnd }).first
+    const plain = startOf()
+    expect(plugin.insertNote('endnote', '긴 문단의 1번째', null, '미주 글')).toMatchObject({
+      ok: true,
+    })
+    expect(startOf()).toEqual(plain)
+  })
+
+  it('takes a paragraph that starts with spaces for one that starts on its page', () => {
+    const fixtureMap = (name: string) =>
+      open(new HwpDocument(readFileSync(join(__dirname, 'fixtures', name)))).plugin.pageLayout().map
+        .pages as Extract<AgentMapPage, { first: unknown }>[]
+    expect(fixtureMap('page-number-cell-position.hwpx')[0]).toMatchObject({
+      first: { text: 'Cover' },
+      last: { text: 'Cover' },
+    })
+    const memo = fixtureMap('memo-source.hwp')
+    expect(memo[2]!.first).toEqual({ text: expect.stringMatching(/^○ 연령대별/) })
+    expect(memo[1]!.last).toEqual({ text: expect.stringMatching(/^○ 6월 말 기준/) })
+  })
+
+  it('tells a page with nothing on it', () => {
+    const doc = blank(['앞 쪽', '', '뒤 쪽'])
+    doc.insertPageBreak(0, 1, 0)
+    doc.insertPageBreak(0, 3, 0)
+    const { map } = open(doc).plugin.pageLayout()
+    expect(map.pages.map((page) => ('empty' in page ? 'empty' : page.first))).toEqual([
+      { text: '앞 쪽' },
+      'empty',
+      { text: '뒤 쪽' },
+    ])
+  })
+
+  it('names a table that runs over pages, and one taller than a page that runs off it', () => {
+    const { plugin, doc } = open(blank(lines(3)))
+    plugin.insertTable('본문 줄 3', null, 'after', rows(70), false)
+    const tall = plugin.pageLayout().map
+    expect(tall.past).toEqual([{ table: 1, page: 2, row: expect.any(Number), taller: true }])
+    expect(tall.spans).toEqual([])
+    const cut = plugin.checkLayout(null, null)
+    expect(cut.cells).toEqual([])
+    expect(cut.past).toEqual([{ table: 1, page: 2, row: tall.past[0]!.row, taller: true }])
+    for (const [from, to] of [
+      [60, 62],
+      [65, 65],
+      [1, 1],
+    ] as const) {
+      expect(plugin.checkLayout(1, from, to).past).toEqual(cut.past)
+    }
+    const { control } = tableIn(doc(), 3)
+    doc().setTableProperties(0, 3, control, JSON.stringify({ treatAsChar: false, pageBreak: 1 }))
+    const split = plugin.pageLayout().map
+    expect(split.spans).toEqual([{ table: 1, from: 1, to: 3 }])
+    expect([split.past, plugin.checkLayout(null, null).past]).toEqual([[], []])
+  })
+
+  it('maps the body alone, not what the master page draws with the same numbers', () => {
+    for (const name of ['master-page-duplex-both.hwpx', 'master-page-duplex-odd-even.hwpx']) {
+      const doc = new HwpDocument(readFileSync(join(__dirname, 'fixtures', name)))
+      const { plugin } = open(doc)
+      const { map } = plugin.pageLayout()
+      expect(map.pages).toEqual([
+        { page: 1, first: { text: 'Body page one' }, last: { text: 'Body page one' } },
+        { page: 2, first: { text: 'Body page 2' }, last: { text: 'Body page 2' } },
+      ])
+      expect([map.alone, map.spans, map.past]).toEqual([[], [], []])
+      expect(plugin.checkLayout(null, null)).toMatchObject({ cells: [], past: [] })
+    }
+  })
+
+  it('gives a title the height of the lines it takes, so that nothing of it is cut', () => {
+    const long = '2026년 상반기 신규 직원 직무 역량 강화를 위한 연수 운영 계획 및 예산 집행 방안'
+    for (const [title, size, lineCount] of [
+      [TITLE, 22, 1],
+      [long, 20, 2],
+    ] as const) {
+      const { plugin, doc } = open(blank([title, '□ 목적']))
+      expect(plugin.insertTitleBox(title, null, { look: 'bands', size })).toMatchObject({
+        ok: true,
+        table: 1,
+        tables: 1,
+      })
+      const box = tableIn(doc(), 0)
+      const lines = JSON.parse(doc().getLineInfoInCell(0, 0, box.control, 1, 0, 0)) as {
+        lineCount: number
+      }
+      expect(lines.lineCount).toBe(lineCount)
+      const oneLine = Math.round(size * 100 * 1.9)
+      expect(box.cell(1).height).toBe(
+        lineCount === 1 ? oneLine : Math.round(size * 100 * (1.9 + 1.6 * (lineCount - 1))),
+      )
+      expect(plugin.checkLayout(null, null).cells).toEqual([])
+    }
+  })
+
+  it('gives the number of the table it made and says how many there are', () => {
+    const { plugin } = open()
+    expect(plugin.insertTable('□ 세부 일정', null, 'after', ROWS, true)).toMatchObject({
+      table: 1,
+      tables: 1,
+    })
+    expect(plugin.insertTable('□ 추진 배경', null, 'after', ROWS, true)).toMatchObject({
+      table: 1,
+      tables: 2,
+    })
+    expect(
+      plugin.insertToc('□ 추진 배경', null, 'before', '차 례', [{ find: '□ 세부 일정', level: 1 }]),
+    ).toMatchObject({ ok: true, table: 1, tables: 3 })
+    expect(plugin.insertTitleBox(TITLE, null, { look: 'box' })).toMatchObject({
+      ok: true,
+      table: 1,
+      tables: 4,
+    })
+    expect(plugin.listTables().tables.map((table) => table.rows)).toEqual([1, 1, 3, 3])
+  })
+
+  it('names the tables wider than a column once the text runs in columns', () => {
+    const { plugin } = open()
+    plugin.insertTable('□ 추진 배경', null, 'after', ROWS, { header: true })
+    plugin.insertTable('□ 세부 일정', null, 'after', ROWS, { header: true, widthPercent: 40 })
+    expect(plugin.setColumns({ count: 2 })).toMatchObject({ ok: true, wide: [1] })
+    expect(plugin.setColumns({ count: 1 })).not.toHaveProperty('wide')
+  })
+
+  it('names a wide table Hangul anchored to its paragraph, and not one laid across the page', () => {
+    const form = new HwpDocument(
+      readFileSync(join(__dirname, 'fixtures', 'generated-form-tables-hancom.hwpx')),
+    )
+    expect(open(form).plugin.setColumns({ count: 2 })).toMatchObject({ ok: true, wide: [1, 2, 3] })
+    const { plugin } = open(blank(LINES))
+    plugin.setColumns({ count: 2 })
+    expect(
+      plugin.insertTable(TITLE, null, 'before', ROWS, { header: true, acrossColumns: true }),
+    ).toMatchObject({ ok: true, acrossColumns: true })
+    expect(plugin.setColumns({ count: 3 })).not.toHaveProperty('wide')
+  })
+
+  it('measures one table from a row to a row, and counts cells that break inside a word', () => {
+    const { plugin } = withTable()
+    plugin.insertTable('□ 추진 배경', null, 'after', ROWS, true)
+    const address = 'haneul.kim.planning-office@example.org'
+    plugin.fillCells(2, [{ row: 2, col: 3, text: address }], true)
+    const one = plugin.checkLayout(2, 2, 2)
+    expect(one).toMatchObject({ tables: 2, from: { table: 2, row: 2 } })
+    expect(one.wrapped).toEqual([
+      { table: 2, row: 2, col: 3, page: 1, text: expect.stringContaining('haneul') },
+    ])
+    expect(plugin.checkLayout(2, 3, 3).wrapped).toEqual([])
+    expect(plugin.checkLayout(1, 1, 3).wrapped).toEqual([])
+    plugin.fillCells(2, [{ row: 3, col: 3, text: '국립중앙박물관어린이박물관체험학습실' }], true)
+    expect(plugin.checkLayout(2, 3, 3).wrapped).toEqual([])
+  })
+
+  it.each([
+    ['36.5|℃', true],
+    ['1,|234', true],
+    ['3.|14', true],
+    ['12:|30', true],
+    ['50|%', true],
+    ['name@|example', true],
+    ['example.|org', true],
+    ['010-|1234', true],
+    ['COVID-|19', true],
+    ['examp|le.org', true],
+    ['2026|년', true],
+    ['체험비|(버스비', false],
+    ['(입장료)|체험비', false],
+    ['비용|(10,000원', false],
+    ['서|명', false],
+    ['name |example', false],
+    ['name| example', false],
+    ['said|“yes”', false],
+    ['“yes”|said', false],
+    ['‘A’|B', false],
+    ['said|"yes"', false],
+    ['"yes"|said', false],
+    ["it|'s", false],
+    ['“|yes', true],
+    ['yes|”', true],
+    ['"|yes', true],
+    ['yes|"', true],
+  ])('counts a line break at %s as inside a word: %s', (text, counts) => {
+    const at = text.indexOf('|')
+    expect(splitsWord(text.slice(0, at), text.slice(at + 1))).toBe(counts)
+  })
+
+  it('does not count a line that starts at a bracket or beside Hangul as a broken word', () => {
+    const { plugin } = open()
+    const made = plugin.insertTable(
+      '□ 세부 일정',
+      null,
+      'after',
+      [
+        ['참가비(입장료)체험비(버스비)간식비(보험료)기념품비(교통비)'],
+        ['도시락, 물, 편한 복장, 우비, 모자, 개인 상비약, 필기도구'],
+      ],
+      { widthPercent: 25 },
+    )
+    expect(made).toMatchObject({ ok: true })
+    expect(plugin.checkLayout(null, null).wrapped).toEqual([])
   })
 })

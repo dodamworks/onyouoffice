@@ -45,7 +45,7 @@ Docs, Sheets, Slides, Hangul, HTML ve zihin haritası düzenleyicilerinin AI pan
 
 ## Geri alma ve güvenlik
 
-- Docs paneli bir **sürüm listesi** tutar: her tur için bir anlık görüntü, bunlardan herhangi birine dönün ve dönüşün kendisi Ctrl+Z ile geri alınabilir. Anlık görüntüler belge yeniden açıldıktan sonra da yaşar.
+- AI’ın belgeyi değiştirdiği bir turda yanıtın altında **Belgede yapılan değişiklikler: N** kartı çıkar ve değişen yerler belgede sarıyla işaretlenir. İşaretler yalnızca ekranda görünür — asla kaydedilmez, yazdırılmaz ya da dışa aktarılmaz — ve bir sonraki isteği gönderdiğinizde ya da **İşaretleri gizle** düğmesine bastığınızda kaybolur. **Bu değişiklikleri geri al** turun tamamını tek seferde geri alır. Docs, Markdown, HTML, Slides, zihin haritası ve diyagramda daha önceki bir turu geri almak, ondan sonraki turları da geri alır; Hangul, Sheets, PDF ve EPUB’de yalnızca son tur geri alınabilir, o da ancak ondan sonra belge düzenlenmediyse. Geri alınamadığında düzenleyicinin kendi Geri al komutunu (Ctrl+Z) kullanın.
 - AI düzenlemeleri elle yapılanlarla aynı düzenleme hattından geçer (geri alınabilir, kaydetme onayına bağlı) — hiçbir şey kaydetme onayınızı atlamaz.
 
 ## Bir seçimi AI’dan gizleme

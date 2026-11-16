@@ -64,6 +64,7 @@ import {
   type EditQueueItem,
 } from './ai/edit-queue'
 import { buildProjection } from './ai/redact'
+import { changedElements } from './ai/change-marks'
 import { ALT_KEY, Breadcrumb, type NodeState } from './components/Breadcrumb'
 import {
   Ribbon,
@@ -358,6 +359,42 @@ export default function App() {
     return next
   }, [])
 
+  /** the marks of the AI's last changes are on the page (the card offers to take them off) */
+  const [aiMarksShown, setAiMarksShown] = useState(false)
+  /** an AI change since the marks were last cleared took text out: no mark shows it */
+  const aiUnmarkedRef = useRef(false)
+  /**
+   * The source pane holds the marks (mapped through later edits); the preview
+   * shows them as boxes over the elements they touched. The boxes are the
+   * frame's own overlay nodes: never part of the source, a save, an export or a print.
+   */
+  const postAiMarks = useCallback(() => {
+    const ranges = editorRef.current?.aiRanges() ?? []
+    if (ranges.length === 0 || canvasModeRef.current === 'present') {
+      previewRef.current?.post({ type: 'gx:clearHighlight' })
+      return
+    }
+    const { sids } = changedElements(getMap(), textRef.current, ranges)
+    const tokens = getComputedStyle(document.documentElement)
+    previewRef.current?.post({
+      type: 'gx:highlight',
+      sids,
+      fill: tokens.getPropertyValue('--color-ai-changed-bg').trim() || undefined,
+      line: tokens.getPropertyValue('--color-ai-changed-line').trim() || undefined,
+    })
+  }, [getMap])
+  /** after anything that can add, move or drop marks: the card and the preview follow */
+  const syncAiMarks = useCallback(() => {
+    const shown = (editorRef.current?.aiRanges().length ?? 0) > 0
+    if (!shown) aiUnmarkedRef.current = false
+    setAiMarksShown(shown)
+    postAiMarks()
+  }, [postAiMarks])
+  const clearAiMarks = useCallback(() => {
+    editorRef.current?.clearHighlights()
+    syncAiMarks()
+  }, [syncAiMarks])
+
   useEffect(() => {
     let cancelled = false
     void (async () => {
@@ -557,10 +594,11 @@ export default function App() {
 
   const onEditorChange = useCallback(
     (next: string) => {
-      editorRef.current?.clearHighlights()
       commitText(next, true)
+      // typing in the source takes the marks off, as before
+      clearAiMarks()
     },
-    [commitText],
+    [commitText, clearAiMarks],
   )
 
   /** compile + apply one batch; manual batches are not highlighted and count as user edits for AI staleness */
@@ -577,9 +615,11 @@ export default function App() {
         ? editor.applyPatches(compiled.patches, !manual)
         : compiled.patches.map((p) => [p.from, p.from + p.text.length] as [number, number])
       commitText(applyPatches(base, compiled.patches), manual)
+      if (!manual && ranges.some(([a, b]) => b <= a)) aiUnmarkedRef.current = true
+      syncAiMarks()
       return { ok: true, ranges }
     },
-    [commitText, getMap],
+    [commitText, getMap, syncAiMarks],
   )
 
   const flushStylesRef = useRef<(() => void) | null>(null)
@@ -606,8 +646,10 @@ export default function App() {
       // a new page, not an edit of the one on screen: it opens at the top
       frameScrollRef.current = null
       commitText(pinned, false)
+      aiUnmarkedRef.current = false
+      syncAiMarks()
     },
-    [commitText, flushPending],
+    [commitText, flushPending, syncAiMarks],
   )
 
   /** apply a toolbar/inspector batch; the selection follows the edited element (or clears when it is gone) */
@@ -815,6 +857,8 @@ export default function App() {
     previewRef.current?.post({ type: 'gx:mark', marks })
   }, [getMap])
   useEffect(postMarks, [editQueue, canvasMode, postMarks])
+  // presenting hides the marks of the AI's changes, as it hides the queue pins
+  useEffect(postAiMarks, [canvasMode, postAiMarks])
 
   const onInspectorMessage = useCallback(
     (msg: FromInspector) => {
@@ -846,6 +890,8 @@ export default function App() {
             previewRef.current?.post({ type: 'gx:beginTextEdit', sid })
           editAfterLoadRef.current = null
           postMarks()
+          // the reloaded copy has no boxes yet: the marks of the AI's changes go back on
+          postAiMarks()
           return
         }
         case 'gx:markClick': {
@@ -1037,6 +1083,7 @@ export default function App() {
     [
       getMap,
       postMarks,
+      postAiMarks,
       postPaper,
       runManual,
       selectSid,
@@ -1709,6 +1756,8 @@ export default function App() {
         previewRef.current?.post({ type: 'gx:theme', dark: isDarkTheme() })
         // the desk between the sheets is a chrome colour
         if (pageSetupRef.current) postPaper()
+        // so are the marks of the AI's changes
+        postAiMarks()
       }, 0)
     })
     const onKeyDown = (event: KeyboardEvent) => {
@@ -1770,6 +1819,7 @@ export default function App() {
     flushPending,
     openFind,
     postPaper,
+    postAiMarks,
   ])
 
   // pinch / ctrl+wheel over the stage chrome around the frame; wheel inside the frame arrives as gx:zoom
@@ -1878,7 +1928,13 @@ export default function App() {
         derivePageTitleName(text) || provisionalNameRef.current || deriveAutoFileName(text)
       if (name) void doSave('save', name)
     },
-    clearHighlights: () => editorRef.current?.clearHighlights(),
+    clearHighlights: clearAiMarks,
+    changedPlaces: () => {
+      const ranges = editorRef.current?.aiRanges() ?? []
+      if (ranges.length === 0 || aiUnmarkedRef.current) return undefined
+      const { sids, complete } = changedElements(getMap(), textRef.current, ranges)
+      return complete && sids.length > 0 ? sids.length : undefined
+    },
     onBriefConfirmed: (brief) => {
       briefRef.current = brief
     },
@@ -2045,6 +2101,7 @@ export default function App() {
               onQueueFocus={queueFocus}
               onQueueConsume={queueConsume}
               onCollapse={() => setAiOpen(false)}
+              marksShown={aiMarksShown}
             />
           </div>
         )}

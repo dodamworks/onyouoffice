@@ -47,7 +47,7 @@ El editor de libros electrónicos abre libros EPUB (`.epub`) en una pestaña. Pu
 ## Panel de IA
 
 - Pregunte sobre el libro, pida un resumen de un capítulo o que se corrija o reescriba su texto. La IA lee la tabla de contenido y los capítulos del libro y encuentra texto en él.
-- Los cambios de la IA aparecen al instante, y un solo deshacer (Ctrl+Z) revierte todo lo que cambió en ese turno. La IA puede poner texto en negrita o cursiva, pero no puede añadir imágenes, tablas ni capítulos.
+- Los cambios de la IA aparecen al instante, los bloques cambiados se marcan en amarillo y **Deshacer estos cambios**, en la tarjeta bajo su respuesta, revierte todo lo que cambió en ese turno (siempre que el libro no se haya editado después). La IA puede poner texto en negrita o cursiva, pero no puede añadir imágenes, tablas ni capítulos.
 - El texto del libro es material para la IA, no instrucciones para ella.
 - Pida «Traduce este libro al francés» y la IA abrirá la ventana de traducción con ese idioma ya indicado. No se envía nada hasta que pulse **Empezar**.
 - Los libros EPUB también se pueden adjuntar en el panel de IA de los demás editores, elegir con `@` y encontrar con la búsqueda de archivos de Inicio.

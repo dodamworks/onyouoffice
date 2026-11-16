@@ -43,13 +43,22 @@ export type AgentReplaceResult =
   | { ok: true; count: number; inTable: boolean; place: AgentPlace }
   | {
       ok: false
-      reason: 'not_found' | 'ambiguous' | 'no_such_occurrence' | 'unsupported_place'
+      /**
+       * `spans_object`: an object of the line (an equation, a footnote mark, a picture set
+       * as a character) stands between two characters of the match
+       */
+      reason:
+        'not_found' | 'ambiguous' | 'no_such_occurrence' | 'unsupported_place' | 'spans_object'
       count: number
       matches?: AgentMatch[]
     }
 
 export type AgentReplaceAllResult =
-  { ok: true; count: number; place: AgentPlace } | { ok: false; reason: 'not_found'; count: 0 }
+  /** `skipped`: matches left as they were, each across an object of its line */
+  | { ok: true; count: number; skipped?: number; place: AgentPlace }
+  | { ok: false; reason: 'not_found'; count: 0 }
+  /** every match lies across an object of its line; `count` is how many */
+  | { ok: false; reason: 'spans_object'; count: number }
 
 /** Why a paragraph edit did nothing: the anchor could not be decided, or an object is in the way. */
 export interface AgentPlaceRefusal {
@@ -119,6 +128,8 @@ export interface AgentCellLook {
   /** in order: a later rule goes over an earlier one */
   borders?: AgentBorderRule[]
   verticalAlign?: 'top' | 'middle' | 'bottom'
+  /** the share of the table's width each column takes, one positive number per column */
+  columnWidths?: number[]
 }
 
 /** A block of cells from its top left to its bottom right corner, rows and columns from 1. */
@@ -232,14 +243,21 @@ export type AgentTitleBoxResult =
   | {
       ok: true
       look: string
+      /** the rows of the box: the title's and any bands */
+      rows: number
       place: AgentPlace
+      /** the box's number, as listTables numbers tables, and how many tables there are now */
+      table?: number
+      tables?: number
       /** the text colour asked for could not be told from what is behind the title, and was left out */
       textColorDropped?: boolean
+      /** the colour the title was given to show on a dark fill, when the call named none */
+      textColor?: string
       standIn?: AgentStandInFont[]
     }
   | AgentPlaceRefusal
-  /** the title is inside a table cell, where a box cannot be made */
-  | { ok: false; reason: 'in_table'; count: number }
+  /** the title is inside a table cell, where a box cannot be made: `table` is its number */
+  | { ok: false; reason: 'in_table'; count: number; table?: number }
 
 /** Which fonts Korean documents use this PC has and lacks; both are empty when that is not known. */
 export interface AgentDocumentFonts {
@@ -282,8 +300,18 @@ export interface AgentPageNumberChange {
 /** A header or footer as the model reads it. */
 export type AgentHeaderFooterState =
   | { exists: false }
-  /** plain: one line of text and fields, which setHeaderFooter may rewrite */
-  | { exists: true; text: string; plain: boolean }
+  /**
+   * plain: one line of text and fields, which setHeaderFooter may rewrite. Its text has the
+   * page fields as {page} and {pages}; align and size are told for a plain one, align only
+   * when it is one setHeaderFooter writes.
+   */
+  | {
+      exists: true
+      text: string
+      plain: boolean
+      align?: 'left' | 'center' | 'right'
+      size?: number
+    }
 
 export interface AgentPageLayout {
   sections: number
@@ -295,10 +323,63 @@ export interface AgentPageLayout {
   pageNumber: AgentPageNumber | null
   header: AgentHeaderFooterState
   footer: AgentHeaderFooterState
+  map: AgentPageMap
+}
+
+/**
+ * The first or last paragraph of a page by its first words on that page (`continues`: it
+ * began on the page before), or a table with no text beside it.
+ */
+export type AgentPageEnd = { text: string; continues?: true } | { table: number }
+
+/** One page of the page map; `pastFoot` counts lines of body text below its text area. */
+export type AgentMapPage =
+  | { page: number; empty: true }
+  | { page: number; first: AgentPageEnd; last: AgentPageEnd; pastFoot?: number }
+
+/** Where the body falls on the pages, as print lays them out; tables as listTables numbers them. */
+export interface AgentPageMap {
+  pages: AgentMapPage[]
+  /**
+   * A caption (a `<표 n>` start or the caption style) before a table, an outline heading, or
+   * a line kept with the next one, that ends a page (or a column) apart from what follows it,
+   * empty paragraphs (or ones of spaces only) between them aside. `kept`: it keeps with the
+   * next line, which Hangul honours in print and the engine's layout does not. `apart`: the
+   * empty paragraph right after it is drawn on its page (or column), so it keeps with that
+   * empty line at most and stays alone in Hangul too. When that empty line is drawn on the
+   * next page, Hangul takes a kept line along with it.
+   */
+  alone: {
+    page: number
+    column?: number
+    kind: 'heading' | 'caption' | 'line'
+    text: string
+    /** the name of its paragraph style, '' when it cannot be read */
+    style: string
+    /** the page the paragraph after it starts on */
+    nextPage: number
+    kept?: true
+    apart?: true
+  }[]
+  /** tables drawn over more than one page, from page to page */
+  spans: { table: number; from: number; to: number }[]
+  past: AgentTablePastFoot[]
+}
+
+/**
+ * A table drawn below the foot of a page's text area from `row` on, cut off in print;
+ * `taller` when it is higher than the text area, so it cannot fit any page whole.
+ */
+export interface AgentTablePastFoot {
+  table: number
+  page: number
+  row: number
+  taller?: true
 }
 
 export type AgentColumnsResult =
-  | { ok: true; count: number; gapMm: number; was: number; sections: number }
+  /** `wide`: the tables, as listTables numbers them, wider than a column now; absent when none is */
+  | { ok: true; count: number; gapMm: number; was: number; sections: number; wide?: number[] }
   | AgentMemoRemovalRefusal
 
 /** The line round every page: as a cell's border line is told; line "none" takes it away. */
@@ -346,9 +427,16 @@ export type AgentBreakKind = 'page' | 'column'
 
 export type AgentBreakResult =
   | { ok: true; kind: AgentBreakKind; columns: number; place: AgentPlace }
+  /** the paragraph carried a break that covers the one asked for: nothing was changed */
+  | { ok: true; kind: AgentBreakKind; already: AgentBreakKind }
   | AgentPlaceRefusal
-  /** the paragraph is inside a table cell, or is the first one of the document */
-  | { ok: false; reason: 'in_table' | 'at_start'; count: number }
+  /**
+   * the paragraph is inside a table cell, is the first one of the document, starts a part
+   * of the document with other columns (a break would take that start away), or holds a
+   * mark of its place (a page number that starts anew, a hidden page number, a bookmark)
+   * that a break would leave on the page before
+   */
+  | { ok: false; reason: 'in_table' | 'at_start' | 'layout_start' | 'holds_mark'; count: number }
   | AgentMemoRemovalRefusal
 
 export type AgentPageNumberResult =
@@ -357,6 +445,7 @@ export type AgentPageNumberResult =
 export interface AgentHeaderFooterChange {
   /** one line; {page} is the page number and {pages} the number of pages; empty removes it */
   text: string
+  /** left out, a line that is there keeps its alignment and a new one is centred */
   align?: 'left' | 'center' | 'right' | null
   /** font size in points */
   size?: number | null
@@ -377,8 +466,13 @@ export type AgentTableResult =
       cols: number
       inTable: boolean
       place: AgentPlace
+      /** the new table's number, as listTables numbers tables, and how many there are now; absent in a cell */
+      table?: number
+      tables?: number
       /** the table lies across the columns of its page */
       acrossColumns?: boolean
+      /** the colour the words of the header row were given to show on its fill, when the fill is dark */
+      headerTextColor?: string
       standIn?: AgentStandInFont[]
     }
   | AgentPlaceRefusal
@@ -463,6 +557,20 @@ export interface AgentParagraphFormat extends AgentTextFormat {
   bullet?: string
 }
 
+export interface AgentWholeParagraphFormat extends AgentParagraphFormat {
+  /** put the character formatting on every word even where words of a paragraph differ in it; otherwise such a call is refused (words_set_apart) */
+  everyWord?: boolean
+}
+
+/** Some words of the paragraphs differ from the rest in character properties the call would put on every word. */
+export interface AgentWordsSetApart {
+  ok: false
+  reason: 'words_set_apart'
+  /** those properties, in the names of the format */
+  properties: string[]
+  paragraphs: number
+}
+
 /** A call named a style the document does not have; `styles` are the ones of that kind it has. */
 export interface AgentNoSuchStyle {
   ok: false
@@ -502,7 +610,8 @@ export type AgentReadStyleResult =
   | {
       ok: true
       name: string
-      englishName: string
+      /** left out when the style has none */
+      englishName?: string
       kind: AgentStyleKind
       /** the paragraph style that follows a paragraph of this one (paragraph styles) */
       nextStyle?: string
@@ -566,8 +675,14 @@ export type AgentFormatCellsResult =
       standIn?: AgentStandInFont[]
       /** cells (rows and columns from 1) whose text the diagonal that was drawn runs through */
       crossed?: { row: number; col: number }[]
+      /** the widths of the columns now, in millimetres, when columnWidths was given */
+      columnWidthsMm?: number[]
     }
   | { ok: false; reason: 'no_such_table'; count: number }
+  /** columnWidths does not give one number for each of the `cols` columns */
+  | { ok: false; reason: 'column_count'; cols: number }
+  /** a column is covered only by merged cells, so its width cannot be read */
+  | { ok: false; reason: 'merged_columns'; cols: number }
   | { ok: false; reason: 'unsupported_place'; count: number }
   | {
       ok: false
@@ -606,6 +721,7 @@ export type AgentFormatParagraphResult =
     }
   | AgentPlaceRefusal
   | AgentNoSuchStyle
+  | AgentWordsSetApart
 
 /** A table cell whose text does not fit where it is drawn, as checkLayout lists it. */
 export interface AgentLayoutOverflow {
@@ -622,6 +738,9 @@ export interface AgentLayoutOverflow {
   text: string
 }
 
+/** A cut-off cell as cutCells lists it: its table, as listTables numbers them, row and column. */
+export type AgentCutCell = Pick<AgentLayoutOverflow, 'table' | 'row' | 'col'>
+
 /** A place in the tables to measure from: 1-based table (as listTables) and row. */
 export interface AgentLayoutPlace {
   table: number
@@ -635,6 +754,10 @@ export interface AgentLayoutCheck {
   from: AgentLayoutPlace
   /** the cells from `from` up to `next` (or the end) whose text does not fit */
   cells: AgentLayoutOverflow[]
+  /** the cells a line of which starts inside a word, such as a broken address or date */
+  wrapped: Omit<AgentLayoutOverflow, 'over'>[]
+  /** the tables from `from` on drawn below the foot of a page */
+  past: AgentTablePastFoot[]
   /** cells this call measured */
   measured: number
   /** where the next call goes on; absent when the last table was measured */
@@ -795,6 +918,8 @@ export type AgentReplaceSelectionResult =
   /** the texts are not as many as the runs, and the runs are not one stretch of paragraphs */
   | { ok: false; reason: 'count'; count: number }
   | { ok: false; reason: 'has_objects'; count: number }
+  /** a run to rewrite lies across an object of its line */
+  | { ok: false; reason: 'spans_object'; count: number }
 
 export type AgentFormatSelectionResult =
   | {
@@ -882,7 +1007,8 @@ export type AgentDeleteTableResult =
   | { ok: false; reason: 'has_objects'; count: number }
 
 /** What a File menu item of the editor asks the app to do. */
-export type AgentFileCommand = 'save' | 'saveAs' | 'importPdf' | 'pdf' | 'preview' | 'print'
+export type AgentFileCommand =
+  'open' | 'save' | 'saveAs' | 'importPdf' | 'pdf' | 'preview' | 'print'
 
 /** The event those items fire on the editor's window; `detail` is the AgentFileCommand. */
 export declare const FILE_COMMAND_EVENT: 'ieum:file-command'
@@ -928,6 +1054,12 @@ export interface AgentMissingFontLabels {
   /** the tooltip of that entry and of the font box */
   hint: string
 }
+
+/**
+ * Whether a line break between the texts `left` and `right` of a cell splits a word, as
+ * checkLayout counts the cells that wrap inside one.
+ */
+export declare function splitsWord(left: string, right: string): boolean
 
 /** The parts of the editor toolbar's style list (a select element) syncStyleList uses. */
 export interface StyleListElement {
@@ -1069,6 +1201,8 @@ export interface AgentLook {
   spacingAfter: number
   list?: 'number' | 'bullet' | 'outline'
   listLevel?: number
+  /** the bullet of a bulleted paragraph */
+  bullet?: string
   /** paragraphs of the group whose formatting changes inside their text */
   mixedFormatting?: number
   samples: string[]
@@ -1131,8 +1265,31 @@ export type AgentFormatLookResult =
       looks: { id: string; paragraphs: number; sample: string }[]
     }
   | AgentNoSuchStyle
+  | AgentWordsSetApart
   | { ok: false; reason: 'has_objects'; count: number }
   | AgentMemoRemovalRefusal
+
+/** An equation of the body text: its number, the words on either side of it, its script. */
+export interface AgentListedEquation {
+  equation: number
+  before: string
+  after: string
+  /** the start of the paragraph before, where the words round the equation say little */
+  previous?: string
+  script: string
+}
+
+export interface AgentEquationList {
+  count: number
+  /** equations inside table cells, notes or text boxes, which these tools do not reach */
+  elsewhere: number
+  equations: AgentListedEquation[]
+}
+
+export type AgentEditEquationResult =
+  /** `was` is the script the equation had */
+  | { ok: true; removed: boolean; was: string; place: AgentPlace }
+  | { ok: false; reason: 'no_such_equation'; count: number }
 
 export interface AgentNoteList {
   count: number
@@ -1317,7 +1474,8 @@ export interface AgentTabMeasure {
 }
 
 export type AgentInsertTocResult =
-  | { ok: true; count: number; pages: number[]; place: AgentPlace }
+  /** `table`: the contents table's number, as listTables numbers tables, of `tables` */
+  | { ok: true; count: number; pages: number[]; table: number; tables: number; place: AgentPlace }
   | AgentPlaceRefusal
   | { ok: false; reason: 'in_table'; count: number }
   /** a heading could not be decided: `why` is not_found, ambiguous, no_such_occurrence or unsupported_place */
@@ -1329,6 +1487,13 @@ export type AgentInsertTocResult =
       count: number
       matches?: AgentMatch[]
     }
+  /**
+   * contents insertToc made in this document are there: table `table`, `title` when the
+   * paragraph right above it is a line of text, `first` when it is the first paragraph of the document
+   */
+  | { ok: false; reason: 'toc_exists'; count: number; table: number; title?: string; first?: true }
+  /** a 차례 or 목차 line `title` has Hangul's contents of tab lines under it already */
+  | { ok: false; reason: 'toc_exists'; count: number; lines: true; title: string }
 
 export type AgentRefreshTocResult =
   | {
@@ -1443,12 +1608,21 @@ export interface AgentPluginSurface {
   formatParagraph(
     find: string,
     occurrence: number | null,
-    format: AgentParagraphFormat,
+    format: AgentWholeParagraphFormat,
     options?: AgentChangeOptions,
   ): AgentFormatParagraphResult
   listTables(): AgentTableList
-  /** the table cells whose text is cut off on the page; reads only */
-  checkLayout(fromTable?: number | null, fromRow?: number | null): AgentLayoutCheck
+  /**
+   * the table cells whose text is cut off on the page; reads only. Given `toRow`, only
+   * table `fromTable` is measured, from `fromRow` to `toRow`
+   */
+  checkLayout(
+    fromTable?: number | null,
+    fromRow?: number | null,
+    toRow?: number | null,
+  ): AgentLayoutCheck
+  /** every cut-off cell of the document, measured as checkLayout does, in one call; reads only */
+  cutCells(): AgentCutCell[]
   readTable(table: number, fromRow?: number | null): AgentReadTableResult
   fillCells(
     table: number,
@@ -1511,6 +1685,14 @@ export interface AgentPluginSurface {
     options?: AgentChangeOptions,
   ): AgentRefreshTocResult
   listNotes(): AgentNoteList
+  /** the equations of the body text, numbered for editEquation */
+  listEquations(): AgentEquationList
+  /** a new script for an equation of listEquations, or null to remove it */
+  editEquation(
+    equation: number,
+    script: string | null,
+    options?: AgentChangeOptions,
+  ): AgentEditEquationResult
   insertNote(
     kind: AgentNoteKind,
     anchor: string,
@@ -1538,10 +1720,16 @@ export interface AgentPluginSurface {
   paragraphLooks(from?: number | null): AgentParagraphLooks
   formatLook(
     look: string,
-    format: AgentParagraphFormat,
+    format: AgentWholeParagraphFormat,
     options?: AgentChangeOptions,
   ): AgentFormatLookResult
   measureTabs(spots: AgentTabSpot[]): { tabs: (AgentTabMeasure | null)[] }
+  /**
+   * The preview a save writes (decision 0146): the first lines of the document the way
+   * Hangul writes `PrvText` (CR LF lines, a table row as `<cell><cell>`), and the first
+   * page as base64 PNG 1024 pixels high, or null where it cannot be drawn.
+   */
+  savePreview(): { text: string; png: string | null }
   listStyles(): AgentStyleNames
   readStyle(name: string): AgentReadStyleResult
   createStyle(spec: AgentNewStyle, options?: AgentChangeOptions): AgentStyleResult
@@ -1552,6 +1740,8 @@ export interface AgentPluginSurface {
   ): AgentStyleResult
   /** pages for printing from `from`, as many as are drawn in about two seconds */
   printPages(from: number): AgentPrintPages
+  /** once the start-up look at the PC's fonts is over: whether print can use the screen's fonts */
+  printFontsReady(): Promise<boolean>
   /** each page's size as the print path lays it out, from `from`, measured for about two seconds */
   printPageSizes(from: number): AgentPrintPageSizes
   /** one page as the print path draws it, for the preview; `page` is 0-based */
@@ -1589,6 +1779,7 @@ export interface AgentPluginSurface {
     options?: AgentChangeOptions,
   ): AgentTitleBoxResult
   documentFonts(): AgentDocumentFonts
+  pageCount(): number
   /** the page number, header and footer of the document */
   pageLayout(): AgentPageLayout
   setColumns(
@@ -1619,6 +1810,8 @@ export interface AgentPluginSurface {
   ): AgentHeaderFooterResult
   /** take the marks of the changes made so far off the pages */
   clearMarks(): { ok: true }
+  /** whether the pages carry marks of changes now (a user edit takes them off) */
+  hasMarks(): { ok: true; shown: boolean }
   undo(steps: number, expectedForeign: number): AgentUndoResult
   /** the memos of the document in document order, with their pages and anchor rectangles */
   listMemos(): AgentMemoList

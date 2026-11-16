@@ -8,11 +8,16 @@
  * The model reads the diagram as text only (the read table of the page on
  * screen with every request, any page through `read_diagram`); no picture of
  * the diagram is made for it. Each `apply_diagram_ops` call is one undo step
- * of draw.io, all or nothing. A whole AI turn can be taken back from the list
- * under the chat while nothing else changed the diagram after it.
+ * of draw.io, all or nothing. A whole AI turn can be taken back from the card
+ * under its last reply (`AiChangesCard`, the later turns with it) while
+ * nothing else changed the diagram after it. The cells the last run added or
+ * changed are marked on screen (draw.io highlights, never cells) until the
+ * next run, "clear marks", a revert or a new chat.
  */
 import {
   AiBlockedNotice,
+  AiChangesCard,
+  type AiChangesState,
   AiComposer,
   AiConnectPrompt,
   AiFirstConnectionNotice,
@@ -53,6 +58,7 @@ import {
   type SkillUse,
   docMentionActions,
   type AiComposerDocs,
+  useSubscriptionUsageUpdates,
 } from '@genoffice/ui'
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from 'react'
@@ -79,6 +85,8 @@ import type { DiagramAiHost } from './diagram-tools'
 import { createFilesSkill } from './files-skill'
 import { createSearchSkill } from './search-skill'
 import { createElectronTransport } from './transport'
+import { RunCellChanges } from '../../shared/ai-marks'
+import { addRun, revertChain, revertsLater, type RunChange, settleRuns } from './run-changes'
 import { blockedRunFor, mergeSubscriptionUsage, type BlockedRun } from './connection'
 import { useSubscriptionConnection } from './subscription-client'
 import sendEnterOn from './assets/send-enter-on.png'
@@ -115,7 +123,6 @@ const MAX_IMAGES_PER_MESSAGE = 20
 const PANEL_WIDTH_KEY = 'diagram-ai-panel-width'
 const PANEL_WIDTH_DEFAULT = 360
 const PANEL_WIDTH_MIN = 280
-const MAX_TURNS_KEPT = 20
 const TOOL_OUTPUT_MAX_CHARS = 2000
 
 /** The AI part of the preload bridge. A preload from an older build may lack any of it. */
@@ -202,14 +209,17 @@ interface ChatEntry {
   tools?: ToolActivity[]
   /** tokens the provider billed for this reply (absent when unreported) */
   usage?: AiTokenUsageView
+  /** the last reply of a run that changed the diagram: the id of its card's run */
+  changes?: number
 }
 
-/** One AI turn that changed the diagram, kept as its undo point: the undo tokens of its calls. */
+/** One AI turn that changed the diagram, kept as its undo point: the undo tokens of its calls and the cells they changed. */
 interface TurnPoint {
   tokens: string[]
-  label: string
-  time: string
+  cells: RunCellChanges
 }
+
+const newTurnPoint = (): TurnPoint => ({ tokens: [], cells: new RunCellChanges() })
 
 /** composer chips (removable) and the read-only echo on a sent message share one renderer */
 function AttachmentList({
@@ -334,6 +344,12 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
   sendGateRef.current = sendGate
   /** rate-limit windows the subscription program reported (latest per window) */
   const [subscriptionUsage, setSubscriptionUsage] = useState<AiSubscriptionUsage[]>([])
+  // usage a picture request reported reaches every window (the chat stream only its own)
+  useSubscriptionUsageUpdates(
+    () => window.diagramApi?.subscription,
+    setSubscriptionUsage,
+    mergeSubscriptionUsage,
+  )
   /** the last turn's input was cut to fit a limit; shown until dismissed */
   const [inputTruncated, setInputTruncated] = useState(false)
   /** structured cause of the last failed stream */
@@ -373,10 +389,14 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
   const busyRef = useRef(busy)
   busyRef.current = busy
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null)
-  /** the turns that changed the diagram, oldest first: each one can be taken back */
-  const [turns, setTurns] = useState<TurnPoint[]>([])
-  const [rollbackNote, setRollbackNote] = useState(false)
+  /** the runs that changed the diagram, oldest first: each one's card can take it back */
+  const [turns, setTurns] = useState<RunChange<TurnPoint>[]>([])
   const [reverting, setReverting] = useState(false)
+  /** the run whose changes are marked on screen, while they are */
+  const [marked, setMarked] = useState<number | null>(null)
+  const turnSeqRef = useRef(0)
+  /** the run in flight once it changed the diagram: its card goes under its last reply */
+  const runChangeRef = useRef<number | null>(null)
   const chatRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const stickToBottomRef = useRef(true)
@@ -544,8 +564,8 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
   const runInstructionRef = useRef('')
   /** the skills of the last send: a retry sends the same skill text */
   const lastSkillUseRef = useRef<SkillUse>(NO_SKILL_USE)
-  /** the undo tokens of the run in flight's calls (its undo point) */
-  const runTokensRef = useRef<string[]>([])
+  /** the undo tokens of the run in flight's calls and the cells they changed (its undo point) */
+  const runTokensRef = useRef<TurnPoint>(newTurnPoint())
   /** the read table of the page on screen, read for the request in flight */
   const contextRef = useRef('')
   /** an untitled diagram was already given a name from a request */
@@ -631,9 +651,25 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
     })
   }
 
-  const loopRef = useRef<AgentLoop<string[]> | null>(null)
+  const markedRef = useRef(marked)
+  markedRef.current = marked
+  /** Marks the cells a run added or changed (the last run's marks go). */
+  const showMarks = (runId: number, cells: RunCellChanges): void => {
+    void hostRef.current.mark?.(cells.marked()).catch(() => {})
+    setMarked(runId)
+  }
+  const showMarksRef = useRef(showMarks)
+  showMarksRef.current = showMarks
+
+  /** Takes the marks off the diagram. */
+  const clearMarks = (): void => {
+    if (markedRef.current !== null) void hostRef.current.mark?.([]).catch(() => {})
+    setMarked(null)
+  }
+
+  const loopRef = useRef<AgentLoop<TurnPoint> | null>(null)
   if (!loopRef.current) {
-    loopRef.current = new AgentLoop<string[]>({
+    loopRef.current = new AgentLoop<TurnPoint>({
       transport: transportRef.current,
       // a local model that reported no tool support answers in text only
       toolsAllowed: () =>
@@ -642,7 +678,10 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
         createDiagramSkill({
           host: () => hostRef.current,
           context: () => contextRef.current,
-          onApplied: (token) => runTokensRef.current.push(token),
+          onApplied: (token, changes) => {
+            runTokensRef.current.tokens.push(token)
+            if (changes) runTokensRef.current.cells.add(changes)
+          },
         }),
         createSearchSkill(),
         createFilesSkill(availableAttachments),
@@ -676,14 +715,18 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
         },
         onToolExecuted: ({ call, execution, snapshotBefore }) => {
           if (snapshotBefore !== undefined) {
-            const label = runInstructionRef.current.slice(0, 40)
-            const time = new Date().toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })
+            const id = ++turnSeqRef.current
+            runChangeRef.current = id
             setTurns((prev) =>
-              [...prev, { tokens: snapshotBefore, label, time }].slice(-MAX_TURNS_KEPT),
+              addRun(prev, { id, point: snapshotBefore, state: 'applied', count: 0 }),
             )
+          }
+          const runId = runChangeRef.current
+          if (execution.mutated && runId !== null) {
+            const cells = runTokensRef.current.cells
+            const count = cells.count
+            setTurns((prev) => prev.map((run) => (run.id === runId ? { ...run, count } : run)))
+            showMarksRef.current(runId, cells)
           }
           const activity: ToolActivity = {
             name: call.name,
@@ -715,10 +758,13 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
           const final = truncated
             ? [base, tGlobal('aiTruncatedNote')].filter(Boolean).join('\n\n')
             : base
+          const changes = runChangeRef.current
+          runChangeRef.current = null
           patchLast((last) => ({
             streaming: false,
             text: final || (last.tools?.length ? last.text : tGlobal('aiNoReply')),
             tools: last.tools?.filter((tl) => !tl.running),
+            ...(changes !== null ? { changes } : {}),
           }))
           persistMessage('assistant', final, runToolsRef.current)
           setBusy(false)
@@ -730,6 +776,8 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
           if (blocked) msgQueueRef.current.hold()
           // once a tool ran the message was delivered; a later turn failing is not a send failure
           const undelivered = runToolsRef.current.length === 0
+          const changes = runChangeRef.current
+          runChangeRef.current = null
           setChat((prev) => {
             const next = [...prev]
             for (let i = undelivered ? next.length - 1 : -1; i >= 0; i--) {
@@ -747,6 +795,7 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
                 text: error,
                 isError: true,
                 ...(blocked ? { blocked } : {}),
+                ...(changes !== null ? { changes } : {}),
                 tools: last.tools?.filter((tl) => !tl.running),
               }
             }
@@ -895,7 +944,9 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
     }
     lastStreamErrorRef.current = null
     setInputTruncated(false)
-    setRollbackNote(false)
+    // a new run: the last one's marks come off the diagram
+    clearMarks()
+    runChangeRef.current = null
     // the message takes the composer's attachments: echoed on the bubble, pictures to the model, files via the skill
     const sentAtts = attachmentsOverride ?? attachmentsRef.current
     if (sentAtts.length > 0) {
@@ -911,7 +962,7 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
     }
     stickToBottomRef.current = true
     runInstructionRef.current = instruction
-    runTokensRef.current = []
+    runTokensRef.current = newTurnPoint()
     runToolsRef.current = []
     runUsageRef.current = undefined
     // an untitled diagram takes its tab name from the first request
@@ -1046,6 +1097,9 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
     setBusy(false)
     busyRef.current = false
     setChat([])
+    // the cards go with the chat, and the marks with them
+    clearMarks()
+    setTurns([])
     skills.resetConversation()
     skillCards.reset()
     attachmentsRef.current = []
@@ -1065,20 +1119,57 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
     window.setTimeout(() => setCopiedIdx((cur) => (cur === idx ? null : cur)), 1200)
   }
 
-  /** Takes back the turn at `index` and every later one, newest first. */
-  const rollback = (index: number): void => {
+  /**
+   * Takes back the run `id` and every later one still applied, newest first,
+   * one call at a time while each is still the newest step of draw.io's
+   * history. Where that stops, the run it stopped in is partly taken back (or
+   * not at all), and the runs before it stay as they are.
+   */
+  const revert = (id: number): void => {
     if (busy || reverting) return
-    const undone = turns.slice(index).reverse()
+    const chain = revertChain(turns, id)
+    if (chain.length === 0) return
     setReverting(true)
+    if (marked !== null && chain.some((run) => run.id === marked)) clearMarks()
     void (async () => {
-      // newest call last: the host takes them back newest first, while nothing came after them
-      const tokens = undone.reverse().flatMap((point) => point.tokens)
-      const complete = await hostRef.current.undo(tokens).catch(() => false)
+      const outcomes = new Map<number, AiChangesState>()
+      for (const run of chain) {
+        const tokens = run.point.tokens
+        let undone = 0
+        for (const token of [...tokens].reverse()) {
+          if (!(await hostRef.current.undo([token]).catch(() => false))) break
+          undone++
+        }
+        if (undone === tokens.length) {
+          outcomes.set(run.id, 'reverted')
+          continue
+        }
+        if (undone > 0) outcomes.set(run.id, 'partial')
+        break
+      }
+      // the run asked for was not reached, or not touched: it stays, and its card says why
+      if (!outcomes.has(id)) outcomes.set(id, 'refused')
       if (!mountedRef.current) return
-      setTurns((prev) => prev.slice(0, index))
-      setRollbackNote(!complete)
+      setTurns((prev) => settleRuns(prev, outcomes))
       setReverting(false)
     })()
+  }
+
+  /** The card under the last reply of a run that changed the diagram. */
+  const changesCard = (id: number): ReactElement | null => {
+    const run = turns.find((each) => each.id === id)
+    if (!run) return null
+    return (
+      <AiChangesCard
+        lang={lang}
+        state={run.state}
+        count={run.count > 0 ? run.count : undefined}
+        canRevert={!busy && !reverting}
+        revertsLater={revertsLater(turns, id)}
+        onRevert={() => revert(id)}
+        onClearMarks={marked === id ? clearMarks : undefined}
+      />
+    )
   }
 
   // The display width follows the window (at most 60% of it); a wider window brings the chosen width back
@@ -1221,7 +1312,8 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
             )
           }
           const hasTools = (entry.tools?.length ?? 0) > 0
-          if (!entry.text && !entry.streaming && !hasTools) return null
+          if (!entry.text && !entry.streaming && !hasTools && entry.changes === undefined)
+            return null
           const isLast = i === chat.length - 1
           const nextEntry = chat[i + 1]
           const turnEnded = nextEntry ? nextEntry.role === 'user' : !busy
@@ -1253,6 +1345,7 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
               {hasTools && <ToolChipList tools={entry.tools!} />}
               <SkillUsedNotes tools={entry.tools} />
               {entry.skillProposals?.map((key) => skillCards.render(key))}
+              {entry.changes !== undefined && changesCard(entry.changes)}
               {entry.usage && (
                 <div className="ai-message-usage">
                   <AiUsageChip usage={entry.usage} lang={lang} />
@@ -1289,33 +1382,6 @@ export function AiPanel({ host, filePath, onCollapse }: AiPanelProps): ReactElem
         {/* an MCP tool waiting for the person's yes (user MCP spec 7.4) */}
         <McpPermissionCard lang={lang} />
       </div>
-
-      {(turns.length > 0 || rollbackNote) && (
-        <div className="ai-versions" data-ai-turns={turns.length}>
-          <div className="ai-versions-title">
-            <IconClock />
-            {t('aiTurnsTitle')}
-          </div>
-          {rollbackNote && <div className="ai-versions-note">{t('aiRollbackIncomplete')}</div>}
-          {turns.map((point, i) => (
-            <div key={i} className="ai-version-row">
-              <span className="ai-version-label" data-tip={point.label}>
-                <span className="ai-version-time">{point.time}</span>
-                {point.label}
-              </span>
-              <button
-                type="button"
-                className="ai-version-rollback"
-                data-action="ai-turn-undo"
-                disabled={busy || reverting}
-                onClick={() => rollback(i)}
-              >
-                {t('aiRollback')}
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
 
       {(sendGate.connectChoice || sendGate.noticeDue) && (
         <div className="ai-composer">
@@ -1579,15 +1645,6 @@ function IconCollapse(): ReactElement {
       <rect x="1.5" y="2.5" width="13" height="11" rx="1" />
       <path d="M5.5 2.5v11" />
       <path d="M12.5 8H8.1M9.8 5.9 7.7 8l2.1 2.1" strokeWidth="1.3" />
-    </Svg>
-  )
-}
-
-function IconClock(): ReactElement {
-  return (
-    <Svg size={12}>
-      <circle cx="8" cy="8" r="6" />
-      <path d="M8 4.8V8l2.2 1.6" />
     </Svg>
   )
 }

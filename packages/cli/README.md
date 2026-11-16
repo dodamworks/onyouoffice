@@ -89,9 +89,13 @@ onyouoffice convert letter.docx --to hwpx                               # .docx 
 onyouoffice convert notes.md --to hwp                                    # .md → .hwp/.hwpx through the same converter: headings, lists and tables arrive as Hangul ones; tables run on to the next page with their header row and get column widths from their content
 onyouoffice diagram read flow.drawio [--page Two] --json               # shapes and edges of each page of a draw.io diagram (.drawio, .dio, .drawio.svg, .drawio.png); no app process
 onyouoffice diagram apply flow.drawio --ops '[{"op":"add_shape","label":"Check","x":40,"y":200}]' [--page Two] [--out flow.dio] [--force] --json   # the in-app AI's diagram ops (`guide diagram`); .drawio/.dio keep untouched pages byte for byte
-onyouoffice create --type drawio --mermaid flow.mmd [--ops @more.json] --out flow.drawio   # Mermaid drawn by draw.io (a hidden Onyou Office), then the ops; --out x.drawio.png writes that format
+onyouoffice create --type drawio --mermaid flow.mmd [--ops @more.json] --out flow.drawio   # Mermaid drawn by draw.io (a hidden IeumOffice), then the ops; --out x.drawio.png writes that format
 onyouoffice convert flow.drawio --to png [--page Two] [--out pictures]  # one PNG per page (flow-p1.png ...) into the folder, or one file with --page; --to svg the same, --to pdf one file
 onyouoffice guide diagram                                                # the diagram ops, built from the same definitions as the in-app AI's tools
+onyouoffice map read plan.xmind --json                          # every topic of a mind map (.xmind) with the ids ops target; plain `map read` prints the outline, one `# ` heading per sheet
+onyouoffice map apply plan.xmind --ops '[{"op":"rename_topic","id":"<id>","title":"New"}]' --json   # the map ops (`guide map`: add_topic, rename_topic, move_topic, delete_topic, set_note, set_link); untouched parts of the file stay byte for byte, a delete that would take preserved elements is refused with the count
+onyouoffice map create --outline plan.md --out plan.xmind       # a new .xmind from a markdown outline (`# ` sheet heading, `- ` topic item); without --out the outline name gets .xmind
+onyouoffice guide map                                           # the map ops, built from the same definitions `map apply` checks against
 onyouoffice guide docs                                                   # op signatures + restricted-HTML rules (`guide <domain> --json` = the catalog with each op's schema and a fingerprint)
 onyouoffice selection report.docx --json   # what the user has selected in the editor showing the file
 onyouoffice skill list   # coding agents found on this machine and the skill version each has
@@ -320,10 +324,15 @@ at a screen when it runs. That decides which route it may take.
   used only when it is the one selected in the app's settings and its key is
   there; Parallel, Tavily, Exa and Firecrawl provide web search only. Search
   never uses a subscription.
-- **Image generation** is key-based only in this version: it runs on an image
-  provider whose key is set up in the app, and answers "unavailable"
-  otherwise. `--model` is ignored (a successful result says so in
-  `detail.note`) and `--size` has no effect on the key-based providers.
+- **Image generation** runs on the image route chosen in the app: the ChatGPT
+  plan through the Codex program (a Codex subscription login, used only with
+  the automatic-call setting below), or an image provider whose key is set up
+  in the app; otherwise it answers "unavailable". `--ref` images go with the
+  request on either route. `--model` is used when the route in use offers it
+  (on the Codex route a `gpt-image` name leaves the image model to Codex, and
+  `detail.note` says so); any other name is refused before anything is sent,
+  with the model names that route can use. `--size` has no effect on the
+  key-based providers.
 - **Media analysis**: a picture is shown to the AI provider the chat runs on,
   or to the key-based analysis provider chosen in the app. Video and sound
   need a key-based provider that can analyse video.

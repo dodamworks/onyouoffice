@@ -4,7 +4,7 @@
 
 ## 맡은 범위
 
-- 루프: `AgentLoop`(`src/loop.ts`). 대화 이력, 턴 반복, 도구 인자 검증(`missingRequiredFields`, `invalidArgumentFields`, `coerceArgumentFields`: 숫자 칸의 숫자 문자열과 참·거짓 칸의 `"true"`·`"false"`는 고쳐 받는다), 이력 압축, 실패한 실행의 되돌림.
+- 루프: `AgentLoop`(`src/loop.ts`). 대화 이력, 턴 반복, 도구 인자 검증(`missingRequiredFields`, `invalidArgumentFields`, `coerceArgumentFields`: 숫자 칸의 숫자 문자열과 참·거짓 칸의 `"true"`·`"false"`는 고쳐 받는다), 스킬이 제 규칙을 얹는 스키마 걷기(`walkArgumentFields`: 호출의 입력을 도구 스키마와 나란히, 안쪽 값까지 걸으며 콜백이 돌려준 값으로 바꾼다. 스스로는 고치지도 거절하지도 않고 루프는 부르지 않는다), 이력 압축, 실패한 실행의 되돌림.
 - skill 계약: `AgentSkill`과 `composeSkills`(`src/skill.ts`). 에디터 하나의 능력(system prompt 구역, 도구 목록, 턴마다 붙는 문맥, 도구 실행기)을 묶는 단위다.
 - 전송 계약 `AgentTransport`(`src/types.ts`)와 그 IPC 구현 `createIpcTransport`(`src/electron-transport.ts`). 렌더러에서 돌며, 메인 프로세스가 보낸 스트림 조각(`IpcStreamChunk`)을 루프의 콜백으로 옮긴다.
 - 도구 없이 답 본문이 곧 결과물인 요청 `streamText`(`src/stream-text.ts`), 별표 파일 묶음을 읽는 `createKnowledgeBaseSkill`(`src/knowledge-base-skill.ts`).
@@ -47,7 +47,7 @@
 - 에디터는 skill을 만들고 `composeSkills`로 합쳐 루프에 준다. 합친 skill의 `tools`와 `systemPrompt`는 getter라 접근할 때마다 다시 계산된다. 하위 skill이 연결 상태에 따라 도구 목록을 바꿀 수 있고, 루프는 모델 요청 직전마다 목록을 읽는다. 도구 이름은 전체에서 유일해야 한다(겹치면 예외).
 - 루프는 취소·초기화 뒤에 도착하는 옛 콜백을 `generation` 번호로 걸러 낸다. 전송 콜백 안에서 루프 상태를 건드리는 코드를 추가하면 같은 검사를 넣는다.
 - 첫 번째로 문서를 바꾸는 도구 직전에 `captureSnapshot`을 한 번 부른다. 패널의 "되돌리기"가 이 스냅샷을 쓴다. 도구는 `ToolExecution.mutated`로 문서를 바꿨는지 알린다.
-- `verifyResponse`는 마지막 글이 실제 실행된 도구와 맞는지 skill이 검사하는 자리다("선택했습니다"라고 썼는데 선택 도구가 성공하지 않은 경우 등). 교정 턴은 실행당 한 번만 허용되므로 오탐의 비용은 턴 하나다.
+- `verifyResponse`는 마지막 글이 실제 실행된 도구와 맞는지 skill이 검사하는 자리다("선택했습니다"라고 썼는데 선택 도구가 성공하지 않은 경우 등). 교정 턴은 실행당 한 번만 허용되므로 오탐의 비용은 턴 하나다. 문서를 다시 재야 하는 검사는 답을 `Promise`로 늦게 줄 수 있다. 루프는 그 답을 기다리고, 기다리는 동안 대화가 초기화되면 버리고, 멈춤이 눌렸으면 교정 턴을 열지 않는다.
 - 오류 문장의 우선순위는 `createIpcTransport`에 있다. `errorText(cause)`가 값을 주면 그것, 아니면 종류별 옛 콜백(`creditsErrorText` 등), 아니면 조각에 실린 문장, 마지막이 `unknownErrorText()`다. 구조화된 원인은 `onStreamError`로 `onError` 직전에 한 번 더 전달된다. 패널은 이것으로 "막힌 실행" 알림을 그린다.
 - 구독 사용량(`subscription-usage`)과 입력 축소(`input-truncated`)는 루프를 거치지 않고 전송의 `onSubscriptionUsage`·`onInputTruncated` 옵션으로 패널에 바로 간다.
 - 가림 규칙은 "표식에 대한 규칙"이다. 모델용 지시문은 에디터가 넘긴 명세(`PlaceholderSpec`)로 `placeholderInstruction`이 조립하고, 답에 표식이 빠지거나 쪼개졌는지는 `checkPlaceholders`가 본다. 에디터마다 지시문을 따로 쓰지 않는다(다섯 벌이 서로 달라졌던 것을 하나로 모은 것이다). 표식 없이 무언가를 숨기는 에디터(통계에서 뺀 셀 등)는 그 에디터가 책임진다.

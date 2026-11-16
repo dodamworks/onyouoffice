@@ -2,7 +2,9 @@
 
 ## Einstellungen öffnen
 
-Die Zeile unten links auf der Startseite öffnet den Einstellungsbereich (solange keine KI verbunden ist, steht dort „KI verbinden“). Er hat fünf Abschnitte: Konto, KI, Allgemein, Integrationen und Über.
+Die Zeile unten links auf der Startseite öffnet den Einstellungsbereich (die Zeile darunter zeigt, ob eine KI verbunden ist). Er hat fünf Abschnitte: Konto, KI, Allgemein, Integrationen und Über.
+
+Sie können sie auch in jedem Tab mit **⌘,** öffnen (Ctrl+, unter Windows und Linux), auf dem Mac über **Einstellungen…** im App-Menü (dem Menü mit dem Namen der App, links in der Menüleiste) oder unter Windows und Linux über **Menü (☰) ▸ Einstellungen…**. In einem Word-Tab ist ⌘, (Ctrl+,) Tiefgestellt; öffnen Sie sie dort über das Menü.
 
 **Konto** zeigt, wie es um Ihre Verbindungen zu Claude, ChatGPT und Codex steht, und **Verbindungen verwalten** führt zum Abschnitt KI. Zur KI gibt es eigene Artikel: [Abonnement-Verbindung](help://subscription) und [KI-Modelle und Einstellungen](help://ai-models).
 
@@ -59,7 +61,7 @@ Die Einstellungen können GenOffice als Programm für .docx / .xlsx / .pptx / .p
 ## Hinweise zu Drittanbietersoftware und Updates
 
 - Hilfe ▸ Hinweise zu Drittanbietersoftware: das vollständige Verzeichnis der mitgelieferten Open-Source-Lizenzen.
-- Menü (☰) ▸ Nach Updates suchen (auf dem Mac Hilfe ▸ Nach Updates suchen): löst eine manuelle Prüfung aus; bei einer neueren Version werden Sie zur Installation aufgefordert.
+- Menü (☰) ▸ Nach Updates suchen (auf dem Mac Hilfe ▸ Nach Updates suchen): löst eine manuelle Prüfung aus; bei einer neueren Version werden Sie zur Installation aufgefordert. Auf dem Mac steht der Befehl auch im App-Menü, direkt unter „Über GenOffice“.
 
 ## MCP-Integration (für erfahrene Anwender / KI-Clients)
 

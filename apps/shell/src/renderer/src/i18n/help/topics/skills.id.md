@@ -15,11 +15,11 @@ Skill adalah sekumpulan petunjuk kerja untuk AI. Tuliskan sekali saja hal yang A
 | **Folder skill Codex**  | Skill di `~/.agents/skills`                                  | Nonaktif |
 
 - Sakelar mengaktifkan atau menonaktifkan skill. Pengaturan yang sama berlaku untuk panel AI di semua editor, Tanya AI di Beranda, dan jendela agen.
-- Untuk skill yang aktif, pilih **AI yang menentukan** atau **Hanya saat dipanggil**. Awalnya disetel ke AI yang menentukan. Dengan Hanya saat dipanggil, skill hanya dipakai jika Anda sendiri yang memanggilnya.
+- Untuk skill yang aktif, pilih **AI yang menentukan** atau **Hanya saat dipanggil**. Awalnya disetel ke AI yang menentukan. Dengan Hanya saat dipanggil, skill hanya dipakai jika Anda sendiri yang memanggilnya. Pada skill yang nonaktif, pilihan ini tetap tampak redup, jadi Anda bisa mengaturnya sebelum mengaktifkan skill itu lagi.
 - Skill dari sumber yang berbeda bisa bernama sama. Label sumber di setiap baris membedakannya. Jika dua skill bernama sama sama-sama aktif, hanya satu yang muncul di daftar `/` dan dipakai: yang lebih dulu menurut urutan Skill saya, Bawaan, Folder skill Claude, Folder skill Codex, Plugin Claude. Baris skill yang lain menyebutkan skill mana yang dipakai sebagai gantinya.
 - Menu lainnya berisi **Lihat isi**, **Edit** (hanya skill saya), **Ekspor (zip)** (hanya skill saya), dan **Buka folder**. Skill bawaan tidak memiliki **Buka folder**. **Tempat dipakai** langsung membuka tempat memilih editor yang memakai skill itu.
 - Skill saya berada di folder `~/.ieumoffice/skills`. Di Windows, itu adalah `C:\Users\<nama pengguna>\.ieumoffice\skills`. **Buka folder** di menu lainnya membuka folder skill tersebut.
-- **Pindahkan ke tempat sampah** memindahkan salah satu skill saya ke tempat sampah sistem, dan dari sana skill itu bisa dipulihkan.
+- **Pindahkan ke tempat sampah** memindahkan salah satu skill saya ke tempat sampah sistem, dan dari sana skill itu bisa dipulihkan. Jika ada skill bernama sama dari sumber lain yang nonaktif, konfirmasi menampilkan kotak tercentang untuk mengaktifkannya lagi. Hapus centangnya agar skill itu tetap nonaktif.
 - Skill bawaan tidak dihapus, melainkan disembunyikan: pilih **Sembunyikan**. **Tampilkan lagi** di bagian bawah daftar mengembalikannya seperti semula.
 - Untuk mengubah skill bawaan atau skill dari program lain, pilih **Salin ke skill saya**. Salinannya muncul di skill saya dan skill aslinya dinonaktifkan.
 - Saat skill yang memiliki templat diekspor, dokumen templatnya ikut masuk ke file zip. Pastikan dokumen itu tidak berisi informasi pribadi sebelum Anda mengekspornya.
@@ -47,6 +47,16 @@ Di bawah pratinjau selalu tertulis: "Pasang skill hanya dari sumber yang Anda pe
 - Jika tidak ada perubahan, tertulis "Sudah terbaru". Jika ada, tinjau file yang berubah dan pratinjaunya, lalu klik **Perbarui**.
 - Jika Anda sendiri sudah mengedit skill itu setelah memasangnya, akan muncul juga "Suntingan Anda sendiri akan hilang".
 - Pembaruan tetap mempertahankan status aktif/nonaktif skill, pilihan AI yang menentukan / Hanya saat dipanggil, dan tempat dipakai.
+
+## Kembali ke versi sebelumnya
+
+Saat Anda mengedit skill milik Anda, memasang skill lain bernama sama di tempatnya, atau memperbaruinya, versi sebelumnya disimpan. Versi itu tidak masuk ke tempat sampah.
+
+- **Versi sebelumnya** di bagian bawah **Lihat isi** atau **Edit** menampilkan versi yang disimpan, dari yang terbaru, beserta kapan dan mengapa masing-masing disimpan dan ukurannya.
+- **Lihat perbedaan** menunjukkan baris `SKILL.md` mana yang akan kembali, mana yang akan hilang, dan berkas lain mana yang akan berubah.
+- **Kembali ke versi ini** mengembalikan berkas versi itu persis seperti semula. Versi yang sekarang juga disimpan, jadi Anda bisa kembali lagi. Apakah skill menyala dan kapan digunakan tetap seperti yang Anda atur.
+- Versi yang disimpan tetap ada sampai Anda menghapusnya. **Hapus** menghapus satu versi untuk selamanya.
+- Versi-versi itu berada di folder `~/.ieumoffice/skill-history`. **Pindahkan ke tempat sampah** pada sebuah skill juga memindahkan versi tersimpannya ke tempat sampah.
 
 ## Memanggil skill di panel AI
 

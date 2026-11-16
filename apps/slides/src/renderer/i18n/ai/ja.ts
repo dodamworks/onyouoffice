@@ -89,8 +89,6 @@ export const ja = {
   aiStopGeneration: '生成を停止',
   aiStop: '停止',
   aiSend: '送信',
-  aiSnapshotsTitle: 'バージョンスナップショット',
-  aiRollback: 'ロールバック',
   aiStarterPolishTitle: 'このスライドのタイトルと文章を改善して',
   aiStarterTighten: 'このスライドの箇条書きをより簡潔にして',
   aiStarterProofread: '全スライドの誤字をチェックして修正して',

@@ -37,10 +37,6 @@ export const ja = {
   aiRetry: '再試行',
   aiCopyReplyTitle: '返信をコピー',
   aiRegenerateTitle: '再生成',
-  aiTurnsTitle: 'AI の変更を元に戻す',
-  aiRollback: 'ロールバック',
-  aiRollbackIncomplete:
-    'そのターンの一部を元に戻せませんでした。その後に図が変更されています。代わりにエディターの「元に戻す」を使ってください。',
   aiUnknownError: 'AI リクエストに失敗しました。再試行してください',
   aiTimeoutError: 'AI の応答がタイムアウトしました',
   aiCreditsExhausted: 'クレジット不足です。ご利用の AI プロバイダーでチャージしてください',

@@ -37,10 +37,6 @@ export const en = {
   aiRetry: 'Retry',
   aiCopyReplyTitle: 'Copy reply',
   aiRegenerateTitle: 'Regenerate',
-  aiTurnsTitle: 'Undo an AI turn',
-  aiRollback: 'Undo',
-  aiRollbackIncomplete:
-    'Part of that turn could not be undone: the diagram was changed after it. Use Undo in the editor instead.',
   aiUnknownError: 'The AI request failed. Try again',
   aiTimeoutError: 'AI response timed out',
   aiCreditsExhausted: 'Out of credits. Top up with your AI provider',

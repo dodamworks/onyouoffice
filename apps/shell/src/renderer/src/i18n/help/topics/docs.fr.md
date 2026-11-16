@@ -67,7 +67,7 @@ Clic droit n’importe où dans le corps — le menu correspond à ce que vous a
 ## IA
 
 - Bouton IA du ruban et panneau latéral : réécriture, développement, traduction, résumé, insertion de tableaux prédéfinis, plus des instructions libres.
-- Chaque tour de l’IA enregistre d’abord un instantané ; vous pouvez revenir en arrière depuis la liste des versions, et ce retour en arrière est lui-même annulable.
+- Les endroits modifiés par l’IA sont marqués en jaune. **Annuler ces modifications**, sur la carte sous sa réponse, défait ce tour en entier (les tours suivants sont défaits aussi), et ce retour en arrière est lui-même annulable.
 
 ## Enregistrement et export
 

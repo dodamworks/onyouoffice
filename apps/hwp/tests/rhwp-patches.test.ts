@@ -464,12 +464,16 @@ describe('rhwp PC fonts patch', () => {
     '    setupEventListeners();',
     '    setupModalFocusRestore();',
     '',
+    "    void wasm.prepareDeclaredFontEnvironment('canvas2d').then(changed => {",
+    "      eventBus.emit('document-view-changed');",
+    "    }).catch(error => console.warn('[LocalFonts] View refresh failed:', error));",
+    '',
   ].join('\n')
   const patched = applyPatch('studio-pc-fonts', main)
 
   it('looks at the PC once the studio listens for font changes, with its own detection', () => {
     expect(patched).toContain(
-      `import { installFontPresence, refreshPcFonts } from '${PC_FONTS_MODULE}';`,
+      `import { installFontPresence, noteFontsApplying, refreshPcFonts } from '${PC_FONTS_MODULE}';`,
     )
     // rhwp v0.9.0's main.ts does not import the records; the patch imports them under a
     // name of its own, which a later main.ts that imports them again cannot clash with
@@ -496,6 +500,16 @@ describe('rhwp PC fonts patch', () => {
     )
     expect(patched).toContain('      detected: getDetectedOSFonts,\n')
     expect(patched).toContain('      state: getLocalFontState,\n')
+  })
+
+  it("hands over the studio's work on the document's fonts after a font change, whole", () => {
+    expect(patched).toContain(
+      "    noteFontsApplying(wasm.prepareDeclaredFontEnvironment('canvas2d').then(changed => {\n",
+    )
+    expect(patched).toContain(
+      "    }).catch(error => console.warn('[LocalFonts] View refresh failed:', error)));\n",
+    )
+    expect(patched).not.toContain("void wasm.prepareDeclaredFontEnvironment('canvas2d')")
   })
 
   it('keeps CRLF sources working, fails when the text is gone, and is in the studio build', () => {
