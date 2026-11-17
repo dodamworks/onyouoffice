@@ -23,7 +23,7 @@ interface Studio {
 }
 
 async function openHwp(app: ElectronApplication, page: Page): Promise<Page> {
-  await page.locator('.quick-card', { hasText: 'AI HWP' }).click()
+  await page.locator('.quick-card[data-format="hwp"]').click()
   const hwp = await waitForPageWithUrl(app, '://hwp/')
   await hwp.waitForSelector('.hwp-app[data-phase="ready"]', { timeout: 90_000 })
   return hwp
