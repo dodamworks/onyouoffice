@@ -65,18 +65,47 @@ const DEFAULTS: HierConstraints = {
 }
 
 /**
- * The row-gap constraint's refType and fact, read tag by tag. Same result as
- * `/<dgm:constr type="sp" for="des" forName="hierRoot1"[^>]*?refType="(w|h)"[^>]*?fact="([\d.]+)"/`,
- * which backtracks quadratically on a long unclosed tag in an opened file.
+ * Constraint attributes, read one tag span at a time. Each helper returns what
+ * the regex in its comment returns. Those regexes rescan to the end of an
+ * unclosed tag from every repeated prefix and go quadratic on an opened file;
+ * these scan each span once (a later prefix inside a span can match no more
+ * than the first one can).
  */
-function hierRootSpacing(layoutXml: string): [string, string, string] | null {
-  const tag = /<dgm:constr type="sp" for="des" forName="hierRoot1"[^>]*/g
-  for (let t = tag.exec(layoutXml); t; t = tag.exec(layoutXml)) {
-    const ref = /refType="(w|h)"/.exec(t[0])
+function constrSpans(xml: string, prefix: string): string[] {
+  const head = new RegExp(`^${prefix}`)
+  const spans: string[] = []
+  const tag = new RegExp(`${prefix}[^>]*`, 'g')
+  for (let t = tag.exec(xml); t; t = tag.exec(xml))
+    spans.push(t[0].slice(head.exec(t[0])![0].length))
+  return spans
+}
+
+/** `prefix[^>]*need[^>]*value` (greedy): the last value after a need. */
+function lastConstrValue(
+  xml: string,
+  prefix: string,
+  value: RegExp,
+  need?: RegExp,
+): string | undefined {
+  for (const rest of constrSpans(xml, prefix)) {
+    const after = need ? need.exec(rest) : null
+    if (need && !after) continue
+    const from = after ? after.index + after[0].length : 0
+    let last: string | undefined
+    const v = new RegExp(value.source, 'g')
+    for (let m = v.exec(rest); m; m = v.exec(rest)) if (m.index >= from) last = m[1]
+    if (last !== undefined) return last
+  }
+  return undefined
+}
+
+/** `prefix[^>]*?refType="(w|h)"[^>]*?fact="([\d.]+)"` (lazy): the first ref and the first fact after it. */
+function hierRootSpacing(xml: string): [string, string] | null {
+  for (const rest of constrSpans(xml, '<dgm:constr type="sp" for="des" forName="hierRoot1"')) {
+    const ref = /refType="(w|h)"/.exec(rest)
     if (!ref) continue
-    const rest = t[0].slice(ref.index + ref[0].length)
-    const fact = /fact="([\d.]+)"/.exec(rest)
-    if (fact) return [t[0], ref[1]!, fact[1]!]
+    const fact = /fact="([\d.]+)"/.exec(rest.slice(ref.index + ref[0].length))
+    if (fact) return [ref[1]!, fact[1]!]
   }
   return null
 }
@@ -85,39 +114,45 @@ function hierRootSpacing(layoutXml: string): [string, string, string] | null {
 export function parseHierConstraints(layoutXml: string | undefined): HierConstraints {
   const cons = { ...DEFAULTS }
   if (!layoutXml) return cons
-  const fact = (re: RegExp): number | undefined => {
-    const m = re.exec(layoutXml)
-    if (!m) return undefined
-    const v = parseFloat(m[1]!)
+  const FACT = /fact="([\d.]+)"/
+  const num = (raw: string | undefined): number | undefined => {
+    if (raw === undefined) return undefined
+    const v = parseFloat(raw)
     return Number.isFinite(v) && v > 0 ? v : undefined
   }
   // The box and gap facts hang off the node composite. Office's orgChart1 names
   // it rootComposite1; the built-in hierarchy1 layout names it composite.
   const composite = '(?:rootComposite1?|composite)'
+  const refComposite = new RegExp(`refForName="${composite}"`)
   cons.boxAspect =
-    fact(
-      new RegExp(
-        `<dgm:constr type="h" for="des" forName="${composite}"[^>]*refForName="${composite}"[^>]*fact="([\\d.]+)"`,
+    num(
+      lastConstrValue(
+        layoutXml,
+        `<dgm:constr type="h" for="des" forName="${composite}"`,
+        FACT,
+        refComposite,
       ),
     ) ?? cons.boxAspect
   cons.sibSp =
-    fact(
-      new RegExp(`<dgm:constr type="sibSp"[^>]*refForName="${composite}"[^>]*fact="([\\d.]+)"`),
-    ) ?? cons.sibSp
+    num(lastConstrValue(layoutXml, '<dgm:constr type="sibSp"', FACT, refComposite)) ?? cons.sibSp
   // Row gap: measured against a sibling box width (orgChart1) or against the
   // composite height (hierarchy1), so a height reference scales by the aspect.
   const sp = hierRootSpacing(layoutXml)
   if (sp) {
-    const v = parseFloat(sp[2]!)
-    if (Number.isFinite(v) && v > 0) cons.sp = sp[1] === 'h' ? v * cons.boxAspect : v
+    const v = parseFloat(sp[1])
+    if (Number.isFinite(v) && v > 0) cons.sp = sp[0] === 'h' ? v * cons.boxAspect : v
   } else {
     cons.sp =
-      fact(/<dgm:constr type="sp" for="des" forName="hierRoot1"[^>]*fact="([\d.]+)"/) ?? cons.sp
+      num(
+        lastConstrValue(layoutXml, '<dgm:constr type="sp" for="des" forName="hierRoot1"', FACT),
+      ) ?? cons.sp
   }
-  const connW = fact(/<dgm:constr type="w" for="ch" forName="rootConnector1?"[^>]*fact="([\d.]+)"/)
+  const connW = num(
+    lastConstrValue(layoutXml, '<dgm:constr type="w" for="ch" forName="rootConnector1?"', FACT),
+  )
   if (connW != null) cons.trunkOff = connW / 2
-  const fsz = /<dgm:constr type="primFontSz"[^>]*\bval="([\d.]+)"/.exec(layoutXml)
-  if (fsz) cons.fontMax = parseFloat(fsz[1]!) || cons.fontMax
+  const fsz = lastConstrValue(layoutXml, '<dgm:constr type="primFontSz"', /\bval="([\d.]+)"/)
+  if (fsz !== undefined) cons.fontMax = parseFloat(fsz) || cons.fontMax
   return cons
 }
 
