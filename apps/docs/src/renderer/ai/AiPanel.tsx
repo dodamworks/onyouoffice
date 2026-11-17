@@ -130,7 +130,7 @@ import {
   type RunErrorCause,
 } from './run-state'
 import { useSubscriptionConnection } from './subscription-client'
-import { useI18n, t as tModule, aiLangDirective, type StringKey } from '../i18n/locale'
+import { useI18n, t as tModule, aiLangDirective } from '../i18n/locale'
 import { AiChangesCard, createFileNav, Markdown } from '@genoffice/ui'
 import {
   AiComposer,
