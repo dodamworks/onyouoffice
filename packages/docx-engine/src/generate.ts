@@ -601,6 +601,32 @@ export interface FieldTextPatch {
  * Patch only cached visible w:t text in a field paragraph. Field instructions,
  * hyperlinks, tabs, run styling, and field boundaries remain byte-identical.
  */
+/**
+ * Replace every non-self-closing `<w:del …>…</w:del>` span. Same result as
+ * `xml.replace(/<w:del(?:\s[^>]*)?(?<!\/)>[\s\S]*?<\/w:del>/g, fn)`, in one
+ * linear pass: that regex rescans to the end of the paragraph from every
+ * unclosed `<w:del` and goes quadratic on a hostile file.
+ */
+export function replaceTrackedDeletions(xml: string, fn: (del: string) => string): string {
+  const open = /<w:del(?=[\s>])/g
+  let out = ''
+  let from = 0
+  let gt = -1
+  for (let m = open.exec(xml); m; m = open.exec(xml)) {
+    const start = m.index
+    if (gt < start) gt = xml.indexOf('>', start)
+    if (gt === -1) break
+    if (xml[gt - 1] === '/') continue
+    const close = xml.indexOf('</w:del>', gt + 1)
+    if (close === -1) break
+    const end = close + '</w:del>'.length
+    out += xml.slice(from, start) + fn(xml.slice(start, end))
+    from = end
+    open.lastIndex = end
+  }
+  return from === 0 ? xml : out + xml.slice(from)
+}
+
 export function patchFieldParagraphXml(xml: string, patch: FieldTextPatch): string {
   const hyphens =
     /<w:(?:noBreakHyphen|softHyphen)\s*\/>/.test(xml) || /[\u2011\u00ad]/.test(patch.left ?? '')
@@ -614,7 +640,7 @@ export function patchFieldParagraphXml(xml: string, patch: FieldTextPatch): stri
       .replace(/<w:noBreakHyphen\s*\/>/g, `<${tag}>\u2011</${tag}>`)
       .replace(/<w:softHyphen\s*\/>/g, `<${tag}>\u00ad</${tag}>`)
   const lifted = lift(
-    xml.replace(/<w:del(?:\s[^>]*)?(?<!\/)>[\s\S]*?<\/w:del>/g, (del) => lift(del, 'w:delText')),
+    replaceTrackedDeletions(xml, (del) => lift(del, 'w:delText')),
     'w:t',
   )
   return patchFieldTextNodes(lifted, patch).replace(

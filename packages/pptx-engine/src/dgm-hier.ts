@@ -64,6 +64,23 @@ const DEFAULTS: HierConstraints = {
   fontMax: 65,
 }
 
+/**
+ * The row-gap constraint's refType and fact, read tag by tag. Same result as
+ * `/<dgm:constr type="sp" for="des" forName="hierRoot1"[^>]*?refType="(w|h)"[^>]*?fact="([\d.]+)"/`,
+ * which backtracks quadratically on a long unclosed tag in an opened file.
+ */
+function hierRootSpacing(layoutXml: string): [string, string, string] | null {
+  const tag = /<dgm:constr type="sp" for="des" forName="hierRoot1"[^>]*/g
+  for (let t = tag.exec(layoutXml); t; t = tag.exec(layoutXml)) {
+    const ref = /refType="(w|h)"/.exec(t[0])
+    if (!ref) continue
+    const rest = t[0].slice(ref.index + ref[0].length)
+    const fact = /fact="([\d.]+)"/.exec(rest)
+    if (fact) return [t[0], ref[1]!, fact[1]!]
+  }
+  return null
+}
+
 /** Pull the factors this engine consumes out of the layout part's constraint lists. */
 export function parseHierConstraints(layoutXml: string | undefined): HierConstraints {
   const cons = { ...DEFAULTS }
@@ -89,10 +106,7 @@ export function parseHierConstraints(layoutXml: string | undefined): HierConstra
     ) ?? cons.sibSp
   // Row gap: measured against a sibling box width (orgChart1) or against the
   // composite height (hierarchy1), so a height reference scales by the aspect.
-  const sp =
-    /<dgm:constr type="sp" for="des" forName="hierRoot1"[^>]*?refType="(w|h)"[^>]*?fact="([\d.]+)"/.exec(
-      layoutXml,
-    )
+  const sp = hierRootSpacing(layoutXml)
   if (sp) {
     const v = parseFloat(sp[2]!)
     if (Number.isFinite(v) && v > 0) cons.sp = sp[1] === 'h' ? v * cons.boxAspect : v
