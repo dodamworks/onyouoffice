@@ -3,7 +3,14 @@
  * the editor looks at the PC when it starts and detects anew only when the list changed.
  */
 import { describe, expect, it, vi } from 'vitest'
-import { noteFontsApplying, refreshPcFonts, sameFaces } from '../studio-plugin/pc-fonts.mjs'
+import {
+  LINUX_FONT_FILE_READS,
+  fontFilesToRead,
+  linuxFontFileReads,
+  noteFontsApplying,
+  refreshPcFonts,
+  sameFaces,
+} from '../studio-plugin/pc-fonts.mjs'
 
 type Face = { family: string; fullName: string; postscriptName: string }
 type Kept = Face & { aliases?: string[]; detectionSource?: string }
@@ -173,5 +180,70 @@ describe('refreshPcFonts', () => {
     for (const listener of [...listeners]) listener()
     expect(await done).toBe(true)
     expect(listeners.size).toBe(0)
+  })
+})
+
+describe('the font files a detection reads', () => {
+  const latin = (index: number): Face => ({
+    family: `Latin ${index}`,
+    fullName: `Latin ${index} Regular`,
+    postscriptName: `Latin${index}-Regular`,
+  })
+  const korean: Face = { family: '나눔고딕', fullName: '나눔고딕', postscriptName: 'NanumGothic' }
+  const many = (count: number) => Array.from({ length: count }, (_, index) => latin(index))
+  const readCount = (listed: Face[], platform: string) => {
+    const reads = fontFilesToRead(listed, platform)
+    return listed.filter((_, index) => reads(index)).length
+  }
+
+  it('reads every file where a read file does not stay open', () => {
+    const listed = many(LINUX_FONT_FILE_READS * 4)
+    expect(readCount(listed, 'Win32')).toBe(listed.length)
+    expect(readCount(listed, 'MacIntel')).toBe(listed.length)
+  })
+
+  it('reads every file on Linux too while the PC has few enough fonts', () => {
+    const listed = many(LINUX_FONT_FILE_READS)
+    expect(readCount(listed, 'Linux x86_64')).toBe(listed.length)
+  })
+
+  it('stays under the open-file limit of a Linux desktop session on a PC with thousands', () => {
+    const listed = many(LINUX_FONT_FILE_READS * 4)
+    expect(readCount(listed, 'Linux x86_64')).toBe(LINUX_FONT_FILE_READS)
+    // the limit is 1024, and the page has other files open
+    expect(LINUX_FONT_FILE_READS).toBeLessThanOrEqual(512)
+    // the same fonts each time, so a detection run again reads no other files
+    const reads = fontFilesToRead(listed, 'Linux x86_64')
+    expect(reads(0)).toBe(true)
+    expect(reads(LINUX_FONT_FILE_READS - 1)).toBe(true)
+    expect(reads(LINUX_FONT_FILE_READS)).toBe(false)
+  })
+
+  it("reads the fonts the list names in the PC's language first", () => {
+    const listed = [...many(LINUX_FONT_FILE_READS * 2), korean]
+    const reads = fontFilesToRead(listed, 'Linux x86_64')
+    expect(reads(listed.length - 1)).toBe(true)
+    expect(reads(LINUX_FONT_FILE_READS - 2)).toBe(true)
+    expect(reads(LINUX_FONT_FILE_READS - 1)).toBe(false)
+    expect(readCount(listed, 'Linux x86_64')).toBe(LINUX_FONT_FILE_READS)
+  })
+
+  it("reads as many as the app's share of the editor's own open-file limit", () => {
+    const listed = [...many(3000), korean]
+    // a launcher raised the limit (deb, rpm): every file is read
+    const all = fontFilesToRead(listed, 'Linux x86_64', 262144)
+    expect(listed.every((_, index) => all(index))).toBe(true)
+    // a smaller limit: fewer, the Korean one still first
+    const few = fontFilesToRead(listed, 'Linux x86_64', 100)
+    expect(listed.filter((_, index) => few(index))).toHaveLength(100)
+    expect(few(listed.length - 1)).toBe(true)
+  })
+
+  it("takes the share from the editor's address, and the common one without it", () => {
+    expect(linuxFontFileReads('?chrome=embed&lang=ko&fontReads=262144')).toBe(262144)
+    expect(linuxFontFileReads('?chrome=embed&lang=ko')).toBe(LINUX_FONT_FILE_READS)
+    for (const bad of ['0', '-3', '1.5', 'x', '1e400']) {
+      expect(linuxFontFileReads(`?fontReads=${bad}`)).toBe(LINUX_FONT_FILE_READS)
+    }
   })
 })

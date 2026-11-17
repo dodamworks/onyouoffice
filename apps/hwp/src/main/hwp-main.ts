@@ -33,6 +33,7 @@ import { badJob, printJobToPdf, printJobToPrinter } from './print-document'
 import { registerHwpPrintLayout } from './print-layout'
 import { tm } from './dialog-strings'
 import { fieldKindsOf } from './field-kinds'
+import { fontFileReadsOfProcess } from './font-file-reads'
 import type { FieldKinds } from './field-kinds'
 import { lostMemoCountOf } from './memos'
 import {
@@ -214,8 +215,8 @@ function recordedDiskState(wcId: number, path: string): SaveDiskState | undefine
 }
 
 /** Record what the file holds now; an unreadable file leaves no record and no conflict. */
-async function rememberDiskState(wcId: number, path: string): Promise<void> {
-  const state = await recordDiskState(path)
+async function rememberDiskState(wcId: number, path: string, read?: Uint8Array): Promise<void> {
+  const state = await recordDiskState(path, read)
   if (!state) return
   const states = diskStatesByWc.get(wcId) ?? new Map<string, SaveDiskState>()
   states.set(path, state)
@@ -613,6 +614,10 @@ function registerHwpIpc(): void {
   })
   ipcMain.handle(HWP_CHANNELS.memoModalState, () => memoModalByWc.size > 0)
 
+  // the editor's font detection reads within this view's own open-file limit (font-file-reads.ts)
+  ipcMain.handle(HWP_CHANNELS.fontFileReads, (e) =>
+    fontFileReadsOfProcess(e.sender.getOSProcessId()),
+  )
   ipcMain.handle(HWP_CHANNELS.consumePending, (e) => {
     noteHwpPathConsumed(e.sender.id)
     return openPathByWc.get(e.sender.id) ?? null
@@ -631,7 +636,7 @@ function registerHwpIpc(): void {
     // the document the view holds from now on is this file: what is kept follows it (a
     // restored copy included: its saves correct against the file at its path)
     const wcId = e.sender.id
-    await rememberDiskState(wcId, path)
+    await rememberDiskState(wcId, path, bytes)
     trackedByWc.delete(wcId)
     trackingDroppedByWc.delete(wcId)
     if (bytesMatchFormat(bytes, 'hwp') && hasTrackedChanges(bytes)) {

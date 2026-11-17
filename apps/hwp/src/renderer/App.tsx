@@ -25,6 +25,7 @@ import {
   EASY_WORDS_EVENT,
   FILE_COMMAND_EVENT,
   DOCUMENT_CHECK_EVENT,
+  MARKS_EVENT,
   MEMO_NOT_COPIED_EVENT,
   MEMO_REMOVED_EVENT,
   MISSING_FONTS_EVENT,
@@ -195,6 +196,8 @@ export default function App() {
     (taken: AiPrefill) => setAiPrefill((current) => afterPrefillTaken(current, taken)),
     [],
   )
+  /** the pages carry marks of the AI's changes, as the plugin says (a user edit takes them off) */
+  const [marksOnPage, setMarksOnPage] = useState(false)
   /** counts changes made through the bridge, so the check panel can read the document again */
   const [docRevision, setDocRevision] = useState(0)
   /** the memo column beside the document: out or not, independent of the AI dock */
@@ -250,17 +253,18 @@ export default function App() {
     let stopDrop: (() => void) | null = null
     void (async () => {
       try {
-        const [path, theme, lang] = await Promise.all([
+        const [path, theme, lang, fontReads] = await Promise.all([
           window.hwpApi.consumePending(),
           window.hwpApi.getTheme().catch((): UiTheme => 'system'),
           window.hwpApi.getLanguage(),
+          (window.hwpApi.fontFileReads?.() ?? Promise.resolve(null)).catch(() => null),
         ])
         // the studio reads its settings before first paint, so they are seeded before it exists
         localStorage.setItem(
           STUDIO_SETTINGS_KEY,
           seededStudioSettings(localStorage.getItem(STUDIO_SETTINGS_KEY), theme),
         )
-        editor = await createEditor(hostRef.current!, { studioUrl: studioUrl(lang) })
+        editor = await createEditor(hostRef.current!, { studioUrl: studioUrl(lang, fontReads) })
         if (disposed) {
           editor.destroy()
           return
@@ -578,6 +582,19 @@ export default function App() {
     frame.addEventListener(EASY_WORDS_EVENT, onEasyWords)
     return () => frame.removeEventListener(EASY_WORDS_EVENT, onEasyWords)
   }, [phase, pluginBridge, t, aiOn])
+
+  // the plugin tells when the pages come to carry marks of the AI's changes or lose them: the
+  // AI panel's button to clear them is there only while they are
+  useEffect(() => {
+    if (phase !== 'ready') return
+    const frame = editorRef.current?.element.contentWindow
+    if (!frame) return
+    const onMarks = (event: Event) => {
+      setMarksOnPage((event as CustomEvent<{ shown?: unknown }>).detail?.shown === true)
+    }
+    frame.addEventListener(MARKS_EVENT, onMarks)
+    return () => frame.removeEventListener(MARKS_EVENT, onMarks)
+  }, [phase])
 
   // fonts that are not on this PC are drawn with others while the file keeps their names
   // (a document from Hancom Office on a PC without it): the editor's font menu and font box
@@ -1119,6 +1136,7 @@ export default function App() {
             templateDocument={templateDocument}
             prefill={aiPrefill}
             onPrefillTaken={takeAiPrefill}
+            marksOnPage={marksOnPage}
           />
         )}
         {phase === 'ready' && (

@@ -7,6 +7,8 @@ import type { SubscriptionApi } from './subscription-api'
 
 export const HWP_CHANNELS = {
   consumePending: 'hwp:consume-pending',
+  /** invoke → number | null: how many font files the editor's font detection may read (Linux) */
+  fontFileReads: 'hwp:font-file-reads',
   /** invoke → `{ name, format } | null`: the pending path is an untitled copy (spec 5.7) */
   untitledCopy: 'hwp:untitled-copy',
   readFile: 'hwp:read-file',
@@ -359,6 +361,11 @@ export type ReadUrlResult =
 export interface HwpApi {
   /** path queued for this view when its tab was created; null for a view opened without a file */
   consumePending(): Promise<string | null>
+  /**
+   * How many font files the editor's font detection may read, from this view's open-file
+   * limit (Linux); null where it reads them all or the limit is not known.
+   */
+  fontFileReads?(): Promise<number | null>
   /** the pending path is an untitled copy (a skill template's): its name and format; null otherwise */
   untitledCopy?(): Promise<{ name: string; format: 'hwp' | 'hwpx' } | null>
   readFile(path: string): Promise<Uint8Array>

@@ -149,6 +149,37 @@ export class HwpDocument {
         }
     }
     /**
+     * `applyCellBorderFillIds` (undo and redo of the border dialogs) for the table the cell
+     * path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {string} json
+     * @returns {string}
+     */
+    applyCellBorderFillIdsByPath(section_idx, parent_para_idx, cell_path_json, json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_applyCellBorderFillIdsByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
      * 스타일을 적용한다 (셀 내 문단).
      * @param {number} sec_idx
      * @param {number} parent_para_idx
@@ -2200,6 +2231,34 @@ export class HwpDocument {
         }
     }
     /**
+     * `deleteTableColumn` for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} col_idx
+     * @returns {string}
+     */
+    deleteTableColumnByPath(section_idx, parent_para_idx, cell_path_json, col_idx) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_deleteTableColumnByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, col_idx);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * 표 컨트롤을 문단에서 삭제한다.
      *
      * 반환: JSON `{"ok":true}`
@@ -2252,6 +2311,34 @@ export class HwpDocument {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * `deleteTableRow` for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} row_idx
+     * @returns {string}
+     */
+    deleteTableRowByPath(section_idx, parent_para_idx, cell_path_json, row_idx) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_deleteTableRowByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, row_idx);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -3476,6 +3563,35 @@ export class HwpDocument {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * `getCellOwnProperties` (the cell's own border and fill, without cell zones) for the
+     * table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} cell_idx
+     * @returns {string}
+     */
+    getCellOwnPropertiesByPath(section_idx, parent_para_idx, cell_path_json, cell_idx) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_getCellOwnPropertiesByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, cell_idx);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -7344,6 +7460,33 @@ export class HwpDocument {
         }
     }
     /**
+     * `getTableProperties` for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @returns {string}
+     */
+    getTablePropertiesByPath(section_idx, parent_para_idx, cell_path_json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_getTablePropertiesByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * 문단에 텍스트박스가 있는 Shape 컨트롤이 있으면 해당 control_index를 반환한다.
      * 없으면 -1을 반환한다.
      * @param {number} section_idx
@@ -8819,6 +8962,35 @@ export class HwpDocument {
         }
     }
     /**
+     * `insertTableColumn` for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} col_idx
+     * @param {boolean} right
+     * @returns {string}
+     */
+    insertTableColumnByPath(section_idx, parent_para_idx, cell_path_json, col_idx, right) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_insertTableColumnByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, col_idx, right);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * 표에 행을 삽입한다.
      *
      * 반환값: JSON `{"ok":true,"rowCount":<N>,"colCount":<M>}`
@@ -8845,6 +9017,35 @@ export class HwpDocument {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * `insertTableRow` for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} row_idx
+     * @param {boolean} below
+     * @returns {string}
+     */
+    insertTableRowByPath(section_idx, parent_para_idx, cell_path_json, row_idx, below) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_insertTableRowByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, row_idx, below);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -9389,6 +9590,37 @@ export class HwpDocument {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * `mergeTableCells` for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} start_row
+     * @param {number} start_col
+     * @param {number} end_row
+     * @param {number} end_col
+     * @returns {string}
+     */
+    mergeTableCellsByPath(section_idx, parent_para_idx, cell_path_json, start_row, start_col, end_row, end_col) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_mergeTableCellsByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, start_row, start_col, end_row, end_col);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -11173,6 +11405,37 @@ export class HwpDocument {
         }
     }
     /**
+     * `resizeTableCell` (one cell's boundary, Shift+arrow) for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} row
+     * @param {number} col
+     * @param {boolean} vertical
+     * @param {boolean} forward
+     * @returns {string}
+     */
+    resizeTableCellByPath(section_idx, parent_para_idx, cell_path_json, row, col, vertical, forward) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_resizeTableCellByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, row, col, vertical, forward);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * 여러 셀의 width/height를 한 번에 조절한다 (배치).
      *
      * json: `[{"cellIdx":0,"widthDelta":150},{"cellIdx":2,"heightDelta":-100}]`
@@ -11586,6 +11849,37 @@ export class HwpDocument {
         }
     }
     /**
+     * `setCellProperties` for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} cell_idx
+     * @param {string} json
+     * @returns {string}
+     */
+    setCellPropertiesByPath(section_idx, parent_para_idx, cell_path_json, cell_idx, json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_setCellPropertiesByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, cell_idx, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
      * [Task #1138] 표 셀 내 Shape 속성 변경 (by_path).
      * @param {number} section_idx
      * @param {number} parent_para_idx
@@ -11649,6 +11943,40 @@ export class HwpDocument {
             return getStringFromWasm0(ptr2, len2);
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * `setCellZoneProperties` (a block as one cell) for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} start_row
+     * @param {number} start_col
+     * @param {number} end_row
+     * @param {number} end_col
+     * @param {string} json
+     * @returns {string}
+     */
+    setCellZonePropertiesByPath(section_idx, parent_para_idx, cell_path_json, start_row, start_col, end_row, end_col, json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_setCellZonePropertiesByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, start_row, start_col, end_row, end_col, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
         }
     }
     /**
@@ -11914,6 +12242,32 @@ export class HwpDocument {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 단 구분선 설정 (`{"type":u8,"width":u8,"color":"#rrggbb"}`, type 0 = 선 없음)
+     * @param {number} section_idx
+     * @param {string} json
+     * @returns {string}
+     */
+    setColumnSeparator(section_idx, json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_setColumnSeparator(this.__wbg_ptr, section_idx, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -12895,6 +13249,37 @@ export class HwpDocument {
         }
     }
     /**
+     * `setTableCellExtents` (cell start and end positions) for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {boolean} vertical
+     * @param {string} json
+     * @returns {string}
+     */
+    setTableCellExtentsByPath(section_idx, parent_para_idx, cell_path_json, vertical, json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_setTableCellExtentsByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, vertical, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
      * 셀에 계산식 필드를 넣거나 그 셀 계산식을 바꾼다(한/글 표 > 계산식·쉬운 계산식·블록 계산식).
      *
      * result_format: `%g`(기본)·`%.Nf`(소수 N자리), 세 자리 쉼표면 끝에 `,`.
@@ -12957,6 +13342,37 @@ export class HwpDocument {
             return getStringFromWasm0(ptr2, len2);
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * `setTableProperties` for the table the cell path names. A nested table's caption is
+     * not added, removed or changed: such a JSON is refused.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {string} json
+     * @returns {string}
+     */
+    setTablePropertiesByPath(section_idx, parent_para_idx, cell_path_json, json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_setTablePropertiesByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
         }
     }
     /**
@@ -13281,6 +13697,35 @@ export class HwpDocument {
         }
     }
     /**
+     * `splitTableCell` for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} row
+     * @param {number} col
+     * @returns {string}
+     */
+    splitTableCellByPath(section_idx, parent_para_idx, cell_path_json, row, col) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_splitTableCellByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, row, col);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * 셀을 N줄 × M칸으로 분할한다.
      *
      * 반환값: JSON `{"ok":true,"cellCount":<N>}`
@@ -13311,6 +13756,39 @@ export class HwpDocument {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * `splitTableCellInto` (the split dialog) for the table the cell path names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} row
+     * @param {number} col
+     * @param {number} n_rows
+     * @param {number} m_cols
+     * @param {boolean} equal_row_height
+     * @param {boolean} merge_first
+     * @returns {string}
+     */
+    splitTableCellIntoByPath(section_idx, parent_para_idx, cell_path_json, row, col, n_rows, m_cols, equal_row_height, merge_first) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_splitTableCellIntoByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, row, col, n_rows, m_cols, equal_row_height, merge_first);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -13373,6 +13851,41 @@ export class HwpDocument {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * `splitTableCellsInRange` (the split dialog on a cell block) for the table the cell path
+     * names.
+     * @param {number} section_idx
+     * @param {number} parent_para_idx
+     * @param {string} cell_path_json
+     * @param {number} start_row
+     * @param {number} start_col
+     * @param {number} end_row
+     * @param {number} end_col
+     * @param {number} n_rows
+     * @param {number} m_cols
+     * @param {boolean} equal_row_height
+     * @returns {string}
+     */
+    splitTableCellsInRangeByPath(section_idx, parent_para_idx, cell_path_json, start_row, start_col, end_row, end_col, n_rows, m_cols, equal_row_height) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_splitTableCellsInRangeByPath(this.__wbg_ptr, section_idx, parent_para_idx, ptr0, len0, start_row, start_col, end_row, end_col, n_rows, m_cols, equal_row_height);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**

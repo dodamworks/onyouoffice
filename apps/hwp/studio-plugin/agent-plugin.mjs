@@ -36,7 +36,9 @@ import {
   MAX_COLUMN_GAP_MM,
   MAX_EQUATIONS,
   MAX_EQUATION_SCRIPT,
+  DATE_START,
   NUMBERED_MARKS,
+  NUMBERED_WITHOUT_SPACE,
   PAGE_NUMBER_PLACES,
   PAGE_NUMBER_SHAPES,
   PICTURE_WIDTH_MM,
@@ -50,10 +52,13 @@ import {
   contrastRatio,
   HEADER_FIELD_TOKENS,
   headerPieces,
+  markLengthOf,
+  markSkipOf,
   pageNumberOf as pageNumberSettingOf,
   rowEdgesAfterAdding,
   paragraphBorderOf,
   standInFont,
+  startsWithMark,
   tabStopsOf,
   tableLookBlocks,
   textColorOnFill,
@@ -194,6 +199,12 @@ export const EASY_WORDS_EVENT = 'ieum:easy-words'
  * with the fonts of the document that are not on this PC as its detail (`{ fonts }`).
  */
 export const MISSING_FONTS_EVENT = 'ieum:missing-fonts'
+/**
+ * The event fired on the editor's window when the pages come to carry marks of changes or
+ * stop carrying them (`{ shown }`): an AI change marked, the panel cleared them, or an
+ * edit of the user's own took them off.
+ */
+export const MARKS_EVENT = 'ieum:marks'
 /** The command that selects the word under the caret (a double click in the page). */
 const WORD_COMMAND = 'ext:ieum-select-word'
 /** The command that selects the paragraph under the caret (a triple click in the page). */
@@ -1530,6 +1541,17 @@ function containerOf(doc, hit) {
         style: parse(doc.getStyleAt(sec, k)).id,
         paraShape: parse(doc.getParaPropertiesAt(sec, k)).paraShapeId,
       }),
+      rect: (k, offset) => parse(doc.getCursorRect(sec, k, offset)),
+      props: (k) => parse(doc.getParaPropertiesAt(sec, k)),
+      diag: (k) => parse(doc.measureWidthDiagnostic(sec, k)),
+      line: (k, offset) => parse(doc.getLineInfo(sec, k, offset)),
+      setShape: (k, id) => expectOk(doc.setParaShapeId(sec, k, id), 'format the paragraph'),
+      objectBefore: (k, end) => bodyObjectBefore(doc, sec, k, end),
+      // the width the engine sets the paragraph's first line in: its column less its margins
+      columnPt: (k) =>
+        Number(parse(doc.measureWidthDiagnostic(sec, k)).lines?.[0]?.stored_segment_width_hwpunit) /
+        100,
+      charShapeAt: (k, offset) => parse(doc.getCharPropertiesAt(sec, k, offset)).charShapeId,
     }
   }
   const last = path[path.length - 1]
@@ -1545,6 +1567,48 @@ function containerOf(doc, hit) {
     // the engine cannot be asked this for a cell paragraph; the before/after check of the
     // callers (keepingObjects) is what protects an object there
     objectPositions: () => [],
+    rect: (k, offset) => parse(doc.getCursorRectByPath(sec, para, at(k), offset)),
+    charShapeAt: (k, offset) =>
+      parse(doc.getCellCharPropertiesAtByPath(sec, para, at(k), offset)).charShapeId,
+    props: (k) => parse(doc.getCellParaPropertiesAtByPath(sec, para, at(k))),
+    setShape: (k, id) =>
+      expectOk(doc.setCellParaShapeIdByPath(sec, para, at(k), id), 'format the paragraph'),
+    // the engine gives the places of the objects of a body paragraph only; here, the fields
+    objectBefore: (k, end) => {
+      for (let offset = 0; offset < end; offset++) {
+        if (parse(doc.getFieldInfoAtByPath(sec, para, at(k), offset)).inField) return true
+      }
+      return false
+    },
+    // the engine tells the lines of a cell paragraph by table and cell number only
+    line:
+      path.length === 1
+        ? (k, offset) =>
+            parse(doc.getLineInfoInCell(sec, para, last.controlIndex, last.cellIndex, k, offset))
+        : null,
+    columnPt:
+      path.length === 1
+        ? (k) => {
+            const kind = bodyControlsOf(doc, sec, para).find(
+              (control) => control.controlIndex === last.controlIndex,
+            )?.ctrlId
+            const cell =
+              kind === 'tbl'
+                ? parse(doc.getCellProperties(sec, para, last.controlIndex, last.cellIndex))
+                : null
+            const shape =
+              kind === 'gso' ? parse(doc.getShapeProperties(sec, para, last.controlIndex)) : null
+            const inner = cell
+              ? cell.width - cell.paddingLeft - cell.paddingRight
+              : shape
+                ? shape.width - shape.tbMarginLeft - shape.tbMarginRight
+                : NaN
+            const { marginLeft, marginRight } = parse(
+              doc.getCellParaPropertiesAtByPath(sec, para, at(k)),
+            )
+            return inner / 100 - ptOfPx(Number(marginLeft) + Number(marginRight))
+          }
+        : null,
     runLooks: (k, length) =>
       parse(doc.getCharShapeRunsInCellByPath(sec, para, at(k), 0, length)).map((run) =>
         parse(doc.getCellCharPropertiesAtByPath(sec, para, at(k), run.startOffset ?? 0)),
@@ -1653,6 +1717,39 @@ function objectsOf(doc, ignore = null) {
   }
 }
 
+/** Pictures among the drawn objects the engine names `gso`, as it names them. */
+const PICTURE_DESC = '그림'
+
+/**
+ * The controls of body paragraph `para` of section `sec` as the engine lists them (`ctrlId`,
+ * `userDesc`, `controlIndex`): it numbers the paragraphs of all sections in one run.
+ */
+function bodyControlsOf(doc, sec, para) {
+  let run = para
+  for (let earlier = 0; earlier < sec; earlier++) run += doc.getParagraphCount(earlier)
+  return parse(doc.getControls()).filter((control) => control.list === 0 && control.para === run)
+}
+
+/**
+ * Whether body paragraph `para` of section `sec` holds an object drawn before character
+ * `end`: a field (a click-here field shows its guide there), a table, a picture or any other
+ * control but those that set up the page and the memos, which take no room in the line.
+ */
+function bodyObjectBefore(doc, sec, para, end) {
+  const positions = parse(doc.getControlTextPositions(sec, para))
+  if (!positions.some((at) => at < end)) return false
+  const kinds = new Map(
+    bodyControlsOf(doc, sec, para).map((control) => [control.controlIndex, control.ctrlId]),
+  )
+  const besideMemos = memoFreeObjectPositions(doc, sec, para)
+  return positions.some(
+    (at, index) =>
+      at < end &&
+      !PAGE_CONTROLS.has(kinds.get(index)) &&
+      (kinds.get(index) !== '' || besideMemos.includes(at)),
+  )
+}
+
 /**
  * The places of the controls of a body paragraph, without the memos: a memo is a field
  * that the memo guard watches, not an object that a paragraph edit must step around.
@@ -1686,6 +1783,8 @@ const PARA_LENGTHS = {
   spacingBefore: { min: 0, max: 200, key: 'spacingBefore' },
   spacingAfter: { min: 0, max: 200, key: 'spacingAfter' },
 }
+/** The indent that hangs a paragraph by the width of its mark, measured paragraph by paragraph. */
+const HANG_BY_MARK = 'mark'
 /** What a paragraph's list may be: numbered, bulleted, or none (the head type the editor sets). */
 const LIST_KINDS = ['number', 'bullet', 'none']
 /** Levels a list paragraph may take (Hangul numbers seven). */
@@ -1847,8 +1946,13 @@ function formatOf(format, allowParagraph) {
   for (const [name, { min, max, key }] of Object.entries(PARA_LENGTHS)) {
     if (!given(name)) continue
     const points = format[name]
+    if (name === 'indent' && points === HANG_BY_MARK) {
+      paragraph.hangByMark = true
+      continue
+    }
     if (typeof points !== 'number' || !(points >= min && points <= max)) {
-      throw fail('BAD_ARGUMENT', `${name} must be ${min} to ${max} points`)
+      const mark = name === 'indent' ? `, or "${HANG_BY_MARK}"` : ''
+      throw fail('BAD_ARGUMENT', `${name} must be ${min} to ${max} points${mark}`)
     }
     paragraph[key] = Math.round(points * PARA_UNITS_PER_PT)
   }
@@ -1991,6 +2095,499 @@ function missingStyle(doc, spec) {
   }
   return null
 }
+
+/**
+ * Whether the words of the document are in the default look, the document's first paragraph
+ * style (바탕글) with no paragraph or character formatting of their own: `body` for the body
+ * paragraphs, `tables` for the cells of its tables, tables inside cells included (title
+ * boxes are tables too; null without a table). The engine cannot tell the style of a
+ * paragraph in a table inside a cell, so there its paragraph and character shapes decide.
+ * `unread`: the tables read so far are plain, but the budget for finding tables inside cells
+ * ran out before all were read.
+ */
+function plainLookOf(doc) {
+  const base = parse(doc.getStyleList())[0]
+  if (!base) return { body: false, tables: null }
+  const plain = (style, paraShape, charShapes) =>
+    style === base.id &&
+    paraShape === base.paraShapeId &&
+    charShapes.every((id) => id === base.charShapeId)
+  let body = true
+  for (let sec = 0; sec < doc.getSectionCount() && body; sec++) {
+    for (let para = 0; para < doc.getParagraphCount(sec) && body; para++) {
+      const length = doc.getParagraphLength(sec, para)
+      if (length <= 0 || !doc.getTextRange(sec, para, 0, length).replace(LEADING_CONTROLS, '')) {
+        continue
+      }
+      body = plain(
+        parse(doc.getStyleAt(sec, para)).id,
+        parse(doc.getParaPropertiesAt(sec, para)).paraShapeId,
+        parse(doc.getCharShapeRuns(sec, para, 0, length)).map(
+          (run) => parse(doc.getCharPropertiesAt(sec, para, run.startOffset ?? 0)).charShapeId,
+        ),
+      )
+    }
+  }
+  const { tables, partial } = tablesOf(doc, Infinity)
+  let cells = tables.length > 0 ? true : null
+  for (const table of tables) {
+    const control = table.path[table.path.length - 1].controlIndex
+    const nested = table.path.length > 1
+    for (let cell = 0; cell < table.cells && cells; cell++) {
+      const count = doc.getCellParagraphCountByPath(
+        table.sec,
+        table.para,
+        JSON.stringify(cellAt(table.path, cell, 0)),
+      )
+      for (let k = 0; k < count && cells; k++) {
+        const path = JSON.stringify(cellAt(table.path, cell, k))
+        const length = doc.getCellParagraphLengthByPath(table.sec, table.para, path)
+        if (length <= 0) continue
+        if (!doc.getTextInCellByPath(table.sec, table.para, path, 0, length).trim()) continue
+        cells = plain(
+          nested ? base.id : parse(doc.getCellStyleAt(table.sec, table.para, control, cell, k)).id,
+          parse(doc.getCellParaPropertiesAtByPath(table.sec, table.para, path)).paraShapeId,
+          parse(doc.getCharShapeRunsInCellByPath(table.sec, table.para, path, 0, length)).map(
+            (run) =>
+              parse(
+                doc.getCellCharPropertiesAtByPath(
+                  table.sec,
+                  table.para,
+                  path,
+                  run.startOffset ?? 0,
+                ),
+              ).charShapeId,
+          ),
+        )
+      }
+    }
+    if (!cells) break
+  }
+  return { body, tables: cells, ...(partial && cells ? { unread: true } : {}) }
+}
+
+// eslint-disable-next-line no-control-regex
+const CONTROL_HEAD = /^[\u0000-\u001f]+/
+
+/** The longest hang indent "mark" writes, in points: the tool's own indent range. */
+const MAX_HANG_PT = 100
+/**
+ * Marks whose widths differ by this much or less, in points, are the same mark: the caret
+ * places a width is read from are rounded to a tenth of a pixel.
+ */
+const SAME_MARK_PT = 0.3
+
+/**
+ * Whether the engine sets a character in the language slot of the one before it: ASCII other
+ * than letters and digits, controls, the no-break space and the soft hyphen.
+ */
+function takesSlotBefore(char) {
+  const code = char.codePointAt(0)
+  return code <= 0x7f ? !/[0-9A-Za-z]/.test(char) : code === 0xa0 || code === 0xad
+}
+
+const isHangulSyllable = (char) => char >= '\uac00' && char <= '\ud7a3'
+
+/**
+ * What the advance of the space at `at` of paragraph k, on the line `line` (line info), depends
+ * on besides its text, when that is known without the engine's language table: its character
+ * shape and the language slot it is drawn in (its width ratio and spacing). The engine draws a
+ * line in runs of one shape; a space takes the slot of the last character before it in its
+ * run that takes no slot from the one before it, else the run's first slot that is not the
+ * Hangul one, else the Hangul one. Hangul syllables share one slot; any other character
+ * stands for its own. Null where the slot is not known so.
+ */
+function spaceKey(box, k, chars, line, at) {
+  const shape = box.charShapeAt(k, at)
+  const inRun = (i) => i >= line.charStart && i < line.charEnd && box.charShapeAt(k, i) === shape
+  let before = at - 1
+  while (inRun(before) && takesSlotBefore(chars[before])) before -= 1
+  if (inRun(before)) {
+    return `${shape}/${isHangulSyllable(chars[before]) ? 'hangul' : chars[before]}`
+  }
+  for (let after = at + 1; inRun(after); after++) {
+    if (!takesSlotBefore(chars[after]) && !isHangulSyllable(chars[after])) return null
+  }
+  return `${shape}/hangul`
+}
+
+/**
+ * Note in `samples.estimated` the natural advance, in page pixels, of a space of each
+ * spaceKey that neither `samples.exact` nor it holds yet, from the runs of the first line of
+ * body paragraph k, aligned left or justified: the engine's diagnostic gives a run's natural
+ * width, and justification widens only its spaces, so the run less its characters as drawn,
+ * other than spaces, is its spaces' natural width. Only where the diagnostic's line is the
+ * paragraph's text as the carets count it, and only from a run without a tab, which the
+ * diagnostic measures at a default width. The diagnostic gives whole pixels, so this is an
+ * estimate.
+ */
+function firstLineSpaces(box, k, chars, samples) {
+  const line = box.diag?.(k)?.lines?.[0]
+  if (!line) return
+  const lead = chars.length - [...chars.join('').replace(CONTROL_HEAD, '')].length
+  const text = [...(line.runs ?? []).map((run) => run.text).join('')]
+  if (text.join('') !== chars.slice(lead, lead + text.length).join('')) return
+  const first = box.line(k, lead)
+  let at = lead
+  for (const run of line.runs) {
+    const runChars = [...run.text]
+    const start = at
+    at += runChars.length
+    const spaces = runChars.flatMap((char, i) => (char === ' ' ? [start + i] : []))
+    if (spaces.length === 0 || runChars.includes('\t')) continue
+    const key = spaceKey(box, k, chars, first, spaces[0])
+    if (key === null || samples.exact.has(key) || samples.estimated.has(key)) continue
+    if (spaces.some((space) => spaceKey(box, k, chars, first, space) !== key)) continue
+    const drawn = box.rect(k, at).x - box.rect(k, start).x
+    const drawnSpaces = spaces.reduce(
+      (sum, space) => sum + box.rect(k, space + 1).x - box.rect(k, space).x,
+      0,
+    )
+    samples.estimated.set(key, (Number(run.width_px) - (drawn - drawnSpaces)) / spaces.length)
+  }
+}
+
+/**
+ * Note in `advances` the natural advance, in page pixels, of a space of each spaceKey on the
+ * last line of paragraph k, aligned left or justified, which justification leaves as it is.
+ * Engine offsets count characters, as `chars` (the paragraph's text split into characters)
+ * does. The caret at the first character of a line reports the end of the line before it,
+ * so the space a later line starts with is not read.
+ */
+function lastLineSpaces(box, k, chars, advances) {
+  const length = chars.length
+  const line = box.line(k, length)
+  for (let at = line.charStart + 1; at < length; at++) {
+    if (chars[at] !== ' ') continue
+    const key = spaceKey(box, k, chars, line, at)
+    if (key === null || advances.has(key)) continue
+    advances.set(key, box.rect(k, at + 1).x - box.rect(k, at).x)
+  }
+}
+
+/**
+ * How far justification widened each space of the line `line` (line info) of paragraph k, in
+ * page pixels: the engine gives every space inside a justified line the same extra advance,
+ * none to the spaces the line starts or ends with, so it is the advance of a space inside the
+ * line as drawn less the natural advance in `advances` of a space of its spaceKey. Null when
+ * no space inside the line has one there.
+ */
+function lineWidening(box, k, chars, line, advances) {
+  let from = line.charStart
+  let to = line.charEnd
+  while (from < to && chars[from] === ' ') from += 1
+  while (to > from && chars[to - 1] === ' ') to -= 1
+  for (let at = from; at < to; at++) {
+    if (chars[at] !== ' ') continue
+    const advance = advances.get(spaceKey(box, k, chars, line, at))
+    if (advance !== undefined) return box.rect(k, at + 1).x - box.rect(k, at).x - advance
+  }
+  return null
+}
+
+/** The alignments a hang puts line 2 under the words after the mark in. */
+const HANGING_ALIGNMENTS = new Set(['left', 'justify'])
+
+/**
+ * How paragraph k hangs by its mark (markLengthOf, with `rule` when a style rule named it):
+ * `{ width }` in points to a tenth, the mark and the spaces round it as set without
+ * justification, in the font and size the paragraph has now. A justified line widens each
+ * space inside it by as much (lineWidening), so the mark is read where it is drawn less that
+ * much for each of its spaces after its first character. The widening is read off a space of
+ * the line whose natural advance `samples.exact` holds, from the last lines of the
+ * paragraphs measured with it, which are not widened, else `samples.estimated`
+ * (firstLineSpaces).
+ * Otherwise `{ skip }`, why it is not hung: `empty` (no words, not counted), `noMark`,
+ * `alignment` (right, centre or spread: line 2 is not set under the words there), `object`
+ * (a field, its guide or another object is drawn before or inside the mark; in a cell only
+ * its fields can be asked for), `split` (the mark runs over two lines, or fills the first of
+ * several), `tab` (a tab whose stop moves with the first line's indent or with a widened
+ * space before it), `noSpace` (no space of the line with a known natural advance) or
+ * `outOfRange` (a width not above 0, past MAX_HANG_PT or past half the column the paragraph
+ * stands in, when its width can be read).
+ */
+function markWidthOf(box, k, rule, samples) {
+  const length = box.length(k)
+  if (length <= 0) return { skip: 'empty' }
+  const chars = [...box.text(k, length)]
+  const lead = chars.length - [...chars.join('').replace(CONTROL_HEAD, '')].length
+  const words = chars.slice(lead).join('')
+  if (!words.trim()) return { skip: 'empty' }
+  const count = [...words.slice(0, markLengthOf(words, rule))].length
+  if (count === 0) return { skip: 'noMark' }
+  const props = box.props(k)
+  if (!HANGING_ALIGNMENTS.has(props.alignment)) return { skip: 'alignment' }
+  if (box.objectBefore(k, lead + count)) return { skip: 'object' }
+  const span = chars.slice(lead, lead + count)
+  const first = span.findIndex((char) => char !== ' ')
+  const tab = span.indexOf('\t')
+  if (tab >= 0 && Number(props.indent) > 0) return { skip: 'tab' }
+  const line = box.line(k, lead)
+  const lastLine = line.lineIndex === line.lineCount - 1
+  if (
+    box.line(k, lead + count - 1).lineIndex !== line.lineIndex ||
+    (!lastLine && lead + count >= line.charEnd)
+  ) {
+    return { skip: 'split' }
+  }
+  let px = box.rect(k, lead + count).x - box.rect(k, lead).x
+  if (props.alignment === 'justify' && !lastLine) {
+    // a tab runs to its stop whatever the spaces before it took, unless they move it on
+    if (tab >= 0 && span.slice(first, tab).includes(' ')) return { skip: 'tab' }
+    const spaces = span.filter((char, at) => char === ' ' && at > Math.max(first, tab)).length
+    if (spaces > 0) {
+      const widening =
+        lineWidening(box, k, chars, line, samples.exact) ??
+        lineWidening(box, k, chars, line, samples.estimated)
+      if (widening === null) return { skip: 'noSpace' }
+      px -= spaces * widening
+    }
+  }
+  const width = ptOfPx(px)
+  const column = box.columnPt(k)
+  if (!(width > 0) || width > MAX_HANG_PT || (column > 0 && width * 2 > column)) {
+    return { skip: 'outOfRange' }
+  }
+  return { width }
+}
+
+/**
+ * The answer for a format request whose only change is indent "mark" when none of `items`
+ * (`[box, k, rule]`) could be hung: nothing is changed then. Null otherwise.
+ */
+function markOnlyUnhung(spec, items) {
+  const markOnly =
+    spec.paragraph?.hangByMark &&
+    Object.keys(spec.paragraph).length === 1 &&
+    !spec.chars &&
+    !spec.font &&
+    !spec.style &&
+    !spec.charStyle
+  if (!markOnly) return null
+  const { measured, outcome } = measureHangs(items)
+  return measured.length === 0
+    ? { ok: false, reason: 'not_hung', hang: { ...outcome, hung: 0, apart: 0 } }
+    : null
+}
+
+/**
+ * Two hangByMarks outcomes as one: the counts added, the shapes out of reach (a count of the
+ * document, not of a style) taken once.
+ */
+function joinHangs(a, b) {
+  const joined = {}
+  for (const key of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    joined[key] =
+      key === 'unreachedShapes' ? Math.max(a[key] ?? 0, b[key] ?? 0) : (a[key] ?? 0) + (b[key] ?? 0)
+  }
+  return joined
+}
+
+/** Why indent "mark" left paragraphs unhung, by the reasons markWidthOf gives. */
+const HANG_SKIPS = ['noMark', 'alignment', 'object', 'split', 'tab', 'noSpace', 'outOfRange']
+
+/**
+ * Measure paragraphs for indent "mark" (`items` are `[box, k, rule]`), reading only:
+ * the widths to write and, by reason, how many are left as they are.
+ */
+function measureHangs(items) {
+  const measured = []
+  const left = []
+  const outcome = Object.fromEntries(HANG_SKIPS.map((reason) => [reason, 0]))
+  const samples = { exact: new Map(), estimated: new Map() }
+  // right, centred, spread and split lines move or widen their spaces, even on the last line
+  const sampled = items.filter(
+    ([box, k]) => box.length(k) > 0 && HANGING_ALIGNMENTS.has(box.props(k).alignment),
+  )
+  for (const [box, k] of sampled) {
+    lastLineSpaces(box, k, [...box.text(k, box.length(k))], samples.exact)
+  }
+  for (const [box, k] of sampled) {
+    firstLineSpaces(box, k, [...box.text(k, box.length(k))], samples)
+  }
+  for (const [box, k, rule] of items) {
+    const found = markWidthOf(box, k, rule, samples)
+    if (found.width === undefined) left.push([box, k])
+    if (found.skip && found.skip !== 'empty') outcome[found.skip] += 1
+    else if (!found.skip) measured.push({ box, k, width: found.width })
+  }
+  return { measured, outcome, left }
+}
+
+/**
+ * Give each of `items` (`[box, k]`) whose first-line indent the style change `change` moves
+ * the paragraph shape it had before, as a shape of its own: a hang the style takes for the
+ * lines with a mark does not reach a paragraph indent "mark" did not hang. Returns how many.
+ */
+function keepingIndents(items, change) {
+  const before = items.map(([box, k]) => ({ box, k, ...box.props(k) }))
+  change()
+  let kept = 0
+  for (const { box, k, indent, paraShapeId } of before) {
+    if (box.props(k).indent === indent) continue
+    box.setShape(k, paraShapeId)
+    kept += 1
+  }
+  return kept
+}
+
+/**
+ * Hang paragraphs by their marks (`items` are `[box, k, rule]`): each paragraph's lines after
+ * the first start where the words after its mark start. With `styleId` the style takes the
+ * width most of them have, and only the others are given an indent of their own. A paragraph
+ * markWidthOf gives no width keeps the indent it has (keepingIndents), an empty one too, as
+ * words typed there later are not a marked line; so do the paragraphs of the tables inside
+ * cells, whose style the engine cannot tell, as far as tablesOf finds those tables. Returns how many were hung,
+ * how many of those got one of their own under the style, how many were left, by reason, and
+ * how many of all those left were given the indent they had, and, when the style took a
+ * hang and `existed` before the call (a paragraph in a shape out of reach can have only such
+ * a style), how many drawn shapes stand where this plugin cannot look (shapesOutOfReach).
+ */
+function hangByMarks(doc, items, styleId = null, existed = true) {
+  const { measured, outcome, left } = measureHangs(items)
+  outcome.apart = 0
+  outcome.kept = 0
+  let common = null
+  if (styleId !== null && measured.length > 0) {
+    const alike = (width) =>
+      measured.filter((other) => Math.abs(other.width - width) <= SAME_MARK_PT).length
+    common = measured.reduce((best, entry) =>
+      alike(entry.width) > alike(best.width) ? entry : best,
+    ).width
+    const indent = -Math.round(common * PARA_UNITS_PER_PT)
+    const unreached = shapesOutOfReach(doc)
+    if (existed && unreached > 0) outcome.unreachedShapes = unreached
+    outcome.kept = keepingIndents([...left, ...nestedTableItems(doc)], () => {
+      if (!doc.updateStyleShapes(styleId, '{}', JSON.stringify({ indent }))) {
+        throw fail('ENGINE_REFUSED', 'the editor refused to change the style')
+      }
+    })
+  }
+  for (const { box, k, width } of measured) {
+    if (common !== null && Math.abs(width - common) <= SAME_MARK_PT) continue
+    box.formatParagraph(k, JSON.stringify({ indent: -Math.round(width * PARA_UNITS_PER_PT) }))
+    if (styleId !== null) outcome.apart += 1
+  }
+  return { ...outcome, hung: measured.length }
+}
+
+/** How many body paragraphs with words are in the document's first paragraph style (바탕글). */
+function defaultStyleParagraphs(doc) {
+  const base = parse(doc.getStyleList())[0]
+  let count = 0
+  for (let sec = 0; sec < doc.getSectionCount(); sec++) {
+    for (let para = 0; para < doc.getParagraphCount(sec); para++) {
+      const length = doc.getParagraphLength(sec, para)
+      if (length <= 0) continue
+      if (!doc.getTextRange(sec, para, 0, length).replace(LEADING_CONTROLS, '')) continue
+      if (parse(doc.getStyleAt(sec, para)).id === base?.id) count += 1
+    }
+  }
+  return count
+}
+
+/**
+ * The text boxes (and other drawn shapes that hold text) of the body, as `{ sec, para,
+ * control }`: the engine addresses one as a table of one cell, and refuses to count the
+ * paragraphs of a shape that holds no text.
+ */
+function bodyTextBoxes(doc) {
+  const shapes = parse(doc.getControls()).filter(
+    (control) =>
+      control.list === 0 && control.ctrlId === 'gso' && control.userDesc !== PICTURE_DESC,
+  )
+  const boxes = []
+  let run = 0
+  for (let sec = 0; sec < doc.getSectionCount(); sec++) {
+    const paragraphs = doc.getParagraphCount(sec)
+    for (const { para: at, controlIndex } of shapes) {
+      if (at < run || at >= run + paragraphs) continue
+      const para = at - run
+      const path = JSON.stringify([{ controlIndex, cellIndex: 0, cellParaIndex: 0 }])
+      if (tryOr(() => doc.getCellParagraphCountByPath(sec, para, path), 0) > 0) {
+        boxes.push({ sec, para, control: controlIndex })
+      }
+    }
+    run += paragraphs
+  }
+  return boxes
+}
+
+/**
+ * How many drawn shapes other than pictures stand in a table cell or in another shape: the
+ * engine lists them under the list they stand in, but no call this plugin makes reaches a
+ * paragraph in them by that list, so whether they hold text of a style is not known here.
+ */
+function shapesOutOfReach(doc) {
+  return parse(doc.getControls()).filter(
+    (control) =>
+      control.ctrlId === 'gso' && control.list !== 0 && control.userDesc !== PICTURE_DESC,
+  ).length
+}
+
+/**
+ * The paragraphs that have paragraph style `styleId`, as hang items: the body of every
+ * section, the cells of the tables in it and its text boxes. The engine reads the style of a
+ * cell paragraph by table and cell number only, so a table inside a cell is not looked into.
+ */
+function paragraphsOfStyle(doc, styleId) {
+  const items = []
+  for (let sec = 0; sec < doc.getSectionCount(); sec++) {
+    for (let para = 0; para < doc.getParagraphCount(sec); para++) {
+      if (parse(doc.getStyleAt(sec, para)).id !== styleId) continue
+      items.push([containerOf(doc, { sec, para }), para, null])
+    }
+  }
+  for (const table of tablesOf(doc).tables) {
+    if (table.path.length !== 1) continue
+    const control = table.path[0].controlIndex
+    for (let cell = 0; cell < table.cells; cell++) {
+      const count = doc.getCellParagraphCount(table.sec, table.para, control, cell)
+      for (let k = 0; k < count; k++) {
+        const style = parse(doc.getCellStyleAt(table.sec, table.para, control, cell, k)).id
+        if (style !== styleId) continue
+        const hit = { sec: table.sec, para: table.para, cellPath: cellAt(table.path, cell, k) }
+        items.push([containerOf(doc, hit), k, null])
+      }
+    }
+  }
+  for (const { sec, para, control } of bodyTextBoxes(doc)) {
+    const path = [{ controlIndex: control, cellIndex: 0, cellParaIndex: 0 }]
+    const count = doc.getCellParagraphCountByPath(sec, para, JSON.stringify(path))
+    for (let k = 0; k < count; k++) {
+      if (parse(doc.getCellStyleAt(sec, para, control, 0, k)).id !== styleId) continue
+      items.push([containerOf(doc, { sec, para, cellPath: cellAt(path, 0, k) }), k, null])
+    }
+  }
+  return items
+}
+
+/**
+ * The paragraphs the tables inside table cells hold, as `[box, k, words]` (`words`: it has
+ * some): the engine cannot tell their style, so indent "mark" reports those with words as
+ * unread instead of measuring them.
+ */
+function nestedTableItems(doc) {
+  const items = []
+  for (const table of tablesOf(doc, Infinity).tables) {
+    if (table.path.length < 2) continue
+    for (let cell = 0; cell < table.cells; cell++) {
+      const at = (k) => JSON.stringify(cellAt(table.path, cell, k))
+      const paragraphs = doc.getCellParagraphCountByPath(table.sec, table.para, at(0))
+      for (let k = 0; k < paragraphs; k++) {
+        const length = doc.getCellParagraphLengthByPath(table.sec, table.para, at(k))
+        const words =
+          length > 0 && !!doc.getTextInCellByPath(table.sec, table.para, at(k), 0, length).trim()
+        const hit = { sec: table.sec, para: table.para, cellPath: cellAt(table.path, cell, k) }
+        items.push([containerOf(doc, hit), k, words])
+      }
+    }
+  }
+  return items
+}
+
+/** How many paragraphs with words the tables inside table cells hold (nestedTableItems). */
+const nestedTableParagraphs = (doc) => nestedTableItems(doc).filter((item) => item[2]).length
 
 /**
  * Whether the paragraph has formatting of its own that applyStyle will keep: its paragraph
@@ -2223,14 +2820,16 @@ function resolveFormat(doc, spec) {
  * default numbering; a bullet by its character).
  */
 function paragraphFormatOf(doc, paragraph) {
-  const { list, tabs, ...rest } = paragraph
+  const { list, tabs, hangByMark: _measuredLater, ...rest } = paragraph
   if (tabs) {
     // a stop's place is counted from the left edge of the text, whatever the paragraph's
     // margins are, in twice the engine's unit; the right edge is the width of a column
-    // less the right margin the same call sets
-    const edge = columnWidthUnits(doc, 0) * 2 - (rest.marginRight ?? 0)
+    // less the right margin the same call sets. A .hwp keeps the doubled number as it is,
+    // and Hangul lays out a line again past a stop stored odd as out of reach, so every
+    // place is a whole unit doubled, as Hangul stores its own
+    const edge = 2 * (columnWidthUnits(doc, 0) - Math.round((rest.marginRight ?? 0) / 2))
     rest.tabStops = tabs.map((tab) => ({
-      position: tab.atMm === null ? edge : Math.round(((tab.atMm * 7200) / 25.4) * 2),
+      position: tab.atMm === null ? edge : 2 * Math.round((tab.atMm * 7200) / 25.4),
       type: tab.type,
       fill: tab.fill,
     }))
@@ -2832,6 +3431,12 @@ function pictureOf(base64, extension) {
 }
 
 function checkParagraphs(paragraphs) {
+  if (Array.isArray(paragraphs) && paragraphs.length > MAX_INSERTED_PARAGRAPHS) {
+    throw fail(
+      'BAD_ARGUMENT',
+      `paragraphs takes up to ${MAX_INSERTED_PARAGRAPHS}; send the rest in another call`,
+    )
+  }
   const valid =
     Array.isArray(paragraphs) &&
     paragraphs.length > 0 &&
@@ -2858,7 +3463,13 @@ function tableOf(rows) {
         row.every((cell) => typeof cell === 'string' && !CONTROL_CHARS.test(cell)),
     )
   const cols = valid ? Math.max(...rows.map((row) => row.length)) : 0
-  if (!valid || rows.length * cols > MAX_TABLE_CELLS) {
+  if (valid && rows.length * cols > MAX_TABLE_CELLS) {
+    throw fail(
+      'BAD_ARGUMENT',
+      `a new table takes up to ${MAX_TABLE_CELLS} cells; make it with fewer rows and add the rest with add_to_table in another call`,
+    )
+  }
+  if (!valid) {
     throw fail(
       'BAD_ARGUMENT',
       `rows must be a non-empty list of rows of one-line strings, at most ${MAX_TABLE_CELLS} cells`,
@@ -3093,6 +3704,9 @@ function tableNumberOf(doc, sec, para, control = null) {
   return index < 0 ? {} : { table: index + 1, tables: tables.length }
 }
 
+/** The heads Hangul numbers or marks a paragraph with in front of its text. */
+const NUMBERED_HEADS = new Set(['Number', 'Bullet', 'Outline'])
+
 /** Where an object can be anchored so that it stands on the page, not in the text. */
 const PAGE_ANCHORS = new Set(['Page', 'Paper'])
 
@@ -3132,13 +3746,13 @@ function tablesWiderThanColumn(doc) {
 }
 
 /**
- * Set the lines of a block of cells of a body table (`rect`, zero-based and inclusive) by
+ * Set the lines of a block of cells of a table (`rect`, zero-based and inclusive) by
  * border rules. Each cell gets all its changed edges in one call, and a line between two
  * cells of the block is the same on both: the engine carries a cell's edge over to its
  * neighbour, so two calls that disagree would leave the later one's line.
  */
 function setCellBorders(doc, table, grid, rect, rules, more = null) {
-  const control = table.path[0].controlIndex
+  const calls = tableCalls(doc, table)
   const borders = cellBorders(grid, rect, rules)
   let count = 0
   for (const cell of grid) {
@@ -3150,23 +3764,20 @@ function setCellBorders(doc, table, grid, rect, rules, more = null) {
     if (!inside) continue
     const props = { ...(more ?? {}), ...(borders.get(cell.cell) ?? {}) }
     if (Object.keys(props).length === 0) continue
-    expectOk(
-      doc.setCellProperties(table.sec, table.para, control, cell.cell, JSON.stringify(props)),
-      'format the cell',
-    )
+    expectOk(calls.setCellProps(cell.cell, JSON.stringify(props)), 'format the cell')
     count += 1
   }
   return count
 }
 
-/** The lines of a body table, as rowEdgesAfterAdding takes them. */
+/** The lines of a table, as rowEdgesAfterAdding takes them. */
 function rowEdgesOf(doc, table, grid) {
-  const control = table.path[0].controlIndex
+  const calls = tableCalls(doc, table)
   const edges = Array.from({ length: table.rows + 1 }, () => Array(table.cols).fill(null))
   const flagged = Array(table.rows).fill(false)
   const verticals = []
   for (const cell of grid) {
-    const props = parse(doc.getCellProperties(table.sec, table.para, control, cell.cell))
+    const props = calls.cellProps(cell.cell)
     if (props.isHeader === true) flagged[cell.row] = true
     for (let col = cell.col; col < cell.col + cell.colSpan; col++) {
       if (cell.row === 0) edges[0][col] = props.borderTop
@@ -3181,11 +3792,11 @@ function rowEdgesOf(doc, table, grid) {
 const sameLine = (one, other) =>
   one.type === other.type && one.width === other.width && one.color === other.color
 
-/** Draw the horizontal lines `edges` (as rowEdgesOf reads them) on a body table. */
+/** Draw the horizontal lines `edges` (as rowEdgesOf reads them) on a table. */
 function setRowEdges(doc, table, grid, edges) {
-  const control = table.path[0].controlIndex
+  const calls = tableCalls(doc, table)
   for (const cell of grid) {
-    const props = parse(doc.getCellProperties(table.sec, table.para, control, cell.cell))
+    const props = calls.cellProps(cell.cell)
     const top = edges[cell.row]?.[cell.col]
     const bottom = edges[cell.row + cell.rowSpan]?.[cell.col]
     const lines = {
@@ -3193,10 +3804,7 @@ function setRowEdges(doc, table, grid, edges) {
       ...(bottom && !sameLine(bottom, props.borderBottom) ? { borderBottom: bottom } : {}),
     }
     if (Object.keys(lines).length === 0) continue
-    expectOk(
-      doc.setCellProperties(table.sec, table.para, control, cell.cell, JSON.stringify(lines)),
-      'draw the lines of the table',
-    )
+    expectOk(calls.setCellProps(cell.cell, JSON.stringify(lines)), 'draw the lines of the table')
   }
 }
 
@@ -3229,16 +3837,16 @@ function columnSharesOf(list, cols) {
 }
 
 /**
- * How to give the columns of a body table the shares `shares` of its width (one per
+ * How to give the columns of a table the shares `shares` of its width (one per
  * column), the width of the table staying as it is: the engine's cell updates
  * (resizeTableCells, which wraps the cell text again) and the new widths in millimetres.
  * Null when a column has no cell of its own to read its width from.
  */
 function columnPlanOf(doc, table, shares) {
-  const control = table.path[0].controlIndex
+  const calls = tableCalls(doc, table)
   const cells = Array.from({ length: table.cells }, (_, cell) => {
-    const info = parse(doc.getCellInfo(table.sec, table.para, control, cell))
-    const props = parse(doc.getCellProperties(table.sec, table.para, control, cell))
+    const info = calls.cellInfo(cell)
+    const props = calls.cellProps(cell)
     return {
       cellIdx: cell,
       row: info.row,
@@ -3496,7 +4104,7 @@ function cellLookOf(given) {
  * part. An empty paragraph takes the characters too, for what is typed into it later.
  */
 function formatCellText(doc, table, grid, rect, format) {
-  const control = table.path[0].controlIndex
+  const calls = tableCalls(doc, table)
   for (const cell of grid) {
     const inside =
       cell.row + cell.rowSpan - 1 >= rect.top &&
@@ -3504,29 +4112,14 @@ function formatCellText(doc, table, grid, rect, format) {
       cell.col + cell.colSpan - 1 >= rect.left &&
       cell.col <= rect.right
     if (!inside) continue
-    const paragraphs = doc.getCellParagraphCount(table.sec, table.para, control, cell.cell)
+    const paragraphs = calls.paragraphCount(cell.cell)
     for (let k = 0; k < paragraphs; k++) {
       if (format.paragraph) {
-        expectOk(
-          doc.applyParaFormatInCell(table.sec, table.para, control, cell.cell, k, format.paragraph),
-          'format the cell text',
-        )
+        expectOk(calls.formatParagraph(cell.cell, k, format.paragraph), 'format the cell text')
       }
       if (format.chars) {
-        const length = doc.getCellParagraphLength(table.sec, table.para, control, cell.cell, k)
-        expectOk(
-          doc.applyCharFormatInCell(
-            table.sec,
-            table.para,
-            control,
-            cell.cell,
-            k,
-            0,
-            length,
-            format.chars,
-          ),
-          'format the cell text',
-        )
+        const length = calls.paragraphLength(cell.cell, k)
+        expectOk(calls.formatChars(cell.cell, k, 0, length, format.chars), 'format the cell text')
       }
     }
   }
@@ -3556,8 +4149,12 @@ function styleBatchOf(spec) {
   const standIns = []
   const styles = []
   if (spec.styles !== undefined && spec.styles !== null) {
-    if (!Array.isArray(spec.styles) || spec.styles.length > MAX_BATCH_STYLES) {
-      throw fail('BAD_ARGUMENT', `styles must be a list of at most ${MAX_BATCH_STYLES} styles`)
+    if (!Array.isArray(spec.styles)) throw fail('BAD_ARGUMENT', 'styles must be a list of styles')
+    if (spec.styles.length > MAX_BATCH_STYLES) {
+      throw fail(
+        'BAD_ARGUMENT',
+        `styles takes up to ${MAX_BATCH_STYLES}; send the rest in another call`,
+      )
     }
     for (const given of spec.styles) {
       if (!given || typeof given !== 'object' || Array.isArray(given)) {
@@ -3578,8 +4175,12 @@ function styleBatchOf(spec) {
   }
   const rules = []
   if (spec.apply !== undefined && spec.apply !== null) {
-    if (!Array.isArray(spec.apply) || spec.apply.length > MAX_STYLE_RULES) {
-      throw fail('BAD_ARGUMENT', `apply must be a list of at most ${MAX_STYLE_RULES} rules`)
+    if (!Array.isArray(spec.apply)) throw fail('BAD_ARGUMENT', 'apply must be a list of rules')
+    if (spec.apply.length > MAX_STYLE_RULES) {
+      throw fail(
+        'BAD_ARGUMENT',
+        `apply takes up to ${MAX_STYLE_RULES} rules; send the rest in another call`,
+      )
     }
     for (const given of spec.apply) {
       if (!given || typeof given !== 'object' || Array.isArray(given)) {
@@ -3650,20 +4251,26 @@ function titleBoxOf(spec) {
   if (!TITLE_BOX_LOOKS.includes(look)) {
     throw fail('BAD_ARGUMENT', `look must be one of ${TITLE_BOX_LOOKS.join(', ')}`)
   }
-  const colorOf = (value, what) => {
+  const colorOf = (value, what, more = '') => {
     if (value === undefined || value === null) return null
     if (typeof value !== 'string' || !HEX_COLOR.test(value)) {
-      throw fail('BAD_ARGUMENT', `${what} must look like #RRGGBB`)
+      throw fail('BAD_ARGUMENT', `${what} must look like #RRGGBB${more}`)
     }
     return value.toLowerCase()
   }
   const textColor = colorOf(given.textColor, 'textColor')
+  const boxColor = (value, what) =>
+    colorOf(
+      value,
+      what,
+      ': the colour of the bands, lines, frame or fill; the words take textColor',
+    )
   const standIns = []
   const text = {}
   for (const key of ['font', 'size', 'bold']) {
     if (given[key] !== undefined && given[key] !== null) text[key] = given[key]
   }
-  const color = colorOf(given.color, 'color') ?? TITLE_BOX_COLORS[look]
+  const color = boxColor(given.color, 'color') ?? TITLE_BOX_COLORS[look]
   // words that cannot be told from what is behind them are no title: bands, lines and a
   // frame leave the white page behind the words, and a fill may be as pale as the words
   const behind = look === 'shaded' ? color : '#ffffff'
@@ -3673,7 +4280,7 @@ function titleBoxOf(spec) {
   return {
     look,
     color,
-    color2: colorOf(given.color2, 'color2'),
+    color2: boxColor(given.color2, 'color2'),
     text: Object.keys(text).length > 0 ? standInFormat(text, standIns) : null,
     fillUnderOwnColour:
       look === 'shaded' && (textColor === null || textColorDropped) ? color : null,
@@ -4082,11 +4689,15 @@ const tableKey = (sec, para, path) =>
  * Every table of the document in reading order, a table inside a cell right after the table
  * it sits in. The engine lists the objects of a body paragraph but not those of a cell
  * paragraph, so a table inside a cell is found by asking for it; `partial` says the budget
- * for that ran out and tables inside cells may be missing from the end of the list.
+ * for that ran out before every cell paragraph was asked, so tables inside the cells asked
+ * after that are missing from the list. Tables
+ * are followed `depth` deep, MAX_TABLE_DEPTH unless asked for more, and `budget` engine calls
+ * (NESTED_CONTROLS_TRIED for each cell paragraph) are spent looking for tables inside cells.
  */
-function tablesOf(doc) {
+export function tablesOf(doc, depth = MAX_TABLE_DEPTH, budget = MAX_NESTED_LOOKUPS) {
   const tables = []
-  let lookups = MAX_NESTED_LOOKUPS
+  let lookups = budget
+  let cut = false
   const dimensions = (sec, para, path) => {
     try {
       return parse(doc.getTableDimensionsByPath(sec, para, JSON.stringify(path)))
@@ -4095,7 +4706,7 @@ function tablesOf(doc) {
       return null
     }
   }
-  const add = (sec, para, path, dims, parent, depth) => {
+  const add = (sec, para, path, dims, parent, level) => {
     const index = tables.length
     tables.push({
       sec,
@@ -4106,14 +4717,18 @@ function tablesOf(doc) {
       cells: dims.cellCount,
       parent,
     })
-    if (depth >= MAX_TABLE_DEPTH) return
-    for (let cell = 0; cell < dims.cellCount && lookups > 0; cell++) {
+    if (level >= depth) return
+    for (let cell = 0; cell < dims.cellCount && !cut; cell++) {
       const paragraphs = doc.getCellParagraphCountByPath(
         sec,
         para,
         JSON.stringify(cellAt(path, cell, 0)),
       )
-      for (let k = 0; k < paragraphs && lookups > 0; k++) {
+      for (let k = 0; k < paragraphs && !cut; k++) {
+        if (lookups <= 0) {
+          cut = true
+          break
+        }
         for (let inner = 0; inner < NESTED_CONTROLS_TRIED; inner++) {
           lookups -= 1
           const innerPath = [
@@ -4121,7 +4736,7 @@ function tablesOf(doc) {
             { controlIndex: inner, cellIndex: 0, cellParaIndex: 0 },
           ]
           const innerDims = dimensions(sec, para, innerPath)
-          if (innerDims) add(sec, para, innerPath, innerDims, index, depth + 1)
+          if (innerDims) add(sec, para, innerPath, innerDims, index, level + 1)
         }
       }
     }
@@ -4138,7 +4753,7 @@ function tablesOf(doc) {
       }
     }
   }
-  return { tables, partial: lookups <= 0 }
+  return { tables, partial: cut }
 }
 
 function holdsTable(doc, sec, para) {
@@ -4704,16 +5319,99 @@ function cutCellsOf(doc) {
 }
 
 /**
- * Table `number` (as listTables numbers them) when it sits in a body paragraph, with its
- * cells; otherwise a refusal. The engine merges and splits cells by table and cell number,
- * which cannot name a table inside another table's cell.
+ * Table `number` (as listTables numbers them) with its cells, a table inside another table's
+ * cell too; otherwise a refusal.
  */
-function bodyTable(doc, number) {
+function numberedTable(doc, number) {
   const { tables } = tablesOf(doc)
   const table = Number.isInteger(number) ? tables[number - 1] : undefined
   if (!table) return { refusal: { ok: false, reason: 'no_such_table', count: tables.length } }
-  if (table.path.length > 1) return { refusal: { ok: false, reason: 'unsupported_place' } }
   return { table, grid: gridOf(doc, table) }
+}
+
+/**
+ * What the engine answers when an edit of a table inside a cell would have to move the
+ * objects its cell borders are drawn with (rhwp patch 0055). That is not done yet: the tools
+ * answer it as they answered every table inside a cell before.
+ */
+const DRAWN_BORDERS_REFUSAL = '칸 테두리를 개체로 그린'
+
+/** Whether an engine failure is its refusal of a table whose cell borders are drawn by objects. */
+const isDrawnBordersRefusal = (thrown) =>
+  String(thrown instanceof Error ? thrown.message : thrown).includes(DRAWN_BORDERS_REFUSAL)
+
+/**
+ * Run `edit`, a change of one table; when the engine refused it because the table is one
+ * inside a cell whose borders are drawn by objects (the change rolled back), answer
+ * `refusal()` instead.
+ */
+function refusingDrawnBorders(refusal, edit) {
+  try {
+    return edit()
+  } catch (thrown) {
+    if (isDrawnBordersRefusal(thrown)) return refusal()
+    throw thrown
+  }
+}
+
+/**
+ * The engine's calls on one table. A body table takes the calls by table and cell number, as
+ * it always did; a table inside another table's cell takes the same calls by its cell path,
+ * which change that table alone (rhwp patch 0055).
+ */
+function tableCalls(doc, table) {
+  const { sec, para, path } = table
+  if (path.length === 1) {
+    const control = path[0].controlIndex
+    return {
+      dimensions: () => parse(doc.getTableDimensions(sec, para, control)),
+      cellInfo: (cell) => parse(doc.getCellInfo(sec, para, control, cell)),
+      cellProps: (cell) => parse(doc.getCellProperties(sec, para, control, cell)),
+      setCellProps: (cell, json) => doc.setCellProperties(sec, para, control, cell, json),
+      paragraphCount: (cell) => doc.getCellParagraphCount(sec, para, control, cell),
+      paragraphLength: (cell, k) => doc.getCellParagraphLength(sec, para, control, cell, k),
+      paraProps: (cell, k) => parse(doc.getCellParaPropertiesAt(sec, para, control, cell, k)),
+      formatParagraph: (cell, k, json) =>
+        doc.applyParaFormatInCell(sec, para, control, cell, k, json),
+      formatChars: (cell, k, start, end, json) =>
+        doc.applyCharFormatInCell(sec, para, control, cell, k, start, end, json),
+      resizeCells: (json) => doc.resizeTableCells(sec, para, control, json),
+      insertRow: (row, below) => doc.insertTableRow(sec, para, control, row, below),
+      insertColumn: (col, right) => doc.insertTableColumn(sec, para, control, col, right),
+      deleteRow: (row) => doc.deleteTableRow(sec, para, control, row),
+      deleteColumn: (col) => doc.deleteTableColumn(sec, para, control, col),
+      merge: (top, left, bottom, right) =>
+        doc.mergeTableCells(sec, para, control, top, left, bottom, right),
+      unmerge: (row, col) => doc.splitTableCell(sec, para, control, row, col),
+      split: (row, col, rows, cols) =>
+        doc.splitTableCellInto(sec, para, control, row, col, rows, cols, true, false),
+    }
+  }
+  const json = JSON.stringify(path)
+  const at = (cell, k) => JSON.stringify(cellAt(path, cell, k))
+  return {
+    dimensions: () => parse(doc.getTableDimensionsByPath(sec, para, json)),
+    cellInfo: (cell) => parse(doc.getCellInfoByPath(sec, para, at(cell, 0))),
+    cellProps: (cell) => parse(doc.getCellPropertiesByPath(sec, para, json, cell)),
+    setCellProps: (cell, props) => doc.setCellPropertiesByPath(sec, para, json, cell, props),
+    paragraphCount: (cell) => doc.getCellParagraphCountByPath(sec, para, at(cell, 0)),
+    paragraphLength: (cell, k) => doc.getCellParagraphLengthByPath(sec, para, at(cell, k)),
+    paraProps: (cell, k) => parse(doc.getCellParaPropertiesAtByPath(sec, para, at(cell, k))),
+    formatParagraph: (cell, k, props) =>
+      doc.applyParaFormatInCellByPath(sec, para, at(cell, k), props),
+    formatChars: (cell, k, start, end, props) =>
+      doc.applyCharFormatInCellByPath(sec, para, at(cell, k), start, end, props),
+    resizeCells: (updates) => doc.resizeTableCellsByPath(sec, para, json, updates),
+    insertRow: (row, below) => doc.insertTableRowByPath(sec, para, json, row, below),
+    insertColumn: (col, right) => doc.insertTableColumnByPath(sec, para, json, col, right),
+    deleteRow: (row) => doc.deleteTableRowByPath(sec, para, json, row),
+    deleteColumn: (col) => doc.deleteTableColumnByPath(sec, para, json, col),
+    merge: (top, left, bottom, right) =>
+      doc.mergeTableCellsByPath(sec, para, json, top, left, bottom, right),
+    unmerge: (row, col) => doc.splitTableCellByPath(sec, para, json, row, col),
+    split: (row, col, rows, cols) =>
+      doc.splitTableCellIntoByPath(sec, para, json, row, col, rows, cols, true, false),
+  }
 }
 
 /** The cells of a table with the place each takes: zero-based row and column, and its spans. */
@@ -5820,7 +6518,146 @@ function columnsOf(doc, sec) {
   }
   const count = Number.isInteger(def?.columnCount) && def.columnCount > 1 ? def.columnCount : 1
   const gapPt = count > 1 && Number.isFinite(def.spacing) ? Math.max(0, def.spacing) / 100 : 0
-  return { count, gapPt }
+  const line = count > 1 ? (COLUMN_LINE_TYPES[def.separatorType] ?? null) : null
+  return { count, gapPt, line }
+}
+
+/**
+ * The line setColumns left stored between the columns when none was asked for; in one
+ * column it is not drawn, and it comes back with the columns.
+ */
+function keptLine(doc) {
+  let def = null
+  try {
+    def = parse(doc.getColumnDef(0))
+  } catch {
+    // an engine without the call: no line
+  }
+  const line = COLUMN_LINE_TYPES[def?.separatorType] ?? null
+  return line ? { line, lineKept: true } : {}
+}
+
+/** The lines set_columns draws between columns. */
+const COLUMN_LINES = ['none', 'solid', 'dashed', 'dotted']
+
+/** Every line a document may have between its columns, by the type the engine stores. */
+const COLUMN_LINE_TYPES = [
+  null,
+  'solid',
+  'dashed',
+  'dotted',
+  'dash-dot',
+  'dash-dot-dot',
+  'long-dash',
+  'circles',
+]
+
+/**
+ * Whether the number of columns changes within the document (Hangul's 다단 설정 나누기, as
+ * a test-paper form has a head in one column over a body in two): a column definition in a
+ * paragraph that does not start a section. The engine lists the objects of every section's
+ * body as one run of paragraphs, so a section's start is where its definition stands.
+ */
+function columnsChangeWithin(doc) {
+  try {
+    const controls = parse(doc.getControls())
+    const starts = new Set(
+      controls
+        .filter((control) => control.ctrlId === 'secd')
+        .map((control) => `${control.list}/${control.para}`),
+    )
+    return controls.some(
+      (control) => control.ctrlId === 'cold' && !starts.has(`${control.list}/${control.para}`),
+    )
+  } catch {
+    return false
+  }
+}
+
+/**
+ * The columns the text runs in at body paragraph `para` of section `sec`: how many and how
+ * wide one is, in points, and `lineWidthPt`, how wide the paragraph's first line may run
+ * where it is laid out (always after a mid-section definition, given `line` in the columns
+ * a section starts with); null where that cannot be read. A section starts in the columns
+ * getColumnDef reads. No engine call reads a column definition set part way through it (as
+ * a test-paper form sets two columns under a head in one), so after one the columns are
+ * read from where the paragraph's lines are laid out (columnsWhereLaid).
+ */
+function columnsAt(doc, sec, para, { line = false } = {}) {
+  let first = 0
+  for (let s = 0; s < sec; s++) first += doc.getParagraphCount(s)
+  let controls = []
+  try {
+    controls = parse(doc.getControls())
+  } catch {
+    // an engine without the call: the section's own columns
+  }
+  const starts = new Set(
+    controls.filter((control) => control.ctrlId === 'secd').map((control) => control.para),
+  )
+  const laterDefinition = controls.some(
+    (control) =>
+      control.ctrlId === 'cold' &&
+      control.list === 0 &&
+      !starts.has(control.para) &&
+      control.para > first &&
+      control.para <= first + para,
+  )
+  if (laterDefinition) return columnsWhereLaid(doc, sec, para)
+  const { count } = columnsOf(doc, sec)
+  const laid = line && count > 1 ? columnsWhereLaid(doc, sec, para) : null
+  return {
+    count,
+    widthPt: columnWidthPt(doc, sec),
+    ...(laid?.lineWidthPt ? { lineWidthPt: laid.lineWidthPt } : {}),
+  }
+}
+
+/**
+ * The columns body paragraph `para` of section `sec` is laid out in, read from its page:
+ * each part of a page that runs in other columns has columns of its own from where it
+ * starts, so the paragraph's are those of the last part that starts above its first line,
+ * and the one of them its first line stands in. A part narrower than the text area runs in
+ * columns. Null where the paragraph has no layout.
+ */
+function columnsWhereLaid(doc, sec, para) {
+  let caret
+  let tree
+  try {
+    caret = parse(doc.getCursorRect(sec, para, 0))
+    tree = parse(doc.getPageRenderTree(caret.pageIndex))
+  } catch {
+    return null
+  }
+  let body = null
+  const columns = []
+  const gather = (node, column) => {
+    if (node.type === 'Table' || node.type === 'Header' || node.type === 'Footer') return
+    if (node.type === 'Body' && node.bbox) body = node.bbox
+    if (node.type === 'Column' && node.bbox) {
+      column = { ...node.bbox, lines: [] }
+      columns.push(column)
+    }
+    if (node.type === 'TextLine' && column && node.bbox) column.lines.push(node.bbox)
+    for (const child of node.children ?? []) gather(child, column)
+  }
+  gather(tree, null)
+  const above = columns.filter((column) => column.y <= caret.y + 1)
+  if (!body || above.length === 0) return null
+  const top = Math.max(...above.map((column) => column.y))
+  const part = above.filter((column) => Math.abs(column.y - top) < 1)
+  const here = part.find((column) => caret.x >= column.x - 1 && caret.x <= column.x + column.w + 1)
+  if (!here) return null
+  const line = here.lines.find(
+    (box) => box.y <= caret.y + caret.height && box.y + Math.max(box.h, 1) >= caret.y,
+  )
+  const pt = (px) => (px * 72) / 96
+  return {
+    // a column with no line on the page has no box of its own
+    count: here.w < body.w - 1 ? Math.max(2, part.length) : 1,
+    widthPt: Math.floor(pt(Math.min(...part.map((column) => column.w)))),
+    ...(line ? { lineWidthPt: Math.floor(pt(Math.min(line.w, here.x + here.w - line.x))) } : {}),
+  }
 }
 
 /**
@@ -5872,6 +6709,250 @@ function floatAcrossColumns(doc, sec, para, control) {
     ),
     'lay the table across the columns',
   )
+}
+
+/** The engine's units in one pixel of its layout (96 pixels and 7200 units to the inch). */
+const UNITS_PER_PX = 75
+
+/** How far a row may stand from what its text needs and still count as fitted to it. */
+const FITTED_SLACK = Math.round(0.2 * HWPUNIT_PER_MM)
+
+/**
+ * Every table of the document's first paragraph that lies across two or more columns, in
+ * order, with `key`: what its rows are drawn from as the document holds it (its cells, their
+ * text and the looks of their paragraphs and characters, the page and the columns). Reads no
+ * layout: a change that left the key as it was did not touch the table.
+ */
+function headTablesOf(doc) {
+  if (doc.getSectionCount() === 0 || doc.getParagraphCount(0) === 0) return []
+  if (columnsOf(doc, 0).count < 2) return []
+  const page = `${doc.getPageDef(0)}${doc.getColumnDef(0)}`
+  const heads = []
+  const controls = parse(doc.getControlTextPositions(0, 0)).length
+  for (let control = 0; control < controls; control++) {
+    if (!placementOf(doc, 0, 0, control).across) continue
+    try {
+      heads.push({ control, key: `${page}${headKeyOf(doc, control)}` })
+    } catch {
+      // a table whose cells cannot be read is left as it is, and no change waits on it
+    }
+  }
+  return heads
+}
+
+function headKeyOf(doc, control) {
+  const dims = doc.getTableDimensions(0, 0, control)
+  // the text and the looks of its characters, from the table's own HTML; the spacing of
+  // its paragraphs and the cells' sizes are not in it
+  const parts = [
+    dims,
+    doc.getTableProperties(0, 0, control),
+    doc.exportControlHtml(0, 0, '[]', control),
+  ]
+  const cells = parse(dims).cellCount
+  for (let cell = 0; cell < cells; cell++) {
+    parts.push(doc.getCellProperties(0, 0, control, cell))
+    const paragraphs = doc.getCellParagraphCount(0, 0, control, cell)
+    for (let k = 0; k < paragraphs; k++)
+      parts.push(doc.getCellParaPropertiesAt(0, 0, control, cell, k))
+  }
+  return parts.join('\n')
+}
+
+/**
+ * A head table as it is laid out, read without changing it: each cell on its first page
+ * with its row, the rows it spans, its stored height and the height its text needs (from
+ * where its first line starts to where its last one ends, the space before its first
+ * paragraph, and its padding; null where the caret cannot stand in it), and the drawn
+ * height of each row (a row drawn only by merged cells has none). Null when the table has
+ * no layout.
+ */
+function measureHead(doc, control) {
+  let boxes
+  try {
+    boxes = parse(doc.getTableCellBboxes(0, 0, control))
+  } catch {
+    return null
+  }
+  if (!Array.isArray(boxes) || boxes.length === 0) return null
+  const page = Math.min(...boxes.map((box) => box.pageIndex))
+  const drawn = []
+  const cells = boxes
+    .filter((box) => box.pageIndex === page)
+    .map((box) => {
+      if (box.rowSpan === 1) {
+        drawn[box.row] = Math.max(drawn[box.row] ?? 0, Math.round(box.h * UNITS_PER_PX))
+      }
+      const props = parse(doc.getCellProperties(0, 0, control, box.cellIdx))
+      return {
+        cell: box.cellIdx,
+        row: box.row,
+        rowSpan: box.rowSpan,
+        stored: props.height,
+        need: textNeedOf(doc, control, box.cellIdx, props, page),
+      }
+    })
+  return { cells, drawn }
+}
+
+function textNeedOf(doc, control, cell, props, page) {
+  const caret = (para, offset) =>
+    parse(
+      doc.getCursorRectByPathNear(
+        0,
+        0,
+        JSON.stringify([{ controlIndex: control, cellIndex: cell, cellParaIndex: para }]),
+        offset,
+        page,
+      ),
+    )
+  try {
+    const last = doc.getCellParagraphCount(0, 0, control, cell) - 1
+    const top = caret(0, 0)
+    const end = caret(last, doc.getCellParagraphLength(0, 0, control, cell, last))
+    if (top.pageIndex !== end.pageIndex) return null
+    const lines = Math.round((end.y + end.height - top.y) * UNITS_PER_PX)
+    // the space before its first paragraph lies above its lines and the engine grows the
+    // row for it (not for the space after its last); paragraph spacing reads back in pixels
+    // of twice the engine's units
+    const before = Number(parse(doc.getCellParaPropertiesAt(0, 0, control, cell, 0)).spacingBefore)
+    const space = Number.isFinite(before) ? Math.round((before * UNITS_PER_PX) / 2) : 0
+    return lines + space + props.paddingTop + props.paddingBottom
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Per row of a measured head: the highest stored height of its own cells (none for a row of
+ * merged cells only) and what its text needs (null where a cell's need cannot be read). A
+ * merged cell needs of each row it spans what its text needs over them, less what its other
+ * rows store.
+ */
+function headRowsOf({ cells }) {
+  const stored = []
+  const need = []
+  const add = (row, value) => {
+    if (need[row] === null) return
+    need[row] = value === null ? null : Math.max(need[row] ?? 0, value)
+  }
+  for (const cell of cells) {
+    if (cell.rowSpan !== 1) continue
+    stored[cell.row] = Math.max(stored[cell.row] ?? 0, cell.stored)
+    add(cell.row, cell.need)
+  }
+  for (const cell of cells) {
+    if (cell.rowSpan === 1) continue
+    const rows = Array.from({ length: cell.rowSpan }, (_, k) => cell.row + k)
+    const spanned = rows.reduce((sum, row) => sum + (stored[row] ?? 0), 0)
+    for (const row of rows) {
+      add(row, cell.need === null ? null : cell.need - (spanned - (stored[row] ?? 0)))
+    }
+  }
+  return { stored, need }
+}
+
+const rowCountOf = ({ cells }) => Math.max(0, ...cells.map((cell) => cell.row + cell.rowSpan))
+
+/**
+ * Settle the head tables a change touched (their key moved from `before`, a Map by control
+ * of the heads measured before it): a row the change made taller that stores less than it
+ * draws gets its drawn height, as the engine starts the other columns below the stored row
+ * heights, which text growing in a cell does not change; a table that was not a head before
+ * is measured against its stored heights. No row is lowered. `taller` names the rows that
+ * were fitted to their text and now store more than it needs: only row_height_mm lowers
+ * them. Tables the change did not touch are not read.
+ */
+function settleHeads(doc, before) {
+  const heads = new Map()
+  const taller = []
+  const raised = new Set()
+  for (const { control, key } of headTablesOf(doc)) {
+    const was = before.get(control)
+    if (was?.key === key) {
+      heads.set(control, was)
+      continue
+    }
+    let now = measureHead(doc, control)
+    if (!now) continue
+    for (const cell of now.cells) {
+      if (cell.rowSpan !== 1) continue
+      const drawn = now.drawn[cell.row]
+      if (was?.measured && !(drawn > (was.measured.drawn[cell.row] ?? 0) + UNITS_PER_PX)) continue
+      if (cell.stored < drawn - UNITS_PER_PX) {
+        expectOk(
+          doc.setCellProperties(0, 0, control, cell.cell, JSON.stringify({ height: drawn })),
+          'fit the head table',
+        )
+        raised.add(control)
+      }
+    }
+    if (raised.has(control)) now = measureHead(doc, control)
+    if (was?.measured && now && rowCountOf(was.measured) === rowCountOf(now)) {
+      taller.push(...rowsLeftTaller(doc, control, was.measured, now))
+    }
+    if (now) heads.set(control, { key, measured: now })
+  }
+  if (raised.size > 0) {
+    for (const head of headTablesOf(doc)) {
+      if (raised.has(head.control) && heads.has(head.control))
+        heads.get(head.control).key = head.key
+    }
+  }
+  return { heads, taller }
+}
+
+/**
+ * Give the `count` rows a change added to a head table from row `first` (0-based) the height
+ * their own text needs, or that of the table's lowest other row where it is higher.
+ */
+function fitAddedRows(doc, control, measured, first, count) {
+  const { stored, need } = headRowsOf(measured)
+  const added = (row) => row >= first && row < first + count
+  const own = Math.max(0, ...need.filter((height, row) => added(row) && height != null))
+  const lowest = Math.min(...stored.filter((height, row) => !added(row) && height > 0))
+  const height = Math.max(own, Number.isFinite(lowest) ? lowest : 0)
+  if (height <= 0) return
+  for (const cell of measured.cells) {
+    if (cell.rowSpan !== 1 || !added(cell.row) || cell.stored === height) continue
+    expectOk(
+      doc.setCellProperties(0, 0, control, cell.cell, JSON.stringify({ height })),
+      'fit the head table',
+    )
+  }
+}
+
+/** The rows of a head that were fitted to their text before a change and now store more. */
+function rowsLeftTaller(doc, control, was, now) {
+  const before = headRowsOf(was)
+  const after = headRowsOf(now)
+  const left = []
+  after.stored.forEach((stored, row) => {
+    const fitted = before.stored[row]
+    const needed = before.need[row]
+    const needs = after.need[row]
+    if (stored === undefined || fitted === undefined || needed == null || needs == null) return
+    if (Math.abs(fitted - needed) > FITTED_SLACK || !(stored > needs + FITTED_SLACK)) return
+    const { table } = tableNumberOf(doc, 0, 0, control)
+    if (table) left.push({ table, row: row + 1, heightMm: mmOf(stored), needsMm: mmOf(needs) })
+  })
+  return left
+}
+
+/**
+ * The rows of a head, numbered from 1, that hold the cells `cells` (document cell numbers)
+ * and draw taller than they store: their text runs past them, and the other columns start
+ * over the head.
+ */
+function overflowingRowsOf(measured, cells) {
+  const { stored } = headRowsOf(measured)
+  const rows = new Set()
+  for (const cell of measured.cells) {
+    if (!cells.includes(cell.cell)) continue
+    const row = cell.row + cell.rowSpan - 1
+    if (measured.drawn[row] > (stored[row] ?? Infinity) + UNITS_PER_PX) rows.add(row + 1)
+  }
+  return [...rows].sort((a, b) => a - b)
 }
 
 function checkTocEntries(entries) {
@@ -6233,27 +7314,97 @@ function markRects(doc, mark) {
     : []
 }
 
-/** Body paragraphs per section. */
-function paragraphCounts(doc) {
-  const counts = []
-  const sections = doc.getSectionCount()
-  for (let sec = 0; sec < sections; sec++) counts.push(doc.getParagraphCount(sec))
-  return counts
+/**
+ * The table cell the `depth`-th step of a path is in, as a key: the body paragraph, the
+ * steps above it with their cell paragraphs, and its own table and cell.
+ */
+function cellKeyOf(sec, para, path, depth) {
+  const steps = path
+    .slice(0, depth + 1)
+    .map((step, k) =>
+      k === depth
+        ? `${step.controlIndex}.${step.cellIndex}`
+        : `${step.controlIndex}.${step.cellIndex}.${step.cellParaIndex}`,
+    )
+  return `${sec}:${para}:${steps.join('/')}`
 }
 
 /**
- * The marks of earlier changes, moved for a change that added or removed body paragraphs:
- * `at` is where it did (the first paragraph it made, or the one it removed). Marks inside
- * table cells keep their place: a change in a cell does not move the body.
+ * Body paragraphs per section, and the paragraphs of each table cell a mark sits in (at
+ * every level of a cell inside a cell), by cellKeyOf; null for a cell that cannot be read.
+ */
+function paragraphCounts(doc, marks) {
+  const body = []
+  const sections = doc.getSectionCount()
+  for (let sec = 0; sec < sections; sec++) body.push(doc.getParagraphCount(sec))
+  const cells = new Map()
+  for (const mark of marks) {
+    const path = Array.isArray(mark.path) ? mark.path : []
+    for (let depth = 0; depth < path.length; depth++) {
+      const key = cellKeyOf(mark.sec, mark.para, path, depth)
+      if (cells.has(key)) continue
+      let count = null
+      try {
+        const first = [...path.slice(0, depth), { ...path[depth], cellParaIndex: 0 }]
+        count = doc.getCellParagraphCountByPath(mark.sec, mark.para, JSON.stringify(first))
+      } catch {
+        // the cell is not there any more
+      }
+      cells.set(key, Number.isInteger(count) ? count : null)
+    }
+  }
+  return { body, cells }
+}
+
+/** An index moved for `delta` paragraphs made (or removed, below zero) at `from`; null if it went. */
+function shiftIndex(index, from, delta) {
+  if (delta > 0) return index >= from ? index + delta : index
+  if (index < from) return index
+  if (index < from - delta) return null
+  return index + delta
+}
+
+/**
+ * The marks of earlier changes, moved for a change that added or removed paragraphs: `at`
+ * is where it did (the first paragraph it made, or the one it removed). A change in the
+ * body moves the body paragraphs after it, with the tables in them; a change in a table
+ * cell moves the paragraphs after it in that cell, with the cells inside them.
  */
 function shiftMarks(marks, before, after, at) {
+  if (!at) return marks
+  const bodyDelta = (after.body[at.sec] ?? 0) - (before.body[at.sec] ?? 0)
+  const atPath = Array.isArray(at.path) && at.path.length > 0 ? at.path : null
+  if (!atPath) {
+    if (bodyDelta === 0) return marks
+    return marks.flatMap((mark) => {
+      if (mark.sec !== at.sec) return [mark]
+      const para = shiftIndex(mark.para, at.para, bodyDelta)
+      return para === null ? [] : [{ ...mark, para }]
+    })
+  }
+  // a change in a cell leaves the body as it is: what moved is in that cell
+  if (bodyDelta !== 0) return marks
+  const depth = atPath.length - 1
+  const key = cellKeyOf(at.sec, at.para, atPath, depth)
+  const was = before.cells.get(key)
+  const now = after.cells.get(key)
+  if (!Number.isInteger(was) || !Number.isInteger(now) || was === now) return marks
+  const from = atPath[depth].cellParaIndex
   return marks.flatMap((mark) => {
-    const delta = (after[mark.sec] ?? 0) - (before[mark.sec] ?? 0)
-    if (delta === 0 || !at || at.sec !== mark.sec) return [mark]
-    if (delta > 0) return [mark.para >= at.para ? { ...mark, para: mark.para + delta } : mark]
-    if (mark.para < at.para) return [mark]
-    if (mark.para < at.para - delta) return []
-    return [{ ...mark, para: mark.para + delta }]
+    const path = Array.isArray(mark.path) ? mark.path : []
+    if (
+      mark.sec !== at.sec ||
+      mark.para !== at.para ||
+      path.length <= depth ||
+      cellKeyOf(mark.sec, mark.para, path, depth) !== key
+    ) {
+      return [mark]
+    }
+    const cellParaIndex = shiftIndex(path[depth].cellParaIndex, from, now - was)
+    if (cellParaIndex === null) return []
+    const moved = [...path]
+    moved[depth] = { ...path[depth], cellParaIndex }
+    return [{ ...mark, path: moved }]
   })
 }
 
@@ -6404,6 +7555,10 @@ export const agentPlugin = {
     // the contents insertToc made in this document: the heading rows each wrote, squashed.
     // The document keeps no mark of them, so another document opened here starts with none.
     let contentsMade = []
+    // the head tables across the columns as the last change left them, by control, each with
+    // the key of what they were drawn from (headTablesOf), and the revision they are of
+    let headsKnown = new Map()
+    let headsRevision = -1
     host.events.on('document-swapped', () => {
       revision += 1
       contentsMade = []
@@ -6414,6 +7569,12 @@ export const agentPlugin = {
     let pictures = null
     // the places this plugin changed since the panel last cleared them, as they are now
     let marks = []
+    /** Keep `next` as the marks; the app hears when the pages come to carry some, or none. */
+    const setMarks = (next) => {
+      const was = marks.length > 0
+      marks = next
+      if (was !== marks.length > 0) announce(MARKS_EVENT, { shown: marks.length > 0 })
+    }
     // the memo panel: the memos as last read, whether its anchors are shown, which one is
     // picked, and how many memos the last copy in this editor would bring with it
     let memoKnown = null
@@ -6823,7 +7984,7 @@ export const agentPlugin = {
         foreign += 1
         // an edit of the user's own moves text under the marks: they would point astray
         if (marks.length > 0) {
-          marks = []
+          setMarks([])
           refreshMarks()
         }
         // the user's own edit can take a memo away and moves the memo anchors
@@ -6975,8 +8136,13 @@ export const agentPlugin = {
     const noteChange = (label, result, before, after) => {
       if (!result || result.ok === false) return
       const places = Array.isArray(result.marks) ? result.marks : result.place ? [result.place] : []
-      marks = shiftMarks(marks, before, after, result.shiftAt ?? places[0] ?? result.place ?? null)
-      if (!UNMARKED_CHANGES.has(label)) marks = [...marks, ...places].slice(0, MAX_MARKS)
+      const moved = shiftMarks(
+        marks,
+        before,
+        after,
+        result.shiftAt ?? places[0] ?? result.place ?? null,
+      )
+      setMarks(UNMARKED_CHANGES.has(label) ? moved : [...moved, ...places].slice(0, MAX_MARKS))
       // the memos may have changed with the text, and their anchors may have moved
       syncMemos({ notify: false })
       refreshMemoAnchors()
@@ -7311,6 +8477,24 @@ export const agentPlugin = {
      * given `approvedMemoIds` may take only those memos: when the document changed while the
      * user was asked and the change would now take another one, it is refused again.
      */
+    /**
+     * The head tables as measured before a change, by control: as the last change left them
+     * while nothing was edited since, or where the document still holds them as it did
+     * then, so a change of the body reads no layout.
+     */
+    const headsBefore = (doc) => {
+      if (headsRevision === revision) return headsKnown
+      const heads = new Map()
+      for (const { control, key } of headTablesOf(doc)) {
+        const known = headsKnown.get(control)
+        heads.set(
+          control,
+          known?.key === key ? known : { key, measured: measureHead(doc, control) },
+        )
+      }
+      return heads
+    }
+
     const change = (label, fn, options) => {
       const allowMemoRemoval = options?.allowMemoRemoval === true || options?.memoPolicy === 'allow'
       const approvedMemos = Array.isArray(options?.approvedMemoIds)
@@ -7327,9 +8511,14 @@ export const agentPlugin = {
           done = host.transaction(label, (tx) => {
             tx.deferPagination()
             const doc = tx.doc()
-            const before = paragraphCounts(doc)
+            // the marks as they were before: the cells they sit in are counted too
+            const marked = marks
+            const before = paragraphCounts(doc, marked)
             const watched = MEMO_CHANGES.has(label) || allowMemoRemoval ? null : memoEntriesOf(doc)
-            const result = fn(doc)
+            const known = headsBefore(doc)
+            const changed = fn(doc)
+            const { heads, taller } = settleHeads(doc, known)
+            const result = options?.settled ? options.settled(changed, heads) : changed
             if (watched && watched.length > 0) {
               const left = new Set(memoEntriesOf(doc).map((entry) => entry.id))
               const gone = watched.filter(
@@ -7344,7 +8533,15 @@ export const agentPlugin = {
                 throw failure
               }
             }
-            return { result, before, after: paragraphCounts(doc) }
+            return {
+              result:
+                taller.length > 0 && result?.ok === true
+                  ? { ...result, tallerRows: taller }
+                  : result,
+              before,
+              after: paragraphCounts(doc, marked),
+              heads,
+            }
           })
         } catch (thrown) {
           if (thrown && thrown.code === 'MEMO_REMOVAL_REQUIRES_APPROVAL') {
@@ -7360,6 +8557,8 @@ export const agentPlugin = {
           }
           throw thrown
         }
+        headsKnown = done.heads
+        headsRevision = revision
         noteChange(label, done.result, done.before, done.after)
         // a memo the user added, changed or removed in the panel is the user's own edit: an
         // AI run's undo must not take it back in place of the run's changes
@@ -7555,7 +8754,7 @@ export const agentPlugin = {
       /** One picture (its number from listPictures) as base64, for the model to look at. */
       readPicture: guarded((number) => {
         if (!Number.isInteger(number) || number < 1) {
-          throw fail('BAD_ARGUMENT', 'picture must be a positive integer from listPictures')
+          throw fail('BAD_ARGUMENT', 'picture must be a positive integer from list_pictures')
         }
         const picture = pictureList()[number - 1]
         if (!picture) return { ok: false, reason: 'no_such_picture', count: pictureList().length }
@@ -7833,9 +9032,11 @@ export const agentPlugin = {
           // a table across the columns is the head of the document: it goes in front of
           // the first paragraph. Anywhere else the text before it would stand in the first
           // column only, beside the table's place.
-          const { sec } = box.place(box.index, 0)
+          const { sec, para } = box.place(box.index, 0)
+          const columns = columnsAt(doc, sec, para)
+          if (!columns) return { ok: false, reason: 'columns_unknown', count: 1 }
           const head = where === 'before' && sec === 0 && box.index === 0
-          return look.across && columnsOf(doc, sec).count > 1 && !head
+          return look.across && columns.count > 1 && !head
             ? { ok: false, reason: 'not_at_start', count: 1 }
             : null
         })
@@ -7863,6 +9064,10 @@ export const agentPlugin = {
               // body cells are left-aligned unless told: a justified cell that wraps
               // stretches the spaces between its words
               const aligns = look.aligns ?? Array(table[0].length).fill('left')
+              // floated in one column too, so that columns set later start below it
+              const head = where === 'before' && here === 0 && at === 0 && !box.inTable
+              // the columns where the anchor is, which the new paragraph lies in too
+              const zone = box.inTable ? null : columnsAt(doc, here, box.place(at, 0).para)
               if (where === 'before') box.split(at, 0)
               else {
                 openAfter(box, at, plain)
@@ -7872,18 +9077,19 @@ export const agentPlugin = {
               // where the text runs in columns a table is one column wide, or as wide as
               // the page when it is to lie across them; in one column the paste shares the
               // text width by itself
-              const inColumns = box.inTable ? 1 : columnsOf(doc, place.sec).count
-              const across = look.across && inColumns > 1
+              const inColumns = zone?.count ?? 1
+              const across = look.across && (inColumns > 1 || head)
               // a table narrower than the text (an approval box, a small list) takes its
               // share of the width; one across the columns is always as wide as the page
               const narrow = !across && look.widthShare < 1
               const room =
-                (across || inColumns === 1
-                  ? textWidthPt(doc, place.sec)
-                  : columnWidthPt(doc, place.sec)) * (across ? 1 : look.widthShare)
+                (across || inColumns === 1 ? textWidthPt(doc, place.sec) : zone.widthPt) *
+                (across ? 1 : look.widthShare)
               const shares =
                 look.shares ??
-                (inColumns > 1 || narrow ? Array(table[0].length).fill(1 / table[0].length) : null)
+                (inColumns > 1 || narrow || across
+                  ? Array(table[0].length).fill(1 / table[0].length)
+                  : null)
               const columns = {
                 widths: shares ? shares.map((share) => Math.round(room * share * 10) / 10) : null,
                 aligns,
@@ -8263,7 +9469,10 @@ export const agentPlugin = {
           const box = containerOf(doc, picked.hit)
           if ((spec.paragraph && !box.formatParagraph) || (spec.style && !box.applyStyle))
             return refuse('unsupported_place')
-          const missing = missingStyle(doc, spec) ?? wordsSetApart(spec, [[box, box.index]])
+          const missing =
+            missingStyle(doc, spec) ??
+            wordsSetApart(spec, [[box, box.index]]) ??
+            markOnlyUnhung(spec, [[box, box.index, null]])
           if (missing) return { refusal: missing }
           return { box }
         }
@@ -8285,12 +9494,16 @@ export const agentPlugin = {
                 box.setCharShape(box.index, 0, length, charShape)
               if (paragraph) box.formatParagraph(box.index, paragraph)
               if (chars && length > 0) box.formatChars(box.index, 0, length, chars)
+              const hang = spec.paragraph?.hangByMark
+                ? hangByMarks(doc, [[box, box.index, null]])
+                : null
               mustKeep(before, objectsOf(doc))
               return {
                 ok: true,
                 inTable: box.inTable,
                 place: box.place(box.index, length),
                 ...(keptOwnLook ? { keptOwnLook: 1 } : {}),
+                ...(hang ? { hang } : {}),
               }
             },
             options,
@@ -8611,6 +9824,12 @@ export const agentPlugin = {
         const basedOn = spec.basedOn == null ? null : styleNameOf(spec.basedOn, 'basedOn')
         const nextStyle = spec.nextStyle == null ? null : styleNameOf(spec.nextStyle, 'nextStyle')
         const look = styleFormatOf(spec.format, type === PARAGRAPH_STYLE)
+        if (look?.paragraph?.hangByMark) {
+          throw fail(
+            'BAD_ARGUMENT',
+            `indent "${HANG_BY_MARK}" is measured on the paragraphs a style is given to, and a new style has none: give indent in points, or make and apply the style with style_paragraphs`,
+          )
+        }
         const plan = (doc) => {
           if (styleNameTaken(doc, name) || (englishName && styleNameTaken(doc, englishName))) {
             return { refusal: { ok: false, reason: 'style_exists' } }
@@ -8665,6 +9884,11 @@ export const agentPlugin = {
         const englishName =
           spec.englishName == null ? null : styleNameOf(spec.englishName, 'englishName')
         const nextStyle = spec.nextStyle == null ? null : styleNameOf(spec.nextStyle, 'nextStyle')
+        const names = (next) => ({
+          ...(rename ? { name: rename } : {}),
+          ...(englishName !== null ? { englishName } : {}),
+          ...(next ? { nextStyleId: next.id } : {}),
+        })
         const plan = (doc) => {
           const style = styleNamed(doc, wanted, null)
           if (!style) return { refusal: noSuchStyle(doc, null) }
@@ -8687,6 +9911,30 @@ export const agentPlugin = {
           }
           const next = nextStyle ? styleNamed(doc, nextStyle, PARAGRAPH_STYLE) : null
           if (nextStyle && !next) return { refusal: noSuchStyle(doc) }
+          if (look?.paragraph?.hangByMark && paragraphsOfStyle(doc, style.id).length === 0) {
+            throw fail(
+              'BAD_ARGUMENT',
+              `indent "${HANG_BY_MARK}" is measured on the paragraphs of a style, and this style has none: give indent in points, or apply the style with style_paragraphs`,
+            )
+          }
+          const markOnly =
+            look?.paragraph?.hangByMark &&
+            !look.chars &&
+            !look.font &&
+            Object.keys(look.paragraph).length === 1 &&
+            Object.keys(names(next)).length === 0
+          if (markOnly) {
+            const { measured, outcome } = measureHangs(paragraphsOfStyle(doc, style.id))
+            if (measured.length === 0) {
+              return {
+                refusal: {
+                  ok: false,
+                  reason: 'not_hung',
+                  hang: { ...outcome, hung: 0, apart: 0, unread: nestedTableParagraphs(doc) },
+                },
+              }
+            }
+          }
           return { style, next, look }
         }
         const refusal = host.read((doc) => plan(doc).refusal ?? null)
@@ -8696,19 +9944,26 @@ export const agentPlugin = {
           (doc) => {
             const { style, next, look } = plan(doc)
             if (!style) throw fail('CHANGED', 'the document changed mid-call')
-            const names = {
-              ...(rename ? { name: rename } : {}),
-              ...(englishName !== null ? { englishName } : {}),
-              ...(next ? { nextStyleId: next.id } : {}),
-            }
+            const renamed = names(next)
             if (
-              Object.keys(names).length > 0 &&
-              !doc.updateStyle(style.id, JSON.stringify(names))
+              Object.keys(renamed).length > 0 &&
+              !doc.updateStyle(style.id, JSON.stringify(renamed))
             ) {
               throw fail('ENGINE_REFUSED', 'the editor refused to change the style')
             }
             setStyleLook(doc, style.id, look)
-            return { ok: true, name: rename ?? style.name, kind: kindOf(style) }
+            const hang = look?.paragraph?.hangByMark
+              ? {
+                  ...hangByMarks(doc, paragraphsOfStyle(doc, style.id), style.id),
+                  unread: nestedTableParagraphs(doc),
+                }
+              : null
+            return {
+              ok: true,
+              name: rename ?? style.name,
+              kind: kindOf(style),
+              ...(hang ? { hang } : {}),
+            }
           },
           options,
         )
@@ -8724,8 +9979,7 @@ export const agentPlugin = {
        * or is left out for the whole table. `look` is a background alone (a string) or
        * `{ background, borders, verticalAlign }`. A border rule's sides are those of the
        * block; of a list of cells each one is a block of its own. A table inside another
-       * table's cell cannot be changed: the engine sets cell properties by table and cell
-       * number only.
+       * table's cell is changed by its cell path, the tables above it staying as they are.
        */
       formatCells: guarded((number, cells, look, options) => {
         const whole = cells === undefined || cells === null
@@ -8770,9 +10024,6 @@ export const agentPlugin = {
           const table = Number.isInteger(number) ? tables[number - 1] : undefined
           if (!table) {
             return { refusal: { ok: false, reason: 'no_such_table', count: tables.length } }
-          }
-          if (table.path.length > 1) {
-            return { refusal: { ok: false, reason: 'unsupported_place', count: tables.length } }
           }
           const grid = gridOf(doc, table)
           const outside = (missing) => ({
@@ -8836,90 +10087,117 @@ export const agentPlugin = {
         }
         const refusal = host.read((doc) => plan(doc).refusal ?? null)
         if (refusal) return refusal
-        return keepingObjects((mustKeep) =>
-          change(
-            'format-cells',
-            (doc) => {
-              const { table, grid, blocks, columns } = plan(doc)
-              if (!blocks) throw fail('CHANGED', 'the document changed mid-call')
-              const before = objectsOf(doc)
-              if (columns && columns.updates.length > 0) {
-                expectOk(
-                  doc.resizeTableCells(
-                    table.sec,
-                    table.para,
-                    table.path[0].controlIndex,
-                    JSON.stringify(columns.updates),
-                  ),
-                  'set the column widths',
-                )
-              }
-              let count = 0
-              for (const rect of blocks)
-                count += setCellBorders(doc, table, grid, rect, rules, props)
-              if (text) {
-                const format = resolveFormat(doc, text)
-                for (const rect of blocks) formatCellText(doc, table, grid, rect, format)
-                // cells whose text alone changed are counted too
-                if (count === 0) {
-                  count = grid.filter((cell) =>
-                    blocks.some(
-                      (rect) =>
-                        cell.row + cell.rowSpan - 1 >= rect.top &&
-                        cell.row <= rect.bottom &&
-                        cell.col + cell.colSpan - 1 >= rect.left &&
-                        cell.col <= rect.right,
-                    ),
-                  ).length
-                }
-              }
-              if (count === 0 && columns) count = columns.updates.length
-              mustKeep(before, objectsOf(doc))
-              // a diagonal runs through the words of its cell: say which cells hold some
-              const crossed = []
-              if (props.diagonalSlash > 0 || props.diagonalBackSlash > 0) {
-                const control = table.path[0].controlIndex
-                for (const cell of grid) {
-                  const inside = blocks.some(
-                    (rect) =>
-                      cell.row + cell.rowSpan - 1 >= rect.top &&
-                      cell.row <= rect.bottom &&
-                      cell.col + cell.colSpan - 1 >= rect.left &&
-                      cell.col <= rect.right,
-                  )
-                  if (!inside) continue
-                  const paragraphs = doc.getCellParagraphCount(
-                    table.sec,
-                    table.para,
-                    control,
-                    cell.cell,
-                  )
-                  let length = 0
-                  for (let k = 0; k < paragraphs && length === 0; k++) {
-                    length += doc.getCellParagraphLength(
-                      table.sec,
-                      table.para,
-                      control,
-                      cell.cell,
-                      k,
+        // the cells of a head table given a row height, for the answer once the change is done
+        let sized = null
+        let tableCount = 0
+        return refusingDrawnBorders(
+          () => ({ ok: false, reason: 'unsupported_place', count: tableCount }),
+          () =>
+            keepingObjects((mustKeep) =>
+              change(
+                'format-cells',
+                (doc) => {
+                  const { table, grid, blocks, columns } = plan(doc)
+                  if (!blocks) throw fail('CHANGED', 'the document changed mid-call')
+                  sized = null
+                  tableCount = tablesOf(doc).tables.length
+                  const calls = tableCalls(doc, table)
+                  const before = objectsOf(doc)
+                  if (columns && columns.updates.length > 0) {
+                    expectOk(
+                      calls.resizeCells(JSON.stringify(columns.updates)),
+                      'set the column widths',
                     )
                   }
-                  if (length > 0 && crossed.length < MAX_LISTED_MATCHES) {
-                    crossed.push({ row: cell.row + 1, col: cell.col + 1 })
+                  let count = 0
+                  for (const rect of blocks)
+                    count += setCellBorders(doc, table, grid, rect, rules, props)
+                  if (text) {
+                    const format = resolveFormat(doc, text)
+                    for (const rect of blocks) formatCellText(doc, table, grid, rect, format)
+                    // cells whose text alone changed are counted too
+                    if (count === 0) {
+                      count = grid.filter((cell) =>
+                        blocks.some(
+                          (rect) =>
+                            cell.row + cell.rowSpan - 1 >= rect.top &&
+                            cell.row <= rect.bottom &&
+                            cell.col + cell.colSpan - 1 >= rect.left &&
+                            cell.col <= rect.right,
+                        ),
+                      ).length
+                    }
                   }
-                }
-              }
-              return {
-                ok: true,
-                count,
-                place: { sec: table.sec, para: table.para, offset: 0, length: 0 },
-                ...(standIns.length > 0 ? { standIn: standIns } : {}),
-                ...(crossed.length > 0 ? { crossed } : {}),
-                ...(columns ? { columnWidthsMm: columns.widths } : {}),
-              }
-            },
-            options,
-          ),
+                  if (count === 0 && columns) count = columns.updates.length
+                  mustKeep(before, objectsOf(doc))
+                  // a diagonal runs through the words of its cell: say which cells hold some
+                  const crossed = []
+                  if (props.diagonalSlash > 0 || props.diagonalBackSlash > 0) {
+                    for (const cell of grid) {
+                      const inside = blocks.some(
+                        (rect) =>
+                          cell.row + cell.rowSpan - 1 >= rect.top &&
+                          cell.row <= rect.bottom &&
+                          cell.col + cell.colSpan - 1 >= rect.left &&
+                          cell.col <= rect.right,
+                      )
+                      if (!inside) continue
+                      const paragraphs = calls.paragraphCount(cell.cell)
+                      let length = 0
+                      for (let k = 0; k < paragraphs && length === 0; k++) {
+                        length += calls.paragraphLength(cell.cell, k)
+                      }
+                      if (length > 0 && crossed.length < MAX_LISTED_MATCHES) {
+                        crossed.push({ row: cell.row + 1, col: cell.col + 1 })
+                      }
+                    }
+                  }
+                  // a head table is a body table of the first paragraph
+                  if (
+                    props.height !== undefined &&
+                    table.path.length === 1 &&
+                    table.sec === 0 &&
+                    table.para === 0
+                  ) {
+                    sized = {
+                      control: table.path[0].controlIndex,
+                      cells: grid
+                        .filter((cell) =>
+                          blocks.some(
+                            (rect) =>
+                              cell.row + cell.rowSpan - 1 >= rect.top &&
+                              cell.row <= rect.bottom &&
+                              cell.col + cell.colSpan - 1 >= rect.left &&
+                              cell.col <= rect.right,
+                          ),
+                        )
+                        .map((cell) => cell.cell),
+                    }
+                  }
+                  return {
+                    ok: true,
+                    count,
+                    place: { sec: table.sec, para: table.para, offset: 0, length: 0 },
+                    ...(standIns.length > 0 ? { standIn: standIns } : {}),
+                    ...(crossed.length > 0 ? { crossed } : {}),
+                    ...(columns ? { columnWidthsMm: columns.widths } : {}),
+                  }
+                },
+                {
+                  ...options,
+                  // a head row set lower than its text, once the change raised what it grew:
+                  // the engine starts the other columns below the stored heights, so over it
+                  settled: (result, heads) => {
+                    const measured = sized && heads.get(sized.control)?.measured
+                    if (!measured || result?.ok !== true) return result
+                    const overflowing = overflowingRowsOf(measured, sized.cells)
+                    return overflowing.length > 0
+                      ? { ...result, overflowingRows: overflowing }
+                      : result
+                  },
+                },
+              ),
+            ),
         )
       }),
 
@@ -8928,10 +10206,11 @@ export const agentPlugin = {
        * look of a whole document in one call. `spec.styles` are paragraph styles with their
        * look (made from `basedOn`, 바탕글 when not given; a style the document already has by
        * that name is changed instead). `spec.apply` are rules: each gives a style to every
-       * body paragraph that starts with `startsWith` (leading spaces aside), or to the one
-       * paragraph `find` occurs in (a table cell too). A paragraph takes the first rule that
-       * names it. A paragraph given a style of this call takes its whole look, also where it
-       * had formatting of its own; one given a style the document already had keeps what it
+       * body paragraph that starts with `startsWith` (leading spaces aside, as
+       * startsWithMark reads it), or to the one paragraph `find` occurs in (a table cell
+       * too). Rules by `find` go first; any other paragraph takes the first rule that names
+       * it. A paragraph given a style of this call takes its whole look, also where it had
+       * formatting of its own; one given a style the document already had keeps what it
        * had set differently, as applying a style does. A font this PC is known to lack is
        * written as one of the same kind that it has (`standIn` in the answer).
        */
@@ -9004,33 +10283,67 @@ export const agentPlugin = {
               index,
               text: rule.startsWith,
               mark: rule.numbered ? NUMBERED_MARKS[rule.numbered] : null,
+              numbered: rule.numbered,
+              withoutSpace: rule.numbered ? (NUMBERED_WITHOUT_SPACE[rule.numbered] ?? null) : null,
             }))
             .filter((rule) => rule.text !== null || rule.mark !== null)
-          if (starts.length > 0) {
-            const sections = doc.getSectionCount()
-            for (let sec = 0; sec < sections; sec++) {
-              const paragraphs = doc.getParagraphCount(sec)
-              for (let para = 0; para < paragraphs; para++) {
-                const length = doc.getParagraphLength(sec, para)
-                if (length <= 0) continue
-                const head = doc
-                  .getTextRange(sec, para, 0, Math.min(length, MAX_STARTS_WITH * 3))
-                  // the controls a paragraph holds (its section definition, a table) come
-                  // before its words without being part of them
-                  .replace(LEADING_CONTROLS, '')
-                const rule = starts.find((candidate) =>
-                  candidate.mark ? candidate.mark.test(head) : head.startsWith(candidate.text),
-                )
-                if (rule) take(rule.index, { sec, para }, JSON.stringify([sec, para, null]))
-                if (targets.length > MAX_STYLED_PARAGRAPHS) {
-                  return {
-                    refusal: { ok: false, reason: 'too_many', limit: MAX_STYLED_PARAGRAPHS },
-                  }
+          const withoutSpace = []
+          const skipped = {}
+          const skippedOf = wanted.rules.map(() => 0)
+          const skip = (kind, head) => {
+            const found = skipped[kind] ?? { count: 0, first: head.slice(0, MAX_STARTS_WITH) }
+            found.count += 1
+            skipped[kind] = found
+          }
+          const sections = doc.getSectionCount()
+          for (let sec = 0; sec < sections; sec++) {
+            const paragraphs = doc.getParagraphCount(sec)
+            for (let para = 0; para < paragraphs; para++) {
+              const length = doc.getParagraphLength(sec, para)
+              if (length <= 0) continue
+              const head = doc
+                .getTextRange(sec, para, 0, Math.min(length, MAX_STARTS_WITH * 3))
+                // the controls a paragraph holds (its section definition, a table) come
+                // before its words without being part of them
+                .replace(LEADING_CONTROLS, '')
+              if (!head) continue
+              const key = JSON.stringify([sec, para, null])
+              const rule = starts.find((candidate) =>
+                candidate.mark ? candidate.mark.test(head) : startsWithMark(head, candidate.text),
+              )
+              if (rule) take(rule.index, { sec, para }, key)
+              else if (!taken.has(key)) {
+                if (starts.some((candidate) => candidate.withoutSpace?.test(head))) {
+                  withoutSpace.push(head.slice(0, MAX_STARTS_WITH))
+                }
+                for (const candidate of starts) {
+                  const kind =
+                    candidate.text !== null
+                      ? markSkipOf(head, candidate.text)
+                      : candidate.numbered === '1.' && DATE_START.test(head)
+                        ? 'date'
+                        : null
+                  if (!kind) continue
+                  skip(kind, head)
+                  skippedOf[candidate.index] += 1
+                  break
+                }
+              }
+              if (targets.length > MAX_STYLED_PARAGRAPHS) {
+                return {
+                  refusal: { ok: false, reason: 'too_many', limit: MAX_STYLED_PARAGRAPHS },
                 }
               }
             }
           }
-          return { targets, counts }
+          return {
+            targets,
+            counts,
+            withoutSpace,
+            skipped,
+            skippedOf,
+            byStart: starts.length > 0,
+          }
         }
         const refusal = host.read((doc) => plan(doc).refusal ?? null)
         if (refusal) return refusal
@@ -9039,14 +10352,14 @@ export const agentPlugin = {
             'style-paragraphs',
             (doc) => {
               const before = objectsOf(doc)
-              let made = 0
-              let changed = 0
+              const made = []
+              const changed = []
               // the styles first: the rules name them
               const looks = new Map()
               for (const style of wanted.styles) {
                 const found = styleNamed(doc, style.name, PARAGRAPH_STYLE)
                 let id = found?.id
-                if (found) changed += 1
+                if (found) changed.push(found.name)
                 else {
                   const base = style.basedOn
                     ? styleNamed(doc, style.basedOn, null)
@@ -9068,7 +10381,7 @@ export const agentPlugin = {
                   if (!doc.updateStyle(id, JSON.stringify({ nextStyleId: id }))) {
                     throw fail('ENGINE_REFUSED', 'the editor refused to set the next style')
                   }
-                  made += 1
+                  made.push(style.name)
                 }
                 setStyleLook(doc, id, style.look)
                 if (
@@ -9084,12 +10397,15 @@ export const agentPlugin = {
                 looks.set(style.name.toLowerCase(), {
                   id,
                   format: style.look ? resolveFormat(doc, style.look) : null,
+                  hangByMark: style.look?.paragraph?.hangByMark === true,
+                  existed: Boolean(found),
                 })
               }
-              const { targets, counts } = plan(doc)
+              const { targets, counts, withoutSpace, skipped, skippedOf, byStart } = plan(doc)
               if (!targets) throw fail('CHANGED', 'the document changed mid-call')
               let keptOwnLook = 0
               const marks = []
+              const hung = new Map()
               for (const target of targets) {
                 const rule = wanted.rules[target.rule]
                 const own = looks.get(rule.style.toLowerCase())
@@ -9107,17 +10423,45 @@ export const agentPlugin = {
                     box.formatChars(k, 0, length, own.format.chars)
                   }
                 }
+                if (own?.hangByMark) {
+                  const items = hung.get(own.id) ?? []
+                  items.push([box, k, rule.find === null ? rule : null])
+                  hung.set(own.id, items)
+                }
                 marks.push(box.place(k, length))
               }
+              let hang = null
+              for (const { id, hangByMark, existed } of looks.values()) {
+                if (!hangByMark) continue
+                const items = hung.get(id) ?? []
+                const named = new Set(items.map(([box, k]) => JSON.stringify(box.place(k, 0))))
+                for (const item of paragraphsOfStyle(doc, id)) {
+                  if (!named.has(JSON.stringify(item[0].place(item[1], 0)))) items.push(item)
+                }
+                const result = hangByMarks(doc, items, id, existed)
+                hang = hang ? joinHangs(hang, result) : result
+              }
+              if (hang) {
+                const existing = [...looks.values()].some((look) => look.hangByMark && look.existed)
+                hang.unread = existing ? nestedTableParagraphs(doc) : 0
+              }
+              const unmatched = byStart ? defaultStyleParagraphs(doc) : 0
               mustKeep(before, objectsOf(doc))
               return {
                 ok: true,
-                made,
-                changed,
+                made: made.length,
+                changed: changed.length,
+                madeStyles: made,
+                changedStyles: changed,
+                ...(unmatched > 0 ? { unmatched } : {}),
+                ...(withoutSpace.length > 0 ? { withoutSpace } : {}),
+                ...(Object.keys(skipped).length > 0 ? { skipped } : {}),
+                ...(hang ? { hang } : {}),
                 paragraphs: targets.length,
                 rules: wanted.rules.map((rule, index) => ({
                   style: rule.style,
                   paragraphs: counts[index],
+                  ...(skippedOf[index] > 0 ? { skipped: skippedOf[index] } : {}),
                 })),
                 ...(marks.length > 0 ? { place: marks[0], marks } : {}),
                 ...(keptOwnLook > 0 ? { keptOwnLook } : {}),
@@ -9163,7 +10507,14 @@ export const agentPlugin = {
           const length = box.length(box.index)
           const text = box.text(box.index, length)
           if (!text.trim()) return refuse('not_found')
-          return { box, text, length }
+          const { sec, para } = box.place(box.index, 0)
+          // the number Hangul puts in front of the paragraph would stay on an empty line
+          // above the box
+          if (NUMBERED_HEADS.has(parse(doc.getParaPropertiesAt(sec, para)).headType))
+            return refuse('numbered')
+          const columns = columnsAt(doc, sec, para, { line: true })
+          if (!columns) return refuse('columns_unknown')
+          return { box, text, length, columns }
         }
         const refusal = host.read((doc) => plan(doc).refusal ?? null)
         if (refusal) return refusal
@@ -9171,7 +10522,7 @@ export const agentPlugin = {
           change(
             'insert-title-box',
             (doc) => {
-              const { box, text, length } = plan(doc)
+              const { box, text, length, columns } = plan(doc)
               if (!box) throw fail('CHANGED', 'the document changed mid-call')
               const before = objectsOf(doc)
               const k = box.index
@@ -9201,7 +10552,7 @@ export const agentPlugin = {
               box.deleteText(k, length)
               const layout = titleBoxCells(wanted.look, wanted.color, wanted.color2)
               // where the text runs in columns the box is as wide as one of them
-              const inColumns = columnsOf(doc, sec).count > 1
+              const inColumns = columns.count > 1
               const made = parse(
                 doc.createTableEx(
                   JSON.stringify({
@@ -9212,7 +10563,13 @@ export const agentPlugin = {
                     colCount: 1,
                     treatAsChar: true,
                     ...(inColumns
-                      ? { colWidths: [Math.round(columnWidthPt(doc, sec) * 100)] }
+                      ? {
+                          colWidths: [
+                            Math.round(
+                              Math.min(columns.widthPt, columns.lineWidthPt ?? Infinity) * 100,
+                            ),
+                          ],
+                        }
                       : {}),
                   }),
                 ),
@@ -9221,6 +10578,25 @@ export const agentPlugin = {
                 throw fail('ENGINE', 'the title box could not be made')
               }
               const control = made.controlIdx
+              if (inColumns) {
+                // the box stands its outer margins further in than its line starts: as wide
+                // as the line less them, it ends inside the column
+                const { outerLeft, outerRight } = parse(doc.getTableProperties(sec, k, control))
+                const margins = (outerLeft ?? 0) + (outerRight ?? 0)
+                if (margins > 0) {
+                  expectOk(
+                    doc.resizeTableCells(
+                      sec,
+                      k,
+                      control,
+                      JSON.stringify(
+                        layout.cells.map((_, cellIdx) => ({ cellIdx, widthDelta: -margins })),
+                      ),
+                    ),
+                    'fit the title box in its column',
+                  )
+                }
+              }
               // a title cell as high as its lines and some air: the engine does not grow a
               // row whose height is set, so the height follows the lines the title takes
               const titleHeight = (lines, spacing) =>
@@ -9341,6 +10717,41 @@ export const agentPlugin = {
       pageCount: guarded(() => host.read((doc) => doc.pageCount())),
 
       /**
+       * What the context tells the model about the document's shape: its pages, the paper
+       * and columns its first section starts with, the later sections whose paper differs,
+       * and which of its words are in the default look (plainLookOf).
+       */
+      documentShape: guarded(() =>
+        host.read((doc) => {
+          const paperOf = (sec) => {
+            const setup = pageSetupOf(doc, sec)
+            return {
+              paper: setup.paper ?? null,
+              width: setup.width,
+              height: setup.height,
+              orientation: setup.orientation,
+            }
+          }
+          const first = paperOf(0)
+          const otherPapers = []
+          for (let sec = 1; sec < doc.getSectionCount(); sec++) {
+            const other = paperOf(sec)
+            if (JSON.stringify(other) !== JSON.stringify(first)) {
+              otherPapers.push({ section: sec + 1, ...other })
+            }
+          }
+          return {
+            pages: doc.pageCount(),
+            ...first,
+            ...(otherPapers.length > 0 ? { otherPapers } : {}),
+            columns: columnsOf(doc, 0).count,
+            ...(columnsChangeWithin(doc) ? { columnsChangeWithin: true } : {}),
+            plain: plainLookOf(doc),
+          }
+        }),
+      ),
+
+      /**
        * The page number, header and footer of the document (its first section): the page
        * number's place, shape and dashes, and the text of the header and of the footer with
        * `plain` saying whether setHeaderFooter may rewrite it; and the page map (pageMapOf).
@@ -9385,6 +10796,8 @@ export const agentPlugin = {
             columns: {
               count: columns.count,
               gapMm: Math.round(((columns.gapPt * 25.4) / 72) * 10) / 10,
+              ...(columns.line ? { line: columns.line } : {}),
+              ...(columnsChangeWithin(doc) ? { changesWithin: true } : {}),
             },
             pageNumber,
             header: read(true),
@@ -9397,8 +10810,9 @@ export const agentPlugin = {
       /**
        * Lay the body text out in columns (Hangul's 다단): `spec.count` columns of one width
        * with `spec.gapMm` between them, in every section; one column takes the columns
-       * away. Tables that are already there keep their width, so it is called before the
-       * tables are made. One undo step.
+       * away. `spec.line` draws a thin line between the columns (COLUMN_LINES; "none" takes
+       * it away, and without it the line stays as it is). Tables that are already there keep
+       * their width, so it is called before the tables are made. One undo step.
        */
       setColumns: guarded((spec, options) => {
         const given = spec ?? {}
@@ -9411,6 +10825,17 @@ export const agentPlugin = {
           throw fail('BAD_ARGUMENT', `gapMm must be 0 to ${MAX_COLUMN_GAP_MM} millimetres`)
         }
         const gap = count > 1 ? Math.round((gapMm * 7200) / 25.4) : 0
+        const lineName = given.line ?? null
+        if (lineName !== null && !COLUMN_LINES.includes(lineName)) {
+          throw fail('BAD_ARGUMENT', `line must be one of ${COLUMN_LINES.join(', ')}`)
+        }
+        if (count === 1 && lineName !== null && lineName !== 'none') {
+          throw fail(
+            'BAD_ARGUMENT',
+            'a line is drawn between columns, and count 1 leaves none: leave line out, or give count 2 or more',
+          )
+        }
+        const line = lineName === null ? null : borderRuleOf({ line: lineName }).line
         const done = change(
           'set-columns',
           (doc) => {
@@ -9418,8 +10843,21 @@ export const agentPlugin = {
             const was = columnsOf(doc, 0).count
             for (let sec = 0; sec < sections; sec++) {
               expectOk(doc.setColumnDef(sec, count, 0, 1, gap), 'set the columns')
+              if (line) {
+                expectOk(
+                  doc.setColumnSeparator(sec, JSON.stringify(line)),
+                  'draw the line between the columns',
+                )
+              }
             }
-            return { ok: true, count, gapMm: count > 1 ? gapMm : 0, was, sections }
+            return {
+              ok: true,
+              count,
+              gapMm: count > 1 ? gapMm : 0,
+              was,
+              sections,
+              ...(lineName !== null ? { line: lineName } : keptLine(doc)),
+            }
           },
           options,
         )
@@ -9472,7 +10910,13 @@ export const agentPlugin = {
        * cell is refused: the engine puts equations into body paragraphs. One undo step.
        */
       insertEquations: guarded((items, options) => {
-        if (!Array.isArray(items) || items.length === 0 || items.length > MAX_EQUATIONS) {
+        if (Array.isArray(items) && items.length > MAX_EQUATIONS) {
+          throw fail(
+            'BAD_ARGUMENT',
+            `equations takes up to ${MAX_EQUATIONS}; send the rest in another call`,
+          )
+        }
+        if (!Array.isArray(items) || items.length === 0) {
           throw fail('BAD_ARGUMENT', `equations must be 1 to ${MAX_EQUATIONS} items`)
         }
         const wanted = items.map((item) => {
@@ -9570,7 +11014,7 @@ export const agentPlugin = {
        */
       resizePicture: guarded((number, spec, options) => {
         if (!Number.isInteger(number) || number < 1) {
-          throw fail('BAD_ARGUMENT', 'picture must be a positive integer from listPictures')
+          throw fail('BAD_ARGUMENT', 'picture must be a positive integer from list_pictures')
         }
         const mm = spec?.widthMm
         const { min, max } = PICTURE_WIDTH_MM
@@ -9894,7 +11338,7 @@ export const agentPlugin = {
        * Merge the cells of table `number` from one corner to the other (rows and columns
        * from 1, both corners included) into one cell; their text goes into it one cell after
        * another, as Hangul merges. A merged cell must lie wholly inside the range or wholly
-       * outside it. Cells of a table inside another table's cell cannot be merged here.
+       * outside it. A table inside another table's cell is merged by its cell path.
        */
       mergeCells: guarded((number, from, to, options) => {
         const corner = (at) =>
@@ -9910,7 +11354,7 @@ export const agentPlugin = {
           throw fail('BAD_ARGUMENT', 'from and to name one cell: there is nothing to merge')
         }
         const plan = (doc) => {
-          const found = bodyTable(doc, number)
+          const found = numberedTable(doc, number)
           if (found.refusal) return found
           const { table, grid } = found
           if (bottom >= table.rows || right >= table.cols) {
@@ -9935,40 +11379,44 @@ export const agentPlugin = {
             return { refusal: { ok: false, reason: 'crosses_merged', cells: crossing } }
           }
           // a named cell other than the first would lose its name, which a form fills it by
-          const control = table.path[0].controlIndex
+          const calls = tableCalls(doc, table)
           const named = inside
             .filter((cell) => !(cell.row === top && cell.col === left))
             .filter((cell) => {
-              const props = parse(doc.getCellProperties(table.sec, table.para, control, cell.cell))
+              const props = calls.cellProps(cell.cell)
               return typeof props.fieldName === 'string' && props.fieldName !== ''
             })
             .map((cell) => ({ row: cell.row + 1, col: cell.col + 1 }))
           if (named.length > 0)
             return { refusal: { ok: false, reason: 'named_cells', cells: named } }
-          return { table, control, merged: inside.length }
+          return { table, merged: inside.length }
         }
         const refusal = host.read((doc) => plan(doc).refusal ?? null)
         if (refusal) return refusal
-        return keepingObjects((mustKeep) =>
-          change(
-            'merge-cells',
-            (doc) => {
-              const { table, control, merged } = plan(doc)
-              if (!table) throw fail('CHANGED', 'the document changed mid-call')
-              const before = objectsOf(doc)
-              expectOk(
-                doc.mergeTableCells(table.sec, table.para, control, top, left, bottom, right),
-                'merge the cells',
-              )
-              mustKeep(before, objectsOf(doc))
-              return {
-                ok: true,
-                merged,
-                place: { sec: table.sec, para: table.para, offset: 0, length: 0 },
-              }
-            },
-            options,
-          ),
+        return refusingDrawnBorders(
+          () => ({ ok: false, reason: 'unsupported_place' }),
+          () =>
+            keepingObjects((mustKeep) =>
+              change(
+                'merge-cells',
+                (doc) => {
+                  const { table, merged } = plan(doc)
+                  if (!table) throw fail('CHANGED', 'the document changed mid-call')
+                  const before = objectsOf(doc)
+                  expectOk(
+                    tableCalls(doc, table).merge(top, left, bottom, right),
+                    'merge the cells',
+                  )
+                  mustKeep(before, objectsOf(doc))
+                  return {
+                    ok: true,
+                    merged,
+                    place: { sec: table.sec, para: table.para, offset: 0, length: 0 },
+                  }
+                },
+                options,
+              ),
+            ),
         )
       }),
 
@@ -9990,7 +11438,7 @@ export const agentPlugin = {
           }
         }
         const plan = (doc) => {
-          const found = bodyTable(doc, number)
+          const found = numberedTable(doc, number)
           if (found.refusal) return found
           const { table, grid } = found
           const cell = grid.find(
@@ -10018,37 +11466,31 @@ export const agentPlugin = {
         }
         const refusal = host.read((doc) => plan(doc).refusal ?? null)
         if (refusal) return refusal
-        return keepingObjects((mustKeep) =>
-          change(
-            'split-cell',
-            (doc) => {
-              const { table, cell, unmerge } = plan(doc)
-              if (!table) throw fail('CHANGED', 'the document changed mid-call')
-              const before = objectsOf(doc)
-              const control = table.path[0].controlIndex
-              const result = unmerge
-                ? doc.splitTableCell(table.sec, table.para, control, cell.row, cell.col)
-                : doc.splitTableCellInto(
-                    table.sec,
-                    table.para,
-                    control,
-                    cell.row,
-                    cell.col,
-                    down,
-                    across,
-                    true,
-                    false,
-                  )
-              expectOk(result, 'split the cell')
-              mustKeep(before, objectsOf(doc))
-              return {
-                ok: true,
-                unmerged: unmerge,
-                place: { sec: table.sec, para: table.para, offset: 0, length: 0 },
-              }
-            },
-            options,
-          ),
+        return refusingDrawnBorders(
+          () => ({ ok: false, reason: 'unsupported_place' }),
+          () =>
+            keepingObjects((mustKeep) =>
+              change(
+                'split-cell',
+                (doc) => {
+                  const { table, cell, unmerge } = plan(doc)
+                  if (!table) throw fail('CHANGED', 'the document changed mid-call')
+                  const before = objectsOf(doc)
+                  const calls = tableCalls(doc, table)
+                  const result = unmerge
+                    ? calls.unmerge(cell.row, cell.col)
+                    : calls.split(cell.row, cell.col, down, across)
+                  expectOk(result, 'split the cell')
+                  mustKeep(before, objectsOf(doc))
+                  return {
+                    ok: true,
+                    unmerged: unmerge,
+                    place: { sec: table.sec, para: table.para, offset: 0, length: 0 },
+                  }
+                },
+                options,
+              ),
+            ),
         )
       }),
 
@@ -10289,8 +11731,8 @@ export const agentPlugin = {
       /**
        * Add `count` empty rows or columns to table `number`, after or before row or column
        * `at` (1-based). The new ones are shaped like the one they are added next to: the
-       * engine copies its cells, and the alignment of each new cell is set to match. Only
-       * for a table of the body: the engine has no such call for a table inside a cell.
+       * engine copies its cells, and the alignment of each new cell is set to match. A table
+       * inside another table's cell takes them by its cell path.
        */
       addTableLines: guarded((number, what, at, where, count, options) => {
         const rows = checkLines(what, at, count)
@@ -10303,7 +11745,6 @@ export const agentPlugin = {
           if (!table)
             return { refusal: { ok: false, reason: 'no_such_table', count: tables.length } }
           const size = { rows: table.rows, cols: table.cols }
-          if (table.parent !== null) return { refusal: { ok: false, reason: 'nested', ...size } }
           if (at > (rows ? table.rows : table.cols)) {
             return { refusal: { ok: false, reason: 'no_such_line', ...size } }
           }
@@ -10311,78 +11752,85 @@ export const agentPlugin = {
         }
         const refusal = host.read((doc) => plan(doc).refusal ?? null)
         if (refusal) return refusal
-        return keepingObjects((mustKeep) =>
-          change(
-            'add-table-lines',
-            (doc) => {
-              const { table } = plan(doc)
-              if (!table) throw fail('CHANGED', 'the document changed mid-call')
-              const before = objectsOf(doc)
-              const { sec, para } = table
-              const ctrl = table.path[0].controlIndex
-              const after = where === 'after'
-              // the engine copies the row it adds next to, its lines too: the bottom line
-              // of the table would stay under the old last row
-              const lines = rows ? rowEdgesOf(doc, table, gridOf(doc, table)) : null
-              for (let n = 0; n < count; n++) {
-                // "before" pushes the line it copies down by one each time
-                const beside = after ? at - 1 : at - 1 + n
-                expectOk(
-                  rows
-                    ? doc.insertTableRow(sec, para, ctrl, beside, after)
-                    : doc.insertTableColumn(sec, para, ctrl, beside, after),
-                  rows ? 'add a row' : 'add a column',
-                )
-              }
-              const first = after ? at : at - 1
-              const model = after ? at - 1 : at - 1 + count
-              const grown = {
-                ...table,
-                cells: parse(doc.getTableDimensions(sec, para, ctrl)).cellCount,
-              }
-              const grid = gridOf(doc, grown)
-              const edges =
-                lines &&
-                rowEdgesAfterAdding(lines.edges, lines.flagged, lines.verticals, first, count)
-              if (edges) setRowEdges(doc, grown, grid, edges)
-              const line = (cell) => (rows ? cell.row : cell.col)
-              const across = (cell) => (rows ? cell.col : cell.row)
-              const alignment = (cell) =>
-                parse(doc.getCellParaPropertiesAt(sec, para, ctrl, cell.cell, 0)).alignment
-              for (const cell of grid) {
-                if (line(cell) < first || line(cell) >= first + count) continue
-                const like = grid.find((c) => line(c) === model && across(c) === across(cell))
-                if (!like) continue
-                const wanted = alignment(like)
-                if (wanted && wanted !== alignment(cell)) {
-                  expectOk(
-                    doc.applyParaFormatInCell(
-                      sec,
-                      para,
-                      ctrl,
-                      cell.cell,
-                      0,
-                      JSON.stringify({ alignment: wanted }),
-                    ),
-                    'format the new cell',
-                  )
-                }
-              }
-              mustKeep(before, objectsOf(doc))
-              const dims = parse(doc.getTableDimensions(sec, para, ctrl))
-              const shown = grid.find((cell) => line(cell) === first)
-              return {
-                ok: true,
-                table: number,
-                rows: dims.rowCount,
-                cols: dims.colCount,
-                first: first + 1,
-                count,
-                ...(shown ? { place: cellBox(doc, grown, shown.cell).place(0, 0) } : {}),
-              }
-            },
-            options,
-          ),
+        let size = null
+        return refusingDrawnBorders(
+          () => ({ ok: false, reason: 'nested', ...size }),
+          () =>
+            keepingObjects((mustKeep) =>
+              change(
+                'add-table-lines',
+                (doc) => {
+                  const { table } = plan(doc)
+                  if (!table) throw fail('CHANGED', 'the document changed mid-call')
+                  size = { rows: table.rows, cols: table.cols }
+                  const before = objectsOf(doc)
+                  const { sec, para } = table
+                  const ctrl = table.path[0].controlIndex
+                  const calls = tableCalls(doc, table)
+                  const after = where === 'after'
+                  // the engine copies the row it adds next to, its lines too: the bottom line
+                  // of the table would stay under the old last row
+                  const lines = rows ? rowEdgesOf(doc, table, gridOf(doc, table)) : null
+                  for (let n = 0; n < count; n++) {
+                    // "before" pushes the line it copies down by one each time
+                    const beside = after ? at - 1 : at - 1 + n
+                    expectOk(
+                      rows ? calls.insertRow(beside, after) : calls.insertColumn(beside, after),
+                      rows ? 'add a row' : 'add a column',
+                    )
+                  }
+                  const first = after ? at : at - 1
+                  const model = after ? at - 1 : at - 1 + count
+                  const grown = { ...table, cells: calls.dimensions().cellCount }
+                  const grid = gridOf(doc, grown)
+                  const edges =
+                    lines &&
+                    rowEdgesAfterAdding(lines.edges, lines.flagged, lines.verticals, first, count)
+                  if (edges) setRowEdges(doc, grown, grid, edges)
+                  const line = (cell) => (rows ? cell.row : cell.col)
+                  const across = (cell) => (rows ? cell.col : cell.row)
+                  const alignment = (cell) => calls.paraProps(cell.cell, 0).alignment
+                  for (const cell of grid) {
+                    if (line(cell) < first || line(cell) >= first + count) continue
+                    const like = grid.find((c) => line(c) === model && across(c) === across(cell))
+                    if (!like) continue
+                    const wanted = alignment(like)
+                    if (wanted && wanted !== alignment(cell)) {
+                      expectOk(
+                        calls.formatParagraph(cell.cell, 0, JSON.stringify({ alignment: wanted })),
+                        'format the new cell',
+                      )
+                    }
+                  }
+                  // the engine copies the height of the row it adds next to, which in a head table
+                  // across the columns may be one raised for its text or none under a merged
+                  // cell: a new row gets what its own text needs, and no less than the lowest row
+                  if (
+                    rows &&
+                    table.path.length === 1 &&
+                    sec === 0 &&
+                    para === 0 &&
+                    headTablesOf(doc).some((h) => h.control === ctrl)
+                  ) {
+                    const measured = measureHead(doc, ctrl)
+                    if (measured) fitAddedRows(doc, ctrl, measured, first, count)
+                  }
+                  mustKeep(before, objectsOf(doc))
+                  const dims = calls.dimensions()
+                  const shown = grid.find((cell) => line(cell) === first)
+                  return {
+                    ok: true,
+                    table: number,
+                    rows: dims.rowCount,
+                    cols: dims.colCount,
+                    first: first + 1,
+                    count,
+                    ...(shown ? { place: cellBox(doc, grown, shown.cell).place(0, 0) } : {}),
+                  }
+                },
+                options,
+              ),
+            ),
         )
       }),
 
@@ -10400,7 +11848,6 @@ export const agentPlugin = {
           if (!table)
             return { refusal: { ok: false, reason: 'no_such_table', count: tables.length } }
           const size = { rows: table.rows, cols: table.cols }
-          if (table.parent !== null) return { refusal: { ok: false, reason: 'nested', ...size } }
           const total = rows ? table.rows : table.cols
           if (at + count - 1 > total)
             return { refusal: { ok: false, reason: 'no_such_line', ...size } }
@@ -10420,51 +11867,54 @@ export const agentPlugin = {
         }
         const refusal = host.read((doc) => plan(doc).refusal ?? null)
         if (refusal) return refusal
-        return keepingObjects((mustKeep) =>
-          change(
-            'remove-table-lines',
-            (doc) => {
-              const { table, going } = plan(doc)
-              if (!table) throw fail('CHANGED', 'the document changed mid-call')
-              const before = objectsOf(doc, new Set())
-              const { sec, para } = table
-              const ctrl = table.path[0].controlIndex
-              const text = clip(
-                going
-                  .map((cell) =>
-                    paragraphsOf(cellBox(doc, table, cell.cell))
-                      .join(' ')
-                      .trim(),
+        let size = null
+        return refusingDrawnBorders(
+          () => ({ ok: false, reason: 'nested', ...size }),
+          () =>
+            keepingObjects((mustKeep) =>
+              change(
+                'remove-table-lines',
+                (doc) => {
+                  const { table, going } = plan(doc)
+                  if (!table) throw fail('CHANGED', 'the document changed mid-call')
+                  size = { rows: table.rows, cols: table.cols }
+                  const before = objectsOf(doc, new Set())
+                  const calls = tableCalls(doc, table)
+                  const text = clip(
+                    going
+                      .map((cell) =>
+                        paragraphsOf(cellBox(doc, table, cell.cell))
+                          .join(' ')
+                          .trim(),
+                      )
+                      .filter(Boolean)
+                      .join(' | '),
+                    MAX_REPORTED_CHARS,
                   )
-                  .filter(Boolean)
-                  .join(' | '),
-                MAX_REPORTED_CHARS,
-              )
-              for (let n = 0; n < count; n++) {
-                // the next one moves up into the place of the one just removed
-                expectOk(
-                  rows
-                    ? doc.deleteTableRow(sec, para, ctrl, at - 1)
-                    : doc.deleteTableColumn(sec, para, ctrl, at - 1),
-                  rows ? 'remove the row' : 'remove the column',
-                )
-              }
-              // the value of a named cell goes with its cell; nothing else may be lost
-              mustKeep(before, objectsOf(doc, new Set()))
-              const dims = parse(doc.getTableDimensions(sec, para, ctrl))
-              const shrunk = { ...table, cells: dims.cellCount }
-              return {
-                ok: true,
-                table: number,
-                rows: dims.rowCount,
-                cols: dims.colCount,
-                count,
-                text,
-                place: cellBox(doc, shrunk, 0).place(0, 0),
-              }
-            },
-            options,
-          ),
+                  for (let n = 0; n < count; n++) {
+                    // the next one moves up into the place of the one just removed
+                    expectOk(
+                      rows ? calls.deleteRow(at - 1) : calls.deleteColumn(at - 1),
+                      rows ? 'remove the row' : 'remove the column',
+                    )
+                  }
+                  // the value of a named cell goes with its cell; nothing else may be lost
+                  mustKeep(before, objectsOf(doc, new Set()))
+                  const dims = calls.dimensions()
+                  const shrunk = { ...table, cells: dims.cellCount }
+                  return {
+                    ok: true,
+                    table: number,
+                    rows: dims.rowCount,
+                    cols: dims.colCount,
+                    count,
+                    text,
+                    place: cellBox(doc, shrunk, 0).place(0, 0),
+                  }
+                },
+                options,
+              ),
+            ),
         )
       }),
 
@@ -10934,6 +12384,12 @@ export const agentPlugin = {
                 if (paragraph) box.formatParagraph(k, paragraph)
                 if (chars && segment.length > 0) box.formatChars(k, segment.offset, end, chars)
               })
+              const hang = spec.paragraph?.hangByMark
+                ? hangByMarks(
+                    doc,
+                    boxes.map(({ box, k }) => [box, k, null]),
+                  )
+                : null
               mustKeep(before, objectsOf(doc))
               const { text: _text, ...place } = segments[0]
               return {
@@ -10941,6 +12397,7 @@ export const agentPlugin = {
                 count: segments.length,
                 place,
                 ...(keptOwnLook > 0 ? { keptOwnLook } : {}),
+                ...(hang ? { hang } : {}),
               }
             },
             options,
@@ -11634,6 +13091,11 @@ export const agentPlugin = {
                 })),
             }
           }
+          const notHung = markOnlyUnhung(
+            spec,
+            group.places.map(({ sec, para }) => [containerOf(doc, { sec, para }), para, null]),
+          )
+          if (notHung) return notHung
           return (
             missingStyle(doc, spec) ??
             wordsSetApart(
@@ -11663,6 +13125,16 @@ export const agentPlugin = {
                 if (chars && length > 0) box.formatChars(para, 0, length, chars)
                 marks.push(box.place(para, length))
               }
+              const hang = spec.paragraph?.hangByMark
+                ? hangByMarks(
+                    doc,
+                    group.places.map(({ sec, para }) => [
+                      containerOf(doc, { sec, para }),
+                      para,
+                      null,
+                    ]),
+                  )
+                : null
               mustKeep(before, objectsOf(doc))
               return {
                 ok: true,
@@ -11670,6 +13142,7 @@ export const agentPlugin = {
                 place: marks[0],
                 marks,
                 ...(keptOwnLook > 0 ? { keptOwnLook } : {}),
+                ...(hang ? { hang } : {}),
               }
             },
             options,
@@ -11834,16 +13307,10 @@ export const agentPlugin = {
 
       /** Take the marks of the changes made so far off the pages. */
       clearMarks: guarded(() => {
-        marks = []
+        setMarks([])
         refreshMarks()
         return { ok: true }
       }),
-
-      /**
-       * Whether the pages carry marks of changes now. They go by themselves when the user
-       * edits the document, and the AI panel asks so its button to clear them goes too.
-       */
-      hasMarks: guarded(() => ({ ok: true, shown: marks.length > 0 })),
 
       /**
        * How the editor lays out the tabs a save found without a width (`spots`, from the

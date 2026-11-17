@@ -7,6 +7,7 @@ import {
   type AgentToolCall,
 } from '@genoffice/agent-core'
 import type { AgentMemo, AgentMemoRemovalRefusal } from '../studio-plugin/agent-plugin.mjs'
+import { EXAM_PAPER, examChoiceStops, examColumnWidthMm } from '../studio-plugin/document-looks.mjs'
 import type { AgentBridge } from '../src/renderer/ai/agent-bridge'
 import {
   CONTEXT_MAX_CHARS,
@@ -323,10 +324,22 @@ function setup(
     formatting: vi.fn(async () => ({ ok: true as const, ...FORMATTING })),
     formatLook: vi.fn(async () => ({ ok: true as const, paragraphs: 12, place: PLACE })),
     documentFonts: vi.fn(async () => ({ known: false, onPc: [], missing: [] })),
+    documentShape: vi.fn(async () => ({
+      pages: 1,
+      paper: 'A4',
+      width: 210,
+      height: 297,
+      orientation: 'portrait' as const,
+      columns: 1,
+      plain: { body: true, tables: null },
+    })),
     styleParagraphs: vi.fn(async () => ({
       ok: true as const,
       made: 2,
       changed: 0,
+      madeStyles: ['중제목', '본문항목'],
+      changedStyles: [],
+      unmatched: 1,
       paragraphs: 5,
       rules: [
         { style: '중제목', paragraphs: 2 },
@@ -1623,6 +1636,59 @@ describe('format_cells', () => {
     expect(changes[0]).toMatchObject({ kind: 'format', to: 'aiFmtColumnWidths' })
   })
 
+  it('says when row_height_mm leaves a row of a head across the columns lower than its text', async () => {
+    const { call } = setup({
+      formatCells: async () => ({
+        ok: true as const,
+        count: 8,
+        place: { sec: 0, para: 0, offset: 0, length: 0 },
+        overflowingRows: [2],
+      }),
+    })
+    const result = await call('format_cells', {
+      table: 1,
+      range: { from_row: 2, from_col: 1, to_row: 2, to_col: 8 },
+      row_height_mm: 8,
+    })
+    expect(result.output).toContain(
+      ' The text of row 2 needs more height than row_height_mm gives, so it overflows the row and column 2 starts over the head table.',
+    )
+  })
+
+  it('names a head row a change left taller than its text, in any change answer', async () => {
+    const { call } = setup({
+      fillCells: async () => ({
+        ok: true as const,
+        table: 1,
+        count: 1,
+        place: { sec: 0, para: 0, offset: 0, length: 0 },
+        tallerRows: [{ table: 1, row: 2, heightMm: 15.8, needsMm: 4.5 }],
+      }),
+    })
+    const result = await call('fill_cells', {
+      table: 1,
+      cells: [{ row: 2, col: 5, text: '계' }],
+      overwrite: true,
+    })
+    expect(result.output).toContain(
+      ' Row 2 of table 1 (15.8 mm, its text needs 4.5 mm) keeps its height, which only format_cells row_height_mm lowers.',
+    )
+    const plain = setup({
+      fillCells: async () => ({
+        ok: true as const,
+        table: 1,
+        count: 1,
+        place: { sec: 0, para: 0, offset: 0, length: 0 },
+      }),
+    })
+    const next = await plain.call('fill_cells', {
+      table: 1,
+      cells: [{ row: 2, col: 5, text: '계' }],
+      overwrite: true,
+    })
+    expect(next.output).not.toContain('keeps its height')
+  })
+
   it('says how many widths a table takes', async () => {
     const { call } = setup({
       formatCells: async () => ({ ok: false as const, reason: 'column_count' as const, cols: 3 }),
@@ -2223,7 +2289,7 @@ describe('rows and columns of a table', () => {
 
   it('tells the model why nothing was changed', async () => {
     const cases = [
-      [{ ok: false, reason: 'nested', rows: 2, cols: 2 }, 'inside a cell of another table'],
+      [{ ok: false, reason: 'nested', rows: 2, cols: 2 }, 'cell borders are drawn as objects'],
       [{ ok: false, reason: 'no_such_line', rows: 3, cols: 4 }, '3 row(s) and 4 column(s)'],
       [{ ok: false, reason: 'would_empty', rows: 3, cols: 4 }, 'at least one row'],
       [
@@ -2867,7 +2933,9 @@ describe('the look of a document', () => {
     const repeated = await plain.call('insert_table', { where: 'end', rows, repeat_header: true })
     expect(repeated.output).toContain('repeat_header did nothing: the table has no header row')
     const oneColumn = await plain.call('insert_table', { where: 'end', rows, across_columns: true })
-    expect(oneColumn.output).toContain('across_columns did nothing: the text runs in one column')
+    expect(oneColumn.output).toContain(
+      'across_columns did nothing: only a table in front of the first paragraph',
+    )
     const across = setup({
       insertTable: vi.fn(async () => ({
         ok: true as const,
@@ -2885,7 +2953,7 @@ describe('the look of a document', () => {
       width_percent: 50,
       place: 'center',
     })
-    expect(head.output).toContain('lying across the columns of the page')
+    expect(head.output).toContain('lying across the top of the page over the columns')
     expect(head.output).toContain('width_percent and place did nothing')
     expect(head.output).not.toContain('across_columns did nothing')
     const dark = setup({
@@ -3042,6 +3110,9 @@ describe('the look of a document', () => {
         ok: true as const,
         made: 1,
         changed: 0,
+        madeStyles: ['중제목'],
+        changedStyles: [],
+        unmatched: 3,
         paragraphs: 0,
         rules: [{ style: '중제목', paragraphs: 0 }],
         standIn: [{ asked: 'HY헤드라인M', used: '맑은 고딕' }],
@@ -3053,6 +3124,218 @@ describe('the look of a document', () => {
     })
     expect(result.output).toContain('No paragraph matched the rule(s) for 중제목')
     expect(result.output).toContain('맑은 고딕 was written for HY헤드라인M')
+  })
+
+  it('names the styles it made and changed, what no rule matched and what hangs apart', async () => {
+    const { call } = setup({
+      styleParagraphs: vi.fn(async () => ({
+        ok: true as const,
+        made: 1,
+        changed: 1,
+        madeStyles: ['소항목'],
+        changedStyles: ['항목'],
+        unmatched: 2,
+        withoutSpace: ['가.접수 기간'],
+        skipped: { date: { count: 1, first: '11. 12.(목) 09:00 개회' } },
+        hang: {
+          hung: 3,
+          apart: 1,
+          noMark: 1,
+          alignment: 1,
+          object: 1,
+          split: 0,
+          tab: 0,
+          noSpace: 0,
+          outOfRange: 1,
+          unread: 2,
+          kept: 3,
+          unreachedShapes: 1,
+        },
+        paragraphs: 3,
+        rules: [
+          { style: '항목', paragraphs: 2 },
+          { style: '소항목', paragraphs: 1 },
+          { style: '번호', paragraphs: 0, skipped: 1 },
+        ],
+      })),
+    })
+    const result = await call('style_paragraphs', {
+      styles: [
+        { name: '항목', bold: true },
+        { name: '소항목', margin_left: 14, indent: 'mark' },
+      ],
+      apply: [
+        { style: '항목', starts_with: '□' },
+        { style: '소항목', numbered: '가.' },
+      ],
+    })
+    expect(result.output).toContain(
+      'Made 1 style(s) ("소항목"), changed 1 ("항목", which the document had)',
+    )
+    expect(result.output).toContain(
+      '2 body paragraph(s) with text are still in the default paragraph style',
+    )
+    expect(result.output).toContain(
+      'Left out on purpose: 1 line(s) that start with a date, the first “11. 12.(목) 09:00 개회”',
+    )
+    expect(result.output).toContain('no space follows the mark: “가.접수 기간”')
+    expect(result.output).toContain(
+      'Hung 3 paragraph(s) by their marks. 1 of them have a mark of another width',
+    )
+    expect(result.output).toContain('1 paragraph(s) have no mark at their start')
+    expect(result.output).toContain(
+      '1 paragraph(s) would hang by nothing, by more than 100 pt or by more than half their column',
+    )
+    expect(result.output).toContain('1 paragraph(s) are aligned right, centred or spread')
+    expect(result.output).toContain(
+      '3 paragraph(s) left unhung, empty ones included, were given the indent they had as their own',
+    )
+    expect(result.output).toContain(
+      '1 drawn shape(s) other than pictures inside table cells or other shapes could not be looked into',
+    )
+    expect(result.output).toContain(
+      '1 paragraph(s) have a field, its guide or another object before or inside the mark',
+    )
+    expect(result.output).toContain(
+      '2 paragraph(s) in tables inside table cells were not looked at',
+    )
+    expect(result.output).not.toContain('could not be measured')
+    expect(result.output).not.toContain('No paragraph matched the rule(s)')
+  })
+
+  it('changes nothing when edit_style with "mark" alone hangs no paragraph, and says why', async () => {
+    const hang = {
+      hung: 0,
+      apart: 0,
+      noMark: 0,
+      alignment: 2,
+      object: 0,
+      split: 0,
+      tab: 0,
+      noSpace: 0,
+      outOfRange: 0,
+    }
+    const { call, changes } = setup({
+      editStyle: vi.fn(async () => ({ ok: false as const, reason: 'not_hung' as const, hang })),
+    })
+    const result = await call('edit_style', { name: '항목', indent: 'mark' })
+    expect(result.mutated).toBeFalsy()
+    expect(result.isError).toBeFalsy()
+    expect(result.output).toBe(
+      'Nothing was changed: no paragraph of the style "항목" could be hung by its mark. 2 paragraph(s) are aligned right, centred or spread, where line 2 is not set under the words; their first-line indent stays as it was.',
+    )
+    expect(changes).toEqual([])
+  })
+
+  it('changes nothing when format_paragraph with "mark" alone hangs nothing, and says why', async () => {
+    const hang = {
+      hung: 0,
+      apart: 0,
+      noMark: 0,
+      alignment: 1,
+      object: 0,
+      split: 0,
+      tab: 0,
+      noSpace: 0,
+      outOfRange: 0,
+    }
+    const { call, changes } = setup({
+      formatParagraph: vi.fn(async () => ({
+        ok: false as const,
+        reason: 'not_hung' as const,
+        hang,
+      })),
+    })
+    const result = await call('format_paragraph', { find: '○ 하나', indent: 'mark' })
+    expect(result.mutated).toBeFalsy()
+    expect(result.isError).toBeFalsy()
+    expect(result.output).toBe(
+      'Nothing was changed: the paragraph could not be hung by its mark. 1 paragraph(s) are aligned right, centred or spread, where line 2 is not set under the words; their first-line indent stays as it was.',
+    )
+    expect(changes).toEqual([])
+  })
+
+  it('changes nothing when format_look with "mark" alone hangs no paragraph, and says why', async () => {
+    const hang = {
+      hung: 0,
+      apart: 0,
+      noMark: 0,
+      alignment: 2,
+      object: 0,
+      split: 0,
+      tab: 0,
+      noSpace: 0,
+      outOfRange: 0,
+    }
+    const { call, changes } = setup({
+      formatLook: vi.fn(async () => ({ ok: false as const, reason: 'not_hung' as const, hang })),
+    })
+    const result = await call('format_look', { look: 'L1', indent: 'mark' })
+    expect(result.mutated).toBeFalsy()
+    expect(result.isError).toBeFalsy()
+    expect(result.output).toBe(
+      'Nothing was changed: no paragraph of that look could be hung by its mark. 2 paragraph(s) are aligned right, centred or spread, where line 2 is not set under the words; their first-line indent stays as it was.',
+    )
+    expect(changes).toEqual([])
+  })
+
+  it('says which paragraphs of a look format_look hung when "mark" is all it was given', async () => {
+    const { call } = setup({
+      formatLook: vi.fn(async () => ({
+        ok: true as const,
+        paragraphs: 3,
+        place: PLACE,
+        hang: {
+          hung: 2,
+          apart: 0,
+          noMark: 1,
+          alignment: 0,
+          object: 0,
+          split: 0,
+          tab: 0,
+          noSpace: 0,
+          outOfRange: 0,
+        },
+      })),
+    })
+    const result = await call('format_look', { look: 'L1', indent: 'mark' })
+    expect(result.output).toContain('Of the 3 paragraph(s) of that look: Hung 2 paragraph(s)')
+    expect(result.output).toContain('The paragraphs hung by their marks have a new look id now')
+    expect(result.output).not.toContain('These paragraphs have a new look id now')
+  })
+
+  it('takes indent "mark" and a number written as text, and leaves another word to the editor', async () => {
+    const { call, bridge, skill } = setup()
+    await call('style_paragraphs', {
+      styles: [
+        { name: '가', indent: 'mark' },
+        { name: '나', indent: '-14' },
+        { name: '다', indent: 'makr' },
+      ],
+    })
+    expect(bridge.styleParagraphs).toHaveBeenCalledWith({
+      styles: [
+        { name: '가', format: { indent: 'mark' } },
+        { name: '나', format: { indent: -14 } },
+        { name: '다', format: { indent: 'makr' } },
+      ],
+      apply: [],
+    })
+    for (const name of [
+      'style_paragraphs',
+      'format_paragraph',
+      'format_selection',
+      'edit_style',
+      'format_look',
+    ]) {
+      const tool = skill.tools.find((candidate) => candidate.name === name)!
+      expect(JSON.stringify(tool.inputSchema), name).toContain(
+        '"indent":{"type":["number","string"]',
+      )
+    }
+    const create = skill.tools.find((candidate) => candidate.name === 'create_style')!
+    expect(JSON.stringify(create.inputSchema)).toContain('"indent":{"type":"number"')
+    expect(JSON.stringify(create)).not.toContain('"mark"')
   })
 
   it('refuses a style_paragraphs rule that names its paragraphs both ways or neither', async () => {
@@ -3121,8 +3404,84 @@ describe('the look of a document', () => {
     })
     expect(refused.isError).toBe(true)
     expect(refused.output).toContain('head of the document')
+    const unknown = await setup({
+      insertTable: vi.fn(async () => ({
+        ok: false as const,
+        reason: 'columns_unknown' as const,
+        count: 1,
+      })),
+    }).call('insert_table', { where: 'after', anchor: '3. 문항', rows: [['〈보기〉']] })
+    expect(unknown.isError).toBe(true)
+    expect(unknown.output).toContain('the table would stand over the line between the columns')
+    expect(unknown.output).toContain('is not laid out on a page yet')
+    for (const [reason, says] of [
+      ['columns_unknown', 'the box would stand over the line between the columns'],
+      ['numbered', 'leave the number alone on a line above the box'],
+    ] as const) {
+      const box = await setup({
+        insertTitleBox: vi.fn(async () => ({ ok: false as const, reason, count: 1 })),
+      }).call('insert_title_box', { find: '다음 중 옳은 것은?', look: 'box' })
+      expect(box.isError).toBe(true)
+      expect(box.output).toContain(says)
+    }
     const bad = await call('set_columns', { count: 'two' })
     expect(bad.isError).toBe(true)
+  })
+
+  it('names the line one column keeps stored', async () => {
+    const { call } = setup({
+      setColumns: vi.fn(async () => ({
+        ok: true as const,
+        count: 1,
+        gapMm: 0,
+        was: 2,
+        sections: 1,
+        line: 'solid' as const,
+        lineKept: true as const,
+      })),
+    })
+    const result = await call('set_columns', { count: 1 })
+    expect(result.output).toBe(
+      'The text runs in one column again. The solid line between columns stays stored and comes back with the columns (line "none" takes it away).',
+    )
+  })
+
+  it('draws a line between the columns when asked, and says so', async () => {
+    const { call, bridge } = setup({
+      setColumns: vi.fn(async (spec: { count: number; line?: string }) => ({
+        ok: true as const,
+        count: spec.count,
+        gapMm: 8,
+        was: 1,
+        sections: 1,
+        ...(spec.line ? { line: spec.line as never } : {}),
+      })),
+    })
+    const lined = await call('set_columns', { count: 2, line: 'solid' })
+    expect(bridge.setColumns).toHaveBeenCalledWith({ count: 2, line: 'solid' })
+    expect(lined.output).toContain('2 columns with 8 mm between them, a solid line down the middle')
+    const plain = await call('set_columns', { count: 2, line: 'none' })
+    expect(plain.output).toContain('8 mm between them and no line.')
+    const double = await call('set_columns', { count: 2, line: 'double' })
+    expect(double.isError).toBe(true)
+    expect(bridge.setColumns).toHaveBeenCalledTimes(2)
+  })
+
+  it('names the line it kept when no line was asked for', async () => {
+    const { call } = setup({
+      setColumns: vi.fn(async () => ({
+        ok: true as const,
+        count: 2,
+        gapMm: 10,
+        was: 2,
+        sections: 1,
+        line: 'dotted' as const,
+        lineKept: true as const,
+      })),
+    })
+    expect((await call('set_columns', { count: 2, gap_mm: 10 })).output).toContain(
+      '10 mm between them; the dotted line down the middle of each gap was there and stays (line "none" takes it away).',
+    )
   })
 
   it('starts a paragraph on a new page or in the next column, and says why it could not', async () => {
@@ -3381,6 +3740,75 @@ describe('the look of a document', () => {
     const unknown = setup()
     await unknown.refreshContext()
     expect(unknown.skill.buildContext!()).not.toContain('Document fonts on this PC')
+  })
+
+  it('tells the model the pages, the paper and columns, and whether the text is plain', async () => {
+    const plain = setup()
+    await plain.refreshContext()
+    expect(plain.skill.buildContext!()).toContain(
+      'Pages: 1 (paper A4 portrait, 1 column(s)).\nLook: all text is in the default look',
+    )
+    const formed = setup({
+      documentShape: vi.fn(async () => ({
+        pages: 3,
+        paper: null,
+        width: 182,
+        height: 257,
+        orientation: 'landscape' as const,
+        otherPapers: [
+          {
+            section: 2,
+            paper: 'A4',
+            width: 210,
+            height: 297,
+            orientation: 'portrait' as const,
+          },
+        ],
+        columns: 2,
+        columnsChangeWithin: true as const,
+        plain: { body: false, tables: true },
+      })),
+    })
+    await formed.refreshContext()
+    const context = formed.skill.buildContext!()
+    expect(context).toContain(
+      'Pages: 3 (paper 182 x 257 mm landscape, 2 column(s), other columns later in the document; section 2 on A4 portrait).',
+    )
+    expect(context).toContain('Look: the body text has a look of its own')
+    const tablesOnly = setup({
+      documentShape: vi.fn(async () => ({
+        pages: 1,
+        paper: 'A4',
+        width: 210,
+        height: 297,
+        orientation: 'portrait' as const,
+        columns: 1,
+        plain: { body: true, tables: false },
+      })),
+    })
+    await tablesOnly.refreshContext()
+    expect(tablesOnly.skill.buildContext!()).toContain(
+      'Look: the body text is in the default look (바탕글, nothing formatted); text in tables or title boxes has formatting.',
+    )
+    const deep = setup({
+      documentShape: vi.fn(async () => ({
+        pages: 1,
+        paper: 'A4',
+        width: 210,
+        height: 297,
+        orientation: 'portrait' as const,
+        columns: 1,
+        plain: { body: true, tables: true, unread: true },
+      })),
+    })
+    await deep.refreshContext()
+    expect(deep.skill.buildContext!()).toContain(
+      'Look: all text is in the default look (바탕글, nothing formatted); tables inside table cells may not all have been read.',
+    )
+    const unread = setup({ documentShape: vi.fn(async () => Promise.reject(new Error('gone'))) })
+    await unread.refreshContext()
+    expect(unread.skill.buildContext!()).toContain('Length:')
+    expect(unread.skill.buildContext!()).not.toContain('Pages:')
   })
 
   it('tells the model to give a document it writes its look', () => {
@@ -3746,16 +4174,149 @@ describe('the skill as the model sees it', () => {
     // apps/shell/resources/builtin-skills: the skills written for Hangul documents
     const names = new Set(setup().skill.tools.map((tool) => tool.name))
     const dir = join(__dirname, '../../shell/resources/builtin-skills')
-    for (const skill of ['hwp-document', 'administration-report', 'administration-report-draft']) {
+    for (const skill of [
+      'hwp-document',
+      'hwp-exam-paper',
+      'administration-report',
+      'administration-report-draft',
+    ]) {
       const text = readFileSync(join(dir, skill, 'SKILL.md'), 'utf8')
       // `words_like_this` in backticks: the way a skill writes a tool
       const words = [...text.matchAll(/`([a-z]+(?:_[a-z]+)+)`/g)].map((m) => m[1])
       expect(words.length, skill).toBeGreaterThan(3)
       for (const word of words) expect(names.has(word!), `${skill}: ${word}`).toBe(true)
     }
-    const own = readFileSync(join(dir, 'hwp-document', 'SKILL.md'), 'utf8')
-    expect(own).toMatch(/^---\nname: hwp-document\n/)
-    expect(own).toMatch(/\nmetadata:\n {2}ieum-editors: hwp\n---\n/)
+    for (const name of ['hwp-document', 'hwp-exam-paper']) {
+      const own = readFileSync(join(dir, name, 'SKILL.md'), 'utf8')
+      expect(own.startsWith(`---\nname: ${name}\n`), name).toBe(true)
+      expect(own).toMatch(/\nmetadata:\n {2}ieum-editors: hwp\n---\n/)
+    }
+  })
+
+  it('names only tools and arguments there are, in the system text and the tool descriptions', () => {
+    const { skill } = setup()
+    const known = new Set<string>()
+    const walk = (schema: unknown): void => {
+      if (!schema || typeof schema !== 'object') return
+      const { properties, items } = schema as {
+        properties?: Record<string, unknown>
+        items?: unknown
+      }
+      for (const [name, inner] of Object.entries(properties ?? {})) {
+        known.add(name)
+        walk(inner)
+      }
+      walk(items)
+    }
+    for (const tool of skill.tools) {
+      known.add(tool.name)
+      walk(tool.inputSchema)
+    }
+    const texts = [skill.systemPrompt, ...skill.tools.map((tool) => tool.description)]
+    const words = new Set(
+      texts.flatMap((text) => [...text.matchAll(/\b[a-z]+(?:_[a-z]+)+\b/g)].map((m) => m[0])),
+    )
+    expect(words.size).toBeGreaterThan(40)
+    const loopTools = new Set(['use_skill'])
+    const answerKeys = new Set(['changes_within'])
+    expect(
+      [...words].filter(
+        (word) => !known.has(word) && !loopTools.has(word) && !answerKeys.has(word),
+      ),
+    ).toEqual([])
+  })
+
+  it('says the limits of one call and that the rest goes into the next', () => {
+    const tools = new Map(setup().skill.tools.map((tool) => [tool.name, JSON.stringify(tool)]))
+    expect(tools.get('insert_paragraphs')).toContain('up to 100 a call')
+    expect(tools.get('insert_equations')).toContain('all of them in one call (up to 60)')
+    expect(tools.get('style_paragraphs')).toContain('Up to 12 styles and 40 rules a call.')
+    expect(tools.get('insert_table')).toContain('up to 400 cells')
+    expect(tools.get('set_header_footer')).toContain('one line of up to 200 characters')
+  })
+
+  it('says one thing where its sentences used to pull apart', () => {
+    const prompt = setup().skill.systemPrompt
+    const dir = join(__dirname, '../../shell/resources/builtin-skills')
+    const document = readFileSync(join(dir, 'hwp-document/SKILL.md'), 'utf8')
+    expect(prompt).not.toContain('instead of typing 1.')
+    expect(prompt).toContain(
+      'In a document you write, type the numbers and marks of its levels as text',
+    )
+    expect(prompt).toContain('type the number as text at the start of each paragraph')
+    expect(document).not.toContain('- Each table has a caption line')
+    expect(document).toContain(
+      '- Each data table has a caption line above it and a header row (an approval box, a reply slip and a title box have neither)',
+    )
+    const styleTool = setup().skill.tools.find((tool) => tool.name === 'style_paragraphs')!
+    expect(styleTool.description).not.toContain('A paragraph takes the first rule that names it.')
+    expect(styleTool.description).toContain('Rules by find go first')
+    expect(prompt).not.toContain('a negative indent as wide as')
+    expect(prompt).toContain('given indent "mark"')
+  })
+
+  it('never names a call of the editor plugin in a refusal the model reads', () => {
+    const plugin = readFileSync(join(__dirname, '../studio-plugin/agent-plugin.mjs'), 'utf8')
+    const skill = readFileSync(join(__dirname, '../src/renderer/ai/hwp-skill.ts'), 'utf8')
+    const calls = [...plugin.matchAll(/^ {6}([a-z]+[A-Z][A-Za-z]*): guarded\(/gm)].map((m) => m[1]!)
+    expect(calls).toContain('styleParagraphs')
+    const texts = [
+      ...[...plugin.matchAll(/fail\(\s*'[A-Z_]+',\s*(['`])([\s\S]*?)\1\s*,?\s*\)/g)].map(
+        (m) => m[2]!,
+      ),
+      ...[...skill.matchAll(/bad\(\s*call,\s*(['`])([\s\S]*?)\1\s*,?\s*\)/g)].map((m) => m[2]!),
+    ]
+    expect(texts.length).toBeGreaterThan(100)
+    const named = texts.flatMap((text) =>
+      calls
+        .filter((call) => new RegExp(`\\b${call}\\b`).test(text))
+        .map((call) => `${call}: ${text}`),
+    )
+    expect(named).toEqual([])
+  })
+
+  it('sends a test paper to its skill, which gives the numbers of the test-paper look', () => {
+    const prompt = setup().skill.systemPrompt
+    expect(prompt).toContain('read the skill hwp-exam-paper with use_skill before the first change')
+    expect(prompt).not.toContain('two columns (set_columns) before anything else')
+    const worksheet =
+      'A worksheet (학습지) or a quiz sheet is an ordinary document: the test-paper form (B4, approval box, points, page border, end mark) only when asked.'
+    expect(prompt).toContain('- A test paper (시험지, 평가, 고사), from scratch')
+    expect(prompt).toContain(worksheet)
+    expect(prompt).not.toContain('학습지), from scratch')
+    expect(prompt).toContain('Write the text first, then set the columns, then add the tables')
+    const skill = readFileSync(
+      join(__dirname, '../../shell/resources/builtin-skills/hwp-exam-paper/SKILL.md'),
+      'utf8',
+    )
+    expect(skill).toContain(
+      'A worksheet (학습지) or a quiz sheet is written as an ordinary document: it gets this form (B4, the approval box, points, the page border, the end mark) only when the user asks for it.',
+    )
+    expect(skill).not.toContain('a quiz or any sheet of numbered questions')
+    expect(skill).toContain(
+      'Typing `ㄱ.` into a 〈보기〉 line the form numbers itself prints it twice.',
+    )
+    expect(skill).toContain(
+      "one column wide where it can read that column's width, and refuses where it cannot",
+    )
+    expect(skill).toContain(
+      'Then give the line under the box space_before 6 with `format_paragraph`',
+    )
+    const { page, columns, body, questionIndentPt } = EXAM_PAPER
+    expect(skill).toContain(
+      `paper "${page.paper}", margin_left ${page.marginLeft}, margin_right ${page.marginRight}, margin_top ${page.marginTop}, margin_bottom ${page.marginBottom}, margin_header ${page.marginHeader} and margin_footer ${page.marginFooter}`,
+    )
+    expect(skill).toContain(
+      `count ${columns.count}, gap_mm ${columns.gapMm} and line "${columns.line}". Each column is then ${examColumnWidthMm()} mm wide`,
+    )
+    expect(skill).toContain(
+      `${body.size} pt, align ${body.align}, line_spacing ${body.lineSpacing}`,
+    )
+    expect(skill).toContain(`margin_left 0 and indent -${questionIndentPt}`)
+    expect(skill).toContain(`margin_left ${questionIndentPt}, space_before 3`)
+    for (const perLine of [5, 3, 2]) {
+      expect(skill, `${perLine} on a line`).toContain(`| ${examChoiceStops(perLine).join(', ')} |`)
+    }
   })
 
   it('offers exactly the tools it can execute', async () => {
@@ -5491,5 +6052,53 @@ describe('what an edit did to the pages and tables, in its answer', () => {
       expect(await editing.verify(['fill_cells', 'fill_cells'])).toContain('table 1, row 2, col 1')
       expect(editing.bridge.cutCells).toHaveBeenCalledTimes(2)
     })
+  })
+})
+
+describe('a table inside a cell of another table', () => {
+  const TABLE_TOOLS = ['merge_cells', 'split_cell', 'format_cells', 'add_to_table']
+
+  it('is not ruled out by the table tools or the instructions', () => {
+    const { skill } = setup()
+    for (const name of TABLE_TOOLS) {
+      const tool = skill.tools.find((offered) => offered.name === name)
+      expect(tool?.description, name).not.toMatch(/another table|inside a cell/)
+    }
+    const prompt = skill.systemPrompt
+    expect(prompt).not.toContain('its cells cannot be coloured, merged or split')
+    expect(prompt).toContain(
+      'A table inside a cell of another table is read, filled, formatted and changed like any other',
+    )
+    // what still cannot be done there stays said
+    expect(prompt).toContain('The alignment, spacing and paragraph style of its paragraphs')
+  })
+
+  it('tells the model when its borders are drawn by objects', async () => {
+    const drawn = 'its cell borders are drawn as objects'
+    const lines = setup({
+      addTableLines: async () => ({ ok: false, reason: 'nested', rows: 2, cols: 2 }),
+    })
+    const added = await lines.call('add_to_table', { table: 2, what: 'rows', at: 1 })
+    expect(added.isError).toBe(true)
+    expect(added.output).toContain(drawn)
+    const merge = setup({ mergeCells: async () => ({ ok: false, reason: 'unsupported_place' }) })
+    const merged = await merge.call('merge_cells', {
+      table: 2,
+      from_row: 1,
+      from_col: 1,
+      to_row: 1,
+      to_col: 2,
+    })
+    expect(merged.output).toContain(drawn)
+    const split = setup({ splitCell: async () => ({ ok: false, reason: 'unsupported_place' }) })
+    expect(
+      (await split.call('split_cell', { table: 2, row: 1, col: 1, rows: 2 })).output,
+    ).toContain(drawn)
+    const look = setup({
+      formatCells: async () => ({ ok: false, reason: 'unsupported_place', count: 3 }),
+    })
+    expect((await look.call('format_cells', { table: 2, background: '#eeeeee' })).output).toContain(
+      drawn,
+    )
   })
 })

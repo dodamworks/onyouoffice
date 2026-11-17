@@ -532,6 +532,152 @@ describe('createUserSkillsSkill', () => {
   })
 })
 
+describe('a skill named by its bare name', () => {
+  // the views as the shell's main process lists them: the id is always source:name
+  const view = (id: string, over: Record<string, unknown> = {}) => ({
+    id,
+    source: id.split(':')[0],
+    name: id.split(':')[1],
+    title: id,
+    description: 'd',
+    enabled: true,
+    invoke: 'auto',
+    editors: ['hwp'],
+    ...over,
+  })
+  const depsOf = (views: unknown[]) =>
+    makeDeps({ editor: 'hwp', list: () => userSkillEntriesOf(views) })
+
+  it('use_skill reads the built-in an editor’s instructions name without its source', async () => {
+    const { deps, reads } = depsOf([view('builtin:hwp-exam-paper')])
+    const result = await createUserSkillsSkill(deps).executeTool(
+      call(USE_SKILL_TOOL, { id: 'hwp-exam-paper' }),
+    )
+    expect(result.isError).toBeFalsy()
+    expect(result.output).toContain('<skill id="builtin:hwp-exam-paper"')
+    expect(reads).toEqual(['builtin:hwp-exam-paper'])
+  })
+
+  it('reads the person’s own copy where it pushes the built-in of that name back', async () => {
+    const { deps, reads, fileReads } = depsOf([
+      view('builtin:hwp-exam-paper', { shadowedBy: 'user:hwp-exam-paper' }),
+      view('user:hwp-exam-paper'),
+    ])
+    const skill = createUserSkillsSkill(deps)
+    await skill.executeTool(call(USE_SKILL_TOOL, { id: 'hwp-exam-paper' }))
+    await skill.executeTool(
+      call(READ_SKILL_FILE_TOOL, { id: 'hwp-exam-paper', path: 'reference/tone.md' }),
+    )
+    expect(reads).toEqual(['user:hwp-exam-paper'])
+    expect(fileReads).toEqual([['user:hwp-exam-paper', 'reference/tone.md']])
+  })
+
+  it('refuses a source no listed skill of the name has', async () => {
+    const { deps, reads } = depsOf([view('user:letter')])
+    const result = await createUserSkillsSkill(deps).executeTool(
+      call(USE_SKILL_TOOL, { id: 'builtin:letter' }),
+    )
+    expect(result.isError).toBe(true)
+    expect(result.output).toBe('No skill with id builtin:letter. Use an id from the skills list.')
+    expect(reads).toEqual([])
+  })
+
+  it.each([
+    [
+      'the built-in turned off by saving the person’s own copy',
+      [view('app:hwp-exam-paper'), view('builtin:hwp-exam-paper', { enabled: false })],
+      'app:hwp-exam-paper',
+    ],
+    [
+      'the built-in hidden beside the person’s own copy',
+      [view('app:hwp-exam-paper'), view('builtin:hwp-exam-paper', { hidden: true })],
+      'app:hwp-exam-paper',
+    ],
+    [
+      'the person’s own copy set for the Word editor only',
+      [
+        view('app:hwp-exam-paper', { editors: ['docs'] }),
+        view('builtin:hwp-exam-paper', { shadowedBy: 'app:hwp-exam-paper' }),
+      ],
+      'builtin:hwp-exam-paper',
+    ],
+    [
+      'a Claude skill of the same name turned off',
+      [view('builtin:hwp-exam-paper'), view('user:hwp-exam-paper', { enabled: false })],
+      'builtin:hwp-exam-paper',
+    ],
+    [
+      'the one the list puts forward, set for every editor, over one set for this one',
+      [
+        view('user:letter', { editors: undefined }),
+        view('codex:letter', { shadowedBy: 'user:letter' }),
+      ],
+      'user:letter',
+    ],
+    [
+      'a skill whose name differs in case from the one asked for, that won the name',
+      [
+        view('project:HWP-Exam-Paper', { editors: undefined }),
+        view('builtin:hwp-exam-paper', { shadowedBy: 'project:HWP-Exam-Paper' }),
+      ],
+      'project:HWP-Exam-Paper',
+    ],
+    [
+      'the first usable one where the winner is set for another editor',
+      [
+        view('app:hwp-exam-paper', { editors: ['docs'] }),
+        view('builtin:hwp-exam-paper', { enabled: false }),
+        view('user:hwp-exam-paper', { editors: undefined, shadowedBy: 'app:hwp-exam-paper' }),
+        view('codex:hwp-exam-paper', { editors: undefined, shadowedBy: 'app:hwp-exam-paper' }),
+      ],
+      'user:hwp-exam-paper',
+    ],
+  ])('reads the one skill of a bare name that may be used here: %s', async (_name, views, id) => {
+    const { deps, reads, fileReads } = depsOf(views)
+    const skill = createUserSkillsSkill(deps)
+    const name = id.split(':')[1]!.toLowerCase()
+    const used = await skill.executeTool(call(USE_SKILL_TOOL, { id: name }))
+    expect(used.isError).toBeFalsy()
+    expect(used.output).toContain(`<skill id="${id}"`)
+    await skill.executeTool(call(READ_SKILL_FILE_TOOL, { id: name, path: 'reference/tone.md' }))
+    expect(reads).toEqual([id])
+    expect(fileReads).toEqual([[id, 'reference/tone.md']])
+  })
+
+  it('says a skill is turned off when every one of its name is', async () => {
+    const { deps, reads } = depsOf([
+      view('app:hwp-exam-paper', { enabled: false }),
+      view('builtin:hwp-exam-paper', { enabled: false }),
+    ])
+    const result = await createUserSkillsSkill(deps).executeTool(
+      call(USE_SKILL_TOOL, { id: 'hwp-exam-paper' }),
+    )
+    expect(result.isError).toBe(true)
+    expect(result.output).toBe(
+      'The skill hwp-exam-paper is turned off. The person can turn it on in Settings → Skills.',
+    )
+    expect(reads).toEqual([])
+  })
+
+  it('says a skill is for other editors when the only one of its name is', async () => {
+    const { deps, reads } = depsOf([view('builtin:docx-report', { editors: ['docs'] })])
+    const result = await createUserSkillsSkill(deps).executeTool(
+      call(USE_SKILL_TOOL, { id: 'docx-report' }),
+    )
+    expect(result.output).toMatch(/only in other editors \(docs\)/)
+    expect(reads).toEqual([])
+  })
+
+  it('keeps the refusal of a turned-off skill named so', async () => {
+    const { deps, reads } = depsOf([view('builtin:hwp-exam-paper', { enabled: false })])
+    const result = await createUserSkillsSkill(deps).executeTool(
+      call(USE_SKILL_TOOL, { id: 'hwp-exam-paper' }),
+    )
+    expect(result.output).toMatch(/turned off/)
+    expect(reads).toEqual([])
+  })
+})
+
 describe('userSkillEntriesOf', () => {
   it('keeps well-formed views and reads their states', () => {
     const entries = userSkillEntriesOf([

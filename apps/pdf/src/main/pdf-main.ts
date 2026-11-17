@@ -10,7 +10,7 @@ import {
   watch,
   writeFileSync,
 } from 'node:fs'
-import { createHash, randomUUID } from 'node:crypto'
+import { createHash, randomUUID, type Hash } from 'node:crypto'
 import { copyFile, open, readFile, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
@@ -838,13 +838,24 @@ const redactionFlows = new Set<number>()
 // overwriting it; an automatic save defers silently to the next manual one.
 const docDiskStates = new Map<number, Map<string, SaveDiskState>>()
 
-async function rememberDiskState(wcId: number, path: string): Promise<void> {
-  const state = await recordDiskState(path)
+async function rememberDiskState(
+  wcId: number,
+  path: string,
+  read?: Uint8Array | string,
+): Promise<void> {
+  const state = await recordDiskState(path, read)
   if (!state) return
   const states = docDiskStates.get(wcId) ?? new Map<string, SaveDiskState>()
   states.set(path, state)
   docDiskStates.set(wcId, states)
 }
+
+/**
+ * The digest of each file a view is reading in slices, taken as the slices go
+ * by, so the file is not read once more, whole, for the record above: where
+ * its next slice starts, and the hash of everything before that.
+ */
+const sliceDigests = new Map<number, Map<string, { next: number; hash: Hash }>>()
 
 function forgetDiskState(wcId: number, path: string): void {
   const states = docDiskStates.get(wcId)
@@ -1673,9 +1684,10 @@ function registerPdfIpc(): void {
       throw new Error('pdf: path not granted to this view')
     }
     // a view restored from a recovery copy shows the copy until it is saved
-    const buf = recovery.viewBytes(e.sender.id, path) ?? (await readFile(path))
+    const restored = recovery.viewBytes(e.sender.id, path)
+    const buf = restored ?? (await readFile(path))
     // The reader's copy: this view's save guard compares against this state
-    await rememberDiskState(e.sender.id, path)
+    await rememberDiskState(e.sender.id, path, restored ? undefined : buf)
     // IPC copies what it sends: a buffer that is all document goes as is, not copied first
     return buf.byteOffset === 0 && buf.byteLength === buf.buffer.byteLength
       ? buf.buffer
@@ -1715,8 +1727,26 @@ function registerPdfIpc(): void {
       } finally {
         await handle.close()
       }
-      // The reader's copy: this view's save guard compares against this state
-      if (from === 0) await rememberDiskState(e.sender.id, path)
+      // The reader's copy: this view's save guard compares against this state.
+      // The slices of one read come in order from the start, so their digest is
+      // the file's.
+      const wcId = e.sender.id
+      const digests = sliceDigests.get(wcId) ?? new Map<string, { next: number; hash: Hash }>()
+      sliceDigests.set(wcId, digests)
+      if (from === 0) digests.set(path, { next: 0, hash: createHash('sha256') })
+      const digest = digests.get(path)
+      if (digest?.next === from) {
+        digest.hash.update(result.data)
+        digest.next += result.data.length
+        if (result.data.length === 0 || digest.next >= result.fileSize) {
+          digests.delete(path)
+          await rememberDiskState(wcId, path, digest.hash.digest('hex'))
+        }
+      } else if (digest) {
+        // a slice out of turn: what went by is not the file, so it is read for the record
+        digests.delete(path)
+        await rememberDiskState(wcId, path)
+      }
       return result
     },
   )
@@ -3145,6 +3175,7 @@ function grantAndTrack(wc: WebContents, openPath?: string | null): void {
     allowedByWc.delete(wcId)
     dirtyByWc.delete(wcId)
     docDiskStates.delete(wcId)
+    sliceDigests.delete(wcId)
     stopViewWatch(wcId)
     certEntriesByWc.delete(wcId)
     saveAsTargetByWc.delete(wcId)

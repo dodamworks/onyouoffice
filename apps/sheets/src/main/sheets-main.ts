@@ -6225,7 +6225,7 @@ async function openWorkbookSession(
   // the user sees, not the converted temp copy (CSV) or recovery copy (restore).
   const diskStatePath = restoreTarget ?? csvSourcePath ?? path
   try {
-    const [opened, digest, snapshotStat, restoreTargetSha, csvSourceSha, diskState] =
+    const [opened, digest, snapshotStat, restoreTargetSha, csvSourceSha, stagedDiskState] =
       await Promise.all([
         staged?.opened ??
           client
@@ -6240,8 +6240,19 @@ async function openWorkbookSession(
         csvSourcePath === undefined
           ? Promise.resolve(undefined)
           : sha256File(csvSourcePath).catch(() => undefined),
-        recordDiskState(diskStatePath),
+        // after a save the written file is read back; a file being opened is hashed above
+        staged === undefined ? null : recordDiskState(diskStatePath),
       ])
+    // The file this copy is judged by was hashed just above: itself, or the
+    // snapshot copied from it here. It is not read again for the same digest.
+    const openedSha =
+      restoreTarget !== undefined
+        ? restoreTargetSha
+        : csvSourcePath !== undefined
+          ? csvSourceSha
+          : digest
+    const diskState =
+      staged === undefined ? await recordDiskState(diskStatePath, openedSha) : stagedDiskState
     // an encrypted workbook writes no recovery copy: it would be plaintext
     const automaticRecoveryDisabled =
       password !== undefined || !allowsAutomaticWorkbookRecovery(opened.sheets)

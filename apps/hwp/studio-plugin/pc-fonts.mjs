@@ -98,6 +98,53 @@ export function sameFaces(listed, kept) {
   return true
 }
 
+/**
+ * How many of the PC's fonts one detection reads the file of, on Linux, when the app did
+ * not say. There the page keeps each font file it read open until its next garbage
+ * collection, and a detection does not pause: on a PC with thousands of fonts the page ran
+ * into the open-file limit a desktop session starts programs with (1024) and stopped for
+ * good (#488). The app reads the page's own limit and passes half of it in the editor's
+ * address (`fontReads`, src/main/font-file-reads.ts); this is half of that common limit,
+ * for an editor started without it.
+ */
+export const LINUX_FONT_FILE_READS = 512
+
+/** The share the app passed in the editor's address, else LINUX_FONT_FILE_READS. */
+export function linuxFontFileReads(search = globalThis.location?.search ?? '') {
+  const given = Number(new URLSearchParams(search).get('fontReads') ?? '')
+  return Number.isSafeInteger(given) && given > 0 ? given : LINUX_FONT_FILE_READS
+}
+
+/** A name with a letter beyond ASCII: the PC's list gives a font's name in the PC's language first. */
+const LOCAL_NAME = /[\u0080-\uffff]/
+
+/**
+ * Which fonts of the PC's list the studio's detection reads the file of, by their place in
+ * the list (the studio-font-file-reads patch asks): every one, except on Linux past
+ * `reads` (linuxFontFileReads). There the fonts the list names in the PC's language go first (on
+ * a Korean PC the Korean fonts, whose other name a document may use), then the rest in
+ * the list's order. A font that is not read keeps the names the list gives, without those
+ * in its file. The choice follows from the list alone: a detection run again reads the same
+ * files, and a file read again is not opened again.
+ * @param {ReadonlyArray<{ family?: string; fullName?: string }>} listed
+ * @returns {(index: number) => boolean}
+ */
+export function fontFilesToRead(
+  listed,
+  platform = globalThis.navigator?.platform ?? '',
+  reads = linuxFontFileReads(),
+) {
+  if (!/Linux/.test(platform) || listed.length <= reads) return () => true
+  const local = (face) => LOCAL_NAME.test(`${face.family ?? ''}${face.fullName ?? ''}`)
+  const read = new Set()
+  for (const first of [true, false]) {
+    for (let index = 0; index < listed.length && read.size < reads; index += 1) {
+      if (local(listed[index]) === first) read.add(index)
+    }
+  }
+  return (index) => read.has(index)
+}
+
 /** Resolves once the page is visible: the enumeration refuses a hidden page (a tab opened behind another). */
 function whenVisible(doc) {
   if (!doc || doc.visibilityState === 'visible') return Promise.resolve()
