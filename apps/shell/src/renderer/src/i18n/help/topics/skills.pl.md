@@ -15,11 +15,11 @@ Umiejętność to zestaw instrukcji roboczych dla AI. Zapisz raz to, co robisz w
 | **Folder umiejętności Codex**  | Umiejętności z `~/.agents/skills`                                       | Wyłączone   |
 
 - Przełącznik włącza lub wyłącza umiejętność. To samo ustawienie obowiązuje w panelu AI każdego edytora, w Ask AI na stronie głównej i w oknie agenta.
-- Dla włączonej umiejętności wybierz **Decyduje AI** lub **Tylko na wezwanie**. Na początku ustawione jest Decyduje AI. Przy Tylko na wezwanie umiejętność jest używana tylko wtedy, gdy sam ją wywołasz.
+- Dla włączonej umiejętności wybierz **Decyduje AI** lub **Tylko na wezwanie**. Na początku ustawione jest Decyduje AI. Przy Tylko na wezwanie umiejętność jest używana tylko wtedy, gdy sam ją wywołasz. Przy wyłączonej umiejętności ten wybór zostaje, przygaszony, więc można go ustawić przed ponownym włączeniem.
 - Umiejętności z różnych źródeł mogą mieć tę samą nazwę. Rozróżnisz je po etykiecie pochodzenia w każdym wierszu. Gdy dwie umiejętności o tej samej nazwie są włączone, na liście `/` widać i używana jest tylko jedna: pierwsza w kolejności Moje umiejętności, Wbudowane, Folder umiejętności Claude, Folder umiejętności Codex, Wtyczki Claude. W wierszu drugiej jest podane, która umiejętność jest używana zamiast niej.
 - W menu dodatkowych opcji są **Pokaż zawartość**, **Edytuj** (tylko moje umiejętności), **Eksportuj (zip)** (tylko moje umiejętności) i **Otwórz folder**. Wbudowane umiejętności nie mają pozycji **Otwórz folder**. **Gdzie używać** otwiera od razu miejsce wyboru edytorów, w których umiejętność jest używana.
 - Moje umiejętności znajdują się w folderze `~/.ieumoffice/skills`. W systemie Windows jest to `C:\Users\<nazwa użytkownika>\.ieumoffice\skills`. **Otwórz folder** w menu dodatkowych opcji otwiera folder umiejętności.
-- **Przenieś do kosza** przenosi jedną z moich umiejętności do systemowego kosza, skąd można ją przywrócić.
+- **Przenieś do kosza** przenosi jedną z moich umiejętności do systemowego kosza, skąd można ją przywrócić. Jeśli umiejętność o tej samej nazwie z innego źródła jest wyłączona, potwierdzenie pokazuje zaznaczone pole do jej ponownego włączenia. Odznacz je, aby pozostała wyłączona.
 - Wbudowanej umiejętności się nie usuwa, tylko ukrywa: wybierz **Ukryj**. **Pokaż ponownie** na dole listy przywraca ją w stanie początkowym.
 - Aby zmienić umiejętność wbudowaną lub pochodzącą z innego programu, wybierz **Kopiuj do moich umiejętności**. Kopia pojawia się w moich umiejętnościach, a oryginał zostaje wyłączony.
 - Gdy eksportujesz umiejętność z szablonem, do pliku zip trafia też dokument szablonu. Przed eksportem sprawdź, czy dokument nie zawiera danych osobowych.
@@ -47,6 +47,16 @@ Pod podglądem zawsze widnieje: „Instaluj umiejętności tylko z zaufanych źr
 - Jeśli nic się nie zmieniło, pojawia się „Aktualna”. Jeśli coś się zmieniło, przejrzyj zmienione pliki i podgląd, a potem kliknij **Aktualizuj**.
 - Jeśli po instalacji sam edytowałeś umiejętność, pojawia się też „Twoje zmiany zostaną utracone”.
 - Aktualizacja zachowuje stan włączenia umiejętności, wybór między Decyduje AI a Tylko na wezwanie oraz to, gdzie jest używana.
+
+## Powrót do wcześniejszej wersji
+
+Gdy edytujesz własną umiejętność, instalujesz w jej miejsce inną o tej samej nazwie albo ją aktualizujesz, poprzednia wersja zostaje zachowana. Nie trafia do kosza.
+
+- **Wcześniejsze wersje** na dole okna **Pokaż zawartość** lub **Edytuj** pokazuje zachowane wersje, od najnowszej, wraz z tym, kiedy i dlaczego każdą zachowano, oraz jej rozmiarem.
+- **Pokaż różnice** pokazuje, które wiersze `SKILL.md` wróciłyby, które by zniknęły i które inne pliki by się zmieniły.
+- **Wróć do tej wersji** przywraca pliki tej wersji dokładnie takie, jakie były. Obecna wersja też zostaje zachowana, więc można do niej wrócić. To, czy umiejętność jest włączona i kiedy jest używana, pozostaje bez zmian.
+- Zachowane wersje pozostają, dopóki ich nie usuniesz. **Usuń** usuwa jedną na stałe.
+- Wersje znajdują się w folderze `~/.ieumoffice/skill-history`. **Przenieś do kosza** dla umiejętności przenosi do kosza także jej zachowane wersje.
 
 ## Wywoływanie umiejętności w panelu AI
 

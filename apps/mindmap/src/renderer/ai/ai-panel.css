@@ -814,82 +814,6 @@
   transform: scale(0.98);
 }
 
-/* Version snapshots footer (same as docs) */
-.ai-versions {
-  border-top: 1px solid var(--border);
-  padding: 8px 14px 10px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-
-.ai-versions-title {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-dim);
-  margin-bottom: 4px;
-}
-
-.ai-version-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  padding: 4px 8px;
-  margin: 0 -8px;
-  border-radius: 6px;
-}
-
-.ai-version-row:hover {
-  background: var(--hover);
-}
-
-.ai-version-label {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  overflow: hidden;
-  white-space: nowrap;
-  color: var(--text);
-  min-width: 0;
-}
-
-.ai-version-label > :last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ai-version-time {
-  flex-shrink: 0;
-  font-size: 11px;
-  color: var(--text-dim);
-  font-variant-numeric: tabular-nums;
-}
-
-.ai-version-rollback {
-  flex-shrink: 0;
-  border: none;
-  background: none;
-  color: var(--accent);
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.ai-version-rollback:hover {
-  background: var(--active-bg);
-}
-
-.ai-version-rollback:disabled {
-  color: var(--text-dim);
-  cursor: default;
-  background: none;
-}
-
 .ai-attach-btn {
   display: inline-flex;
   align-items: center;
@@ -1214,12 +1138,6 @@ html:not([data-ai-panel-side='right']) .mm-stage > .ai-dock {
 .mm-stage > .ai-dock .ai-rail {
   border: 1px solid var(--border);
   border-radius: 10px;
-}
-
-.ai-versions-note {
-  padding: 4px 12px 6px;
-  font-size: 12px;
-  color: var(--text-secondary);
 }
 
 /* the AI button at the far end of the toolbar */

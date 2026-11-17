@@ -67,7 +67,7 @@ Haga clic derecho en cualquier parte del cuerpo: el menú se ajusta a lo que ha 
 ## IA
 
 - Botón de IA en la cinta y panel lateral: reescribir, ampliar, traducir, resumir, insertar tablas predeterminadas, además de instrucciones libres.
-- Cada turno de la IA guarda primero una instantánea; puede volver atrás desde la lista de versiones, y ese propio retroceso se puede deshacer.
+- Los lugares que cambió la IA se marcan en amarillo. **Deshacer estos cambios**, en la tarjeta bajo su respuesta, revierte ese turno entero (los turnos posteriores también se revierten), y ese propio retroceso se puede deshacer.
 
 ## Guardar y exportar
 
@@ -77,4 +77,4 @@ Haga clic derecho en cualquier parte del cuerpo: el menú se ajusta a lo que ha 
 
 ## Imprimir
 
-ctrl+P a través del cuadro de diálogo del sistema, con páginas WYSIWYG.
+ctrl+P abre la ventana de impresión. Elija la impresora, las copias, la doble cara y el intervalo (incluida la selección); en **Disposición de páginas** hay varias páginas por hoja, folleto, póster, etiquetas, caras pares o impares y escala de grises (consulte [Operaciones de archivo](help://file-ops)).

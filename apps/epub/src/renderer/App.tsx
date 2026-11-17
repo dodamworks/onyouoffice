@@ -34,6 +34,7 @@ import type {
 } from '../shared/ipc'
 import { openableLink } from '../shared/links'
 import { EpubAiDock, useEpubAi } from './ai/AiDock'
+import { useAiOn } from './ai/ai-choice'
 import type { StartBookTranslation } from './ai/book-tools'
 import { BookPreview, type BookPreviewHandle, type PreviewPlace } from './components/BookPreview'
 import { ChapterFrame, type FrameWheel } from './components/ChapterFrame'
@@ -61,6 +62,7 @@ import {
   scrollToEnd,
   scrollToStart,
   showHit,
+  showAiMarks,
   topBlockId,
   type ChapterTarget,
 } from './reader/frame-dom'
@@ -253,6 +255,11 @@ export default function App(): React.JSX.Element {
 
   const book = phase.kind === 'open' ? phase.book : null
   const translateRef = useRef<BookTranslationHandle>(null)
+  // AI features on (Settings): while off, the AI panel and book translation are
+  // gone, and turning AI on brings them back without reopening the tab
+  const aiOn = useAiOn()
+  const aiOnRef = useRef(aiOn)
+  aiOnRef.current = aiOn
 
   const readChapterForAi = useCallback((spineIndex: number) => api.readChapter(spineIndex), [api])
   // the AI panel's start_book_translation only opens the translation window
@@ -271,6 +278,14 @@ export default function App(): React.JSX.Element {
     frameDoc: frameDocRef,
     startBookTranslation,
   })
+  const aiMarksRef = useRef(ai.marks)
+  aiMarksRef.current = ai.marks
+  /** marks what the last AI run changed in the chapter on screen (a highlight, not the chapter's DOM) */
+  const paintAiMarks = useCallback((doc: Document | null) => {
+    const current = shownRef.current
+    if (!doc || !current) return
+    showAiMarks(doc, aiMarksRef.current?.get(current.spineIndex) ?? null)
+  }, [])
 
   const flash = useCallback((next: Notice | null) => {
     if (noticeTimerRef.current !== null) window.clearTimeout(noticeTimerRef.current)
@@ -696,6 +711,8 @@ export default function App(): React.JSX.Element {
 
   /** the ribbon's button and the menu: open the window, or say why not */
   const openTranslation = useCallback(() => {
+    // the menu's "Translate book" too: book translation is AI work
+    if (!aiOnRef.current) return
     const answer = translateRef.current?.requestOpen({ lang: null, chapters: null })
     if (!answer) return
     if ('running' in answer) flash({ key: 'btBusy', params: answer.running })
@@ -822,10 +839,13 @@ export default function App(): React.JSX.Element {
       // the app losing focus while the chapter holds it (auto save)
       doc.defaultView?.addEventListener('blur', () => frameBlurRef.current?.())
       applyTarget(doc, pendingTargetRef.current)
+      paintAiMarks(doc)
       schedulePosition()
     },
-    [applyTarget, schedulePosition, editor],
+    [applyTarget, schedulePosition, editor, paintAiMarks],
   )
+  // again after every edit: a redrawn chapter body drops the old ranges
+  useEffect(() => paintAiMarks(frameDocRef.current), [ai.marks, editState, paintAiMarks])
 
   /** An outside address from a link in the book: only safe ones open, in the browser. */
   const openOutside = useCallback(
@@ -1034,12 +1054,14 @@ export default function App(): React.JSX.Element {
           />
         }
         translateTools={
-          <TranslateButton
-            t={t}
-            hasBook
-            fixedLayout={phase.book.fixedLayout}
-            onClick={openTranslation}
-          />
+          aiOn ? (
+            <TranslateButton
+              t={t}
+              hasBook
+              fixedLayout={phase.book.fixedLayout}
+              onClick={openTranslation}
+            />
+          ) : undefined
         }
         onSave={() => void save('save')}
         onSaveAs={() => void save('saveAs')}
@@ -1113,6 +1135,7 @@ export default function App(): React.JSX.Element {
             save={saveForTranslation}
             lock={lockForTranslation}
             onWindowOpen={translationWindowChanged}
+            hidden={!aiOn}
           />
           {preview && (
             <BookPreview
@@ -1175,7 +1198,7 @@ export default function App(): React.JSX.Element {
             </button>
           </div>
         </section>
-        <EpubAiDock ai={ai} filePath={filePath} />
+        {aiOn && <EpubAiDock ai={ai} filePath={filePath} />}
       </div>
       <footer className="epub-status" aria-live="polite">
         <span className="epub-status-chapter">

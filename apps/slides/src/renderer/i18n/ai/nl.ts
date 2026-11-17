@@ -91,8 +91,6 @@ export const nl = {
   aiStopGeneration: 'Genereren stoppen',
   aiStop: 'Stoppen',
   aiSend: 'Verzenden',
-  aiSnapshotsTitle: 'Versiesnapshots',
-  aiRollback: 'Terugdraaien',
   aiStarterPolishTitle: 'De titel en tekst van deze dia verbeteren',
   aiStarterTighten: 'De opsommingen van deze dia beknopter maken',
   aiStarterProofread: 'De hele presentatie op typefouten controleren en deze corrigeren',

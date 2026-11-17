@@ -182,6 +182,91 @@ export function tableLookBlocks(look, header) {
   return []
 }
 
+/**
+ * Rows of a table's head: flagged as header, or with a line under them unlike the line under
+ * the next row (a first row styled by hand, a head of two rows) while that next line still
+ * lies between two rows. In a table of two rows, the first is a head when the line under it
+ * is unlike the line over the table.
+ */
+export function headRowsOf(edges, flagged) {
+  const rows = edges.length - 1
+  const same = (one, other) =>
+    one.every((line, col) => {
+      const below = other[col]
+      if (!line || !below) return true
+      if (line.type === 0 || below.type === 0) return line.type === below.type
+      return (
+        line.type === below.type &&
+        line.width === below.width &&
+        String(line.color).toLowerCase() === String(below.color).toLowerCase()
+      )
+    })
+  const drawnByHand = (head) =>
+    head + 2 < rows
+      ? !same(edges[head + 1], edges[head + 2])
+      : rows === 2 && head === 0 && !same(edges[1], edges[0])
+  let head = 0
+  while (head < rows && (flagged[head] === true || drawnByHand(head))) head += 1
+  return head
+}
+
+/** `edge` with each merged-cell gap (null) filled from the nearest column that has a line, else with `fallback`. */
+function filledEdge(edge, fallback) {
+  return edge.map((line, col) => {
+    if (line) return line
+    for (let step = 1; step < edge.length; step++) {
+      const near = edge[col - step] ?? edge[col + step]
+      if (near) return near
+    }
+    return fallback
+  })
+}
+
+/** The thinnest drawn line of `lines` (border type 0 is no line); null when none is. */
+function thinnestOf(lines) {
+  let thin = null
+  for (const line of lines) {
+    if (line && line.type !== 0 && (!thin || line.width < thin.width)) thin = line
+  }
+  return thin
+}
+
+/**
+ * The line new rows get when the table has none between two body rows. Never the outline:
+ * forms draw it heavy, and it must not show up inside the table.
+ */
+function innerLineOf(edges, verticals) {
+  const any = thinnestOf([...edges.flat(), ...verticals])
+  return (
+    thinnestOf(verticals) ??
+    thinnestOf(edges.slice(1, -1).flat()) ??
+    (any ? { ...any, type: 1 } : null)
+  )
+}
+
+/**
+ * The horizontal lines of a table once `count` rows were added at row `first` (zero-based,
+ * the first new row). `edges` are the lines before: one list per edge from the top of the
+ * table (0) to its bottom (one more than the rows), each a line per column (null where a
+ * merged cell runs across the edge); `flagged` says which rows carry the header flag;
+ * `verticals` are the lines between its columns. The outline stays with the edge of the
+ * table and the lines of the head (headRowsOf) with the head; every line the new rows bring
+ * is the line between the first two body rows, or, without two body rows, innerLineOf.
+ * Null for a table of one row, or one that draws no line: the lines are then left as the
+ * engine copied them.
+ */
+export function rowEdgesAfterAdding(edges, flagged, verticals, first, count) {
+  const rows = edges.length - 1
+  const between = headRowsOf(edges, flagged) + 1
+  if (rows < 2) return null
+  const fallback = innerLineOf(edges, verticals)
+  if (!fallback) return null
+  const inner =
+    between < rows ? filledEdge(edges[between], fallback) : Array(edges[0].length).fill(fallback)
+  const at = Math.min(first, rows - 1)
+  return [...edges.slice(0, at + 1), ...Array(count).fill(inner), ...edges.slice(at + 1)]
+}
+
 /** The looks a title box can be given. */
 export const TITLE_BOX_LOOKS = ['bands', 'lines', 'box', 'shaded']
 
@@ -405,14 +490,35 @@ export function headerPieces(text) {
 /** The letters Korean documents count with: 가, 나, 다, … */
 const HANGUL_ORDER = '가나다라마바사아자차카타파하'
 
+/** A day of a month as Korean documents write it: 12. */
+const DAY = String.raw`(?:0?[1-9]|[12]\d|3[01])\.`
+/** A month and a day as Korean documents write them: 11. 12. */
+const MONTH_DAY = String.raw`(?:0?[1-9]|1[0-2])\.\s*${DAY}`
+/** The marks a range of dates is written with: ~, ～, ∼ and -. */
+const RANGE = '[~\uFF5E\u223C-]'
+/** What follows a date and not a number: the weekday in brackets ((목)) or a time (09:00). */
+const DATE_TAIL = String.raw`\([월화수목금토일](?:요일)?\)|\d{1,2}:\d{2}`
+
+/**
+ * A line that starts with a date as Korean documents write one: a month and a day followed
+ * by the weekday in brackets (11. 12.(목)), by a time (11. 12. 09:00), by a range to another
+ * month and day (11. 12.~11. 14., 11. 12.-11. 14.) or to a day that the weekday, a time or
+ * the line's end follows (11. 12.~14.(토)), or by nothing (12. 25.). A number followed by a
+ * reference to other parts (10. 1.~3.의, 6. 1.~3. 문항을, 1. 2.(가)를) is not a date.
+ */
+export const DATE_START = new RegExp(
+  String.raw`^${MONTH_DAY.replace('\\s*', '\\s+')}\s*(?:${DATE_TAIL}|${RANGE}\s*(?:${MONTH_DAY}|${DAY}\s*(?:${DATE_TAIL}|$))|$)`,
+)
+
 /**
  * How the numbered levels of a Korean official document start, named by the first number of
  * each level (Ⅰ, 1., 가., 1), 가), (1), (가), ①), as the first characters of a paragraph tell
- * it, leading spaces aside. "1." is not the start of a decimal (1.5) or of a year (2026.).
+ * it, leading spaces aside. "1." is not the start of a decimal (1.5), of a year (2026.) or
+ * of a date (DATE_START).
  */
 export const NUMBERED_MARKS = {
   Ⅰ: /^(?:[Ⅰ-Ⅻ]+(?:[.\s]|$)|[IVX]{1,4}\.(?:\s|$))/,
-  '1.': /^\d{1,2}\.(?!\d)/,
+  '1.': new RegExp(`^(?!${DATE_START.source.slice(1)})\\d{1,2}\\.(?!\\d)`),
   '가.': new RegExp(`^[${HANGUL_ORDER}]\\.(?:\\s|$)`),
   '1)': /^\d{1,2}\)/,
   '가)': new RegExp(`^[${HANGUL_ORDER}]\\)`),
@@ -428,6 +534,71 @@ export function numberedMarkOf(text) {
     if (mark.test(head)) return name
   }
   return null
+}
+
+/** A 가. line with no space after its mark (가.접수), which is not taken for the level. */
+export const NUMBERED_WITHOUT_SPACE = { '가.': new RegExp(`^[${HANGUL_ORDER}]\\.(?=\\S)`) }
+
+/** A cut line: dashes and spaces round a short text, six dashes or more (- - - 절취선 - - -). */
+function isCutLine(line) {
+  const text = line.trim()
+  const dashes = (text.match(/-/g) ?? []).length
+  const rest = [...text.replace(/[-\s]/g, '')].length
+  return dashes >= 6 && rest <= 6 && text.startsWith('-') && text.endsWith('-')
+}
+
+/**
+ * Why a rule that gives a style to the lines starting with `mark` leaves paragraph text
+ * `head` (its leading spaces already removed) out although it starts so: a mark of one
+ * character skips a line where the same character follows it with no space between
+ * (`placeholder`: ○○ 사업) and a `cutLine`. Null when the line is not left out.
+ */
+export function markSkipOf(head, mark) {
+  if (!head.startsWith(mark) || [...mark].length !== 1) return null
+  if (head.slice(mark.length).startsWith(mark)) return 'placeholder'
+  return isCutLine(head) ? 'cutLine' : null
+}
+
+/**
+ * Whether a rule that gives a style to the lines starting with `mark` names paragraph text
+ * `head` (its leading spaces already removed): it starts so and is not left out (markSkipOf).
+ */
+export function startsWithMark(head, mark) {
+  return head.startsWith(mark) && markSkipOf(head, mark) === null
+}
+
+/** A mark at the start of a line that is not a numbered level: □, ○, -, ※ and the like. */
+const SYMBOL_MARK = /^[^\p{L}\p{N}\s]{1,3}(?=\s)/u
+/** A letter with a dot or a bracket as a mark: ㄱ. ㄴ. or a) b). */
+const LETTER_MARK = /^\p{L}[.)](?=\s)/u
+
+/**
+ * How many characters of `text` come before the words its later lines hang under: the
+ * leading spaces, the mark and the spaces after it; 0 when the line has no mark. `rule` says
+ * what the mark is when a style rule named the line (`{ startsWith }` or `{ numbered }`);
+ * without one, a numbered level, a symbol or a letter with a dot or bracket is taken.
+ */
+export function markLengthOf(text, rule = null) {
+  const line = String(text ?? '')
+  const head = line.trimStart()
+  let mark = 0
+  if (typeof rule?.startsWith === 'string') {
+    mark = head.startsWith(rule.startsWith) ? rule.startsWith.length : 0
+  } else {
+    const patterns = rule?.numbered
+      ? [NUMBERED_MARKS[rule.numbered]]
+      : [...Object.values(NUMBERED_MARKS), SYMBOL_MARK, LETTER_MARK]
+    for (const pattern of patterns) {
+      const found = pattern.exec(head)
+      if (found) {
+        mark = found[0].length
+        break
+      }
+    }
+  }
+  if (mark === 0) return 0
+  const after = head.slice(mark)
+  return line.length - head.length + mark + (after.length - after.trimStart().length)
 }
 
 /** Most columns a section's text is laid out in. */
@@ -501,6 +672,19 @@ export function contrastRatio(one, other) {
 /** Below this contrast words cannot be told from what is behind them (white on a pale fill). */
 export const MIN_TEXT_CONTRAST = 1.6
 
+/** Black words on a fill they have less contrast with than this are hard to read. */
+export const MIN_BLACK_ON_FILL = 3
+
+/**
+ * The colour words take on a fill (#RRGGBB) when the call names none that shows on it: white
+ * where black and the colour they have (`current`, black when not known) would both be hard
+ * to read, else null for the colour they have.
+ */
+export function textColorOnFill(fill, current) {
+  const shows = (color) => contrastRatio(color, fill) >= MIN_BLACK_ON_FILL
+  return shows('#000000') || (typeof current === 'string' && shows(current)) ? null : '#ffffff'
+}
+
 /** How text sits at a tab stop, and what fills the way to it, with the engine's codes. */
 export const TAB_ALIGNS = { left: 0, right: 1, center: 2, decimal: 3 }
 export const TAB_LEADERS = { none: 0, line: 1, dashes: 2, dots: 3 }
@@ -564,3 +748,48 @@ export const MAX_EQUATIONS = 60
 export const MAX_EQUATION_SCRIPT = 1000
 /** The width a picture may be given, in millimetres. */
 export const PICTURE_WIDTH_MM = { min: 5, max: 400 }
+
+/**
+ * The look of a test paper (원안지) built from nothing, when no school form is open: B4
+ * portrait in two columns with a line between them, 11 pt body text justified at 160 %,
+ * and question lines that hang by the width of their number. The hwp-exam-paper skill
+ * gives the model these numbers; its test holds the skill to them.
+ */
+export const EXAM_PAPER = {
+  page: {
+    paper: 'B4',
+    widthMm: 257,
+    heightMm: 364,
+    marginLeft: 19,
+    marginRight: 19,
+    marginTop: 10,
+    marginBottom: 10,
+    marginHeader: 11,
+    marginFooter: 10,
+  },
+  columns: { count: 2, gapMm: 8, line: 'solid' },
+  body: { size: 11, align: 'justify', lineSpacing: 160 },
+  /** The hanging indent of a question line, as wide as its number: 1.5 times the text size. */
+  questionIndentPt: 16.5,
+}
+
+/** The width of one column of the test paper in millimetres. */
+export function examColumnWidthMm() {
+  const { page, columns } = EXAM_PAPER
+  const text = page.widthMm - page.marginLeft - page.marginRight
+  return (text - columns.gapMm * (columns.count - 1)) / columns.count
+}
+
+/**
+ * Where the choices of a question stand when `perLine` of them share a line: the first at
+ * the question's indent, each next one a share of the rest of the column further on. Tab
+ * stops in millimetres from the column's left edge, one fewer than the choices.
+ */
+export function examChoiceStops(perLine) {
+  const indentMm = (EXAM_PAPER.questionIndentPt * 25.4) / 72
+  const share = (examColumnWidthMm() - indentMm) / perLine
+  return Array.from(
+    { length: perLine - 1 },
+    (_, k) => Math.round((indentMm + share * (k + 1)) * 10) / 10,
+  )
+}

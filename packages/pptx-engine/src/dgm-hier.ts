@@ -1,5 +1,6 @@
 /**
- * Hierarchy-family (orgChart1) diagram layout interpreter.
+ * Hierarchy-family (orgChart1, and the built-in hierarchy1) diagram layout
+ * interpreter.
  *
  * PowerPoint org charts carry the full layout algorithm in diagrams/layoutN.xml:
  * box proportions and gaps as <dgm:constr> factors, and the std/hang branch
@@ -47,6 +48,11 @@ export interface HierLine {
   y1: number
   x2: number
   y2: number
+  /** The child node of the connection this segment draws. Callers rendering
+   *  the layout use it to key each segment to the connection's presentation
+   *  point; the trunk segment shared by a parent's children points at the
+   *  first child. */
+  to?: HierTreeNode
 }
 
 const DEFAULTS: HierConstraints = {
@@ -58,29 +64,95 @@ const DEFAULTS: HierConstraints = {
   fontMax: 65,
 }
 
+/**
+ * Constraint attributes, read one tag span at a time. Each helper returns what
+ * the regex in its comment returns. Those regexes rescan to the end of an
+ * unclosed tag from every repeated prefix and go quadratic on an opened file;
+ * these scan each span once (a later prefix inside a span can match no more
+ * than the first one can).
+ */
+function constrSpans(xml: string, prefix: string): string[] {
+  const head = new RegExp(`^${prefix}`)
+  const spans: string[] = []
+  const tag = new RegExp(`${prefix}[^>]*`, 'g')
+  for (let t = tag.exec(xml); t; t = tag.exec(xml))
+    spans.push(t[0].slice(head.exec(t[0])![0].length))
+  return spans
+}
+
+/** `prefix[^>]*need[^>]*value` (greedy): the last value after a need. */
+function lastConstrValue(
+  xml: string,
+  prefix: string,
+  value: RegExp,
+  need?: RegExp,
+): string | undefined {
+  for (const rest of constrSpans(xml, prefix)) {
+    const after = need ? need.exec(rest) : null
+    if (need && !after) continue
+    const from = after ? after.index + after[0].length : 0
+    let last: string | undefined
+    const v = new RegExp(value.source, 'g')
+    for (let m = v.exec(rest); m; m = v.exec(rest)) if (m.index >= from) last = m[1]
+    if (last !== undefined) return last
+  }
+  return undefined
+}
+
+/** `prefix[^>]*?refType="(w|h)"[^>]*?fact="([\d.]+)"` (lazy): the first ref and the first fact after it. */
+function hierRootSpacing(xml: string): [string, string] | null {
+  for (const rest of constrSpans(xml, '<dgm:constr type="sp" for="des" forName="hierRoot1"')) {
+    const ref = /refType="(w|h)"/.exec(rest)
+    if (!ref) continue
+    const fact = /fact="([\d.]+)"/.exec(rest.slice(ref.index + ref[0].length))
+    if (fact) return [ref[1]!, fact[1]!]
+  }
+  return null
+}
+
 /** Pull the factors this engine consumes out of the layout part's constraint lists. */
 export function parseHierConstraints(layoutXml: string | undefined): HierConstraints {
   const cons = { ...DEFAULTS }
   if (!layoutXml) return cons
-  const fact = (re: RegExp): number | undefined => {
-    const m = re.exec(layoutXml)
-    if (!m) return undefined
-    const v = parseFloat(m[1]!)
+  const FACT = /fact="([\d.]+)"/
+  const num = (raw: string | undefined): number | undefined => {
+    if (raw === undefined) return undefined
+    const v = parseFloat(raw)
     return Number.isFinite(v) && v > 0 ? v : undefined
   }
+  // The box and gap facts hang off the node composite. Office's orgChart1 names
+  // it rootComposite1; the built-in hierarchy1 layout names it composite.
+  const composite = '(?:rootComposite1?|composite)'
+  const refComposite = new RegExp(`refForName="${composite}"`)
   cons.boxAspect =
-    fact(
-      /<dgm:constr type="h" for="des" forName="rootComposite1?"[^>]*refForName="rootComposite1?"[^>]*fact="([\d.]+)"/,
+    num(
+      lastConstrValue(
+        layoutXml,
+        `<dgm:constr type="h" for="des" forName="${composite}"`,
+        FACT,
+        refComposite,
+      ),
     ) ?? cons.boxAspect
   cons.sibSp =
-    fact(/<dgm:constr type="sibSp"[^>]*refForName="rootComposite1?"[^>]*fact="([\d.]+)"/) ??
-    cons.sibSp
-  cons.sp =
-    fact(/<dgm:constr type="sp" for="des" forName="hierRoot1"[^>]*fact="([\d.]+)"/) ?? cons.sp
-  const connW = fact(/<dgm:constr type="w" for="ch" forName="rootConnector1?"[^>]*fact="([\d.]+)"/)
+    num(lastConstrValue(layoutXml, '<dgm:constr type="sibSp"', FACT, refComposite)) ?? cons.sibSp
+  // Row gap: measured against a sibling box width (orgChart1) or against the
+  // composite height (hierarchy1), so a height reference scales by the aspect.
+  const sp = hierRootSpacing(layoutXml)
+  if (sp) {
+    const v = parseFloat(sp[1])
+    if (Number.isFinite(v) && v > 0) cons.sp = sp[0] === 'h' ? v * cons.boxAspect : v
+  } else {
+    cons.sp =
+      num(
+        lastConstrValue(layoutXml, '<dgm:constr type="sp" for="des" forName="hierRoot1"', FACT),
+      ) ?? cons.sp
+  }
+  const connW = num(
+    lastConstrValue(layoutXml, '<dgm:constr type="w" for="ch" forName="rootConnector1?"', FACT),
+  )
   if (connW != null) cons.trunkOff = connW / 2
-  const fsz = /<dgm:constr type="primFontSz"[^>]*\bval="([\d.]+)"/.exec(layoutXml)
-  if (fsz) cons.fontMax = parseFloat(fsz[1]!) || cons.fontMax
+  const fsz = lastConstrValue(layoutXml, '<dgm:constr type="primFontSz"', /\bval="([\d.]+)"/)
+  if (fsz !== undefined) cons.fontMax = parseFloat(fsz) || cons.fontMax
   return cons
 }
 
@@ -145,7 +217,7 @@ function shiftSub(sub: Sub, dx: number, dRow: number, into: Sub, dy: number) {
   }
   for (const b of sub.boxes) into.boxes.push({ node: b.node, cx: b.cx + dx, row: b.row + dRow })
   for (const ln of sub.lines)
-    into.lines.push({ x1: ln.x1 + dx, y1: ln.y1 + dy, x2: ln.x2 + dx, y2: ln.y2 + dy })
+    into.lines.push({ ...ln, x1: ln.x1 + dx, y1: ln.y1 + dy, x2: ln.x2 + dx, y2: ln.y2 + dy })
   into.rows = Math.max(into.rows, dRow + sub.rows)
 }
 
@@ -156,7 +228,7 @@ export function layoutHierTree(
   frameCy: number,
 ): {
   boxes: HierBox[]
-  lines: Array<{ x: number; y: number; cx: number; cy: number }>
+  lines: Array<{ x: number; y: number; cx: number; cy: number; to?: HierTreeNode }>
   boxW: number
 } | null {
   if (!roots.length) return null
@@ -187,7 +259,7 @@ export function layoutHierTree(
       assts.forEach((a, j) => {
         const right = trunkX - cons.sp / 2 - j * (1 + cons.sibSp)
         out.boxes.push({ node: a, cx: right - 0.5, row: 1 })
-        out.lines.push({ x1: right, y1: asstMidY, x2: trunkX, y2: asstMidY })
+        out.lines.push({ x1: right, y1: asstMidY, x2: trunkX, y2: asstMidY, to: a })
         out.l[1] = Math.min(out.l[1] ?? Infinity, right - 1)
         out.r[1] = Math.max(out.r[1] ?? -Infinity, trunkX)
       })
@@ -196,7 +268,7 @@ export function layoutHierTree(
 
     if (!kids.length) {
       // assistant-only: trunk still drops to the assistant elbow
-      out.lines.push({ x1: trunkX, y1: bh, x2: trunkX, y2: rowTop(1) + bh / 2 })
+      out.lines.push({ x1: trunkX, y1: bh, x2: trunkX, y2: rowTop(1) + bh / 2, to: assts[0] })
       return out
     }
 
@@ -225,11 +297,11 @@ export function layoutHierTree(
       }
       const mid = (offs[0]! + offs[offs.length - 1]!) / 2
       const busY = rowTop(childRow0) - cons.sp / 2
-      out.lines.push({ x1: trunkX, y1: bh, x2: trunkX, y2: busY })
+      out.lines.push({ x1: trunkX, y1: bh, x2: trunkX, y2: busY, to: kids[0] })
       for (let i = 0; i < subs.length; i++) {
         const cx = offs[i]! - mid
-        out.lines.push({ x1: trunkX, y1: busY, x2: cx, y2: busY })
-        out.lines.push({ x1: cx, y1: busY, x2: cx, y2: rowTop(childRow0) })
+        out.lines.push({ x1: trunkX, y1: busY, x2: cx, y2: busY, to: kids[i] })
+        out.lines.push({ x1: cx, y1: busY, x2: cx, y2: rowTop(childRow0), to: kids[i] })
         shiftSub(subs[i]!, cx, childRow0, out, rowTop(childRow0))
       }
     } else {
@@ -237,15 +309,15 @@ export function layoutHierTree(
       // + hangIndent (mirrored for hangL); each child may itself be a subtree
       let row = childRow0
       let lastMidY = bh
-      for (const sub of subs) {
+      subs.forEach((sub, i) => {
         const cx = mir * (cons.hangIndent - 0.5 + 0.5)
         const midY = rowTop(row) + bh / 2
-        out.lines.push({ x1: trunkX, y1: midY, x2: cx - mir * 0.5, y2: midY })
+        out.lines.push({ x1: trunkX, y1: midY, x2: cx - mir * 0.5, y2: midY, to: kids[i] })
         shiftSub(sub, cx, row, out, rowTop(row))
         lastMidY = midY
         row += sub.rows
-      }
-      out.lines.push({ x1: trunkX, y1: bh, x2: trunkX, y2: lastMidY })
+      })
+      out.lines.push({ x1: trunkX, y1: bh, x2: trunkX, y2: lastMidY, to: kids[0] })
     }
     return out
   }
@@ -300,6 +372,7 @@ export function layoutHierTree(
     y: offY + Math.min(ln.y1, ln.y2) * scale,
     cx: Math.abs(ln.x2 - ln.x1) * scale,
     cy: Math.abs(ln.y2 - ln.y1) * scale,
+    ...(ln.to ? { to: ln.to } : {}),
   }))
   return { boxes, lines, boxW: scale }
 }

@@ -90,8 +90,6 @@ export const ru = {
   aiStopGeneration: 'Остановить генерацию',
   aiStop: 'Стоп',
   aiSend: 'Отправить',
-  aiSnapshotsTitle: 'Снимки версий',
-  aiRollback: 'Откатить',
   aiStarterPolishTitle: 'Улучшить заголовок и текст этого слайда',
   aiStarterTighten: 'Сделать пункты этого слайда лаконичнее',
   aiStarterProofread: 'Проверить всю презентацию на опечатки и исправить их',

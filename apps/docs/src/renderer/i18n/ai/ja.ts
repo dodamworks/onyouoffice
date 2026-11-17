@@ -80,7 +80,6 @@ export const ja = {
   aiCopied: 'コピーしました',
   aiRegenerateTitle: '再生成',
   aiSnapshotsTitle: 'バージョンスナップショット',
-  aiRollback: 'ロールバック',
   aiScopeSelected: '{count} 段落を選択中',
   aiScopeEmptyDoc: '空の文書',
   aiScopeCursor: 'カーソル位置',

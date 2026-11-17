@@ -15,11 +15,11 @@ Ein Skill ist eine Arbeitsanleitung für die KI. Schreiben Sie einmal auf, was S
 | **Codex-Skills-Ordner**  | Die Skills in `~/.agents/skills`                                         | Aus     |
 
 - Der Schalter schaltet einen Skill ein oder aus. Dieselbe Einstellung gilt für den KI-Bereich jedes Editors, für Ask AI auf der Startseite und für das Agentenfenster.
-- Wählen Sie für einen eingeschalteten Skill **KI entscheidet** oder **Nur auf Aufruf**. Anfangs ist KI entscheidet eingestellt. Bei Nur auf Aufruf wird der Skill nur verwendet, wenn Sie ihn selbst aufrufen.
+- Wählen Sie für einen eingeschalteten Skill **KI entscheidet** oder **Nur auf Aufruf**. Anfangs ist KI entscheidet eingestellt. Bei Nur auf Aufruf wird der Skill nur verwendet, wenn Sie ihn selbst aufrufen. Bei einem ausgeschalteten Skill bleibt diese Auswahl abgeblendet stehen, sodass Sie sie festlegen können, bevor Sie ihn wieder einschalten.
 - Skills aus verschiedenen Quellen können denselben Namen tragen. Die Herkunftsangabe in jeder Zeile unterscheidet sie. Sind zwei Skills mit demselben Namen eingeschaltet, erscheint nur einer in der `/`-Liste und wird verwendet: der erste in der Reihenfolge Meine Skills, Integriert, Claude-Skills-Ordner, Codex-Skills-Ordner, Claude-Plugins. In der Zeile des anderen steht, welcher Skill stattdessen verwendet wird.
 - Das Mehr-Menü enthält **Inhalt ansehen**, **Bearbeiten** (nur meine Skills), **Exportieren (zip)** (nur meine Skills) und **Ordner öffnen**. Integrierte Skills haben kein **Ordner öffnen**. **Wo sie genutzt wird** öffnet direkt die Stelle, an der Sie die Editoren wählen, in denen der Skill verwendet wird.
 - Meine Skills liegen im Ordner `~/.ieumoffice/skills`. Unter Windows ist das `C:\Users\<Benutzername>\.ieumoffice\skills`. **Ordner öffnen** im Mehr-Menü öffnet den Ordner des Skills.
-- **In den Papierkorb** verschiebt einen meiner Skills in den Papierkorb des Systems, wo Sie ihn wiederherstellen können.
+- **In den Papierkorb** verschiebt einen meiner Skills in den Papierkorb des Systems, wo Sie ihn wiederherstellen können. Ist ein Skill mit demselben Namen aus einer anderen Quelle ausgeschaltet, zeigt die Bestätigung ein angehaktes Kästchen, um ihn wieder einzuschalten. Entfernen Sie den Haken, bleibt er ausgeschaltet.
 - Ein integrierter Skill wird ausgeblendet statt entfernt: Wählen Sie **Ausblenden**. **Wieder einblenden** unten in der Liste holt ihn im ursprünglichen Zustand zurück.
 - Um einen integrierten Skill oder einen aus einem anderen Programm zu ändern, wählen Sie **In meine Skills kopieren**. Die Kopie erscheint unter meinen Skills, und das Original wird ausgeschaltet.
 - Wenn Sie einen Skill mit Vorlage exportieren, kommt das Vorlagendokument mit in die zip-Datei. Prüfen Sie vor dem Export, dass das Dokument keine persönlichen Daten enthält.
@@ -47,6 +47,16 @@ Unter der Vorschau steht immer: „Installieren Sie Skills nur aus Quellen, dene
 - Hat sich nichts geändert, erscheint „Aktuell“. Hat sich etwas geändert, prüfen Sie die geänderten Dateien und die Vorschau und klicken dann auf **Aktualisieren**.
 - Haben Sie den Skill nach der Installation selbst bearbeitet, erscheint zusätzlich „Ihre eigenen Änderungen gehen verloren“.
 - Beim Aktualisieren bleiben der Ein/Aus-Zustand des Skills, die Wahl zwischen KI entscheidet und Nur auf Aufruf sowie die Angabe, wo er genutzt wird, erhalten.
+
+## Zu einer früheren Version zurückkehren
+
+Wenn Sie einen eigenen Skill bearbeiten, einen anderen gleichen Namens darüber installieren oder ihn aktualisieren, bleibt die Version davor erhalten. Sie landet nicht im Papierkorb.
+
+- **Frühere Versionen** ganz unten in **Inhalt ansehen** oder **Bearbeiten** listet die aufbewahrten Versionen auf, die neueste zuerst, jeweils mit Zeitpunkt, Grund und Größe.
+- **Unterschiede ansehen** zeigt, welche Zeilen von `SKILL.md` zurückkämen, welche verschwänden und welche anderen Dateien sich änderten.
+- **Zu dieser Version zurückkehren** stellt die Dateien dieser Version genau so wieder her. Die jetzige Version bleibt ebenfalls erhalten, Sie können also zu ihr zurückkehren. Ob der Skill eingeschaltet ist und wann er verwendet wird, bleibt wie eingestellt.
+- Aufbewahrte Versionen bleiben, bis Sie sie löschen. **Löschen** löscht eine endgültig.
+- Die Versionen liegen im Ordner `~/.ieumoffice/skill-history`. **In den Papierkorb** bei einem Skill verschiebt auch seine aufbewahrten Versionen in den Papierkorb.
 
 ## Einen Skill im KI-Bereich aufrufen
 

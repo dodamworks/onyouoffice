@@ -263,7 +263,7 @@ describe('structural ops on index targets', () => {
       { op: 'setStyle', target: { start: 0 }, find: 'TODO', style: 'bold' },
       { op: 'setLink', target: { start: 0 }, find: 'docs', href: 'https://x.test' },
     )
-    const marked = Array.from(editor.view.dom.querySelectorAll('.ai-changed')).map(
+    const marked = Array.from(editor.view.dom.querySelectorAll('.ai-changed-mark')).map(
       (el) => el.textContent,
     )
     expect(marked).toEqual(['TODO', 'docs'])
@@ -272,7 +272,7 @@ describe('structural ops on index targets', () => {
   it('a chain-based AI op (heading conversion) highlights the converted block', () => {
     const editor = createEditor('title\n\nbody')
     ai(editor, { op: 'setBlockType', target: { start: 0 }, type: 'heading', level: 1 })
-    const marked = Array.from(editor.view.dom.querySelectorAll('.ai-changed')).map(
+    const marked = Array.from(editor.view.dom.querySelectorAll('.ai-changed-mark')).map(
       (el) => el.textContent,
     )
     expect(marked.join('')).toContain('title')
@@ -282,11 +282,11 @@ describe('structural ops on index targets', () => {
   it('an AI op highlights the touched range; UI ops do not', () => {
     const editor = createEditor('a\n\nb')
     ai(editor, { op: 'replaceText', target: { start: 0 }, find: 'a', replace: 'aaa' })
-    const marked = editor.view.dom.querySelectorAll('.ai-changed')
+    const marked = editor.view.dom.querySelectorAll('.ai-changed-mark')
     expect(marked.length).toBe(1)
     expect(marked[0]!.textContent).toBe('aaa')
     uiOp(editor, { op: 'setStyle', target: { start: 1 }, style: 'bold' })
-    expect(editor.view.dom.querySelectorAll('.ai-changed').length).toBe(1)
+    expect(editor.view.dom.querySelectorAll('.ai-changed-mark').length).toBe(1)
   })
 })
 

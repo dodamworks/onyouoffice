@@ -15,11 +15,11 @@ Een vaardigheid is een set werkinstructies voor de AI. Leg iets wat je steeds op
 | **Codex-vaardighedenmap**  | De vaardigheden in `~/.agents/skills`                                   | Uit          |
 
 - Met de schakelaar zet je een vaardigheid aan of uit. Dezelfde instelling geldt voor het AI-paneel van elke editor, voor Ask AI op Start en voor het agentvenster.
-- Kies voor een vaardigheid die aanstaat **AI beslist** of **Alleen bij aanroepen**. In het begin staat AI beslist ingesteld. Met Alleen bij aanroepen wordt de vaardigheid alleen gebruikt als je hem zelf aanroept.
+- Kies voor een vaardigheid die aanstaat **AI beslist** of **Alleen bij aanroepen**. In het begin staat AI beslist ingesteld. Met Alleen bij aanroepen wordt de vaardigheid alleen gebruikt als je hem zelf aanroept. Bij een vaardigheid die uitstaat blijft deze keuze gedimd staan, zodat je haar kunt instellen voordat je de vaardigheid weer inschakelt.
 - Vaardigheden uit verschillende bronnen kunnen dezelfde naam hebben. Het herkomstlabel op elke rij maakt het verschil duidelijk. Als twee vaardigheden met dezelfde naam allebei aan staan, staat er maar één in de `/`-lijst en wordt alleen die gebruikt: de eerste in de volgorde Mijn vaardigheden, Ingebouwd, Claude-vaardighedenmap, Codex-vaardighedenmap, Claude-plug-ins. In de rij van de andere staat welke vaardigheid in plaats daarvan wordt gebruikt.
 - In het menu met meer opties staan **Inhoud bekijken**, **Bewerken** (alleen mijn vaardigheden), **Exporteren (zip)** (alleen mijn vaardigheden) en **Map openen**. Ingebouwde vaardigheden hebben geen **Map openen**. **Waar gebruikt** opent meteen de plek waar je de editors kiest waarin de vaardigheid wordt gebruikt.
 - Mijn vaardigheden staan in de map `~/.ieumoffice/skills`. In Windows is dat `C:\Users\<gebruikersnaam>\.ieumoffice\skills`. **Map openen** in het menu met meer opties opent de map van de vaardigheid.
-- **Naar prullenbak** verplaatst een van mijn vaardigheden naar de prullenbak van het systeem, waaruit je hem kunt terugzetten.
+- **Naar prullenbak** verplaatst een van mijn vaardigheden naar de prullenbak van het systeem, waaruit je hem kunt terugzetten. Staat een vaardigheid met dezelfde naam uit een andere bron uit, dan toont de bevestiging een aangevinkt vakje om haar weer in te schakelen. Vink het uit om haar uit te laten.
 - Een ingebouwde vaardigheid wordt verborgen in plaats van verwijderd: kies **Verbergen**. **Weer tonen** onderaan de lijst haalt hem terug zoals hij in het begin was.
 - Wil je een ingebouwde vaardigheid of een vaardigheid uit een ander programma aanpassen, kies dan **Kopiëren naar mijn vaardigheden**. De kopie verschijnt bij mijn vaardigheden en het origineel gaat uit.
 - Exporteer je een vaardigheid met een sjabloon, dan gaat het sjabloondocument ook mee in de zip. Controleer vóór het exporteren dat het document geen persoonsgegevens bevat.
@@ -47,6 +47,16 @@ Onder het voorbeeld staat altijd: "Installeer alleen vaardigheden uit bronnen di
 - Is er niets veranderd, dan staat er "Actueel". Is er wel iets veranderd, bekijk dan de gewijzigde bestanden en het voorbeeld en klik op **Bijwerken**.
 - Heb je de vaardigheid na het installeren zelf bewerkt, dan verschijnt ook "Je eigen wijzigingen gaan verloren".
 - Bijwerken houdt de aan/uit-stand van de vaardigheid, de keuze tussen AI beslist en Alleen bij aanroepen en waar ze wordt gebruikt ongewijzigd.
+
+## Teruggaan naar een eerdere versie
+
+Als je een van je eigen vaardigheden bewerkt, er een andere met dezelfde naam overheen installeert of ze bijwerkt, blijft de versie van daarvoor bewaard. Ze gaat niet naar de prullenbak.
+
+- **Eerdere versies** onderaan **Inhoud bekijken** of **Bewerken** toont de bewaarde versies, de nieuwste eerst, met wanneer en waarom elke versie is bewaard en hoe groot ze is.
+- **Verschillen bekijken** laat zien welke regels van `SKILL.md` zouden terugkomen, welke zouden verdwijnen en welke andere bestanden zouden veranderen.
+- **Terug naar deze versie** zet de bestanden van die versie precies terug zoals ze waren. De huidige versie blijft ook bewaard, dus je kunt ernaar terug. Of de vaardigheid aan staat en wanneer ze wordt gebruikt, blijft zoals je het had ingesteld.
+- Bewaarde versies blijven tot je ze verwijdert. **Verwijderen** verwijdert er één definitief.
+- De versies staan in de map `~/.ieumoffice/skill-history`. **Naar prullenbak** bij een vaardigheid verplaatst ook de bewaarde versies ervan naar de prullenbak.
 
 ## Een vaardigheid aanroepen in het AI-paneel
 

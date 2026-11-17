@@ -1,5 +1,6 @@
 import katexCss from 'katex/dist/katex.min.css?inline'
 import { MARKDOWN_PRINT_OPTIONS } from '../../shared/print-options'
+import { AI_MARK_CLASS } from '../editor/aiHighlight'
 
 /** `[[target|alias]]` as one whole literal; mirrors the editor's link regex */
 const WIKI_ALIAS_RE = /^\[\[[^[\]|\n]+\|([^[\]\n]+)\]\]$/
@@ -75,6 +76,13 @@ export function buildPrintHtml(editorRoot: HTMLElement, title: string): string {
   for (const el of clone.querySelectorAll('[contenteditable]'))
     el.removeAttribute('contenteditable')
 
+  // the marks of the AI's last changes are screen-only: their spans go, the content stays
+  for (const mark of clone.querySelectorAll(`.${AI_MARK_CLASS}`)) {
+    mark.classList.remove(AI_MARK_CLASS)
+    if (!mark.classList.length) mark.removeAttribute('class')
+    if (mark.tagName === 'SPAN' && mark.attributes.length === 0)
+      mark.replaceWith(...mark.childNodes)
+  }
   // editor-only code block chrome (language picker + copy button) must not print
   for (const bar of clone.querySelectorAll(
     '.md-codeblock-bar, .md-diagram-error, .ProseMirror-separator',

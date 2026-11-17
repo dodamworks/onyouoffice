@@ -2,7 +2,7 @@
  * A stand-in for draw.io behind the frame client: pages of cells, the page on
  * screen, the selection, and an undo history of whole snapshots. Its bridge
  * answers the requests the AI tools make (`readPages`, `convertMermaid`,
- * `applyBatch`, `undoBatches`) with the bridge's own rules
+ * `applyBatch`, `undoBatches`, `markCells`) with the bridge's own rules
  * (`applyStepsLive`), and records every request it got.
  */
 import { parseGraphModel, type DiagramCell } from '@genoffice/drawio-model'
@@ -215,6 +215,8 @@ export interface FakeFrame {
   calls: BridgeOp[]
   /** the args of each `applyBatch` */
   batches: BridgeOps['applyBatch']['request'][]
+  /** the cells the last `markCells` marked, as `page:id` */
+  marks: () => string[]
 }
 
 /** The frame client over a fake draw.io. `convert` stands for draw.io's Mermaid converter. */
@@ -225,6 +227,7 @@ export function fakeFrame(
   const calls: BridgeOp[] = []
   const batches: BridgeOps['applyBatch']['request'][] = []
   const edits = new Map<string, number>()
+  let marked: string[] = []
   let seq = 0
   const request = async (op: BridgeOp, args: unknown): Promise<unknown> => {
     calls.push(op)
@@ -263,9 +266,20 @@ export function fakeFrame(
         }
         return { undone }
       }
+      case 'markCells':
+        marked = (args as BridgeOps['markCells']['request']).cells.map(
+          (cell) => `${cell.page}:${cell.id}`,
+        )
+        return {}
       default:
         throw new Error(`the fake bridge does not answer ${op}`)
     }
   }
-  return { frame: { request } as unknown as DrawioFrame, drawio, calls, batches }
+  return {
+    frame: { request } as unknown as DrawioFrame,
+    drawio,
+    calls,
+    batches,
+    marks: () => [...marked],
+  }
 }

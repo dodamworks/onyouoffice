@@ -81,7 +81,6 @@ export const ru = {
   aiCopied: 'Скопировано',
   aiRegenerateTitle: 'Создать заново',
   aiSnapshotsTitle: 'Снимки версий',
-  aiRollback: 'Откатить',
   aiScopeSelected: 'Выделено абзацев: {count}',
   aiScopeEmptyDoc: 'Пустой документ',
   aiScopeCursor: 'У курсора',

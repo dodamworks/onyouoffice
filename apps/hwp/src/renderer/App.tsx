@@ -7,9 +7,11 @@ import {
   AiMark,
   aiSubscriptionText,
   aiPanelInitiallyOpen,
+  aiVisible,
   rememberAiPanelOpen,
   skillTemplateText,
   templateDocumentOf,
+  useAppChoice,
   useAutoSavePref,
   useSplitPaneFocusPing,
   type TemplateDocument,
@@ -23,6 +25,7 @@ import {
   EASY_WORDS_EVENT,
   FILE_COMMAND_EVENT,
   DOCUMENT_CHECK_EVENT,
+  MARKS_EVENT,
   MEMO_NOT_COPIED_EVENT,
   MEMO_REMOVED_EVENT,
   MISSING_FONTS_EVENT,
@@ -49,6 +52,7 @@ import { hwpFormatOfPath } from '../shared/ipc'
 import type {
   HwpFormat,
   PreviewAction,
+  PrintJob,
   PrintMode,
   PrintResult,
   SaveMode,
@@ -131,8 +135,19 @@ function savePortOf(editor: RhwpEditor): SaveEditorPort {
     },
     setMemoLock: (locked) => agent.setMemoLock(locked),
     measureTabs: async (spots) => (await agent.measureTabs(spots)).tabs,
+    savePreview: async () => {
+      const made = await agent.savePreview()
+      return { text: made.text, image: made.png === null ? null : bytesOfBase64(made.png) }
+    },
     notifySaved: (fileName) => editor.notifySaved(fileName),
   }
+}
+
+function bytesOfBase64(text: string): Uint8Array {
+  const raw = atob(text)
+  const bytes = new Uint8Array(raw.length)
+  for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i)
+  return bytes
 }
 
 export default function App() {
@@ -163,6 +178,12 @@ export default function App() {
   const prePresentChromeRef = useRef<ChromeVisibility | null>(null)
   const [notice, setNotice] = useState<Notice | null>(null)
   const [aiOpen, setAiOpen] = useState(() => aiPanelInitiallyOpen(AI_OPEN_KEY))
+  /**
+   * AI turned off in Settings takes every AI entrance away: the dock and its rail, the
+   * editor's right-click 쉬운 말로 풀기, the check panel's hand-off and the marks of the AI's
+   * changes on the pages. Turned on, they come back.
+   */
+  const aiOn = aiVisible(useAppChoice(window.aiOfficeEditorChoice))
   const [checkOpen, setCheckOpen] = useState(false)
   /**
    * a request for the AI panel; `nonce` says it is a new one. The check panel's waits in the
@@ -175,6 +196,8 @@ export default function App() {
     (taken: AiPrefill) => setAiPrefill((current) => afterPrefillTaken(current, taken)),
     [],
   )
+  /** the pages carry marks of the AI's changes, as the plugin says (a user edit takes them off) */
+  const [marksOnPage, setMarksOnPage] = useState(false)
   /** counts changes made through the bridge, so the check panel can read the document again */
   const [docRevision, setDocRevision] = useState(0)
   /** the memo column beside the document: out or not, independent of the AI dock */
@@ -230,17 +253,18 @@ export default function App() {
     let stopDrop: (() => void) | null = null
     void (async () => {
       try {
-        const [path, theme, lang] = await Promise.all([
+        const [path, theme, lang, fontReads] = await Promise.all([
           window.hwpApi.consumePending(),
           window.hwpApi.getTheme().catch((): UiTheme => 'system'),
           window.hwpApi.getLanguage(),
+          (window.hwpApi.fontFileReads?.() ?? Promise.resolve(null)).catch(() => null),
         ])
         // the studio reads its settings before first paint, so they are seeded before it exists
         localStorage.setItem(
           STUDIO_SETTINGS_KEY,
           seededStudioSettings(localStorage.getItem(STUDIO_SETTINGS_KEY), theme),
         )
-        editor = await createEditor(hostRef.current!, { studioUrl: studioUrl(lang) })
+        editor = await createEditor(hostRef.current!, { studioUrl: studioUrl(lang, fontReads) })
         if (disposed) {
           editor.destroy()
           return
@@ -495,6 +519,7 @@ export default function App() {
     if (!frame) return
     void agentBridge
       .installFileMenu({
+        open: t('fileOpen'),
         save: t('fileSave'),
         saveAs: t('fileSaveAs'),
         importPdf: t('fileImportPdf'),
@@ -508,6 +533,7 @@ export default function App() {
     const onCommand = (event: Event) => {
       const command = (event as CustomEvent<unknown>).detail
       if (
+        command === 'open' ||
         command === 'save' ||
         command === 'saveAs' ||
         command === 'importPdf' ||
@@ -540,6 +566,12 @@ export default function App() {
     if (phase !== 'ready') return
     const frame = editorRef.current?.element.contentWindow
     if (!frame) return
+    if (!aiOn) {
+      // AI is off: the item leaves the menus, and the AI's marks leave the pages with its panel
+      void pluginBridge.removeEasyWords().catch(() => {})
+      void pluginBridge.clearMarks().catch(() => {})
+      return
+    }
     void pluginBridge.installEasyWords(t('easyWordsLabel')).catch(() => {})
     const onEasyWords = (event: Event) => {
       const request = easyWordsRequest((event as CustomEvent<unknown>).detail, t, Date.now())
@@ -549,7 +581,20 @@ export default function App() {
     }
     frame.addEventListener(EASY_WORDS_EVENT, onEasyWords)
     return () => frame.removeEventListener(EASY_WORDS_EVENT, onEasyWords)
-  }, [phase, pluginBridge, t])
+  }, [phase, pluginBridge, t, aiOn])
+
+  // the plugin tells when the pages come to carry marks of the AI's changes or lose them: the
+  // AI panel's button to clear them is there only while they are
+  useEffect(() => {
+    if (phase !== 'ready') return
+    const frame = editorRef.current?.element.contentWindow
+    if (!frame) return
+    const onMarks = (event: Event) => {
+      setMarksOnPage((event as CustomEvent<{ shown?: unknown }>).detail?.shown === true)
+    }
+    frame.addEventListener(MARKS_EVENT, onMarks)
+    return () => frame.removeEventListener(MARKS_EVENT, onMarks)
+  }, [phase])
 
   // fonts that are not on this PC are drawn with others while the file keeps their names
   // (a document from Hancom Office on a PC without it): the editor's font menu and font box
@@ -743,6 +788,15 @@ export default function App() {
         printingRef.current = false
       }
     },
+    [phase, agentBridge],
+  )
+
+  /** The preview's advanced print layout: the job's pages as the PDF export gathers them. */
+  const gatherLayoutJob = useCallback(
+    (onProgress: (done: number, total: number) => void): Promise<PrintJob> =>
+      phase === 'ready'
+        ? gatherPrintJob(agentBridge, 'pdf', onProgress)
+        : Promise.reject(new Error('the editor is not ready')),
     [phase, agentBridge],
   )
 
@@ -1073,7 +1127,7 @@ export default function App() {
       <div className="app-main">
         {/* the AI dock, then the memo column beside the document (as the PDF editor's notes);
             both can be out at once, and both need an open document. The preview covers both. */}
-        {phase === 'ready' && !preview.open && (
+        {phase === 'ready' && !preview.open && aiOn && (
           <HwpAiDock
             open={aiOpen}
             setOpen={setAiOpen}
@@ -1082,6 +1136,7 @@ export default function App() {
             templateDocument={templateDocument}
             prefill={aiPrefill}
             onPrefillTaken={takeAiPrefill}
+            marksOnPage={marksOnPage}
           />
         )}
         {phase === 'ready' && (
@@ -1103,10 +1158,14 @@ export default function App() {
               format={docFormat}
               revision={docRevision}
               onClose={() => setCheckOpen(false)}
-              onHandOff={(request) => {
-                setAiPrefill({ text: request, nonce: Date.now() })
-                setAiOpen(true)
-              }}
+              onHandOff={
+                aiOn
+                  ? (request) => {
+                      setAiPrefill({ text: request, nonce: Date.now() })
+                      setAiOpen(true)
+                    }
+                  : undefined
+              }
             />
           )}
           {phase === 'booting' && <div className="hwp-cover">{t('loading')}</div>}
@@ -1139,6 +1198,8 @@ export default function App() {
           onClose={closePreview}
           onPrint={runPrint}
           onEditPage={editPage}
+          printLayout={window.hwpApi.printLayout}
+          gatherJob={gatherLayoutJob}
         />
       )}
     </div>

@@ -37,10 +37,6 @@ export const vi = {
   aiRetry: 'Thử lại',
   aiCopyReplyTitle: 'Sao chép câu trả lời',
   aiRegenerateTitle: 'Tạo lại',
-  aiTurnsTitle: 'Hoàn tác một lượt của AI',
-  aiRollback: 'Hoàn tác',
-  aiRollbackIncomplete:
-    'Không thể hoàn tác một phần của lượt đó: sơ đồ đã bị thay đổi sau đó. Hãy dùng Hoàn tác trong trình soạn thảo.',
   aiUnknownError: 'Yêu cầu AI thất bại, vui lòng thử lại',
   aiTimeoutError: 'Phản hồi từ AI đã hết thời gian chờ',
   aiCreditsExhausted: 'Đã hết điểm tín dụng — nạp thêm tại nhà cung cấp AI của bạn',

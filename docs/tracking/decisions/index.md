@@ -76,7 +76,7 @@
 | [0073](0073-login-window-before-the-browser.md)               | 로그인이 끝나지 않으면 코드를 붙여 넣는 창을 먼저 내놓고, 로그인하지 않은 카드에도 그 길을 둔다      | 2026-10-27 |
 | [0074](0074-ai-adds-new-pictures.md)                          | AI는 새 그림을 넣을 수 있고, 문서에 있던 그림은 건드리지 않는다                                      | 2026-10-27 |
 | [0075](0075-xmind-picture-entries.md)                         | 마인드맵 AI의 그림은 파일 안 `resources/` 항목으로 넣고, 그때만 manifest에 적는다                    | 2026-10-27 |
-| [0076](0076-codex-cli-image-generation.md)                    | Codex 구독 이미지 생성은 채팅과 분리한 `codex exec` 한 번으로 넣고, 로그인 파일은 읽지 않는다        | 2026-10-27 |
+| [0076](0076-codex-cli-image-generation.md)                    | Codex 구독 이미지 생성은 채팅과 분리한 `codex exec` 한 번으로 넣는다(대체됨 → 0145)                  | 2026-10-27 |
 | [0077](0077-update-in-installer-window.md)                    | 업데이트는 설치 진행 창으로 하고, 끝나면 앱과 문서를 다시 연다                                       | 2026-10-27 |
 | [0078](0078-save-dir-when-documents-is-blocked.md)            | 문서 폴더를 쓸 수 없으면 홈 폴더 아래로 내려가고 한 번 알린다                                        | 2026-10-27 |
 | [0079](0079-hwp-edit-from-command-line.md)                    | 터미널 명령어로 한글 문서를 만들고 고친다. 연산은 편집기 AI의 도구를 그대로 쓴다                     | 2026-10-27 |
@@ -124,6 +124,7 @@
 | [0126](0126-calamine-ahead-of-upstream.md)                    | 옛 .xls 한글이 깨지지 않게 calamine을 원본보다 먼저 0.38로 올린다                                    | 2026-11-10 |
 | [0127](0127-skills-first-user-findings.md)                    | 스킬을 바꿔 설치해도 설정이 남고, 미리보기에서 내용을 읽으며, 스킬 없는 zip에는 알림을 띄운다        | 2026-11-10 |
 | [0128](0128-skill-titles-in-any-language.md)                  | 내 스킬은 어떤 언어로든 제목을 붙이고, 남의 이름을 차지하기 전에 묻는다                              | 2026-11-10 |
+| [0129](0129-skill-version-history.md)                         | 내 스킬의 이전 판을 앱 폴더에 남기고, 고르면 바이트 그대로 되돌린다                                  | 2026-11-11 |
 | [0130](0130-turkish-ui-language.md)                           | 화면 언어에 튀르키예어를 더한다(22개). 사전 조각·도움말·언어 수 검사를 함께 맞춘다                   | 2026-11-10 |
 | [0131](0131-document-skills-for-the-agent-window.md)          | 공개 문서 스킬 넷(docx·pptx·xlsx·pdf)을 원본 그대로 싣고, 에이전트 창에서만 쓴다                     | 2026-11-11 |
 | [0132](0132-own-skills-for-four-editors.md)                   | 한글·마인드맵·다이어그램·HTML 편집기의 문서 작성 스킬 넷을 직접 써서 싣는다                          | 2026-11-11 |
@@ -132,3 +133,17 @@
 | [0136](0136-editor-skills-first-for-new-work.md)              | 새 문서를 통째로 만드는 요청에서는 그 편집기의 스킬을 먼저 읽게 한다                                 | 2026-11-12 |
 | [0137](0137-hwp-ai-document-looks.md)                         | 한글 AI가 양식 없이 쓴 문서에 꼴을 주고, 꼴을 짓는 기본 도구를 갖는다                                | 2026-11-11 |
 | [0138](0138-daily-model-relist-and-free-model-move.md)        | 켜 둔 앱은 하루 지난 모델 목록을 다시 묻고, 무료 연결은 사라진 모델에서 시험된 다음 모델로 옮긴다    | 2026-11-12 |
+| [0139](0139-legacy-doc-ppt-open-as-copy.md)                   | 옛 워드·파워포인트 파일은 묻지 않고 바꾼 사본으로 연다                                               | 2026-11-13 |
+| [0141](0141-advanced-print-layout.md)                         | 고급 인쇄는 앱이 인쇄할 PDF를 만들어 쪽을 다시 놓고, 쪽 그림으로 프린터에 보낸다                     | 2026-11-14 |
+| [0142](0142-isolate-html-conversion-window.md)                | HTML을 Word로 바꾸는 숨은 창은 따로 떼어 둔 세션에서, 허락한 것만 불러온다                           | 2026-11-13 |
+| [0143](0143-editor-choice-and-ai-off.md)                      | 쓸 편집기와 AI 사용 여부를 사용자가 고르고, 끈 것은 화면에서 뺀다(1단계, 디스크에서 지우기는 2단계)  | 2026-11-14 |
+| [0144](0144-hwp-print-draws-screen-fonts.md)                  | 한글의 화면은 문서의 글꼴로, 인쇄와 PDF는 화면이 보여 주는 글꼴과 줄 나눔으로 그린다                 | 2026-11-14 |
+| [0145](0145-codex-image-app-server-thread.md)                 | Codex 그림은 app-server의 일회용 스레드로 만들고 응답의 `result`로 받는다                            | 2026-11-15 |
+| [0146](0146-hwp-save-writes-fresh-preview.md)                 | 한글 문서를 저장할 때 미리보기 글과 첫 쪽 그림을 지금 문서로 다시 쓴다                               | 2026-11-15 |
+| [0147](0147-home-entry-reads-settings.md)                     | 홈 왼쪽 아래 칸은 "설정"을 크게 적고, 아래 줄에 AI 상태를 이름 없이 보인다. 이름은 풍선 도움말로     | 2026-11-15 |
+| [0148](0148-openrouter-free-picker-lists-new-free-models.md)  | OpenRouter 무료 연결의 선택기는 시험된 모델 뒤에 OpenRouter가 새로 내놓은 무료 모델도 보인다         | 2026-11-15 |
+| [0149](0149-settings-in-app-menu-and-comma-key.md)            | 설정과 업데이트 확인을 Mac 앱 이름 메뉴에 두고, ⌘,·Ctrl+,로 설정을 연다(워드 탭 빼고)                | 2026-11-15 |
+| [0150](0150-map-edit-from-command-line.md)                    | 터미널 명령어로 마인드맵을 읽고 고치고 만든다. 고치기는 앱 편집과 같은 길을 탄다                     | 2026-11-15 |
+| [0151](0151-one-ai-changes-card-and-marks.md)                 | AI가 문서를 고친 차례는 모든 편집기에서 같은 카드와 같은 노란 표시로 알린다                          | 2026-11-16 |
+| [0152](0152-hwp-ai-exam-paper.md)                             | 한글 편집기의 AI가 시험지를 학교 원안지 꼴(B4 2단, 단 사이 선, 머리 표)로 쓴다                       | 2026-11-16 |
+| [0155](0155-hwp-nested-table-editing.md)                      | 한글 편집기에서 표 안의 표와 글상자 안의 표를 바깥 표처럼 고친다(엔진 패치 0055)                     | 2026-11-17 |

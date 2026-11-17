@@ -47,7 +47,7 @@ The e-book editor opens EPUB books (`.epub`) in a tab. You read the book, correc
 ## AI panel
 
 - Ask about the book, have a chapter summarized, or have its text corrected or rewritten. The AI reads the book's contents and chapters and finds text in it.
-- Changes the AI makes appear at once, and one undo (Ctrl+Z) takes back everything it changed in that turn. The AI can make text bold or italic, but cannot add pictures, tables or chapters.
+- Changes the AI makes appear at once, the changed blocks are marked in yellow, and **Undo these changes** on the card under its reply takes back everything it changed in that turn (as long as the book was not edited after it). The AI can make text bold or italic, but cannot add pictures, tables or chapters.
 - The text of the book is material for the AI, not instructions to it.
 - Ask "Translate this book into French" and the AI opens the translation window with that language filled in. Nothing is sent until you press **Start**.
 - EPUB books can also be attached in the AI panel of the other editors, picked with `@`, and found by the file search on Home.

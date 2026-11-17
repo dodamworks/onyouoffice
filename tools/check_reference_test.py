@@ -60,6 +60,12 @@ class ReferenceChecks(unittest.TestCase):
         p.write_text('[bad](missing.md)')
         with self.assertRaisesRegex(ValueError, 'missing tracked link'):
             CHECK.check_links(self.root, p, {'docs/guide.md'})
+        p.write_text('[bad](missing.md "Title")')
+        with self.assertRaisesRegex(ValueError, 'missing tracked link'):
+            CHECK.check_links(self.root, p, {'docs/guide.md'})
+        # parenthesised prose with code spans after a bracketed word is not a link
+        p.write_text('press [Cancel](`entrances.ts`, the backend `editor-entrance`).\n')
+        CHECK.check_links(self.root, p, {'docs/guide.md'})
         p.write_text('[escape](../../outside.txt)')
         with self.assertRaisesRegex(ValueError, 'escapes repository'):
             CHECK.check_links(self.root, p, {'docs/guide.md'})

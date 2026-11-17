@@ -67,7 +67,7 @@ Klik kanan di mana saja pada isi dokumen — menu menyesuaikan dengan yang Anda 
 ## AI
 
 - Tombol AI pada pita dan panel samping: tulis ulang, perluas, terjemahkan, ringkas, sisipkan tabel, ditambah instruksi bebas.
-- Setiap giliran AI menyimpan snapshot lebih dulu; gulir balik dari daftar versi, dan pengguliran balik itu sendiri bisa dibatalkan.
+- Bagian yang diubah AI ditandai kuning. **Batalkan perubahan ini** pada kartu di bawah balasannya membatalkan giliran itu secara utuh (giliran sesudahnya ikut dibatalkan), dan pengguliran balik itu sendiri bisa dibatalkan.
 
 ## Menyimpan dan mengekspor
 
@@ -77,4 +77,4 @@ Klik kanan di mana saja pada isi dokumen — menu menyesuaikan dengan yang Anda 
 
 ## Mencetak
 
-ctrl+P melalui dialog sistem, dengan halaman yang tampil persis seperti yang akan tercetak (WYSIWYG).
+ctrl+P membuka jendela cetak. Pilih printer, jumlah salinan, cetak bolak-balik, dan rentang (termasuk pilihan); di **Tata letak halaman** Anda bisa memilih beberapa halaman per lembar, buklet, poster, label, sisi ganjil atau genap, dan skala abu-abu (lihat [Operasi file](help://file-ops)).

@@ -36,10 +36,6 @@ export const ar = {
   aiRetry: 'إعادة المحاولة',
   aiCopyReplyTitle: 'نسخ الرد',
   aiRegenerateTitle: 'إعادة الإنشاء',
-  aiTurnsTitle: 'التراجع عن جولة الذكاء الاصطناعي',
-  aiRollback: 'استرجاع',
-  aiRollbackIncomplete:
-    'تعذّر التراجع عن جزء من تلك الجولة: تغيّر المخطط بعدها. استخدم التراجع في المحرر بدلًا من ذلك.',
   aiUnknownError: 'فشل طلب الذكاء الاصطناعي، أعد المحاولة',
   aiTimeoutError: 'انتهت مهلة استجابة الذكاء الاصطناعي',
   aiCreditsExhausted: 'نفدت الأرصدة — أعد الشحن لدى مزوّد الذكاء الاصطناعي',

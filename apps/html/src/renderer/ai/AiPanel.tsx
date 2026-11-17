@@ -8,6 +8,8 @@ import {
   AiConnectPrompt,
   AiFirstConnectionNotice,
   AiInputTruncatedNotice,
+  AiChangesCard,
+  type AiChangesState,
   AiMark,
   AiToolsUnsupportedNotice,
   AiSubscriptionUsageLine,
@@ -57,6 +59,7 @@ import {
   type ProjectChatOpened,
   type ProjectMemoryLine,
   type ProjectRunPrepared,
+  useSubscriptionUsageUpdates,
 } from '@genoffice/ui'
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from 'react'
@@ -340,6 +343,21 @@ interface ChatEntry {
   memory?: ProjectMemoryLine[]
   /** a project chat's reply whose tools another editor ran: shown as one line */
   otherEditorTools?: { editor: ProjectEditor; fileRef?: string; count: number }
+  /** the run this reply ends changed the document (session-only, not persisted) */
+  changes?: RunChanges
+}
+
+/**
+ * What one run changed, on its last reply. The run is taken back by restoring
+ * the source from before its first change, which also takes back every later
+ * run (and anything edited since), so those cards turn 'reverted' too.
+ */
+interface RunChanges {
+  /** the snapshot it restores (ids grow with each run) */
+  id: number
+  state: AiChangesState
+  /** page elements the run marked, when that is every place it changed */
+  count?: number
 }
 
 /** A project chat's message as this panel shows it */
@@ -374,8 +392,7 @@ export interface DocSnapshot {
 }
 
 interface Snapshot {
-  label: string
-  time: string
+  id: number
   doc: DocSnapshot
 }
 
@@ -403,7 +420,10 @@ export interface HtmlAiDeps {
   onPrompt(text: string): void
   /** fired when a run with at least one mutation finishes (auto-save hook) */
   onRunDone(mutated: boolean): void
+  /** takes the marks of the AI's changes off the source pane and the preview */
   clearHighlights(): void
+  /** the page elements the marks sit on now, when they show every change since the last clear */
+  changedPlaces?(): number | undefined
   /** [label](htmlnav://sid/N) citation clicked */
   navigateTo(sid: number): void
   /** the user confirmed a brief on the card; the app pins it into the next generated document */
@@ -437,6 +457,7 @@ export function AiPanel({
   onGenerateHandoff,
   templateDocument,
   onSkillHandoff,
+  marksShown = false,
 }: {
   deps: HtmlAiDeps
   filePath: string | null
@@ -455,6 +476,8 @@ export function AiPanel({
   templateDocument?: TemplateDocument | null
   /** this tab took a request handed over by the template flow: show the panel */
   onSkillHandoff?: () => void
+  /** the marks of the last run's changes are on the page */
+  marksShown?: boolean
 }): ReactElement {
   const { lang, t } = useI18n()
   const [chat, setChat] = useState<ChatEntry[]>([])
@@ -510,6 +533,12 @@ export function AiPanel({
   sendGateRef.current = sendGate
   /** rate-limit windows the subscription program reported (latest per window) */
   const [subscriptionUsage, setSubscriptionUsage] = useState<AiSubscriptionUsage[]>([])
+  // usage a picture request reported reaches every window (the chat stream only its own)
+  useSubscriptionUsageUpdates(
+    () => window.htmlApi?.subscription,
+    setSubscriptionUsage,
+    mergeSubscriptionUsage,
+  )
   /** the last turn's input was cut to fit a limit; shown until dismissed */
   const [inputTruncated, setInputTruncated] = useState(false)
   /** structured cause of the last failed stream (chat turn or page/brief writer) */
@@ -611,7 +640,11 @@ export function AiPanel({
   const busyRef = useRef(busy)
   busyRef.current = busy
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null)
+  /** the snapshots the change cards restore, oldest first; a card whose snapshot was pushed out is 'expired' */
   const [snapshots, setSnapshots] = useState<Snapshot[]>([])
+  const nextSnapshotIdRef = useRef(1)
+  /** taken before the in-flight run's first change; becomes its card's snapshot when the run ends */
+  const runSnapshotRef = useRef<DocSnapshot | null>(null)
   /** questionnaire / brief cards docked in the composer slot while a tool waits for the user */
   const [activeClarify, setActiveClarify] = useState<ClarifyQuestion[] | null>(null)
   const clarifyResolverRef = useRef<((r: { answers: string; cancelled?: boolean }) => void) | null>(
@@ -1086,6 +1119,21 @@ export function AiPanel({
   const runBriefWriterRef = useRef(runBriefWriter)
   runBriefWriterRef.current = runBriefWriter
 
+  /**
+   * The card of the run that just ended, if it changed the document: its
+   * snapshot joins the ring (the oldest falls out past MAX_SNAPSHOTS) and the
+   * count is the elements its marks sit on, when the app can count them all.
+   */
+  const takeRunChanges = (): { changes: RunChanges } | Record<string, never> => {
+    const doc = runSnapshotRef.current
+    runSnapshotRef.current = null
+    if (!doc) return {}
+    const id = nextSnapshotIdRef.current++
+    setSnapshots((prev) => [...prev, { id, doc }].slice(-MAX_SNAPSHOTS))
+    const count = depsRef.current.changedPlaces?.()
+    return { changes: { id, state: 'applied', ...(count !== undefined ? { count } : {}) } }
+  }
+
   const loopRef = useRef<AgentLoop<DocSnapshot> | null>(null)
   if (!loopRef.current) {
     loopRef.current = new AgentLoop<DocSnapshot>({
@@ -1175,16 +1223,7 @@ export function AiPanel({
         },
         onToolExecuted: ({ call, execution, snapshotBefore }) => {
           if (execution.mutated) runMutatedRef.current = true
-          if (snapshotBefore !== undefined) {
-            const label = runInstructionRef.current.slice(0, 40)
-            const time = new Date().toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })
-            setSnapshots((prev) =>
-              [...prev, { label, time, doc: snapshotBefore }].slice(-MAX_SNAPSHOTS),
-            )
-          }
+          if (snapshotBefore !== undefined) runSnapshotRef.current = snapshotBefore
           const activity: ToolActivity = {
             name: call.name,
             summary: execution.summary,
@@ -1211,6 +1250,8 @@ export function AiPanel({
         onDone: ({ text, cancelled, turnLimit, truncated }) => {
           const blocked = cancelled ? blockedStopRef.current : null
           blockedStopRef.current = null
+          // a stopped run keeps what it already changed: that gets its card too
+          const changed = takeRunChanges()
           if (blocked) {
             // a writer stopped the run on a blocked connection: show why, not "Stopped"
             msgQueueRef.current.hold()
@@ -1220,8 +1261,8 @@ export function AiPanel({
               isError: true,
               blocked,
               tools: last.tools?.filter((tl) => !tl.running),
+              ...changed,
             }))
-            depsRef.current.clearHighlights()
             depsRef.current.onRunDone(runMutatedRef.current)
             void projectChatRef.current.finishSend()
             queueRunRef.current = false
@@ -1242,10 +1283,10 @@ export function AiPanel({
             text: final || (last.tools?.length ? last.text : tGlobal('aiNoReply')),
             // A stop mid-tool can leave a running placeholder behind — drop it
             tools: last.tools?.filter((tl) => !tl.running),
+            ...changed,
           }))
           persistMessage('assistant', final, runToolsRef.current)
           void projectChatRef.current.finishSend()
-          depsRef.current.clearHighlights()
           depsRef.current.onRunDone(runMutatedRef.current)
           queueRunRef.current = false
           setBusy(false)
@@ -1257,6 +1298,8 @@ export function AiPanel({
           if (blocked) msgQueueRef.current.hold()
           // once a tool ran the message was delivered; a later turn failing is not a send failure
           const undelivered = runToolsRef.current.length === 0
+          // a run can fail after it already changed the document: its card stays
+          const changed = takeRunChanges()
           setChat((prev) => {
             const next = [...prev]
             for (let i = undelivered ? next.length - 1 : -1; i >= 0; i--) {
@@ -1275,6 +1318,7 @@ export function AiPanel({
                 isError: true,
                 ...(blocked ? { blocked } : {}),
                 tools: last.tools?.filter((tl) => !tl.running),
+                ...changed,
               }
             }
             return next
@@ -1496,6 +1540,9 @@ export function AiPanel({
     runDisplayRef.current = displayText ?? instruction
     lastScopeRef.current = scope
     runMutatedRef.current = false
+    runSnapshotRef.current = null
+    // the marks show what the last run changed: a new run starts with none
+    depsRef.current.clearHighlights()
     depsRef.current.onPrompt(displayText ?? instruction)
     runToolsRef.current = []
     runUsageRef.current = undefined
@@ -1697,6 +1744,10 @@ export function AiPanel({
     skillCards.reset()
     skillTemplates.reset()
     setReceipts([])
+    // the cards go with the chat, and the snapshots and marks with them
+    setSnapshots([])
+    runSnapshotRef.current = null
+    depsRef.current.clearHighlights()
     attachmentsRef.current = []
     setAttachments([])
     setAttachNotice(null)
@@ -2053,11 +2104,44 @@ export function AiPanel({
     window.setTimeout(() => setCopiedIdx((cur) => (cur === idx ? null : cur)), 1200)
   }
 
-  const rollback = (snapshot: Snapshot): void => {
+  /**
+   * Takes a run back: the source returns to the snapshot from before the run's
+   * first change. That also drops every later run (and edits made since), so
+   * their cards turn 'reverted' and their snapshots go.
+   */
+  const revertRun = (id: number): void => {
     if (busy) return
-    depsRef.current.restoreSnapshot(snapshot.doc)
-    setSnapshots((prev) => prev.filter((s) => s !== snapshot))
+    const snapshot = snapshots.find((s) => s.id === id)
+    if (!snapshot) return
+    let state: AiChangesState = 'reverted'
+    try {
+      depsRef.current.restoreSnapshot(snapshot.doc)
+    } catch {
+      state = 'refused'
+    }
+    if (state === 'reverted') {
+      depsRef.current.clearHighlights()
+      setSnapshots((prev) => prev.filter((s) => s.id < id))
+    }
+    setChat((prev) =>
+      prev.map((entry) => {
+        const changes = entry.changes
+        if (!changes || changes.state !== 'applied') return entry
+        if (changes.id === id) return { ...entry, changes: { ...changes, state } }
+        if (state === 'reverted' && changes.id > id)
+          return { ...entry, changes: { ...changes, state: 'reverted' } }
+        return entry
+      }),
+    )
   }
+
+  /** the card's state: an applied run whose snapshot fell out of the ring can no longer be taken back */
+  const cardState = (changes: RunChanges): AiChangesState =>
+    changes.state === 'applied' && !snapshots.some((s) => s.id === changes.id)
+      ? 'expired'
+      : changes.state
+  /** the newest reply with a changes card: only its run's changes are marked */
+  const latestChangesIdx = chat.map((entry) => entry.changes !== undefined).lastIndexOf(true)
 
   // Re-derive the display width on window resize (max is 60% of the window);
   // growing the window back restores the preferred width
@@ -2229,7 +2313,14 @@ export function AiPanel({
           }
           const hasTools = (entry.tools?.length ?? 0) > 0
           const projectLinesOfReply = projectReplyLines(entry)
-          if (!entry.text && !entry.streaming && !hasTools && !projectLinesOfReply) return null
+          if (
+            !entry.text &&
+            !entry.streaming &&
+            !hasTools &&
+            !projectLinesOfReply &&
+            !entry.changes
+          )
+            return null
           const isLast = i === chat.length - 1
           // Action row appears once per completed reply: on the turn's final segment only
           // (mid-turn segments have a following assistant entry; the live turn ends when !busy)
@@ -2264,6 +2355,27 @@ export function AiPanel({
               {projectLinesOfReply}
               <SkillUsedNotes tools={entry.tools} />
               {entry.skillProposals?.map((key) => skillCards.render(key))}
+              {entry.changes && (
+                <AiChangesCard
+                  lang={lang}
+                  state={cardState(entry.changes)}
+                  count={entry.changes.count}
+                  canRevert={!busy}
+                  revertsLater={chat.some(
+                    (later) =>
+                      later.changes &&
+                      later.changes.id > entry.changes!.id &&
+                      later.changes.state === 'applied',
+                  )}
+                  onRevert={() => revertRun(entry.changes!.id)}
+                  // the marks are of the newest run's changes
+                  onClearMarks={
+                    i === latestChangesIdx && marksShown
+                      ? () => depsRef.current.clearHighlights()
+                      : null
+                  }
+                />
+              )}
               {entry.usage && (
                 <div className="ai-message-usage">
                   <AiUsageChip usage={entry.usage} lang={lang} />
@@ -2347,26 +2459,6 @@ export function AiPanel({
         {/* an MCP tool waiting for the person's yes (user MCP spec 7.4) */}
         <McpPermissionCard lang={lang} />
       </div>
-
-      {snapshots.length > 0 && (
-        <div className="ai-versions">
-          <div className="ai-versions-title">
-            <IconClock />
-            {t('aiSnapshotsTitle')}
-          </div>
-          {snapshots.map((s, i) => (
-            <div key={i} className="ai-version-row">
-              <span className="ai-version-label" data-tip={s.label}>
-                <span className="ai-version-time">{s.time}</span>
-                {s.label}
-              </span>
-              <button className="ai-version-rollback" disabled={busy} onClick={() => rollback(s)}>
-                {t('aiRollback')}
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
 
       {activeClarify && (
         <div className="ai-composer">
@@ -2788,24 +2880,6 @@ function IconCollapse(): ReactElement {
       <rect x="1.5" y="2.5" width="13" height="11" rx="1" />
       <path d="M5.5 2.5v11" />
       <path d="M12.5 8H8.1M9.8 5.9 7.7 8l2.1 2.1" strokeWidth="1.3" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconClock(): ReactElement {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.3"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <circle cx="8" cy="8" r="6" />
-      <path d="M8 4.8V8l2.2 1.6" />
     </svg>
   )
 }

@@ -41,9 +41,7 @@ export const pt = {
     'O serviço de IA está sobrecarregado no momento — tente novamente em instantes',
   aiRegenerateTitle: 'Gerar novamente',
   aiRetry: 'Tentar novamente',
-  aiRollback: 'Reverter',
   aiSend: 'Enviar',
-  aiSnapshotsTitle: 'Instantâneos de versão',
   aiStop: 'Parar',
   aiStopped: 'Parado',
   aiThinking: 'Pensando',
@@ -144,7 +142,7 @@ export const pt = {
   aiChipTableEdit: 'Ajustar linhas/colunas',
   aiQueueTitle: 'Alterações na fila',
   aiQueueHint:
-    'Clique numa linha para localizar o trecho; o envio aplica todas as alterações numa única solicitação',
+    'Clique em uma linha para localizar o trecho; o envio aplica todas as alterações em uma única solicitação',
   aiQueueSend: 'Enviar {count} alterações',
   aiQueueDiscard: 'Limpar',
   aiQueueDiscardConfirm: 'Limpar as {count} alterações na fila?',

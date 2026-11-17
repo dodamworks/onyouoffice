@@ -67,7 +67,7 @@ Clique com o botão direito em qualquer ponto do texto — o menu acompanha aqui
 ## IA
 
 - O botão de IA no friso e o painel lateral: reescrever, expandir, traduzir, resumir, inserir tabela, além de instruções livres.
-- Cada turno da IA guarda um instantâneo antes de começar; é possível voltar a qualquer um deles na lista de versões, e o próprio retrocesso pode ser desfeito.
+- Os lugares que a IA alterou ficam marcados em amarelo. **Desfazer estas alterações**, no cartão abaixo da resposta, desfaz aquele turno inteiro (os turnos seguintes também voltam), e o próprio retrocesso pode ser desfeito.
 
 ## Salvar e exportar
 
@@ -77,4 +77,4 @@ Clique com o botão direito em qualquer ponto do texto — o menu acompanha aqui
 
 ## Imprimir
 
-ctrl+P pela caixa de diálogo do sistema, com as páginas exatamente como serão impressas.
+ctrl+P abre a janela de impressão. Escolha a impressora, as cópias, frente e verso e o intervalo (incluindo a seleção); em **Disposição das páginas** há várias páginas por folha, livreto, pôster, etiquetas, faces pares ou ímpares e tons de cinza (veja [Operações de arquivo](help://file-ops)).

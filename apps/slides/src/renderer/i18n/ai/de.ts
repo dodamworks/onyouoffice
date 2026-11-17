@@ -92,8 +92,6 @@ export const de = {
   aiStopGeneration: 'Generierung stoppen',
   aiStop: 'Stopp',
   aiSend: 'Senden',
-  aiSnapshotsTitle: 'Versionsschnappschüsse',
-  aiRollback: 'Zurücksetzen',
   aiStarterPolishTitle: 'Titel und Text dieser Folie verbessern',
   aiStarterTighten: 'Aufzählungspunkte dieser Folie prägnanter formulieren',
   aiStarterProofread: 'Die gesamte Präsentation auf Tippfehler prüfen und korrigieren',

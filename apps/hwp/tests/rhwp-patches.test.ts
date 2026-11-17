@@ -15,6 +15,7 @@ import {
   hancomHooks,
   missingHancomCommands,
   missingPluginHooks,
+  noteTextHooks,
   patchTargets,
   pluginHooks,
 } from '../scripts/rhwp-patches.mjs'
@@ -103,7 +104,7 @@ describe('a patch whose text is gone', () => {
 
 describe('what the plugin reaches into the studio for', () => {
   const complete = (file: string) => {
-    const needles = [...pluginHooks, ...hancomHooks]
+    const needles = [...pluginHooks, ...hancomHooks, ...noteTextHooks]
       .filter((hook) => hook.file === file)
       .flatMap((hook) => hook.needles)
     return needles.length > 0 ? needles.join('\n') : null
@@ -464,12 +465,16 @@ describe('rhwp PC fonts patch', () => {
     '    setupEventListeners();',
     '    setupModalFocusRestore();',
     '',
+    "    void wasm.prepareDeclaredFontEnvironment('canvas2d').then(changed => {",
+    "      eventBus.emit('document-view-changed');",
+    "    }).catch(error => console.warn('[LocalFonts] View refresh failed:', error));",
+    '',
   ].join('\n')
   const patched = applyPatch('studio-pc-fonts', main)
 
   it('looks at the PC once the studio listens for font changes, with its own detection', () => {
     expect(patched).toContain(
-      `import { installFontPresence, refreshPcFonts } from '${PC_FONTS_MODULE}';`,
+      `import { installFontPresence, noteFontsApplying, refreshPcFonts } from '${PC_FONTS_MODULE}';`,
     )
     // rhwp v0.9.0's main.ts does not import the records; the patch imports them under a
     // name of its own, which a later main.ts that imports them again cannot clash with
@@ -498,6 +503,16 @@ describe('rhwp PC fonts patch', () => {
     expect(patched).toContain('      state: getLocalFontState,\n')
   })
 
+  it("hands over the studio's work on the document's fonts after a font change, whole", () => {
+    expect(patched).toContain(
+      "    noteFontsApplying(wasm.prepareDeclaredFontEnvironment('canvas2d').then(changed => {\n",
+    )
+    expect(patched).toContain(
+      "    }).catch(error => console.warn('[LocalFonts] View refresh failed:', error)));\n",
+    )
+    expect(patched).not.toContain("void wasm.prepareDeclaredFontEnvironment('canvas2d')")
+  })
+
   it('keeps CRLF sources working, fails when the text is gone, and is in the studio build', () => {
     expect(applyPatch('studio-pc-fonts', main.replaceAll('\n', '\r\n'))).toContain(
       'void refreshPcFonts({\r\n',
@@ -506,6 +521,51 @@ describe('rhwp PC fonts patch', () => {
       /studio-pc-fonts/,
     )
     expect(STUDIO_PATCHES).toContain('studio-pc-fonts')
+  })
+})
+
+describe('rhwp font file reads patch', () => {
+  // the studio's text around the patch, as the pinned release has it
+  const localFonts = [
+    "import { setRawCanvasFont } from './canvas-font-raw.ts';",
+    '',
+    'async function collectLocalFontRecords(fontDataList: readonly FontData[]): Promise<LocalFontRecord[]> {',
+    '  const records: Array<LocalFontRecord | null> = new Array(fontDataList.length).fill(null);',
+    '  let nextIndex = 0;',
+    '  const worker = async (): Promise<void> => {',
+    '    while (nextIndex < fontDataList.length) {',
+    '      const index = nextIndex;',
+    '      nextIndex += 1;',
+    '      const fontData = fontDataList[index];',
+    "      records[index] = makeLocalFontRecord(fontData, await readSfntFontNames(fontData), 'local-font-access');",
+    '    }',
+    '  };',
+    '',
+  ].join('\n')
+  const patched = applyPatch('studio-font-file-reads', localFonts)
+
+  it('asks which font files to read once for the list, before the first read', () => {
+    expect(patched).toContain(`import { fontFilesToRead } from '${PC_FONTS_MODULE}';`)
+    expect(patched).toContain(
+      '  let nextIndex = 0;\n  const readsFile = fontFilesToRead(fontDataList);\n  const worker = ',
+    )
+  })
+
+  it('lists a font it does not read by the names the PC gave', () => {
+    expect(patched).toContain(
+      "makeLocalFontRecord(fontData, readsFile(index) ? await readSfntFontNames(fontData) : emptySfntFontNames(), 'local-font-access');",
+    )
+    expect(patched).not.toContain('fontData, await readSfntFontNames(fontData),')
+  })
+
+  it('keeps CRLF sources working, fails when the text is gone, and is in the studio build', () => {
+    expect(applyPatch('studio-font-file-reads', localFonts.replaceAll('\n', '\r\n'))).toContain(
+      'const readsFile = fontFilesToRead(fontDataList);\r\n',
+    )
+    expect(() =>
+      applyPatch('studio-font-file-reads', localFonts.replace('let nextIndex', 'x')),
+    ).toThrow(/studio-font-file-reads/)
+    expect(STUDIO_PATCHES).toContain('studio-font-file-reads')
   })
 })
 
@@ -681,16 +741,21 @@ describe('the studio source the build fetched', () => {
     'src/main.ts',
     'src/embed/protocol.ts',
     'src/core/wasm-bridge.ts',
+    'src/core/local-fonts.ts',
+    'src/engine/cursor.ts',
     'src/engine/input-handler.ts',
     'src/engine/input-handler-keyboard.ts',
     'src/engine/input-handler-text.ts',
     'src/engine/input-handler-table.ts',
+    'src/engine/input-handler-mouse.ts',
+    'src/command/dispatcher.ts',
     'src/command/commands/edit.ts',
     'src/command/commands/format.ts',
     'src/command/commands/insert.ts',
     'src/command/commands/table.ts',
     'src/command/shortcut-map.ts',
     'src/ui/table-cell-props-dialog.ts',
+    'src/ui/symbols-dialog.ts',
     'src/ui/toolbar.ts',
     'src/command/registry.ts',
     'src/i18n/locales/ko.ts',

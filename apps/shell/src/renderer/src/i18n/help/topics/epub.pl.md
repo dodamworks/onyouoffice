@@ -47,7 +47,7 @@ Edytor e-booków otwiera książki EPUB (`.epub`) na karcie. Możesz czytać ksi
 ## Panel AI
 
 - Pytaj o książkę, poproś o streszczenie rozdziału albo o poprawienie lub przeredagowanie jego tekstu. AI czyta spis treści i rozdziały książki oraz wyszukuje w niej tekst.
-- Zmiany wprowadzone przez AI pojawiają się od razu, a jedno cofnięcie (Ctrl+Z) wycofuje wszystko, co AI zmieniła w danej turze. AI może pogrubić tekst lub zapisać go kursywą, ale nie może dodawać obrazów, tabel ani rozdziałów.
+- Zmiany wprowadzone przez AI pojawiają się od razu, zmienione bloki są oznaczone na żółto, a **Cofnij te zmiany** na karcie pod odpowiedzią wycofuje wszystko, co AI zmieniła w danej turze (o ile książki potem nie edytowano). AI może pogrubić tekst lub zapisać go kursywą, ale nie może dodawać obrazów, tabel ani rozdziałów.
 - Tekst książki jest dla AI materiałem, a nie poleceniami.
 - Napisz „Przetłumacz tę książkę na francuski”, a AI otworzy okno tłumaczenia z już wybranym tym językiem. Nic nie zostanie wysłane, dopóki nie klikniesz **Rozpocznij**.
 - Książki EPUB można też załączać w panelu AI innych edytorów, wybierać przez `@` i znajdować wyszukiwaniem plików na stronie głównej.

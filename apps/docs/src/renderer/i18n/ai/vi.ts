@@ -80,7 +80,6 @@ export const vi = {
   aiCopied: 'Đã sao chép',
   aiRegenerateTitle: 'Tạo lại',
   aiSnapshotsTitle: 'Bản chụp nhanh',
-  aiRollback: 'Khôi phục',
   aiScopeSelected: 'Đã chọn {count} đoạn',
   aiScopeEmptyDoc: 'Tài liệu trống',
   aiScopeCursor: 'Tại vị trí con trỏ',

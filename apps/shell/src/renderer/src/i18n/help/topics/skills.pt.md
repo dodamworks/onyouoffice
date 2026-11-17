@@ -15,11 +15,11 @@ Uma habilidade é um conjunto de instruções de trabalho para a IA. Registe uma
 | **Pasta de habilidades do Codex**  | As habilidades em `~/.agents/skills`                        | Desativadas |
 
 - O interruptor ativa ou desativa uma habilidade. A mesma configuração vale para o painel de IA de todos os editores, para o Ask AI do Início e para a janela do agente.
-- Para uma habilidade ativada, escolha **A IA decide** ou **Só quando chamada**. No início fica em A IA decide. Com Só quando chamada, a habilidade só é usada quando a chama.
+- Para uma habilidade ativada, escolha **A IA decide** ou **Só quando chamada**. No início fica em A IA decide. Com Só quando chamada, a habilidade só é usada quando a chama. Numa habilidade desativada esta escolha continua visível, esbatida, para a poder definir antes de voltar a ativá-la.
 - Habilidades de origens diferentes podem ter o mesmo nome. O rótulo de origem em cada linha distingue-as. Quando duas habilidades de mesmo nome estão ativadas, só uma aparece na lista `/` e é usada: a primeira na ordem Minhas habilidades, Integradas, Pasta de habilidades do Claude, Pasta de habilidades do Codex, Plugins do Claude. A linha da outra informa qual habilidade é usada no lugar dela.
 - O menu de mais opções tem **Ver conteúdo**, **Editar** (só minhas habilidades), **Exportar (zip)** (só minhas habilidades) e **Abrir pasta**. As habilidades integradas não têm **Abrir pasta**. **Onde é usada** abre direto o lugar onde se escolhem os editores em que a habilidade é usada.
 - Minhas habilidades ficam na pasta `~/.ieumoffice/skills`. No Windows é `C:\Users\<nome de usuário>\.ieumoffice\skills`. **Abrir pasta**, no menu de mais opções, abre a pasta da habilidade.
-- **Mover para a lixeira** envia uma das minhas habilidades para a reciclagem do sistema, de onde a pode restaurar.
+- **Mover para a lixeira** envia uma das minhas habilidades para a reciclagem do sistema, de onde a pode restaurar. Se uma habilidade com o mesmo nome de outra origem estiver desativada, a confirmação mostra uma caixa marcada para voltar a ativá-la. Desmarque-a para a deixar desativada.
 - Uma habilidade integrada é ocultada em vez de removida: escolha **Ocultar**. **Mostrar de novo**, no fim da lista, traz a habilidade de volta tal como era no início.
 - Para alterar uma habilidade integrada ou de outro programa, escolha **Copiar para minhas habilidades**. A cópia aparece em minhas habilidades e a original é desativada.
 - Ao exportar uma habilidade com modelo, o documento de modelo também vai no zip. Verifique se o documento não contém informações pessoais antes de exportar.
@@ -47,6 +47,16 @@ Por baixo da pré-visualização aparece sempre: «Instale habilidades somente d
 - Se nada mudou, aparece «Atualizada». Se algo mudou, reveja os ficheiros alterados e a pré-visualização e clique em **Atualizar**.
 - Se editou a habilidade depois de a instalar, aparece também «Suas edições serão perdidas».
 - A atualização mantém o estado ativado ou desativado da habilidade, a escolha entre A IA decide e Só quando chamada e onde é usada.
+
+## Voltar a uma versão anterior
+
+Quando você edita uma das suas habilidades, instala outra com o mesmo nome no lugar dela ou a atualiza, a versão anterior fica guardada. Ela não vai para a lixeira.
+
+- **Versões anteriores**, no fim de **Ver conteúdo** ou de **Editar**, lista as versões guardadas, da mais recente para a mais antiga, com quando e por que cada uma foi guardada e o tamanho.
+- **Ver diferenças** mostra quais linhas de `SKILL.md` voltariam, quais sumiriam e quais outros arquivos mudariam.
+- **Voltar a esta versão** coloca de volta os arquivos daquela versão exatamente como eram. A versão atual também fica guardada, então você pode voltar a ela. Se a habilidade está ativada e quando ela é usada continuam como você definiu.
+- As versões guardadas ficam até você excluí-las. **Excluir** exclui uma de vez.
+- As versões ficam na pasta `~/.ieumoffice/skill-history`. **Mover para a lixeira** em uma habilidade também envia as versões guardadas dela para a lixeira.
 
 ## Chamar uma habilidade no painel de IA
 

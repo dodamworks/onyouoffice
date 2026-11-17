@@ -64,6 +64,7 @@ export interface Pdfium {
   _FPDFText_GetFontSize(textPage: number, index: number): number
   _FPDFText_IsGenerated(textPage: number, index: number): number
   _FPDFText_LoadFont(doc: number, data: number, size: number, fontType: number, cid: number): number
+  _FPDFText_LoadStandardFont(doc: number, fontName: number): number
   _FPDFText_SetText(textObj: number, text: number): number
   _FPDFPage_CountObjects(page: number): number
   _FPDFPage_GetObject(page: number, index: number): number
@@ -782,6 +783,10 @@ interface PlannedMatch {
   /** True when the matched objects ARE the edited text (not a fragment of a larger
       run); only then may position overrides (origin/lineLeading) be honored */
   whole: boolean
+  /** Fragment matches only: the matched objects' raw text (what the rebuild replaces)
+      and where the spliced replacement sits — [start, oldEnd) in runText became
+      [start, newEnd) in newText */
+  fragment?: { runText: string; start: number; oldEnd: number; newEnd: number }
 }
 
 /** Split same-baseline objects into z-stacked layers: an earlier multi-line edit that
@@ -926,6 +931,12 @@ function matchByText(objects: PageTextObj[], edit: TextEditInput): PlannedMatch 
     matches: set,
     newText: joined.slice(setStart, rawStart) + fragment + joined.slice(rawEnd, setEnd),
     whole: false,
+    fragment: {
+      runText: setRaw,
+      start: rawStart - setStart,
+      oldEnd: rawEnd - setStart,
+      newEnd: rawStart - setStart + fragment.length,
+    },
   }
 }
 
@@ -991,6 +1002,12 @@ function matchEdit(objects: PageTextObj[], edit: TextEditInput): PlannedMatch | 
         matches: [container],
         newText: raw.slice(0, rawStart) + fragment + raw.slice(rawEnd),
         whole: false,
+        fragment: {
+          runText: raw,
+          start: rawStart,
+          oldEnd: rawEnd,
+          newEnd: rawStart + fragment.length,
+        },
       }
     }
   }
@@ -1036,6 +1053,54 @@ function fontString(m: Pdfium, read: (buf: number, len: number) => number): stri
     return decodeFontName(m.HEAPU8.slice(buf, buf + len - 1))
   } finally {
     m._free(buf)
+  }
+}
+
+const STANDARD_LATIN_FONTS = new Set([
+  'Helvetica',
+  'Helvetica-Bold',
+  'Helvetica-Oblique',
+  'Helvetica-BoldOblique',
+  'Times-Roman',
+  'Times-Bold',
+  'Times-Italic',
+  'Times-BoldItalic',
+  'Courier',
+  'Courier-Bold',
+  'Courier-Oblique',
+  'Courier-BoldOblique',
+])
+
+const WIN_ANSI_HIGH = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ'
+
+export function winAnsiCovers(text: string): boolean {
+  for (const ch of text) {
+    const cp = ch.codePointAt(0)!
+    if ((cp >= 0x20 && cp <= 0x7e) || (cp >= 0xa0 && cp <= 0xff)) continue
+    if (!WIN_ANSI_HIGH.includes(ch)) return false
+  }
+  return true
+}
+
+export function keptStandardFont(
+  name: string,
+  embedded: boolean,
+  edit: Pick<TextEditInput, 'newFont' | 'newItalic'>,
+  drawn: string,
+): string | null {
+  if (embedded || edit.newFont || edit.newItalic) return null
+  if (!STANDARD_LATIN_FONTS.has(name)) return null
+  return winAnsiCovers(drawn) ? name : null
+}
+
+function loadStandardFont(m: Pdfium, doc: number, name: string): number {
+  const ptr = m._malloc(name.length + 1)
+  try {
+    for (let i = 0; i < name.length; i++) m.HEAPU8[ptr + i] = name.charCodeAt(i)
+    m.HEAPU8[ptr + name.length] = 0
+    return m._FPDFText_LoadStandardFont(doc, ptr)
+  } finally {
+    m._free(ptr)
   }
 }
 
@@ -1807,6 +1872,19 @@ async function rebuildRun(
       styleEdit: TextEditInput,
       text: string,
     ): Promise<{ font: number; synth: boolean }> => {
+      const standard = anchor.font
+        ? keptStandardFont(
+            fontString(m, (b, l) => m._FPDFFont_GetBaseFontName(anchor.font, b, l)),
+            !!m._FPDFFont_GetIsEmbedded(anchor.font),
+            styleEdit,
+            (text.trim() ? text : 'x').replace(/\n/g, ''),
+          )
+        : null
+      if (standard) {
+        const f = loadStandardFont(m, doc, standard)
+        if (!f) throw new Error('FPDFText_LoadStandardFont failed')
+        return { font: f, synth: !!styleEdit.newBold && !faceIsBold(m, anchor.font) }
+      }
       const { bytes: fontBytes, syntheticBold } = await resolveRebuildFont(
         m,
         anchor.font,
@@ -2729,6 +2807,21 @@ async function validateTextEditsInner(
           results[indexOf.get(e)!] = {
             reason: null,
             bounds: whole ? b : [e.rect[0], b[1], e.rect[2], b[3]],
+            // The save rewrites the whole container run from its own origin, so the
+            // text after the fragment reflows; callers that preview the edit need the
+            // run's full before/after text to model that
+            ...(res.fragment
+              ? {
+                  run: {
+                    bounds: b,
+                    oldText: res.fragment.runText,
+                    newText: res.newText,
+                    start: res.fragment.start,
+                    oldEnd: res.fragment.oldEnd,
+                    newEnd: res.fragment.newEnd,
+                  },
+                }
+              : {}),
             colorRuns:
               runs.length > 0
                 ? runs.map((r) => ({

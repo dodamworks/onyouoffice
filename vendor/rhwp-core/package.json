@@ -1,6 +1,6 @@
 {
   "name": "@rhwp/core",
-  "version": "0.9.0-ieum.27",
+  "version": "0.9.0-ieum.32",
   "description": "rhwp v0.9.0 HWP/HWPX engine (WebAssembly) rebuilt with the patches in ./patches",
   "private": true,
   "type": "module",
@@ -51,9 +51,13 @@
       "0042-structure-edit-moves-tac-host-row.patch",
       "0043-batch-lays-out-format-edits-once.patch",
       "0044-cmap-range-entries-across-lines.patch",
-      "0047-stale-table-width-rows-outvote.patch"
+      "0047-stale-table-width-rows-outvote.patch",
+      "0049-cmap-range-comments.patch",
+      "0050-export-keeps-canvas-metrics.patch",
+      "0051-column-separator-setter.patch",
+      "0055-nested-table-path-calls.patch"
     ],
     "wasmPack": "0.15.0",
-    "wasmSha256": "5a90321172cb0f13fb26478d8a6ddf714a1aef97b58de168d69951871baa9bf6"
+    "wasmSha256": "d829c143a5650c815377bb8c787d2ee6fbb2bd67b0904f10e042b2eecd6ba8ee"
   }
 }

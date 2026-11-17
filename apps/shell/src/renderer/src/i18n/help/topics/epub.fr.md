@@ -47,7 +47,7 @@ L’éditeur de livres numériques ouvre les livres EPUB (`.epub`) dans un ongle
 ## Panneau IA
 
 - Posez des questions sur le livre, faites résumer un chapitre, ou faites corriger ou réécrire son texte. L’IA lit le sommaire et les chapitres du livre et y retrouve du texte.
-- Les modifications de l’IA apparaissent aussitôt, et une seule annulation (Ctrl+Z) défait tout ce qu’elle a changé pendant ce tour. L’IA peut mettre du texte en gras ou en italique, mais ne peut pas ajouter d’images, de tableaux ni de chapitres.
+- Les modifications de l’IA apparaissent aussitôt, les blocs modifiés sont marqués en jaune, et **Annuler ces modifications**, sur la carte sous sa réponse, défait tout ce qu’elle a changé pendant ce tour (à condition que le livre n’ait pas été modifié depuis). L’IA peut mettre du texte en gras ou en italique, mais ne peut pas ajouter d’images, de tableaux ni de chapitres.
 - Le texte du livre est une matière de travail pour l’IA, pas une consigne qu’elle doit suivre.
 - Demandez « Traduis ce livre en français » et l’IA ouvre la fenêtre de traduction avec cette langue déjà choisie. Rien n’est envoyé tant que vous n’avez pas cliqué sur **Commencer**.
 - Les livres EPUB peuvent aussi être joints dans le panneau IA des autres éditeurs, choisis avec `@`, et trouvés par la recherche de fichiers de l’accueil.

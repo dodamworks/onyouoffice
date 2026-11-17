@@ -47,7 +47,7 @@ Der E-Book-Editor öffnet EPUB-Bücher (`.epub`) in einem Tab. Sie lesen das Buc
 ## KI-Panel
 
 - Stellen Sie Fragen zum Buch, lassen Sie ein Kapitel zusammenfassen oder seinen Text korrigieren oder umschreiben. Die KI liest Inhaltsverzeichnis und Kapitel des Buchs und findet Text darin.
-- Änderungen der KI erscheinen sofort, und ein einziges Rückgängig (Ctrl+Z) nimmt alles zurück, was sie in diesem Durchgang geändert hat. Die KI kann Text fett oder kursiv setzen, aber keine Bilder, Tabellen oder Kapitel hinzufügen.
+- Änderungen der KI erscheinen sofort, die geänderten Blöcke werden gelb markiert, und **Diese Änderungen zurücknehmen** auf der Karte unter ihrer Antwort nimmt alles zurück, was sie in diesem Durchgang geändert hat (sofern das Buch danach nicht bearbeitet wurde). Die KI kann Text fett oder kursiv setzen, aber keine Bilder, Tabellen oder Kapitel hinzufügen.
 - Der Text des Buchs ist Material für die KI, keine Anweisung an sie.
 - Bitten Sie „Übersetze dieses Buch ins Französische“, und die KI öffnet das Übersetzungsfenster mit dieser Sprache bereits eingetragen. Es wird nichts gesendet, bevor Sie auf **Starten** klicken.
 - EPUB-Bücher lassen sich auch im KI-Panel der anderen Editoren anhängen, mit `@` auswählen und über die Dateisuche auf der Startseite finden.

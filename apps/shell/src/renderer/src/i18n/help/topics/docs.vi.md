@@ -67,7 +67,7 @@ Nhấp chuột phải ở bất kỳ đâu trong nội dung — menu đi theo th
 ## AI
 
 - Nút AI trên dải ruy-bâng và bảng bên: viết lại, mở rộng, dịch, tóm tắt, các mẫu chèn bảng, cùng các chỉ dẫn tự do.
-- Mỗi lượt AI đều chụp ảnh trước; có thể quay lui từ danh sách phiên bản, và bản thân thao tác quay lui cũng có thể hoàn tác.
+- Những chỗ AI đã sửa được đánh dấu màu vàng. **Hoàn tác các thay đổi này** trên thẻ dưới câu trả lời lấy lại trọn lượt đó (các lượt sau nó cũng được lấy lại), và bản thân thao tác quay lui cũng có thể hoàn tác.
 
 ## Lưu và xuất
 
@@ -77,4 +77,4 @@ Nhấp chuột phải ở bất kỳ đâu trong nội dung — menu đi theo th
 
 ## In
 
-ctrl+P qua hộp thoại của hệ thống, trang WYSIWYG.
+ctrl+P mở cửa sổ in. Chọn máy in, số bản, in hai mặt và phạm vi (kể cả vùng đã chọn); trong **Bố cục trang** có thể chọn nhiều trang mỗi tờ, tập sách nhỏ, áp phích, nhãn, mặt lẻ hoặc chẵn và thang xám (xem [Thao tác tập tin](help://file-ops)).

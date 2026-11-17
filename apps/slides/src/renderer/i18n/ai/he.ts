@@ -88,8 +88,6 @@ export const he = {
   aiStopGeneration: 'עצור יצירה',
   aiStop: 'עצור',
   aiSend: 'שלח',
-  aiSnapshotsTitle: 'תמונות מצב של גרסאות',
-  aiRollback: 'שחזור',
   aiStarterPolishTitle: 'שפר את הכותרת והטקסט של שקופית זו',
   aiStarterTighten: 'הפוך את הנקודות בשקופית זו לתמציתיות יותר',
   aiStarterProofread: 'בדוק שגיאות הקלדה בכל המצגת ותקן אותן',

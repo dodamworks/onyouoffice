@@ -90,8 +90,6 @@ export const ms = {
   aiStopGeneration: 'Hentikan penjanaan',
   aiStop: 'Berhenti',
   aiSend: 'Hantar',
-  aiSnapshotsTitle: 'Snapshot versi',
-  aiRollback: 'Kembalikan',
   aiStarterPolishTitle: 'Perbaik tajuk dan teks slaid ini',
   aiStarterTighten: 'Jadikan isi penting slaid ini lebih ringkas',
   aiStarterProofread: 'Semak kesilapan taip dalam keseluruhan persembahan dan betulkan',

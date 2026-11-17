@@ -91,8 +91,6 @@ export const fr = {
   aiStopGeneration: 'Arrêter la génération',
   aiStop: 'Arrêter',
   aiSend: 'Envoyer',
-  aiSnapshotsTitle: 'Instantanés de version',
-  aiRollback: 'Restaurer',
   aiStarterPolishTitle: 'Améliorer le titre et le texte de cette diapositive',
   aiStarterTighten: 'Rendre les puces de cette diapositive plus concises',
   aiStarterProofread: 'Vérifier et corriger les fautes de frappe dans toute la présentation',

@@ -81,7 +81,6 @@ export const id = {
   aiCopied: 'Disalin',
   aiRegenerateTitle: 'Buat ulang',
   aiSnapshotsTitle: 'Snapshot versi',
-  aiRollback: 'Kembalikan',
   aiScopeSelected: '{count} paragraf dipilih',
   aiScopeEmptyDoc: 'Dokumen kosong',
   aiScopeCursor: 'Di posisi kursor',

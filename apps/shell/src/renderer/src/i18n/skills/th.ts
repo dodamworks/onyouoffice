@@ -47,6 +47,7 @@ export const th = {
   hiddenFooter: 'สกิลในตัวที่ซ่อนไว้ {n} รายการ',
   unhide: 'แสดงอีกครั้ง',
   confirmRemove: 'ย้ายสกิล "{title}" ไปถังขยะไหม คุณกู้คืนได้จากถังขยะ',
+  removeTurnOn: 'เปิดสกิล {name} ({source}) อีกครั้ง',
   confirmHide:
     'ซ่อนสกิลในตัว "{title}" ไหม สกิลที่ซ่อนจะถูกปิด และคุณแสดงอีกครั้งได้ที่ด้านล่างสุดของรายการ',
   cancel: 'ยกเลิก',
@@ -178,4 +179,27 @@ export const th = {
   builtinBodyNote: 'คำแนะนำด้านล่างคือข้อความที่ส่งให้ AI แสดงตามต้นฉบับ จึงอาจเป็นภาษาอังกฤษ',
   pasteUnclosed:
     'ไม่มีบรรทัด --- ที่ปิดส่วนหัว ข้อความอาจถูกตัดกลางคัน โปรดคัดลอกใหม่ตั้งแต่ต้นจนจบ',
+  versionsTitle: 'เวอร์ชันก่อนหน้า',
+  versionsNone:
+    'ยังไม่มีเวอร์ชันก่อนหน้า เมื่อคุณแก้ไข ติดตั้งแทนที่ หรืออัปเดตสกิลนี้ เวอร์ชันก่อนหน้านั้นจะถูกเก็บไว้ที่นี่',
+  versionsTotal: 'เก็บไว้ {n} รายการ รวม {size} จะอยู่จนกว่าคุณจะลบ',
+  versionReasonEdit: 'ก่อนแก้ไข',
+  versionReasonReplace: 'ก่อนติดตั้งแทนที่',
+  versionReasonUpdate: 'ก่อนอัปเดต',
+  versionReasonRestore: 'ก่อนย้อนกลับ',
+  versionCompare: 'ดูความแตกต่าง',
+  versionRestore: 'ย้อนกลับไปเวอร์ชันนี้',
+  versionRestoreNote: 'เวอร์ชันปัจจุบันจะถูกเก็บไว้ที่นี่ด้วย คุณจึงกลับมาได้อีก',
+  versionRestoreUnsaved:
+    'มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก โปรดบันทึกหรือยกเลิกก่อน แล้วจึงย้อนกลับ',
+  versionRemove: 'ลบ',
+  versionRemoveAsk: 'ลบเวอร์ชันนี้ไหม ลบแล้วกู้คืนไม่ได้',
+  versionSame: 'เนื้อหาเหมือนกับเวอร์ชันปัจจุบัน',
+  versionDiffLegend: '+ บรรทัดที่จะกลับมา, − บรรทัดที่จะหายไปเมื่อย้อนกลับ',
+  versionDiffGap: '{n} บรรทัดที่ไม่เปลี่ยน',
+  versionFileAdded: 'จะกลับมา',
+  versionFileRemoved: 'จะหายไป',
+  versionFileModified: 'จะเปลี่ยน',
+  versionRestored: 'ย้อนกลับไปเวอร์ชันก่อนหน้าแล้ว',
+  replacedKept: 'เวอร์ชันที่ถูกแทนที่จะถูกเก็บไว้ใน "เวอร์ชันก่อนหน้า" ของสกิลนี้ และย้อนกลับได้',
 } satisfies Record<keyof typeof zh, string>

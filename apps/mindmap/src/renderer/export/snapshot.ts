@@ -29,6 +29,7 @@
  */
 import type { MindElixirInstance, Topic } from 'mind-elixir'
 import type { ViewImage } from '@genoffice/xmind-engine'
+import { AI_MARK_CLASS } from '../map/ai-marks'
 import { archivePictureEntry, pictureType } from '../map/images'
 
 /** A copy of a sheet, ready to be written out. */
@@ -147,7 +148,8 @@ export function cleanCopy(root: Element): void {
 }
 
 function cleanAttributes(element: Element): void {
-  element.classList.remove('selected')
+  // the selection and the AI's marks are the editor's, not the map's
+  element.classList.remove('selected', AI_MARK_CLASS)
   if (element.getAttribute('class') === '') element.removeAttribute('class')
   for (const { name, value } of [...element.attributes]) {
     if (DROPPED_ATTRIBUTES.test(name) || UNSAFE_VALUE.test(value)) element.removeAttribute(name)

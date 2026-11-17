@@ -78,7 +78,7 @@ Kliknij prawym przyciskiem w dowolnym miejscu tekstu — menu dostosowuje się d
 ## AI
 
 - Przycisk AI na wstążce i panel boczny: przepisanie, rozwinięcie, tłumaczenie, streszczenie, wstawianie tabel z gotowych wzorców oraz dowolne polecenia.
-- Każda tura AI najpierw tworzy migawkę; możesz cofnąć się do dowolnej z listy wersji, a samo cofnięcie można jeszcze cofnąć.
+- Miejsca zmienione przez AI są oznaczone na żółto. **Cofnij te zmiany** na karcie pod odpowiedzią wycofuje całą tę turę (tury po niej też są wycofywane), a samo cofnięcie można jeszcze cofnąć.
 
 ## Zapisywanie i eksport
 
@@ -88,4 +88,4 @@ Kliknij prawym przyciskiem w dowolnym miejscu tekstu — menu dostosowuje się d
 
 ## Drukowanie
 
-ctrl+P przez okno systemowe, strony WYSIWYG.
+ctrl+P otwiera okno drukowania. Wybierz drukarkę, liczbę kopii, druk dwustronny i zakres (także zaznaczenie), a w sekcji **Układ stron** kilka stron na arkusz, broszurę, plakat, etykiety, strony nieparzyste lub parzyste i skalę szarości (zobacz [Operacje na plikach](help://file-ops)).

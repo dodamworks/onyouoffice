@@ -78,7 +78,7 @@ Klik kanan di mana-mana bahagian teks, dan menu akan mengikut apa yang anda klik
 ## AI
 
 - Butang AI pada reben dan panel sisi: tulis semula, perluaskan, terjemah, ringkaskan, sisip jadual siap, serta arahan bebas.
-- Setiap pusingan AI mengambil gambar keadaan lebih dahulu. Anda boleh berundur dari senarai versi, undur itu sendiri boleh dibatalkan.
+- Tempat yang diubah oleh AI ditanda dengan warna kuning. **Buat asal perubahan ini** pada kad di bawah jawapannya mengembalikan pusingan itu sepenuhnya (pusingan selepasnya turut dikembalikan), dan undur itu sendiri boleh dibatalkan.
 
 ## Simpanan dan eksport
 
@@ -88,4 +88,4 @@ Klik kanan di mana-mana bahagian teks, dan menu akan mengikut apa yang anda klik
 
 ## Cetak
 
-ctrl+P melalui dialog sistem, dengan halaman seperti yang dipaparkan.
+ctrl+P membuka tetingkap cetakan. Pilih pencetak, bilangan salinan, cetakan dua belah dan julat (termasuk pilihan); dalam **Susun atur halaman** anda boleh memilih beberapa halaman setiap helai, buku kecil, poster, label, muka ganjil atau genap dan skala kelabu (lihat [Operasi fail](help://file-ops)).

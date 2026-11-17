@@ -88,8 +88,6 @@ export const ar = {
   aiStopGeneration: 'إيقاف الإنشاء',
   aiStop: 'إيقاف',
   aiSend: 'إرسال',
-  aiSnapshotsTitle: 'لقطات الإصدارات',
-  aiRollback: 'استرجاع',
   aiStarterPolishTitle: 'حسِّن عنوان هذه الشريحة ونصها',
   aiStarterTighten: 'اجعل نقاط هذه الشريحة أكثر إيجازًا',
   aiStarterProofread: 'تحقق من الأخطاء الإملائية في العرض بأكمله وصحّحها',

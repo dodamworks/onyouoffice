@@ -47,7 +47,7 @@ De e-boekeditor opent EPUB-boeken (`.epub`) in een tabblad. Je leest het boek, v
 ## AI-paneel
 
 - Stel vragen over het boek, laat een hoofdstuk samenvatten of laat de tekst ervan verbeteren of herschrijven. De AI leest de inhoudsopgave en hoofdstukken van het boek en zoekt er tekst in.
-- Wijzigingen van de AI verschijnen meteen, en één keer ongedaan maken (Ctrl+Z) draait alles terug wat de AI in die beurt heeft veranderd. De AI kan tekst vet of cursief maken, maar geen afbeeldingen, tabellen of hoofdstukken toevoegen.
+- Wijzigingen van de AI verschijnen meteen, de gewijzigde blokken worden geel gemarkeerd, en **Deze wijzigingen ongedaan maken** op de kaart onder het antwoord draait alles terug wat de AI in die beurt heeft veranderd (zolang het boek daarna niet is bewerkt). De AI kan tekst vet of cursief maken, maar geen afbeeldingen, tabellen of hoofdstukken toevoegen.
 - De tekst van het boek is materiaal voor de AI, geen opdracht.
 - Vraag "Vertaal dit boek naar het Frans" en de AI opent het vertaalvenster met die taal al ingevuld. Er wordt niets verzonden tot je op **Starten** klikt.
 - EPUB-boeken kun je ook als bijlage toevoegen in het AI-paneel van de andere editors, kiezen met `@` en vinden met het zoeken naar bestanden op Start.

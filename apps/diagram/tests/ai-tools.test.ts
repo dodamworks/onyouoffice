@@ -213,6 +213,15 @@ describe('applying', () => {
     expect(fake.drawio.history).toHaveLength(1)
     // the ids the drawing really got are the ones reported
     expect(result.output).toMatch(/1 insert_mermaid: ok, created drawio-1, drawio-2/)
+    // the cells the call changed, as the panel marks and counts them: draw.io's ids for the drawing
+    expect(result.changes?.added.map((cell) => `${cell.page}:${cell.id}`)).toEqual([
+      'p1:n',
+      'p1:drawio-1',
+      'p1:drawio-2',
+      'p1:drawio-3',
+      'p1:drawio-4',
+    ])
+    expect(result.changes?.updated).toEqual([{ page: 'p1', id: 'a' }])
 
     // one undo takes the whole call back
     expect(await host.undo([result.token!])).toBe(true)

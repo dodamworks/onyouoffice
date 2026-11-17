@@ -36,7 +36,7 @@ O editor de diagramas abre arquivos draw.io em uma aba. Nele você desenha fluxo
 
 - Peça à IA para desenhar um fluxograma, um diagrama de sequência ou um organograma, explicar o diagrama, organizar uma página ou acrescentar o próximo passo depois das formas selecionadas.
 - A IA lê o diagrama como texto: as páginas e, de cada forma e cada conector, o id, o texto, a forma, a posição e as ligações, além de quais formas você selecionou. Ela não vê o diagrama como imagem.
-- As alterações da IA aparecem na hora. Cada alteração é um passo de desfazer (Ctrl+Z), e a lista de rodadas no painel desfaz uma rodada inteira da IA. Se qualquer parte de uma alteração for recusada, o diagrama fica como estava.
+- As alterações da IA aparecem na hora. Cada alteração é um passo de desfazer (Ctrl+Z), as formas e os conectores que a IA alterou ficam contornados em amarelo, e **Desfazer estas alterações**, no cartão abaixo da resposta, desfaz uma rodada inteira da IA. Se qualquer parte de uma alteração for recusada, o diagrama fica como estava.
 - Para um fluxograma novo, um diagrama de sequência ou algo parecido, a IA escreve Mermaid e o GenOffice o transforma em formas no seu PC. O layout pode ficar um pouco diferente do que o site do draw.io gera.
 - Diagramas também podem ser anexados no painel de IA dos outros editores, escolhidos com `@` e encontrados pela pesquisa de arquivos da tela inicial. Os [comandos de terminal](help://cli) também leem, editam e criam diagramas (`ieumoffice diagram read`, `ieumoffice diagram apply`, `ieumoffice create --type drawio`).
 

@@ -109,7 +109,7 @@
     [${MARK}-overlay="hover"] { outline: 1.5px dashed var(--gx-hover, #0f7fff); outline-offset: -1px; }
     [${MARK}-overlay="select"] { outline: 2px solid var(--gx-select, #0f7fff); outline-offset: -1px; background: rgba(15,127,255,0.05); }
     [${MARK}-overlay="dynamic"] { outline: 2px solid #f59e0b; outline-offset: -1px; }
-    [${MARK}-overlay="highlight"] { background: rgba(255,213,79,0.35); }
+    [${MARK}-overlay="highlight"] { background: var(--gx-ai-bg); box-shadow: inset 0 -2px 0 var(--gx-ai-line); }
     [${MARK}-label] { position: fixed; z-index: 2147483647; pointer-events: none; font: 11px/1 -apple-system, system-ui, sans-serif; color: #fff; background: var(--gx-select, #0f7fff); padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
     [${MARK}-editing] { outline: 2px solid #2563eb !important; outline-offset: -1px; }
     [${MARK}-pin] { position: fixed; z-index: 2147483647; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--gx-select, #0f7fff); color: #fff; font: 600 11px/18px -apple-system, system-ui, sans-serif; text-align: center; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
@@ -180,6 +180,14 @@
     box.style.top = `${r.top}px`
     box.style.width = `${Math.max(r.width, 2)}px`
     box.style.height = `${Math.max(r.height, 2)}px`
+  }
+  /** a mark of an AI change: an element with no box on the page (hidden, collapsed) gets none */
+  const placeMark = (box, el) => {
+    if (!el || !el.isConnected || el.getClientRects().length === 0) {
+      box.style.display = 'none'
+      return
+    }
+    place(box, el)
   }
   const describe = (el) => {
     const cls = (el.getAttribute('class') || '').trim().split(/\s+/).filter(Boolean).slice(0, 2)
@@ -408,7 +416,7 @@
     placeHandles(extras.length ? null : selected)
     placeGrip(extras.length ? null : selected)
     extras.forEach((el, i) => place(extraBoxes[i], el))
-    for (const { box, el } of highlightBoxes) place(box, el)
+    for (const { box, el } of highlightBoxes) placeMark(box, el)
     for (const { pin, el } of markPins) placePin(pin, el)
     if (selected) postRect()
   }
@@ -1956,8 +1964,16 @@
         highlightBoxes = msg.sids
           .map((sid) => bySid(sid))
           .filter(Boolean)
-          .map((el) => ({ box: overlay('highlight'), el }))
+          .map((el) => {
+            // the host's mark colours: the page cannot read the app's tokens
+            const box = overlay('highlight')
+            if (typeof msg.fill === 'string') box.style.setProperty('--gx-ai-bg', msg.fill)
+            if (typeof msg.line === 'string') box.style.setProperty('--gx-ai-line', msg.line)
+            return { box, el }
+          })
         refresh()
+        // pictures and fonts still loading move the boxes they mark
+        whenSettled().then(refresh)
         break
       case 'gx:mark':
         for (const { pin } of markPins) pin.remove()

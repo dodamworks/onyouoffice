@@ -81,7 +81,6 @@ export const pl = {
   aiCopied: 'Skopiowano',
   aiRegenerateTitle: 'Wygeneruj ponownie',
   aiSnapshotsTitle: 'Migawki wersji',
-  aiRollback: 'Przywróć',
   aiScopeSelected: 'Zaznaczono akapitów: {count}',
   aiScopeEmptyDoc: 'Pusty dokument',
   aiScopeCursor: 'Przy kursorze',

@@ -74,6 +74,12 @@ const GUIDES: { uri: string; name: string; argv: string[]; description: string }
     description: 'every diagram_apply / create_drawio op with its fields',
   },
   {
+    uri: 'onyouoffice://guide/map',
+    name: 'Mind map ops reference',
+    argv: ['guide', 'map'],
+    description: 'every map_apply op with its fields',
+  },
+  {
     uri: 'onyouoffice://guide/slides',
     name: 'PowerPoint ops reference',
     argv: ['guide', 'slides'],

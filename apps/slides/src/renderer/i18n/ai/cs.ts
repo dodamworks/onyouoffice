@@ -91,8 +91,6 @@ export const cs = {
   aiStopGeneration: 'Zastavit generování',
   aiStop: 'Zastavit',
   aiSend: 'Odeslat',
-  aiSnapshotsTitle: 'Snímky stavu',
-  aiRollback: 'Vrátit zpět',
   aiStarterPolishTitle: 'Vylepši nadpis a text tohoto snímku',
   aiStarterTighten: 'Zestručni odrážky na tomto snímku',
   aiStarterProofread: 'Zkontroluj celou prezentaci na překlepy a oprav je',

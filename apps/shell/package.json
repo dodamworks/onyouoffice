@@ -1,7 +1,7 @@
 {
   "name": "@genoffice/shell",
   "productName": "Onyou Office",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "license": "Apache-2.0",
   "homepage": "https://github.com/dodamworks/onyouoffice",
   "private": true,
@@ -32,6 +32,7 @@
     "@genoffice/pipelines": "*",
     "@genoffice/pptx-engine": "*",
     "@genoffice/pptx-render": "*",
+    "@genoffice/print-layout": "*",
     "@genoffice/sheets": "*",
     "@genoffice/slides": "*",
     "@genoffice/ui": "*",

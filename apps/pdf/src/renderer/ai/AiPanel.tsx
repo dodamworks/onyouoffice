@@ -4,6 +4,7 @@ import {
   AiPanelFontSizeButtons,
   AiModelPicker,
   type AiModelPickerBridge,
+  useSubscriptionUsageUpdates,
 } from '@genoffice/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from 'react'
@@ -23,6 +24,7 @@ import {
 } from '@genoffice/ai-provider/browser'
 import {
   AiBlockedNotice,
+  AiChangesCard,
   AiComposer,
   AiConnectPrompt,
   AiFirstConnectionNotice,
@@ -55,6 +57,7 @@ import {
   useSkillProposals,
   useSkillTemplates,
   type TemplateDocument,
+  type AiChangesState,
   type AiScopeQuoteData,
   type AiTokenUsageView,
   type ChatRunQueue,
@@ -70,6 +73,7 @@ import sendEnterOn from '../assets/send-enter-on.png'
 import sendEnterOff from '../assets/send-enter-off.png'
 import sendStop from '../assets/send-stop.png'
 import { createPdfSkill } from './pdf-skill'
+import type { PdfAiRun, PdfRevertVerdict } from './ai-run-changes'
 import { createElectronTransport } from './transport'
 import {
   aiBlockedRunOf,
@@ -144,6 +148,21 @@ interface ChatEntry {
   memory?: ProjectMemoryLine[]
   /** another editor's tools on a reopened project message: one summary line */
   otherEditorTools?: OtherEditorTools
+  /** the run that ended with this reply changed the document: its changes card */
+  changes?: { run: PdfAiRun; state: AiChangesState }
+}
+
+/** The document side of the changes card (App.tsx): recording a run, taking it back, its marks */
+export interface PdfAiChanges {
+  /** a run starts: the edits it applies from now on are recorded, the last run's marks go */
+  begin(): void
+  /** the run ended: what it changed (null when nothing), and its places get marked */
+  end(): PdfAiRun | null
+  /** take the run back while nothing was done since */
+  revert(run: PdfAiRun): 'reverted' | Exclude<PdfRevertVerdict, 'ok'>
+  clearMarks(): void
+  /** the run whose places are marked on the pages */
+  readonly markedRun: number | null
 }
 
 /** A project chat message as this panel shows it */
@@ -188,6 +207,7 @@ const MODEL_BRIDGE: AiModelPickerBridge = {
 
 export function AiPanel({
   api,
+  aiChanges,
   filePath,
   onCollapse,
   preset,
@@ -199,6 +219,8 @@ export function AiPanel({
   onSkillHandoff,
 }: {
   api: PdfAppDeps
+  /** absent: no changes card (the panel without a document) */
+  aiChanges?: PdfAiChanges
   /** Absolute path of the open PDF (chat history is keyed to it) */
   filePath?: string
   onCollapse: () => void
@@ -583,6 +605,12 @@ export function AiPanel({
   })
   /** rate-limit windows the subscription CLI reported (latest per provider and window) */
   const [subscriptionUsage, setSubscriptionUsage] = useState<AiSubscriptionUsage[]>([])
+  // usage a picture request reported reaches every window (the chat stream only its own)
+  useSubscriptionUsageUpdates(
+    () => window.pdfApi?.subscription,
+    setSubscriptionUsage,
+    mergeSubscriptionUsage,
+  )
   /** the last turn's input was cut to fit a limit */
   const [inputTruncated, setInputTruncated] = useState(false)
   /** structured cause of the failure the loop is about to report through onError */
@@ -605,6 +633,13 @@ export function AiPanel({
   langRef.current = lang
   const apiRef = useRef(api)
   apiRef.current = api
+  const aiChangesRef = useRef(aiChanges)
+  aiChangesRef.current = aiChanges
+  /** the card of the run that ended: on the reply it ended with */
+  const runChanges = (): Pick<ChatEntry, 'changes'> => {
+    const run = aiChangesRef.current?.end() ?? null
+    return run ? { changes: { run, state: 'applied' } } : {}
+  }
   const onRunDoneRef = useRef(onRunDone)
   onRunDoneRef.current = onRunDone
   /** Any tool in the current run reported mutated: true */
@@ -815,9 +850,11 @@ export function AiPanel({
             persistRun()
           }
           projectPanelRef.current.finishSend()
+          const changes = runChanges()
           patchLast((last) => ({
             streaming: false,
             text: final || (last.tools?.length ? last.text : tGlobal('aiNoReply')),
+            ...changes,
           }))
           setBusy(false)
           if (runMutatedRef.current) {
@@ -837,6 +874,7 @@ export function AiPanel({
               connectionRef.current.recheck(blocked.provider)
             }
           }
+          const changes = runChanges()
           setChat((prev) => {
             const next = [...prev]
             // the loop rolled this run's user message out of the model context — surface that
@@ -855,6 +893,7 @@ export function AiPanel({
                 text: error,
                 isError: true,
                 ...(blocked ? { blocked } : {}),
+                ...changes,
               }
             }
             return next
@@ -921,6 +960,7 @@ export function AiPanel({
     setBusy(true)
     setPhase('thinking')
     runMutatedRef.current = false
+    aiChangesRef.current?.begin()
     void (async () => {
       try {
         settingsRef.current = await window.pdfApi.getAiSettings()
@@ -934,6 +974,7 @@ export function AiPanel({
           streaming: false,
           text: err instanceof Error ? err.message : String(err),
           isError: true,
+          ...runChanges(),
         })
         setBusy(false)
       }
@@ -943,6 +984,19 @@ export function AiPanel({
   const stop = (): void => {
     msgQueue.hold()
     loopRef.current?.cancel()
+  }
+
+  /** the card's revert: the run's edits go back in one step, or the card says why not */
+  const revertRun = (index: number, run: PdfAiRun): void => {
+    if (busy || !aiChanges) return
+    const state = aiChanges.revert(run)
+    setChat((prev) => {
+      const entry = prev[index]
+      if (entry?.changes?.run !== run) return prev
+      const next = [...prev]
+      next[index] = { ...entry, changes: { run, state } }
+      return next
+    })
   }
 
   /** the conversation on screen, in the loop and in the composer's helpers goes away */
@@ -955,6 +1009,9 @@ export function AiPanel({
     sendGate.reset()
     setBusy(false)
     setChat([])
+    // a new chat: the last run's marks go with its card (a stopped run's record too)
+    aiChangesRef.current?.end()
+    aiChangesRef.current?.clearMarks()
     skills.resetConversation()
     skillCards.reset()
     skillTemplates.reset()
@@ -1198,7 +1255,8 @@ export function AiPanel({
             )
           }
           const hasTools = (entry.tools?.length ?? 0) > 0
-          if (!entry.text && !hasTools && !entry.otherEditorTools) return null
+          if (!entry.text && !hasTools && !entry.otherEditorTools && !entry.changes) return null
+          const changes = entry.changes
           return (
             <div
               key={i}
@@ -1231,6 +1289,18 @@ export function AiPanel({
                     <Markdown text={entry.text} navs={[pdfNav, fileNav]} />
                   </div>
                 )
+              )}
+              {changes && (
+                <AiChangesCard
+                  lang={lang}
+                  state={changes.state}
+                  count={changes.run.ops}
+                  canRevert={!busy && aiChanges !== undefined}
+                  onRevert={() => revertRun(i, changes.run)}
+                  onClearMarks={
+                    aiChanges?.markedRun === changes.run.id ? aiChanges.clearMarks : undefined
+                  }
+                />
               )}
             </div>
           )

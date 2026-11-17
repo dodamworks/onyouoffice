@@ -279,7 +279,7 @@ export const TOOLS: ToolSpec[] = [
     name: 'merge',
     command: 'merge',
     description:
-      'Fill {{key}} placeholders in a .docx, .pptx or .xlsx template with values from a JSON object and write the result to out (nested objects flatten to dotted keys; whitespace inside the braces is tolerated; a whole-cell placeholder in xlsx takes the value type). The result lists used_keys, unused_keys and unresolved_placeholders with their location (block / slide + element / sheet + cell) and reason (no_key; split_placeholder when the template stores the braces across differently formatted runs; unreachable_nested inside a nested pptx group); strict makes an unresolved placeholder an error. ' +
+      'Fill {{key}} placeholders in a .docx, .pptx or .xlsx template with values from a JSON object and write the result to out (nested objects flatten to dotted keys; whitespace inside the braces is tolerated; a whole-cell placeholder in xlsx takes the value type). The result lists used_keys, unused_keys and unresolved_placeholders with their location (block / slide + element / sheet + cell) and reason (no_key; split_placeholder when the braces sit where a flat text match cannot reach them, such as across a line break or a block boundary; unreachable_nested inside a nested pptx group); strict makes an unresolved placeholder an error. ' +
       GUI_OPEN,
     positionals: [{ key: 'file', description: 'path of the template (.docx, .pptx or .xlsx)' }],
     options: [
@@ -503,6 +503,54 @@ export const TOOLS: ToolSpec[] = [
     ],
   },
   {
+    name: 'map_read',
+    command: 'map',
+    verb: 'read',
+    readOnly: true,
+    description:
+      'Outline of an .xmind mind map, one `# ` heading per sheet; detail.sheets[].topics[] gives every topic (id, title, note, link, children ids) for map_apply. No app process.',
+    positionals: [{ key: 'file', description: 'path of the .xmind' }],
+  },
+  {
+    name: 'map_apply',
+    command: 'map',
+    verb: 'apply',
+    description:
+      'Edit an .xmind mind map with the map ops (guide map): add_topic, rename_topic, move_topic, delete_topic, set_note, set_link, on the ids map_read lists; new ids come back in detail.results[].created. Local, untouched parts of the file kept byte for byte; delete_topic refuses when it would take preserved elements and reports how many. Atomic by default. ' +
+      GUI_OPEN,
+    positionals: [{ key: 'file', description: 'path of the .xmind' }],
+    options: [
+      {
+        key: 'ops',
+        kind: OPS_JSON,
+        typed: 'map-ops',
+        description: 'JSON array of ops, every entry with "op"',
+        required: true,
+      },
+      { key: 'best-effort', description: 'apply what can apply; report the rest' },
+      { key: 'stop-on-error', description: 'apply in order up to the first refusal' },
+      { key: 'out', description: 'write here instead of in place' },
+      { key: 'force', description: 'overwrite an existing --out' },
+    ],
+  },
+  {
+    name: 'map_create',
+    command: 'map',
+    verb: 'create',
+    description:
+      "Create an .xmind mind map from a markdown outline (`# ` heading per sheet, `- ` item per topic; labels, links and notes come back). out is required: the outline text becomes a file in this server's scratch directory, which is deleted with the call, so a map written beside it would not survive.",
+    options: [
+      {
+        key: 'outline',
+        kind: 'inline-md',
+        description: 'the outline text',
+        required: true,
+      },
+      { key: 'out', description: 'output .xmind path (required)', required: true },
+      { key: 'force', description: 'overwrite an existing output' },
+    ],
+  },
+  {
     name: 'sheet_read',
     command: 'sheet',
     verb: 'read',
@@ -671,9 +719,9 @@ export const TOOLS: ToolSpec[] = [
     readOnly: true,
     plainText: true,
     description:
-      'The op reference an agent reads before writing ops: guide("docs"), guide("sheets") or guide("slides") list the groups; topic narrows to one group or one op. guide("slides", "design") is the staged deck workflow and guide("slides", "spec") the outline and page spec format (deck_start returns both). guide("slides", "templates") lists the built-in design templates; guide("slides", "templates", "<id>") prints one as a ready-made style sheet to save as style.md. Also available as onyouoffice://guide/* resources.',
+      'The op reference an agent reads before writing ops: guide("docs"), guide("sheets"), guide("slides"), guide("hwp"), guide("diagram") or guide("map") list the groups; topic narrows to one group or one op. guide("slides", "design") is the staged deck workflow and guide("slides", "spec") the outline and page spec format (deck_start returns both). guide("slides", "templates") lists the built-in design templates; guide("slides", "templates", "<id>") prints one as a ready-made style sheet to save as style.md. Also available as onyouoffice://guide/* resources.',
     positionals: [
-      { key: 'domain', description: 'slides | docs | sheets | hwp | diagram' },
+      { key: 'domain', description: 'slides | docs | sheets | hwp | diagram | map' },
       {
         key: 'topic',
         description: 'a group, an op name, or for slides: design | spec | templates',
@@ -719,7 +767,7 @@ export const TOOLS: ToolSpec[] = [
     command: 'image',
     openWorld: true,
     description:
-      'Generate an image from a prompt with the image provider configured in GenOffice and save it; the result names the real format. ref images steer an edit (key providers only). A failure names its cause in detail.errorCode (unavailable: not configured, do not retry; rate-limit: the subscription limit is used up, wait until detail.resetsAt when it is given).',
+      'Generate an image from a prompt with the image provider configured in GenOffice and save it; the result names the real format. ref images steer an edit. A failure names its cause in detail.errorCode (unavailable: not configured, do not retry; rate-limit: the subscription limit is used up, wait until detail.resetsAt when it is given).',
     positionals: [{ key: 'prompt', description: 'what to draw' }],
     options: ['out', 'aspect', 'size', 'ref', 'model', 'force'],
   },

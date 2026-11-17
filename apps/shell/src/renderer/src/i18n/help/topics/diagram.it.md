@@ -36,7 +36,7 @@ L’editor di diagrammi apre i file draw.io in una scheda. Ci disegni diagrammi 
 
 - Chiedi all’IA di disegnare un diagramma di flusso, un diagramma di sequenza o un organigramma, di spiegare il diagramma, di riordinare una pagina o di aggiungere il passo successivo dopo le forme selezionate.
 - L’IA legge il diagramma come testo: le pagine e, per ogni forma e connettore, l’id, il testo, la forma, la posizione e i collegamenti, oltre a quali forme hai selezionato. Non vede il diagramma come immagine.
-- Le modifiche dell’IA compaiono subito. Ogni modifica è un passo di annullamento (Ctrl+Z), e l’elenco dei turni nel pannello annulla un intero turno dell’IA. Se una qualsiasi parte di una modifica viene rifiutata, il diagramma resta com’era.
+- Le modifiche dell’IA compaiono subito. Ogni modifica è un passo di annullamento (Ctrl+Z), le forme e i connettori modificati dall’IA vengono contornati in giallo, e **Annulla queste modifiche**, nella scheda sotto la risposta, annulla un intero turno dell’IA. Se una qualsiasi parte di una modifica viene rifiutata, il diagramma resta com’era.
 - Per un nuovo diagramma di flusso, un diagramma di sequenza o simili, l’IA scrive Mermaid e GenOffice lo trasforma in forme sul tuo PC. La disposizione può differire un po’ da quella che produce il sito web di draw.io.
 - I diagrammi si possono anche allegare nel pannello IA degli altri editor, scegliere con `@` e trovare con la ricerca dei file nella Home. Anche i [comandi da terminale](help://cli) leggono, modificano e creano diagrammi (`ieumoffice diagram read`, `ieumoffice diagram apply`, `ieumoffice create --type drawio`).
 

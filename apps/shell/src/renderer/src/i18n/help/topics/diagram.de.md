@@ -36,7 +36,7 @@ Der Diagramm-Editor öffnet draw.io-Dateien in einem Tab. Sie zeichnen darin Flu
 
 - Bitten Sie die KI, ein Flussdiagramm, ein Sequenzdiagramm oder ein Organigramm zu zeichnen, das Diagramm zu erklären, eine Seite aufzuräumen oder nach den ausgewählten Formen den nächsten Schritt anzufügen.
 - Die KI liest das Diagramm als Text: die Seiten und für jede Form und jeden Verbinder dessen ID, Text, Form, Position und Verbindungen, dazu die Formen, die Sie ausgewählt haben. Als Bild sieht sie das Diagramm nicht.
-- Änderungen der KI erscheinen sofort. Jede Änderung ist ein Rückgängig-Schritt (Ctrl+Z), und die Durchgangsliste im Panel nimmt einen ganzen KI-Durchgang zurück. Wird ein Teil einer Änderung abgelehnt, bleibt das Diagramm, wie es war.
+- Änderungen der KI erscheinen sofort. Jede Änderung ist ein Rückgängig-Schritt (Ctrl+Z), die Formen und Verbinder, die die KI geändert hat, werden gelb umrandet, und **Diese Änderungen zurücknehmen** auf der Karte unter ihrer Antwort nimmt einen ganzen KI-Durchgang zurück. Wird ein Teil einer Änderung abgelehnt, bleibt das Diagramm, wie es war.
 - Für ein neues Flussdiagramm, Sequenzdiagramm oder Ähnliches schreibt die KI Mermaid, und GenOffice macht daraus auf Ihrem PC Formen. Die Anordnung kann etwas von dem abweichen, was die draw.io-Website erzeugt.
 - Diagramme lassen sich auch im KI-Panel der anderen Editoren anhängen, mit `@` auswählen und über die Dateisuche auf der Startseite finden. Auch die [Terminalbefehle](help://cli) lesen, bearbeiten und erstellen Diagramme (`ieumoffice diagram read`, `ieumoffice diagram apply`, `ieumoffice create --type drawio`).
 

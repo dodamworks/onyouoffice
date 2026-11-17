@@ -48,7 +48,11 @@ def markdown_links(text):
     # Code samples are not rendered links. Definitions cover reference-style links too.
     text = re.sub(r'^\s*(```|~~~).*?^\s*\1\s*$', '', text, flags=re.M | re.S)
     text = re.sub(r'`+[^`\n]*`+', '', text)
-    for match in re.finditer(r'!?\[[^\]\n]*\]\(\s*(<[^>\n]+>|[^\s)]+)', text):
+    # An inline link's destination is followed only by an optional title and the closing
+    # parenthesis; prose in parentheses after a bracket (left once code spans are gone) is not a link.
+    for match in re.finditer(
+        r'!?\[[^\]\n]*\]\(\s*(<[^>\n]+>|[^\s)]+)(?:\s+(?:"[^"\n]*"|\'[^\'\n]*\'|\([^)\n]*\)))?\s*\)', text
+    ):
         yield match[1].strip('<>')
     for match in re.finditer(r'^\s{0,3}\[[^\]\n]+\]:\s*(<[^>\n]+>|\S+)', text, re.M):
         yield match[1].strip('<>')

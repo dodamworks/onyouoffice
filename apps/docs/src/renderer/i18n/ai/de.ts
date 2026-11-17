@@ -82,7 +82,6 @@ export const de = {
   aiCopied: 'Kopiert',
   aiRegenerateTitle: 'Neu generieren',
   aiSnapshotsTitle: 'Versionsschnappschüsse',
-  aiRollback: 'Zurücksetzen',
   aiScopeSelected: '{count} Absatz/Absätze ausgewählt',
   aiScopeEmptyDoc: 'Leeres Dokument',
   aiScopeCursor: 'An der Cursorposition',

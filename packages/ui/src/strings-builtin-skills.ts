@@ -17,6 +17,7 @@ export const BUILTIN_SKILL_NAMES = [
   'xlsx',
   'pdf',
   'hwp-document',
+  'hwp-exam-paper',
   'mindmap',
   'diagram',
   'html-document',
@@ -44,6 +45,8 @@ const zh = {
     '仅在智能体窗口中可用。运行脚本，在项目文件夹中读取、合并和拆分 .pdf 文件，并填写表单。这台电脑上需要装有 Python 等程序。',
   'builtinSkillDesc.hwp-document':
     '从头撰写 .hwp、.hwpx 文档：按报告、计划、通知、公文、会议记录选定结构，用公文语体撰写，最后进行检查。',
+  'builtinSkillDesc.hwp-exam-paper':
+    '按韩国学校提交的原稿格式出试卷：填写已打开的学校试卷模板，或新建 B4 双栏试卷，配有表头、分值和页码。',
   'builtinSkillDesc.mindmap':
     '根据主题或资料制作思维导图：均衡地设 3 到 7 个主分支，标题简短、说明放在备注里，最后检查结构。',
   'builtinSkillDesc.diagram':
@@ -84,6 +87,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Works only in the agent window. Runs scripts to read, merge and split .pdf files in the project folder and fill in forms. Python and other programs must be installed on this PC.',
     'builtinSkillDesc.hwp-document':
       'Writes a new .hwp or .hwpx document from scratch: picks the parts for a report, plan, notice, official letter or minutes, writes it in document style, and checks it at the end.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Writes a test paper the way Korean schools hand it in: fills the school form that is open, or builds a B4 paper in two columns with a head table, points and page numbers.',
     'builtinSkillDesc.mindmap':
       'Builds a mind map from a topic or material: three to seven balanced main branches, short titles with the detail in notes, and a structure check at the end.',
     'builtinSkillDesc.diagram':
@@ -115,6 +120,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'エージェントのウィンドウでのみ使えます。スクリプトを実行して、プロジェクトのフォルダーの .pdf ファイルを読み取り、結合・分割し、フォームに入力します。この PC に Python などのプログラムが入っている必要があります。',
     'builtinSkillDesc.hwp-document':
       '.hwp・.hwpx の文書を最初から書きます。報告書・計画書・案内文・公文書・議事録に合った構成を選び、文書の文体で書き、最後に点検します。',
+    'builtinSkillDesc.hwp-exam-paper':
+      '韓国の学校が提出する原稿の形で試験用紙を作ります。開いている学校の様式に書き込むか、見出しの表・配点・ページ番号のある B4 二段組の用紙を新しく作ります。',
     'builtinSkillDesc.mindmap':
       'テーマや資料からマインドマップを作ります。主な枝を 3〜7 本でバランスよく取り、タイトルは短く、説明はノートに置き、最後に構成を点検します。',
     'builtinSkillDesc.diagram':
@@ -147,6 +154,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       '에이전트 창에서만 쓸 수 있습니다. 스크립트를 실행해 프로젝트 폴더의 .pdf 파일을 읽고 합치고 나누고 양식을 채웁니다. 이 PC에 Python 같은 프로그램이 설치되어 있어야 합니다.',
     'builtinSkillDesc.hwp-document':
       '한글 문서(.hwp, .hwpx)를 처음부터 씁니다. 보고서·계획서·안내문·공문·회의록에 맞는 짜임을 고르고, 문서 문체로 쓴 뒤 마지막에 점검합니다.',
+    'builtinSkillDesc.hwp-exam-paper':
+      '학교 원안지 꼴로 시험지를 씁니다. 열린 학교 시험지 양식에 채우거나, 머리 표·배점·쪽 번호를 갖춘 B4 2단 시험지를 새로 만듭니다.',
     'builtinSkillDesc.mindmap':
       '주제나 자료로 마인드맵을 만듭니다. 큰 가지 3~7개를 고르게 잡고, 제목은 짧게 쓰고 설명은 메모에 두며, 마지막에 짜임을 점검합니다.',
     'builtinSkillDesc.diagram':
@@ -179,6 +188,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Fonctionne uniquement dans la fenêtre Agent. Exécute des scripts pour lire, fusionner et diviser des fichiers .pdf dans le dossier du projet et remplir des formulaires. Python et d’autres programmes doivent être installés sur ce PC.',
     'builtinSkillDesc.hwp-document':
       'Rédige un nouveau document .hwp ou .hwpx à partir de zéro : choisit la structure d’un rapport, d’un plan, d’un avis, d’une lettre officielle ou d’un compte rendu, écrit dans le style du document et vérifie le résultat.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Rédige un sujet d’examen dans la forme que les écoles coréennes remettent : remplit le modèle de l’école ouvert, ou crée une copie B4 sur deux colonnes avec un tableau d’en-tête, les points et les numéros de page.',
     'builtinSkillDesc.mindmap':
       'Construit une carte mentale à partir d’un sujet ou de documents : trois à sept branches principales équilibrées, des titres courts avec le détail dans les notes, et une vérification de la structure à la fin.',
     'builtinSkillDesc.diagram':
@@ -211,6 +222,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Funktioniert nur im Agent-Fenster. Führt Skripte aus, um .pdf-Dateien im Projektordner zu lesen, zusammenzuführen und zu teilen und Formulare auszufüllen. Auf diesem PC müssen Python und weitere Programme installiert sein.',
     'builtinSkillDesc.hwp-document':
       'Schreibt ein neues .hwp- oder .hwpx-Dokument von Grund auf: wählt den Aufbau für Bericht, Plan, Mitteilung, amtliches Schreiben oder Protokoll, schreibt im Dokumentstil und prüft das Ergebnis.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Schreibt eine Prüfungsarbeit in der Form, die koreanische Schulen einreichen: füllt die geöffnete Schulvorlage aus oder legt ein B4-Blatt in zwei Spalten mit Kopftabelle, Punkten und Seitenzahlen an.',
     'builtinSkillDesc.mindmap':
       'Baut eine Mindmap aus einem Thema oder Material: drei bis sieben ausgewogene Hauptzweige, kurze Titel mit den Details in Notizen und am Ende eine Prüfung der Struktur.',
     'builtinSkillDesc.diagram':
@@ -243,6 +256,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Solo funciona en la ventana del agente. Ejecuta scripts para leer, combinar y dividir archivos .pdf en la carpeta del proyecto y rellenar formularios. Este PC debe tener instalados Python y otros programas.',
     'builtinSkillDesc.hwp-document':
       'Redacta un documento .hwp o .hwpx nuevo desde cero: elige la estructura de un informe, plan, aviso, oficio o acta, escribe en el estilo del documento y revisa el resultado.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Redacta un examen con la forma que entregan las escuelas coreanas: rellena la plantilla escolar abierta o crea una hoja B4 a dos columnas con tabla de encabezado, puntos y números de página.',
     'builtinSkillDesc.mindmap':
       'Construye un mapa mental a partir de un tema o de materiales: de tres a siete ramas principales equilibradas, títulos cortos con el detalle en las notas y una revisión de la estructura al final.',
     'builtinSkillDesc.diagram':
@@ -275,6 +290,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'ใช้ได้เฉพาะในหน้าต่างเอเจนต์ เรียกใช้สคริปต์เพื่ออ่าน รวม และแยกไฟล์ .pdf ในโฟลเดอร์โปรเจกต์ และกรอกแบบฟอร์ม พีซีเครื่องนี้ต้องติดตั้ง Python และโปรแกรมอื่นไว้',
     'builtinSkillDesc.hwp-document':
       'เขียนเอกสาร .hwp หรือ .hwpx ใหม่ตั้งแต่ต้น โดยเลือกโครงสร้างให้เหมาะกับรายงาน แผนงาน ประกาศ หนังสือราชการ หรือรายงานการประชุม เขียนด้วยภาษาเอกสาร แล้วตรวจทานตอนท้าย',
+    'builtinSkillDesc.hwp-exam-paper':
+      'เขียนข้อสอบตามแบบต้นฉบับที่โรงเรียนเกาหลีใช้ส่ง: กรอกลงในแบบฟอร์มข้อสอบของโรงเรียนที่เปิดอยู่ หรือสร้างข้อสอบ B4 สองคอลัมน์พร้อมตารางหัว คะแนน และเลขหน้า',
     'builtinSkillDesc.mindmap':
       'สร้างแผนผังความคิดจากหัวข้อหรือเอกสาร โดยวางกิ่งหลัก 3 ถึง 7 กิ่งให้สมดุล ตั้งชื่อหัวข้อสั้น ๆ ใส่รายละเอียดไว้ในบันทึก แล้วตรวจโครงสร้างตอนท้าย',
     'builtinSkillDesc.diagram':
@@ -307,6 +324,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Hanya berfungsi di jendela agen. Menjalankan skrip untuk membaca, menggabungkan, dan memisahkan file .pdf di folder proyek serta mengisi formulir. Python dan program lain harus terpasang di PC ini.',
     'builtinSkillDesc.hwp-document':
       'Menulis dokumen .hwp atau .hwpx baru dari awal: memilih susunan untuk laporan, rencana, pengumuman, surat resmi, atau notulen, menulis dengan gaya dokumen, lalu memeriksa hasilnya.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Menulis soal ujian dalam bentuk naskah yang diserahkan sekolah Korea: mengisi formulir sekolah yang terbuka, atau membuat lembar B4 dua kolom dengan tabel kepala, skor, dan nomor halaman.',
     'builtinSkillDesc.mindmap':
       'Menyusun peta pikiran dari topik atau bahan: tiga sampai tujuh cabang utama yang seimbang, judul singkat dengan rincian di catatan, dan pemeriksaan struktur di akhir.',
     'builtinSkillDesc.diagram':
@@ -339,6 +358,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Работает только в окне агента. Запускает скрипты, чтобы читать, объединять и разделять файлы .pdf в папке проекта и заполнять формы. На этом компьютере должны быть установлены Python и другие программы.',
     'builtinSkillDesc.hwp-document':
       'Пишет новый документ .hwp или .hwpx с нуля: выбирает структуру для отчёта, плана, объявления, официального письма или протокола, пишет в стиле документа и проверяет результат.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Составляет контрольную работу в виде, принятом в корейских школах: заполняет открытый школьный бланк или создаёт лист B4 в две колонки с таблицей-шапкой, баллами и номерами страниц.',
     'builtinSkillDesc.mindmap':
       'Строит интеллект-карту по теме или материалам: от трёх до семи уравновешенных главных ветвей, короткие заголовки с подробностями в заметках и проверка структуры в конце.',
     'builtinSkillDesc.diagram':
@@ -370,6 +391,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'يعمل في نافذة الوكيل فقط. يشغّل نصوصًا برمجية لقراءة ملفات .pdf في مجلد المشروع ودمجها وتقسيمها وتعبئة النماذج. يجب أن يكون Python وبرامج أخرى مثبتة على هذا الكمبيوتر.',
     'builtinSkillDesc.hwp-document':
       'يكتب مستند .hwp أو .hwpx جديدًا من البداية: يختار بنية التقرير أو الخطة أو الإعلان أو الخطاب الرسمي أو محضر الاجتماع، ويكتب بأسلوب المستندات، ثم يراجع النتيجة.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'يكتب ورقة اختبار بالشكل الذي تسلّمه المدارس الكورية: يملأ نموذج المدرسة المفتوح، أو ينشئ ورقة B4 في عمودين مع جدول رأس والدرجات وأرقام الصفحات.',
     'builtinSkillDesc.mindmap':
       'ينشئ خريطة ذهنية من موضوع أو مواد: من ثلاثة إلى سبعة فروع رئيسية متوازنة، وعناوين قصيرة مع وضع التفاصيل في الملاحظات، ثم يراجع البنية في النهاية.',
     'builtinSkillDesc.diagram':
@@ -402,6 +425,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Funciona só na janela do agente. Executa scripts para ler, juntar e dividir arquivos .pdf na pasta do projeto e preencher formulários. Este PC precisa ter o Python e outros programas instalados.',
     'builtinSkillDesc.hwp-document':
       'Escreve um novo documento .hwp ou .hwpx do zero: escolhe a estrutura de relatório, plano, aviso, ofício ou ata, escreve no estilo do documento e confere o resultado.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Escreve uma prova no formato que as escolas coreanas entregam: preenche o modelo da escola que está aberto ou cria uma folha B4 em duas colunas com tabela de cabeçalho, pontos e números de página.',
     'builtinSkillDesc.mindmap':
       'Monta um mapa mental a partir de um tema ou de materiais: de três a sete ramos principais equilibrados, títulos curtos com o detalhe nas notas e uma conferência da estrutura no final.',
     'builtinSkillDesc.diagram':
@@ -434,6 +459,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Funziona solo nella finestra dell’agente. Esegue script per leggere, unire e dividere file .pdf nella cartella del progetto e compilare moduli. Su questo PC devono essere installati Python e altri programmi.',
     'builtinSkillDesc.hwp-document':
       'Scrive da zero un nuovo documento .hwp o .hwpx: sceglie la struttura per relazione, piano, avviso, lettera ufficiale o verbale, scrive nello stile del documento e controlla il risultato.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Scrive una verifica nella forma che le scuole coreane consegnano: compila il modello della scuola aperto oppure crea un foglio B4 su due colonne con tabella di intestazione, punteggi e numeri di pagina.',
     'builtinSkillDesc.mindmap':
       'Costruisce una mappa mentale da un argomento o da materiali: da tre a sette rami principali equilibrati, titoli brevi con i dettagli nelle note e un controllo della struttura alla fine.',
     'builtinSkillDesc.diagram':
@@ -466,6 +493,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Działa tylko w oknie agenta. Uruchamia skrypty, aby odczytywać, scalać i dzielić pliki .pdf w folderze projektu oraz wypełniać formularze. Na tym komputerze muszą być zainstalowane Python i inne programy.',
     'builtinSkillDesc.hwp-document':
       'Pisze od zera nowy dokument .hwp lub .hwpx: dobiera układ raportu, planu, ogłoszenia, pisma urzędowego lub protokołu, pisze stylem dokumentu i sprawdza wynik.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Pisze sprawdzian w formie, jaką oddają koreańskie szkoły: wypełnia otwarty szkolny formularz albo tworzy arkusz B4 w dwóch kolumnach z tabelą nagłówka, punktacją i numerami stron.',
     'builtinSkillDesc.mindmap':
       'Buduje mapę myśli z tematu lub materiałów: od trzech do siedmiu zrównoważonych głównych gałęzi, krótkie tytuły ze szczegółami w notatkach i sprawdzenie struktury na końcu.',
     'builtinSkillDesc.diagram':
@@ -498,6 +527,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Funguje jen v okně agenta. Spouští skripty, které čtou, slučují a dělí soubory .pdf ve složce projektu a vyplňují formuláře. Na tomto počítači musí být nainstalován Python a další programy.',
     'builtinSkillDesc.hwp-document':
       'Napíše od začátku nový dokument .hwp nebo .hwpx: zvolí stavbu zprávy, plánu, oznámení, úředního dopisu nebo zápisu, píše stylem dokumentu a výsledek zkontroluje.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Napíše písemku v podobě, jakou odevzdávají korejské školy: vyplní otevřený školní formulář, nebo vytvoří list B4 ve dvou sloupcích s hlavičkovou tabulkou, body a čísly stránek.',
     'builtinSkillDesc.mindmap':
       'Sestaví myšlenkovou mapu z tématu nebo podkladů: tři až sedm vyvážených hlavních větví, krátké názvy s podrobnostmi v poznámkách a na konci kontrola struktury.',
     'builtinSkillDesc.diagram':
@@ -530,6 +561,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Werkt alleen in het agentvenster. Voert scripts uit om .pdf-bestanden in de projectmap te lezen, samen te voegen en te splitsen en formulieren in te vullen. Op deze pc moeten Python en andere programma’s zijn geïnstalleerd.',
     'builtinSkillDesc.hwp-document':
       'Schrijft een nieuw .hwp- of .hwpx-document vanaf nul: kiest de opbouw voor een rapport, plan, mededeling, officiële brief of notulen, schrijft in documentstijl en controleert het resultaat.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Schrijft een toets in de vorm die Koreaanse scholen inleveren: vult het geopende schoolsjabloon in of maakt een B4-blad in twee kolommen met een koptabel, punten en paginanummers.',
     'builtinSkillDesc.mindmap':
       'Bouwt een mindmap uit een onderwerp of materiaal: drie tot zeven evenwichtige hoofdtakken, korte titels met de details in notities en aan het eind een controle van de structuur.',
     'builtinSkillDesc.diagram':
@@ -562,6 +595,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Hanya berfungsi dalam tetingkap ejen. Menjalankan skrip untuk membaca, menggabungkan dan memisahkan fail .pdf dalam folder projek serta mengisi borang. Python dan program lain mesti dipasang pada PC ini.',
     'builtinSkillDesc.hwp-document':
       'Menulis dokumen .hwp atau .hwpx baharu dari awal: memilih susunan untuk laporan, rancangan, notis, surat rasmi atau minit mesyuarat, menulis dalam gaya dokumen, kemudian menyemak hasilnya.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Menulis kertas ujian dalam bentuk yang diserahkan sekolah Korea: mengisi borang sekolah yang dibuka, atau membina kertas B4 dua lajur dengan jadual kepala, markah dan nombor halaman.',
     'builtinSkillDesc.mindmap':
       'Membina peta minda daripada topik atau bahan: tiga hingga tujuh cabang utama yang seimbang, tajuk ringkas dengan butiran dalam nota, dan semakan struktur pada akhirnya.',
     'builtinSkillDesc.diagram':
@@ -593,6 +628,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'פועל רק בחלון הסוכן. מריץ סקריפטים כדי לקרוא, למזג ולפצל קובצי .pdf בתיקיית הפרויקט ולמלא טפסים. Python ותוכנות נוספות צריכות להיות מותקנות במחשב הזה.',
     'builtinSkillDesc.hwp-document':
       'כותב מסמך .hwp או .hwpx חדש מאפס: בוחר מבנה לדוח, לתוכנית, להודעה, למכתב רשמי או לפרוטוקול, כותב בסגנון של מסמך ובודק את התוצאה.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'כותב מבחן בצורה שבתי ספר בקוריאה מגישים: ממלא את תבנית בית הספר הפתוחה, או יוצר דף B4 בשני טורים עם טבלת כותרת, ניקוד ומספרי עמודים.',
     'builtinSkillDesc.mindmap':
       'בונה מפת חשיבה מנושא או מחומרים: שלושה עד שבעה ענפים ראשיים מאוזנים, כותרות קצרות עם הפירוט בהערות, ובדיקת המבנה בסוף.',
     'builtinSkillDesc.diagram':
@@ -625,6 +662,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'केवल एजेंट विंडो में काम करता है। स्क्रिप्ट चलाकर प्रोजेक्ट फ़ोल्डर की .pdf फ़ाइलें पढ़ता, जोड़ता और बाँटता है और फ़ॉर्म भरता है। इस PC पर Python और अन्य प्रोग्राम इंस्टॉल होने चाहिए।',
     'builtinSkillDesc.hwp-document':
       'नया .hwp या .hwpx दस्तावेज़ शुरू से लिखता है: रिपोर्ट, योजना, सूचना, सरकारी पत्र या बैठक के कार्यवृत्त के लिए ढाँचा चुनता है, दस्तावेज़ की शैली में लिखता है और अंत में जाँच करता है।',
+    'builtinSkillDesc.hwp-exam-paper':
+      'कोरियाई स्कूलों द्वारा जमा किए जाने वाले मूल प्रारूप में प्रश्नपत्र लिखता है: खुले हुए स्कूल फ़ॉर्म को भरता है, या शीर्ष तालिका, अंकों और पृष्ठ संख्याओं वाला दो कॉलम का B4 पत्र बनाता है।',
     'builtinSkillDesc.mindmap':
       'किसी विषय या सामग्री से माइंड मैप बनाता है: तीन से सात संतुलित मुख्य शाखाएँ, छोटे शीर्षक और ब्योरा नोट में, और अंत में ढाँचे की जाँच।',
     'builtinSkillDesc.diagram':
@@ -653,6 +692,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       '僅能在代理程式視窗中使用。執行指令碼，在專案資料夾中讀取、合併和分割 .pdf 檔案，並填寫表單。這台電腦上需要安裝 Python 等程式。',
     'builtinSkillDesc.hwp-document':
       '從頭撰寫 .hwp、.hwpx 文件：依報告、計畫、通知、公文、會議紀錄選定架構，用公文語體撰寫，最後進行檢查。',
+    'builtinSkillDesc.hwp-exam-paper':
+      '依韓國學校繳交的原稿格式出試卷：填寫已開啟的學校試卷範本，或新建 B4 雙欄試卷，附表頭、配分與頁碼。',
     'builtinSkillDesc.mindmap':
       '根據主題或資料製作心智圖：均衡地設 3 到 7 個主分支，標題簡短、說明放在備註裡，最後檢查架構。',
     'builtinSkillDesc.diagram':
@@ -685,6 +726,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Chỉ dùng được trong cửa sổ tác tử. Chạy tập lệnh để đọc, gộp và tách tệp .pdf trong thư mục dự án và điền biểu mẫu. PC này cần cài sẵn Python và các chương trình khác.',
     'builtinSkillDesc.hwp-document':
       'Viết mới tài liệu .hwp hoặc .hwpx từ đầu: chọn bố cục cho báo cáo, kế hoạch, thông báo, công văn hoặc biên bản họp, viết theo văn phong tài liệu rồi kiểm tra kết quả.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Soạn đề kiểm tra theo mẫu bản gốc mà các trường Hàn Quốc nộp: điền vào mẫu đề của trường đang mở, hoặc tạo tờ B4 hai cột có bảng đầu đề, điểm số và số trang.',
     'builtinSkillDesc.mindmap':
       'Dựng sơ đồ tư duy từ một chủ đề hoặc tài liệu: ba đến bảy nhánh chính cân đối, tiêu đề ngắn với chi tiết đặt trong ghi chú, và kiểm tra cấu trúc ở cuối.',
     'builtinSkillDesc.diagram':
@@ -717,6 +760,8 @@ export const BUILTIN_SKILL_STRINGS = defineStrings({
       'Yalnızca ajan penceresinde çalışır. Proje klasöründeki .pdf dosyalarını okumak, birleştirmek ve bölmek, formları doldurmak için betik çalıştırır. Bu bilgisayarda Python ve başka programlar kurulu olmalıdır.',
     'builtinSkillDesc.hwp-document':
       'Yeni bir .hwp veya .hwpx belgesini sıfırdan yazar: rapor, plan, duyuru, resmî yazı veya tutanak için bölümleri seçer, belge üslubuyla yazar ve sonunda denetler.',
+    'builtinSkillDesc.hwp-exam-paper':
+      'Kore okullarının teslim ettiği biçimde bir sınav kâğıdı yazar: açık olan okul şablonunu doldurur ya da başlık tablosu, puanlar ve sayfa numaraları olan iki sütunlu bir B4 kâğıdı oluşturur.',
     'builtinSkillDesc.mindmap':
       'Bir konudan veya malzemeden zihin haritası kurar: üç ila yedi dengeli ana dal, ayrıntısı notlarda duran kısa başlıklar ve sonunda yapı denetimi.',
     'builtinSkillDesc.diagram':

@@ -46,4 +46,10 @@ describe('studio locale and url', () => {
     expect(studioUrl('ko')).toBe('./studio/index.html?chrome=embed&lang=ko')
     expect(studioUrl('fr')).toBe('./studio/index.html?chrome=embed&lang=en')
   })
+
+  it("carries the font detection's share of the open-file limit when the app has one", () => {
+    expect(studioUrl('ko', 511)).toBe('./studio/index.html?chrome=embed&lang=ko&fontReads=511')
+    expect(studioUrl('ko', null)).toBe('./studio/index.html?chrome=embed&lang=ko')
+    expect(studioUrl('ko', 0)).toBe('./studio/index.html?chrome=embed&lang=ko')
+  })
 })

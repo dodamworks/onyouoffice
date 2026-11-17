@@ -88,8 +88,6 @@ export const th = {
   aiStopGeneration: 'หยุดการสร้าง',
   aiStop: 'หยุด',
   aiSend: 'ส่ง',
-  aiSnapshotsTitle: 'สแนปช็อตของเวอร์ชัน',
-  aiRollback: 'ย้อนกลับ',
   aiStarterPolishTitle: 'ปรับปรุงชื่อเรื่องและข้อความของสไลด์นี้',
   aiStarterTighten: 'ทำให้ประเด็นในสไลด์นี้กระชับขึ้น',
   aiStarterProofread: 'ตรวจคำผิดทั้งงานนำเสนอและแก้ไขให้',

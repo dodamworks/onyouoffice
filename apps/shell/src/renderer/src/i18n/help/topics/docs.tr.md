@@ -67,7 +67,7 @@ Gövdenin herhangi bir yerine sağ tıklayın — menü tıkladığınız yeri i
 ## AI
 
 - Şerit AI düğmesi ve yan panel: yeniden yaz, genişlet, çevir, özetle, tablo ekle hazır ayarları ve serbest talimatlar.
-- Her AI turu önce anlık görüntü alır; sürüm listesinden geri dönün, geri dönmenin kendisi de geri alınabilir.
+- AI’ın değiştirdiği yerler sarıyla işaretlenir. Yanıtın altındaki karttaki **Bu değişiklikleri geri al** o turu bütünüyle geri alır (ondan sonraki turlar da geri döner), geri dönmenin kendisi de geri alınabilir.
 
 ## Kaydetme ve dışa aktarma
 
@@ -77,4 +77,4 @@ Gövdenin herhangi bir yerine sağ tıklayın — menü tıkladığınız yeri i
 
 ## Yazdırma
 
-Sistem penceresi üzerinden ctrl+P, WYSIWYG sayfalar.
+ctrl+P yazdırma penceresini açar. Yazıcıyı, kopya sayısını, çift taraflı yazdırmayı ve aralığı (seçim dahil) seçebilir, **Sayfa düzeni** bölümünde kâğıt başına birden çok sayfa, kitapçık, afiş, etiket, tek veya çift yüz ve gri tonlama seçebilirsiniz (bkz. [Dosya işlemleri](help://file-ops)).

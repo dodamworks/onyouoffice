@@ -19,6 +19,10 @@ import {
   showSaveDialogWithMemory,
 } from '@genoffice/electron-utils'
 import type { SaveDiskState } from '@genoffice/electron-utils'
+import {
+  LABEL_SPEC_FILE_NAME,
+  ensurePrintLayoutIpc,
+} from '@genoffice/electron-utils/print-arranged'
 import { hwpToText } from '@genoffice/file-parse'
 import { getUiLang } from '@genoffice/i18n'
 import { registerHwpAttachmentIpc } from './attachments-ipc'
@@ -26,8 +30,10 @@ import { registerHwpImageIpc } from './ai-image'
 import { atomicWriteFile } from './atomic-write'
 import { readHwpDefaultFormat } from './default-format'
 import { badJob, printJobToPdf, printJobToPrinter } from './print-document'
+import { registerHwpPrintLayout } from './print-layout'
 import { tm } from './dialog-strings'
 import { fieldKindsOf } from './field-kinds'
+import { fontFileReadsOfProcess } from './font-file-reads'
 import type { FieldKinds } from './field-kinds'
 import { lostMemoCountOf } from './memos'
 import {
@@ -64,6 +70,7 @@ import type {
   PrintMode,
   PrintResult,
   SaveMode,
+  SavePreview,
   TabSpot,
 } from '../shared/ipc'
 
@@ -208,8 +215,8 @@ function recordedDiskState(wcId: number, path: string): SaveDiskState | undefine
 }
 
 /** Record what the file holds now; an unreadable file leaves no record and no conflict. */
-async function rememberDiskState(wcId: number, path: string): Promise<void> {
-  const state = await recordDiskState(path)
+async function rememberDiskState(wcId: number, path: string, read?: Uint8Array): Promise<void> {
+  const state = await recordDiskState(path, read)
   if (!state) return
   const states = diskStatesByWc.get(wcId) ?? new Map<string, SaveDiskState>()
   states.set(path, state)
@@ -339,6 +346,13 @@ export function requestHwpPreview(contents: WebContents, action: PreviewAction):
 /** A hidden window for printing: no preload, no scripts, sandboxed. */
 const printWindow = (): BrowserWindow =>
   new BrowserWindow({ show: false, webPreferences: { sandbox: true, javascript: false } })
+
+/**
+ * The hidden window the advanced print layout prints its face pictures from: no preload,
+ * sandboxed, scripts on for the shared readiness check (the page it loads has none).
+ */
+const arrangedPrintWindow = (): BrowserWindow =>
+  new BrowserWindow({ show: false, webPreferences: { sandbox: true } })
 
 /** The name an exported PDF is offered under: the document's, or the untitled one. */
 function pdfName(wcId: number): string {
@@ -513,6 +527,7 @@ function memoSnapshotsOf(value: unknown): MemoSnapshot[] | null {
 function commitOptionsOf(raw: unknown): {
   auto: boolean
   memos: MemoSnapshot[] | null | undefined
+  preview: SavePreview | undefined
 } {
   const options = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
   const memos =
@@ -521,7 +536,21 @@ function commitOptionsOf(raw: unknown): {
       : options.memos === null
         ? null
         : memoSnapshotsOf(options.memos)
-  return { auto: options.auto === true, memos }
+  return { auto: options.auto === true, memos, preview: savePreviewOf(options.preview) }
+}
+
+/**
+ * The preview the renderer sent. Anything but a well-formed one (null, a failed draw) is
+ * a blank preview: the save writes that over the stale one rather than keep it. Absent
+ * (an older renderer): the preview is left as the engine wrote it.
+ */
+function savePreviewOf(raw: unknown): SavePreview | undefined {
+  if (raw === undefined) return undefined
+  const given = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+  return {
+    text: typeof given.text === 'string' ? given.text : '',
+    image: given.image instanceof Uint8Array ? given.image : null,
+  }
 }
 
 let ipcRegistered = false
@@ -541,6 +570,18 @@ function registerHwpIpc(): void {
   })
   installHwpRecovery(recoveryHost)
   registerHwpRecoveryIpc()
+
+  // advanced print layout: the job PDF is the PDF export's, arranged and printed or saved
+  ensurePrintLayoutIpc({
+    ipcMain,
+    labelSpecPath: () => join(app.getPath('userData'), LABEL_SPEC_FILE_NAME),
+  })
+  registerHwpPrintLayout({
+    ipcMain,
+    createJobWindow: printWindow,
+    createPrintWindow: arrangedPrintWindow,
+    pickSavePath: (event) => pickPdfTarget(event.sender as WebContents),
+  })
 
   // ---- headless export mode (--headless-export) ----
   ipcMain.handle(HWP_CHANNELS.consumeHeadlessExport, (e): string | null => {
@@ -573,6 +614,10 @@ function registerHwpIpc(): void {
   })
   ipcMain.handle(HWP_CHANNELS.memoModalState, () => memoModalByWc.size > 0)
 
+  // the editor's font detection reads within this view's own open-file limit (font-file-reads.ts)
+  ipcMain.handle(HWP_CHANNELS.fontFileReads, (e) =>
+    fontFileReadsOfProcess(e.sender.getOSProcessId()),
+  )
   ipcMain.handle(HWP_CHANNELS.consumePending, (e) => {
     noteHwpPathConsumed(e.sender.id)
     return openPathByWc.get(e.sender.id) ?? null
@@ -591,7 +636,7 @@ function registerHwpIpc(): void {
     // the document the view holds from now on is this file: what is kept follows it (a
     // restored copy included: its saves correct against the file at its path)
     const wcId = e.sender.id
-    await rememberDiskState(wcId, path)
+    await rememberDiskState(wcId, path, bytes)
     trackedByWc.delete(wcId)
     trackingDroppedByWc.delete(wcId)
     if (bytesMatchFormat(bytes, 'hwp') && hasTrackedChanges(bytes)) {
@@ -796,6 +841,7 @@ function registerHwpIpc(): void {
           pending.format,
           Array.isArray(tabs) ? (tabs as MeasuredTab[]) : undefined,
           recoveryHost.saveBaseOf(wcId),
+          saveOptions.preview,
         )
         const bytes = fixed.bytes
         const tailsLost = fixed.tailsSkipped !== undefined
@@ -869,6 +915,7 @@ function registerHwpIpc(): void {
     else if (command === 'preview') requestHwpPreview(e.sender, 'open')
     else if (command === 'print') requestHwpPreview(e.sender, 'print')
     else if (command === 'importPdf' && hwpViews.has(e.sender.id)) runtime.importPdf?.()
+    else if (command === 'open' && hwpViews.has(e.sender.id)) runtime.openFileDialog?.()
   })
 
   ipcMain.on(HWP_CHANNELS.abortSave, (e) => {

@@ -383,9 +383,9 @@ function boxDrawingSegments(paragraphXml: string): Array<{ start: number; end: n
   )
 }
 
-/** How a caller addresses one shape drawing: by its wps:cNvPr id when known, else by box ordinal. */
+/** How a caller addresses one shape drawing: by its cNvPr id when known, else by box ordinal. */
 export interface ShapeDrawingLocation {
-  /** wps:cNvPr id of the owning shape (parsed boxes carry it) */
+  /** wps:cNvPr (or pic:cNvPr for a photo box) id of the owning shape (parsed boxes carry it) */
   shapeId?: string
   /** fallback ordinal among box drawings (generated shapes have no id) */
   boxIndex: number
@@ -399,8 +399,9 @@ function shapeDrawingSegment(
     // an id was given: never fall back to a different drawing
     const found = xmlSegments(paragraphXml, 'w:drawing', 0, paragraphXml.length).find(
       (seg) =>
-        /<wps:cNvPr\b[^>]*\bid="([^"]+)"/.exec(paragraphXml.slice(seg.start, seg.end))?.[1] ===
-        location.shapeId,
+        /<(?:wps|pic):cNvPr\b[^>]*\bid="([^"]+)"/.exec(
+          paragraphXml.slice(seg.start, seg.end),
+        )?.[1] === location.shapeId,
     )
     return found ?? null
   }
@@ -600,7 +601,66 @@ export interface FieldTextPatch {
  * Patch only cached visible w:t text in a field paragraph. Field instructions,
  * hyperlinks, tabs, run styling, and field boundaries remain byte-identical.
  */
+/**
+ * Replace every non-self-closing `<w:del …>…</w:del>` span. Same result as
+ * `xml.replace(/<w:del(?:\s[^>]*)?(?<!\/)>[\s\S]*?<\/w:del>/g, fn)`, in one
+ * linear pass: that regex rescans to the end of the paragraph from every
+ * unclosed `<w:del` and goes quadratic on a hostile file.
+ */
+export function replaceTrackedDeletions(xml: string, fn: (del: string) => string): string {
+  const open = /<w:del(?=[\s>])/g
+  let out = ''
+  let from = 0
+  let gt = -1
+  for (let m = open.exec(xml); m; m = open.exec(xml)) {
+    const start = m.index
+    if (gt < start) gt = xml.indexOf('>', start)
+    if (gt === -1) break
+    if (xml[gt - 1] === '/') continue
+    const close = xml.indexOf('</w:del>', gt + 1)
+    if (close === -1) break
+    const end = close + '</w:del>'.length
+    out += xml.slice(from, start) + fn(xml.slice(start, end))
+    from = end
+    open.lastIndex = end
+  }
+  return from === 0 ? xml : out + xml.slice(from)
+}
+
 export function patchFieldParagraphXml(xml: string, patch: FieldTextPatch): string {
+  const hyphens =
+    /<w:(?:noBreakHyphen|softHyphen)\s*\/>/.test(xml) || /[\u2011\u00ad]/.test(patch.left ?? '')
+  if (!hyphens) return patchFieldTextNodes(xml, patch)
+  // fieldDisplayOf reads the hyphen elements as U+2011 / U+00AD, so the edited
+  // text carries them as characters: lift the elements into text nodes for the
+  // distribution and fold every hyphen character back into its element after
+  // (a tracked deletion's hyphens lift as w:delText so they stay out of the live text)
+  const lift = (seg: string, tag: string) =>
+    seg
+      .replace(/<w:noBreakHyphen\s*\/>/g, `<${tag}>\u2011</${tag}>`)
+      .replace(/<w:softHyphen\s*\/>/g, `<${tag}>\u00ad</${tag}>`)
+  const lifted = lift(
+    replaceTrackedDeletions(xml, (del) => lift(del, 'w:delText')),
+    'w:t',
+  )
+  return patchFieldTextNodes(lifted, patch).replace(
+    /<(w:t|w:delText)(\s[^>]*)?>([^<]*[\u2011\u00ad][^<]*)<\/\1>/g,
+    (_m, tag: string, attrs: string | undefined, text: string) =>
+      text
+        .split(/([\u2011\u00ad])/)
+        .filter(Boolean)
+        .map((seg) =>
+          seg === '\u2011'
+            ? '<w:noBreakHyphen/>'
+            : seg === '\u00ad'
+              ? '<w:softHyphen/>'
+              : `<${tag}${attrs ?? ''}>${seg}</${tag}>`,
+        )
+        .join(''),
+  )
+}
+
+function patchFieldTextNodes(xml: string, patch: FieldTextPatch): string {
   const nodes = textNodes(xml, 'w:t')
   if (nodes.length === 0) return xml
   // run-level tab only (attribute-less CT_Empty) — `<w:tab w:val=…/>` inside

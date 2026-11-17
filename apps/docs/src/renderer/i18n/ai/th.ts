@@ -79,7 +79,6 @@ export const th = {
   aiCopied: 'คัดลอกแล้ว',
   aiRegenerateTitle: 'สร้างใหม่',
   aiSnapshotsTitle: 'สแนปช็อตของเวอร์ชัน',
-  aiRollback: 'ย้อนกลับ',
   aiScopeSelected: 'เลือก {count} ย่อหน้า',
   aiScopeEmptyDoc: 'เอกสารเปล่า',
   aiScopeCursor: 'ที่ตำแหน่งเคอร์เซอร์',

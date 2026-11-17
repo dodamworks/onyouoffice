@@ -36,7 +36,7 @@ The diagram editor opens draw.io files in a tab. You draw flowcharts, architectu
 
 - Ask the AI to draw a flowchart, a sequence diagram or an org chart, to explain the diagram, to tidy up a page, or to add the next step after the shapes you selected.
 - The AI reads the diagram as text: the pages and, for each shape and connector, its id, text, shape, position and connections, plus which shapes you selected. It does not see the diagram as a picture.
-- Changes the AI makes appear at once. Each change is one undo step (Ctrl+Z), and the turn list in the panel takes back a whole AI turn. If any part of a change is refused, the diagram stays as it was.
+- Changes the AI makes appear at once. Each change is one undo step (Ctrl+Z), the shapes and connectors the AI changed are outlined in yellow, and **Undo these changes** on the card under its reply takes back a whole AI turn. If any part of a change is refused, the diagram stays as it was.
 - For a new flowchart, sequence diagram or similar, the AI writes Mermaid and GenOffice turns it into shapes on your PC. The layout can differ a little from what the draw.io website makes.
 - Diagrams can also be attached in the AI panel of the other editors, picked with `@`, and found by the file search on Home. The [terminal commands](help://cli) read, edit and create diagrams as well (`ieumoffice diagram read`, `ieumoffice diagram apply`, `ieumoffice create --type drawio`).
 

@@ -36,7 +36,7 @@ Diyagram düzenleyici draw.io dosyalarını bir sekmede açar. Akış şemaları
 
 - AI’dan bir akış şeması, bir sıralama diyagramı veya bir organizasyon şeması çizmesini, diyagramı açıklamasını, bir sayfayı toparlamasını ya da seçtiğiniz şekillerden sonra bir sonraki adımı eklemesini isteyin.
 - AI diyagramı metin olarak okur: sayfaları ve her şekil ile bağlayıcı için kimliğini, metnini, şeklini, konumunu ve bağlantılarını, ayrıca hangi şekilleri seçtiğinizi. Diyagramı resim olarak görmez.
-- AI’ın yaptığı değişiklikler hemen görünür. Her değişiklik bir geri alma adımıdır (Ctrl+Z) ve paneldeki tur listesi bir AI turunun tamamını geri alır. Bir değişikliğin herhangi bir parçası reddedilirse diyagram olduğu gibi kalır.
+- AI’ın yaptığı değişiklikler hemen görünür. Her değişiklik bir geri alma adımıdır (Ctrl+Z), AI’ın değiştirdiği şekiller ve bağlayıcılar sarı çerçeveyle gösterilir ve yanıtın altındaki karttaki **Bu değişiklikleri geri al** bir AI turunun tamamını geri alır. Bir değişikliğin herhangi bir parçası reddedilirse diyagram olduğu gibi kalır.
 - Yeni bir akış şeması, sıralama diyagramı veya benzeri için AI Mermaid yazar ve GenOffice bunu bilgisayarınızda şekillere dönüştürür. Yerleşim, draw.io web sitesinin yaptığından biraz farklı olabilir.
 - Diyagramlar diğer düzenleyicilerin AI panelinde de eklenebilir, `@` ile seçilebilir ve Giriş ekranındaki dosya aramasıyla bulunabilir. [Terminal komutları](help://cli) da diyagramları okur, düzenler ve oluşturur (`ieumoffice diagram read`, `ieumoffice diagram apply`, `ieumoffice create --type drawio`).
 

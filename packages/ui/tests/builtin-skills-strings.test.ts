@@ -91,6 +91,7 @@ describe('BUILTIN_SKILL_STRINGS', () => {
     }[]
     const editors: Record<string, string> = {
       'hwp-document': 'hwp',
+      'hwp-exam-paper': 'hwp',
       mindmap: 'mindmap',
       diagram: 'diagram',
       'html-document': 'html',

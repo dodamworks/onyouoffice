@@ -49,6 +49,12 @@ let recordNames = { key: '', names: new Set() }
 /** Settles when the start-up look at the PC's fonts is over, however it ended. */
 let settled = Promise.resolve()
 /**
+ * The studio's work on the document's fonts that a font change set off (noteFontsApplying),
+ * while the change is being told; null when it set none off.
+ * @type {null | Promise<unknown>}
+ */
+let applying = null
+/**
  * The words a missing font is marked with, in the app's language (setMissingFontLabels).
  * @type {null | { tag: string, hint: string }}
  */
@@ -92,6 +98,53 @@ export function sameFaces(listed, kept) {
   return true
 }
 
+/**
+ * How many of the PC's fonts one detection reads the file of, on Linux, when the app did
+ * not say. There the page keeps each font file it read open until its next garbage
+ * collection, and a detection does not pause: on a PC with thousands of fonts the page ran
+ * into the open-file limit a desktop session starts programs with (1024) and stopped for
+ * good (#488). The app reads the page's own limit and passes half of it in the editor's
+ * address (`fontReads`, src/main/font-file-reads.ts); this is half of that common limit,
+ * for an editor started without it.
+ */
+export const LINUX_FONT_FILE_READS = 512
+
+/** The share the app passed in the editor's address, else LINUX_FONT_FILE_READS. */
+export function linuxFontFileReads(search = globalThis.location?.search ?? '') {
+  const given = Number(new URLSearchParams(search).get('fontReads') ?? '')
+  return Number.isSafeInteger(given) && given > 0 ? given : LINUX_FONT_FILE_READS
+}
+
+/** A name with a letter beyond ASCII: the PC's list gives a font's name in the PC's language first. */
+const LOCAL_NAME = /[\u0080-\uffff]/
+
+/**
+ * Which fonts of the PC's list the studio's detection reads the file of, by their place in
+ * the list (the studio-font-file-reads patch asks): every one, except on Linux past
+ * `reads` (linuxFontFileReads). There the fonts the list names in the PC's language go first (on
+ * a Korean PC the Korean fonts, whose other name a document may use), then the rest in
+ * the list's order. A font that is not read keeps the names the list gives, without those
+ * in its file. The choice follows from the list alone: a detection run again reads the same
+ * files, and a file read again is not opened again.
+ * @param {ReadonlyArray<{ family?: string; fullName?: string }>} listed
+ * @returns {(index: number) => boolean}
+ */
+export function fontFilesToRead(
+  listed,
+  platform = globalThis.navigator?.platform ?? '',
+  reads = linuxFontFileReads(),
+) {
+  if (!/Linux/.test(platform) || listed.length <= reads) return () => true
+  const local = (face) => LOCAL_NAME.test(`${face.family ?? ''}${face.fullName ?? ''}`)
+  const read = new Set()
+  for (const first of [true, false]) {
+    for (let index = 0; index < listed.length && read.size < reads; index += 1) {
+      if (local(listed[index]) === first) read.add(index)
+    }
+  }
+  return (index) => read.has(index)
+}
+
 /** Resolves once the page is visible: the enumeration refuses a hidden page (a tab opened behind another). */
 function whenVisible(doc) {
   if (!doc || doc.visibilityState === 'visible') return Promise.resolve()
@@ -132,7 +185,14 @@ async function refresh(studio) {
     await studio.detect()
     // the PC's fonts changed: an equation font may have come or gone
     forgetEquationFonts()
+    // The studio hears of the change at once and works the document's fonts out again on
+    // its own time: until then its substitution and its lookup of a document's font name
+    // answer as before the look, so the look is over only once that work is.
+    applying = null
     studio.changed()
+    const work = applying
+    applying = null
+    if (work) await work.catch(() => {})
     return true
   } catch (error) {
     console.warn('[pc-fonts] PC font list not refreshed; the kept list stays:', error)
@@ -140,9 +200,47 @@ async function refresh(studio) {
   }
 }
 
+/**
+ * Takes the work the studio starts on the document's fonts when told the PC's fonts changed
+ * (the studio-pc-fonts patch hands it over from the studio's own listener) and gives it back.
+ */
+export function noteFontsApplying(work) {
+  applying = Promise.resolve(work)
+  return work
+}
+
 /** Hands over what the studio knows of the PC's fonts; the studio-pc-fonts patch calls it at start-up. */
 export function installFontPresence(probe) {
   presence = probe
+}
+
+/** How long a print waits for the start-up look at the PC's fonts before it goes on. */
+export const PRINT_FONTS_WAIT_MS = 30_000
+
+/**
+ * Whether the pages for print can be drawn in the fonts the screen shows (print-fonts.mjs),
+ * once the start-up look at the PC's fonts is over: a print asked for in the first seconds
+ * of a document would otherwise go out in the engine's fonts. A page that is not shown (a
+ * headless export, a tab behind another) is never given the PC's list, so it is answered
+ * at once; a look that takes longer than `wait` ms is not waited for further.
+ */
+export async function printFontsReady({
+  wait = PRINT_FONTS_WAIT_MS,
+  doc = globalThis.document,
+} = {}) {
+  if (doc?.visibilityState && doc.visibilityState !== 'visible') return pcFontsKnown()
+  let timer
+  try {
+    await Promise.race([
+      settled.catch(() => {}),
+      new Promise((resolve) => {
+        timer = setTimeout(resolve, wait)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+  return pcFontsKnown()
 }
 
 /** Resolves once the start-up look at the PC's fonts is over. */
@@ -169,6 +267,35 @@ export function fontOnPc(name) {
   if (namesOfRecords(state).has(key)) return true
   for (const found of presence.detected()) if (alias(found) === key) return true
   return false
+}
+
+/**
+ * Whether the studio holds the PC's own font list. Until it does (the first seconds of a
+ * document, a window that was never shown, a PC that refuses the list) its substitution
+ * leaves out fonts it cannot vouch for, installed ones too.
+ */
+export function pcFontsKnown() {
+  return Boolean(presence) && presence.state().source === 'local-font-access'
+}
+
+/**
+ * The names an installed font goes by to the browser (its PostScript name, its full name),
+ * for the font the studio draws `name` with from this PC; null when the PC's own list does
+ * not hold it. A print document names the same face with them (`local()`), so the paper
+ * shows the font file the page showed.
+ */
+export function localFontFace(name) {
+  if (!presence || typeof name !== 'string' || !name.trim()) return null
+  if (presence.state().source !== 'local-font-access') return null
+  const record = presence.resolveLocalFont(name.trim())
+  if (!record || record.detectionSource === 'font-presence-probe') return null
+  const names = []
+  for (const value of [record.postscriptName, record.fullName]) {
+    if (typeof value === 'string' && value.trim() && !names.includes(value.trim())) {
+      names.push(value.trim())
+    }
+  }
+  return names.length > 0 ? names : null
 }
 
 /** The names of the studio's records, gathered again only when it detected anew. */
@@ -251,4 +378,24 @@ export function watchFontBox(box) {
 
 function remarkFontBox() {
   if (fontBox) markFontBox(fontBox, fontBox.value)
+}
+
+/** The engine's own names for a document's font program, as it leads a canvas font list with. */
+const ENGINE_FONT_ALIAS = /^__rhwp_(?:ttf|intrinsic)__/
+
+/**
+ * Whether a name in a canvas font list is the engine's alias for the document's font
+ * program (`__rhwp_ttf__함초롬바탕`) and not a font. Only a host that hands the studio font
+ * files turns such a name into a font; this app draws with the PC's fonts, where it names
+ * nothing. Weighed as the document's font it is "not on this PC", and the studio then put
+ * its stand-in (바탕, 맑은 고딕) before the font the document names: the page showed every
+ * such font in the stand-in, while a print or a PDF drew the font itself.
+ */
+export function isEngineFontAlias(name) {
+  return typeof name === 'string' && ENGINE_FONT_ALIAS.test(name)
+}
+
+/** The document's font name an engine alias stands for (`__rhwp_ttf__함초롬바탕` → 함초롬바탕). */
+export function engineAliasTarget(name) {
+  return isEngineFontAlias(name) ? name.replace(ENGINE_FONT_ALIAS, '') : null
 }

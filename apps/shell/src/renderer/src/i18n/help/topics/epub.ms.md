@@ -47,7 +47,7 @@ Editor e-buku membuka buku EPUB (`.epub`) dalam satu tab. Anda boleh membaca buk
 ## Panel AI
 
 - Tanya tentang buku, minta ringkasan sesuatu bab, atau minta teksnya dibetulkan atau ditulis semula. AI membaca senarai kandungan dan bab-bab buku serta mencari teks di dalamnya.
-- Perubahan yang dibuat oleh AI muncul serta-merta, dan satu kali buat asal (Ctrl+Z) mengembalikan semua yang diubahnya dalam giliran itu. AI boleh menjadikan teks tebal atau condong, tetapi tidak boleh menambah gambar, jadual atau bab.
+- Perubahan yang dibuat oleh AI muncul serta-merta, blok yang diubah ditanda dengan warna kuning, dan **Buat asal perubahan ini** pada kad di bawah jawapannya mengembalikan semua yang diubahnya dalam giliran itu (selagi buku tidak disunting selepas itu). AI boleh menjadikan teks tebal atau condong, tetapi tidak boleh menambah gambar, jadual atau bab.
 - Teks buku ialah bahan untuk AI, bukan arahan kepadanya.
 - Minta "Terjemah buku ini ke bahasa Perancis" dan AI akan membuka tetingkap terjemahan dengan bahasa itu sudah diisi. Tiada apa-apa dihantar sehingga anda menekan **Mula**.
 - Buku EPUB juga boleh dilampirkan dalam panel AI editor lain, dipilih dengan `@`, dan ditemui melalui carian fail di skrin Laman Utama.

@@ -1,4 +1,5 @@
 import {
+  AiChangesCard,
   aiPanelWidthAtPointer,
   AiPanelSideButton,
   AiPanelFontSizeButtons,
@@ -44,6 +45,8 @@ import {
   type ProjectMemoryLine,
   type SkillChipRef,
   type SkillUse,
+  useImeEnterGuard,
+  useSubscriptionUsageUpdates,
 } from '@genoffice/ui'
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import {
@@ -83,6 +86,16 @@ import { templateSelectionState } from './template-selection-state'
 import { TemplatePicker } from './TemplatePicker'
 import { EditQueueCard } from './EditQueueCard'
 import { deriveDeckProgressView, type DeckProgressSnapshot } from './deck-progress-view'
+import {
+  deckChanges,
+  deckFingerprint,
+  markRolledBack,
+  markUnrevertable,
+  revertsLater,
+  type DeckFingerprint,
+  type DeckMarks,
+  type RunChanges,
+} from './run-changes'
 import {
   buildPageInstruction,
   groupByPage,
@@ -309,8 +322,8 @@ interface ChatEntry {
   tools?: ToolActivity[]
   /** Generation progress card (only one per turn, replaced in real time) */
   deckProgress?: DeckProgressSnapshot
-  /** Main-process rollback point for this turn's deck edits — rendered as an inline roll-back action */
-  snapshotId?: number
+  /** This turn's deck edits: its main-process rollback point, rendered as the changes card */
+  changes?: RunChanges
   /** attachments consumed from the composer by this user message (read-only echo chips) */
   attachments?: AttachmentMeta[]
   /** the selection this user message targeted, frozen at send */
@@ -398,8 +411,8 @@ interface AiPanelProps {
   /** expand from the collapsed rail */
   onExpand?: () => void
   onCollapse?: () => void
-  /** Visible rollback action; uses the same main-process history as Cmd/Ctrl+Z. */
-  onUndo?: () => void
+  /** What the last run changed, to mark on the canvas and the thumbnails (null: no marks) */
+  onAiMarks?: (marks: DeckMarks | null) => void
   /** Callback to update the path after AI generation lands on disk (title bar sync) */
   onPathChange?: (path: string) => void
   /** Flush pending editor state (e.g. the speaker-notes draft) right before an AI run edits the deck, so a stale draft cannot overwrite what the run writes */
@@ -467,6 +480,7 @@ export function AiPanel({
   onPathChange,
   onBeforeRun,
   onHandedRunDone,
+  onAiMarks,
   onDeckProgress,
   currentFilePath,
   editQueue,
@@ -672,6 +686,7 @@ export function AiPanel({
     onChange: setInput,
     textareaRef: inputRef,
   })
+  const ime = useImeEnterGuard()
   /** Stop following once the user scrolls up; re-attach when near the bottom */
   const stickToBottomRef = useRef(true)
   /** Current chat's projectId/chatId, set after resolve succeeds */
@@ -763,6 +778,9 @@ export function AiPanel({
   const streamErrorRef = useRef<IpcStreamError | null>(null)
   /** the latest rate-limit windows a subscription program reported */
   const [subscriptionUsage, setSubscriptionUsage] = useState<AiSubscriptionUsage[]>([])
+  // usage a picture request reported reaches every window (the chat stream only its own);
+  // the shared merge keeps the windows a report does not name
+  useSubscriptionUsageUpdates(() => window.slidesApi?.aiSubscription, setSubscriptionUsage)
   /** the input of the current run was cut to fit a limit: the user is told, never silently */
   const [inputTruncated, setInputTruncated] = useState(false)
   const transportHooksRef = useRef<TransportHooks>({
@@ -1053,26 +1071,81 @@ export function AiPanel({
     const id = await window.slidesApi.endHistoryBatch()
     if (typeof id !== 'number') return
     runSnapshotIdRef.current = id
-    patchLastAssistant({ snapshotId: id })
+    patchLastAssistant({ changes: { snapshotId: id, state: 'applied' } })
+    setSettling(id)
   }
 
-  const rollback = async (snapshotId: number) => {
-    const restored = await window.slidesApi.aiSnapshotRestore(snapshotId)
-    if (!restored) {
-      // Evicted from the main-process snapshot ring — retire the dead action
-      setChat((prev) =>
-        prev.map((e) => (e.snapshotId === snapshotId ? { ...e, snapshotId: undefined } : e)),
-      )
-      return
-    }
-    applyDeckRef.current(restored, Math.min(currentRef.current, restored.length - 1))
-    // The deck rewound to before this batch, so this and every later rollback
-    // point now describe discarded futures (ids are monotonic across batches)
+  /** The deck when the current run started: what its changes are read against */
+  const runBaseRef = useRef<DeckFingerprint | null>(null)
+  /** The run whose changes are read once the deck it left behind has rendered */
+  const [settling, setSettling] = useState<number | null>(null)
+  /** What the last run changed, marked on the canvas until the next run, "hide marks" or a rollback */
+  const [marks, setMarks] = useState<{ snapshotId: number; marks: DeckMarks } | null>(null)
+  const [reverting, setReverting] = useState(false)
+  const chatRef = useRef(chat)
+  chatRef.current = chat
+  const onAiMarksRef = useRef(onAiMarks)
+  onAiMarksRef.current = onAiMarks
+  const clearMarks = () => setMarks(null)
+
+  useEffect(() => {
+    onAiMarksRef.current?.(marks?.marks ?? null)
+  }, [marks])
+  // the marks belong to this panel's deck: a remount (new file) takes them off
+  useEffect(() => () => onAiMarksRef.current?.(null), [])
+
+  // Read the run's changes after the render that carries the deck it left
+  // behind (the tools apply slides through App state, so the deck in hand when
+  // the batch closes can be a step old)
+  useEffect(() => {
+    if (settling == null) return
+    setSettling(null)
+    const base = runBaseRef.current
+    if (!base) return
+    const { marks: changed, count } = deckChanges(base, slides)
     setChat((prev) =>
       prev.map((e) =>
-        e.snapshotId != null && e.snapshotId >= snapshotId ? { ...e, snapshotId: undefined } : e,
+        e.changes?.snapshotId === settling
+          ? { ...e, changes: { ...e.changes, ...(count > 0 ? { count } : {}) } }
+          : e,
       ),
     )
+    setMarks(changed.size > 0 ? { snapshotId: settling, marks: changed } : null)
+    // A new rollback point can push the oldest out of the main-process ring
+    const applied = chatRef.current.flatMap((e) =>
+      e.changes?.state === 'applied' ? [e.changes.snapshotId] : [],
+    )
+    if (applied.length === 0) return
+    void window.slidesApi
+      .aiSnapshotAlive(applied)
+      .then((alive) => {
+        const gone = new Set(applied.filter((id) => !alive.includes(id)))
+        if (gone.size > 0) setChat((prev) => markUnrevertable(prev, gone, 'expired'))
+      })
+      .catch(() => {})
+  }, [settling, slides])
+
+  const rollback = async (snapshotId: number) => {
+    if (reverting) return
+    setReverting(true)
+    try {
+      const restored = await window.slidesApi.aiSnapshotRestore(snapshotId)
+      if (!restored) {
+        // Pushed out of the main-process ring by newer runs, or not usable right
+        // now (master view): the card says which and stops offering the action
+        const alive = await window.slidesApi.aiSnapshotAlive([snapshotId]).catch((): number[] => [])
+        const state = alive.includes(snapshotId) ? 'refused' : 'expired'
+        setChat((prev) => markUnrevertable(prev, new Set([snapshotId]), state))
+        return
+      }
+      applyDeckRef.current(restored, Math.min(currentRef.current, restored.length - 1))
+      setMarks(null)
+      // The deck rewound to before this batch, so this and every later rollback
+      // point now describe discarded futures (ids are monotonic across batches)
+      setChat((prev) => markRolledBack(prev, snapshotId))
+    } finally {
+      setReverting(false)
+    }
   }
 
   const loopRef = useRef<AgentLoop | null>(null)
@@ -2089,6 +2162,8 @@ export function AiPanel({
     runStartedAtRef.current = Date.now()
     generationStoppedRef.current = null
     setBusy(true)
+    // the last run's marks go when the next one starts
+    setMarks(null)
     // Persist the user message (store display text + attachment metadata; loop.restore rebuilds model context on file reopen)
     persistMessage('user', shown, undefined, sentAtts, scope, skillUse.chips)
     void collectImageAttachments(sentAtts)
@@ -2111,6 +2186,7 @@ export function AiPanel({
         // Clear the flag before run: loop.run sets running synchronously, leaving no re-entry window
         runStartingRef.current = false
         await onBeforeRunRef.current?.()
+        runBaseRef.current = deckFingerprint(slidesRef.current)
         if (await window.slidesApi.beginHistoryBatch()) historyBatchActiveRef.current = true
         // the chosen project's context for this request (after the send gate, right before the run)
         await projectPanelRef.current.prepareSend()
@@ -2152,9 +2228,13 @@ export function AiPanel({
       runStartedAtRef.current = Date.now()
       generationStoppedRef.current = null
       setBusy(true)
+      setMarks(null)
       queueRunResolverRef.current = resolve
       void Promise.resolve(onBeforeRunRef.current?.())
-        .then(() => window.slidesApi.beginHistoryBatch())
+        .then(() => {
+          runBaseRef.current = deckFingerprint(slidesRef.current)
+          return window.slidesApi.beginHistoryBatch()
+        })
         .then(async (ok) => {
           if (ok) historyBatchActiveRef.current = true
           runStartingRef.current = false
@@ -2263,7 +2343,7 @@ export function AiPanel({
     // (settled in the finally below; runSnapshotIdRef keeps the id meanwhile)
     setChat((prev) => [
       ...prev.map((e, i) =>
-        i === prev.length - 1 && e.snapshotId != null ? { ...e, snapshotId: undefined } : e,
+        i === prev.length - 1 && e.changes ? { ...e, changes: undefined } : e,
       ),
       { role: 'assistant', text: header, streaming: true },
     ])
@@ -2340,11 +2420,14 @@ export function AiPanel({
       qcRunningRef.current = false
       qcAbortRef.current = null
       const finalText = renderEntry()
+      const snapshotId = runSnapshotIdRef.current ?? qcSnapshotId
       patchLastAssistant({
         streaming: false,
         text: finalText,
-        snapshotId: runSnapshotIdRef.current ?? qcSnapshotId ?? undefined,
+        ...(snapshotId != null ? { changes: { snapshotId, state: 'applied' as const } } : {}),
       })
+      // read again: the check's own edits belong to the run's card and marks
+      if (snapshotId != null) setSettling(snapshotId)
       persistMessage('assistant', finalText)
       setBusy(false)
     }
@@ -2419,6 +2502,7 @@ export function AiPanel({
     windowMcpState()?.newConversation()
     setBusy(false)
     setChat([])
+    setMarks(null)
     // Same as docs (#195): the restored transcript is painted above the live
     // turn, so it must clear too — otherwise the old conversation survives.
     setHistoricChat([])
@@ -2650,7 +2734,8 @@ export function AiPanel({
             !entry.streaming &&
             !entry.error &&
             !entry.tools?.length &&
-            !entry.otherEditorTools
+            !entry.otherEditorTools &&
+            !entry.changes
           ) {
             return null
           }
@@ -2663,8 +2748,9 @@ export function AiPanel({
             entry.role === 'assistant' &&
             !entry.streaming &&
             turnEnded &&
-            // edits-only turns have no text but still carry the rollback point
-            (!!(entry.text || entry.error) || entry.snapshotId != null)
+            !!(entry.text || entry.error)
+          const runChanges =
+            entry.role === 'assistant' && !entry.streaming && turnEnded ? entry.changes : undefined
           return (
             <div
               key={i}
@@ -2690,6 +2776,17 @@ export function AiPanel({
               <SkillUsedNotes tools={entry.tools} />
               {projectPanel.messageParts(entry)}
               {entry.skillProposals?.map((key) => skillCards.render(key))}
+              {runChanges && (
+                <AiChangesCard
+                  lang={lang}
+                  state={runChanges.state}
+                  count={runChanges.count}
+                  canRevert={!busy && !reverting}
+                  revertsLater={revertsLater(chat, runChanges.snapshotId)}
+                  onRevert={() => void rollback(runChanges.snapshotId)}
+                  onClearMarks={marks?.snapshotId === runChanges.snapshotId ? clearMarks : null}
+                />
+              )}
               {entry.role === 'assistant' && entry.usage && (
                 <div className="ai-message-usage">
                   <AiUsageChip usage={entry.usage} lang={lang} />
@@ -2774,17 +2871,6 @@ export function AiPanel({
                         <path d="M22.0151 15.8801L21.1474 13.6384C21.0515 13.3908 20.7731 13.2677 20.5255 13.3636L18.2837 14.2314" />
                       </svg>
                     </button>
-                  )}
-                  {entry.snapshotId != null && (
-                    <>
-                      {/* hairline between reply actions (icons) and the document action (icon+label);
-                          CSS shows it only when an icon button actually precedes it */}
-                      <span className="ai-rollback-sep" aria-hidden />
-                      <RollbackButton
-                        disabled={busy}
-                        onClick={() => void rollback(entry.snapshotId!)}
-                      />
-                    </>
                   )}
                 </div>
               )}
@@ -2970,13 +3056,20 @@ export function AiPanel({
                 picker.track(e.target)
               }}
               onSelect={(e) => picker.track(e.currentTarget)}
-              onCompositionStart={picker.onCompositionStart}
-              onCompositionEnd={picker.onCompositionEnd}
+              onCompositionStart={() => {
+                picker.onCompositionStart()
+                ime.handleCompositionStart()
+              }}
+              onCompositionEnd={(e) => {
+                picker.onCompositionEnd(e)
+                ime.handleCompositionEnd()
+              }}
               onBlur={picker.onBlur}
               onKeyDown={(e) => {
                 if (picker.onKeyDown(e)) return
-                if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault()
+                  if (ime.isImeConfirm(e.nativeEvent)) return
                   if (busy) enqueueDraft()
                   else run()
                 } else if (e.key === 'Escape' && busy) {
@@ -3239,31 +3332,6 @@ function StepIcon({ status }: { status: 'running' | 'done' | 'error' }) {
       <circle cx="12" cy="12" r="9" />
       <path d="m8.5 12.4 2.4 2.4 4.6-5" />
     </svg>
-  )
-}
-
-/** Quiet roll-back action in the message toolbar: restores the deck to before the run's edits */
-function RollbackButton({ disabled, onClick }: { disabled: boolean; onClick: () => void }) {
-  const { t: tr } = useI18n()
-  return (
-    <button type="button" className="ai-rollback-btn" disabled={disabled} onClick={onClick}>
-      {/* 24-canvas glyph at 18px (optical parity with the toolbar icons): stroke 1.5 paints 1.125px (1:16) */}
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <path d="M5.91026 4L2.5 7.14791L5.91026 10.8205" />
-        <path d="M3.96154 7.41028H15.1636C18.5169 7.41028 21.3646 10.1484 21.4953 13.5C21.6334 17.0416 18.707 20.0769 15.1636 20.0769H6.88384" />
-      </svg>
-      {tr('aiRollback')}
-    </button>
   )
 }
 

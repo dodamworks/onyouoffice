@@ -47,7 +47,7 @@ E-kitap düzenleyici EPUB kitaplarını (`.epub`) bir sekmede açar. Kitabı oku
 ## AI paneli
 
 - Kitap hakkında soru sorun, bir bölümü özetletin, metnini düzelttirin ya da yeniden yazdırın. AI kitabın içeriğini ve bölümlerini okur, içinde metin bulur.
-- AI’ın yaptığı değişiklikler hemen görünür ve tek bir geri alma (Ctrl+Z) o turda değiştirdiği her şeyi geri alır. AI metni kalın veya italik yapabilir, ama resim, tablo ya da bölüm ekleyemez.
+- AI’ın yaptığı değişiklikler hemen görünür, değişen bloklar sarıyla işaretlenir ve yanıtın altındaki karttaki **Bu değişiklikleri geri al** o turda değiştirdiği her şeyi geri alır (kitap ondan sonra düzenlenmediyse). AI metni kalın veya italik yapabilir, ama resim, tablo ya da bölüm ekleyemez.
 - Kitabın metni AI için malzemedir, ona verilen yönerge değil.
 - "Bu kitabı Fransızcaya çevir" diye sorun, AI çeviri penceresini o dil dolu olarak açar. **Başlat** düğmesine basana kadar hiçbir şey gönderilmez.
 - EPUB kitapları diğer düzenleyicilerin AI panelinde de eklenebilir, `@` ile seçilebilir ve Giriş ekranındaki dosya aramasında bulunabilir.

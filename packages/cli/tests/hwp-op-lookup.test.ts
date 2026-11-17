@@ -1,3 +1,4 @@
+// Modified by Onyou Office on 2026-11-16 for the independent Onyou Office identity.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
@@ -42,6 +43,19 @@ describe('HWP operation lookup does not inherit object properties', () => {
     const r = await apply('hwp', 'generate_image')
     expect(r.code).toBe(1)
     expect(r.json().error).toBe('unsupported')
+  })
+  it('refuses web_search and points at the search command', async () => {
+    const r = await apply('hwp', 'web_search')
+    expect(r.code).toBe(1)
+    expect(r.json().error).toBe('unsupported')
+    expect(r.json().message).toContain('onyouoffice search')
+    // an app-only tool is not offered as a supported op either
+    expect(r.json().detail.failures[0].supported ?? []).not.toContain('web_search')
+  })
+  it('leaves web_search out of the op reference', async () => {
+    const r = await run(['guide', 'hwp', '--json'], { env })
+    expect(r.code).toBe(0)
+    expect(r.stdout).not.toContain('web_search')
   })
   it('keeps ordinary unknown operations unknown', async () => {
     const r = await apply('hwp', 'not_a_tool')

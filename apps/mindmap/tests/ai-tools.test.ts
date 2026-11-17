@@ -1165,6 +1165,36 @@ describe('one AI turn', () => {
     expect(copyOf(r.sheet(1))).toEqual(blank)
   })
 
+  it('knows the topics it added or changed: what its card counts and the map marks', async () => {
+    const r = await rigOf(plainSheet())
+    const first = copyOf(r.sheet(1))
+    const [one, two] = attached(first.rootTopic)
+    const turn = new MapTurn()
+    await editMap(
+      r.host,
+      {
+        edits: [
+          { op: 'add', parentId: first.rootTopic.id, title: 'Kept', ref: 'k' },
+          { op: 'add', parentId: first.rootTopic.id, title: 'Gone again', ref: 'g' },
+          { op: 'set_title', id: one!.id, title: 'Renamed' },
+          { op: 'delete', id: 'g' },
+          { op: 'set_title', id: 'no-such-topic', title: 'x' },
+        ],
+      },
+      turn,
+    )
+    const kept = attached(r.sheet(1).rootTopic).find((each) => each.title === 'Kept')!
+    expect([...turn.topics.get(r.key(1))!].sort()).toEqual([kept.id, one!.id].sort())
+    // a deleted topic is no place to mark
+    await editMap(r.host, { edits: [{ op: 'delete', id: two!.id }] }, turn)
+    expect(turn.topicCount).toBe(2)
+
+    // a written sheet is new from top to bottom
+    await writeMap(r.host, { outline: '# New\n\n- Centre\n  - A\n  - B\n' }, turn)
+    expect(turn.topics.get(r.key(2))!.size).toBe(3)
+    expect(turn.topicCount).toBe(5)
+  })
+
   it('never deletes a sheet the turn did not add', async () => {
     const r = await rigOf(plainSheet(), plainSheet('Other'))
     const turn = new MapTurn()
@@ -1242,6 +1272,47 @@ describe('pictures', () => {
     expect(findTopic(r.sheet(1).rootTopic, IDS.a1)!.image).toEqual({ src: `xap:${entry}` })
   })
 
+  it('generate_image passes a model the user named to the channel', async () => {
+    let received: unknown = null
+    ;(window as unknown as { mindmapApi: unknown }).mindmapApi = {
+      generateImage: async (op: unknown) => {
+        received = op
+        return { error: 'stop here' }
+      },
+    }
+    const skill = createMindmapSkill({ host: () => ({}) as MapAiHost, turn: () => null })
+    const tool = skill.tools.find((entry) => entry.name === 'generate_image')!
+    expect(tool.inputSchema.properties).toHaveProperty('model')
+    expect(tool.inputSchema.required).toEqual(['prompt', 'topicId'])
+    const out = await skill.executeTool({
+      id: '1',
+      name: 'generate_image',
+      input: { topicId: IDS.a1, prompt: 'a kite', model: 'gpt-image-2' },
+    } satisfies AgentToolCall)
+    expect(out.isError).toBe(true)
+    expect(received).toEqual({ prompt: 'a kite', model: 'gpt-image-2' })
+  })
+
+  it("generate_image passes the image tool's note on to the model with the picture", async () => {
+    const r = await rigOf(richSheet())
+    ;(window as unknown as { mindmapApi: unknown }).mindmapApi = {
+      generateImage: async () => ({
+        url: 'file:///generated/kite.png',
+        note: 'Codex picks the image model on this route',
+      }),
+      fetchImage: async () => ({ base64: PNG_BASE64, mime: 'image/png' }),
+    }
+    const skill = createMindmapSkill({ host: () => r.host, turn: () => null })
+    const out = await skill.executeTool({
+      id: '1',
+      name: 'generate_image',
+      input: { topicId: IDS.a1, prompt: 'a kite', model: 'gpt-image-2' },
+    } satisfies AgentToolCall)
+    expect(out.isError).toBeFalsy()
+    expect(out.output).toContain('\nNote: Codex picks the image model on this route')
+    expect(findTopic(r.sheet(1).rootTopic, IDS.a1)!.image).toBeDefined()
+  })
+
   it('offers generate_image only while the main process reports an image route', () => {
     const deps = {
       host: () => ({}) as MapAiHost,
@@ -1252,6 +1323,8 @@ describe('pictures', () => {
     expect(off.tools.map((tool) => tool.name)).toContain('image_search')
     expect(off.tools.map((tool) => tool.name)).toContain('insert_image')
     expect(off.systemPrompt).toContain(IMAGE_GEN_OFF_NOTE)
+    expect(IMAGE_GEN_OFF_NOTE).toContain('Codex program signed in with the same ChatGPT account')
+    expect(IMAGE_GEN_OFF_NOTE).toContain('OpenAI does not allow it')
 
     const on = createMindmapSkill({ ...deps, imageGenAvailable: () => true })
     expect(on.tools.map((tool) => tool.name)).toContain('generate_image')

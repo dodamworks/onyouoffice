@@ -36,7 +36,7 @@ L’éditeur de diagrammes ouvre les fichiers draw.io dans un onglet. Vous y des
 
 - Demandez à l’IA de dessiner un organigramme de processus, un diagramme de séquence ou un organigramme hiérarchique, d’expliquer le diagramme, de ranger une page ou d’ajouter l’étape suivante après les formes sélectionnées.
 - L’IA lit le diagramme sous forme de texte : les pages et, pour chaque forme et chaque connecteur, son identifiant, son texte, sa forme, sa position et ses liaisons, ainsi que les formes que vous avez sélectionnées. Elle ne voit pas le diagramme comme une image.
-- Les modifications de l’IA apparaissent aussitôt. Chacune correspond à une étape d’annulation (Ctrl+Z), et la liste des tours du panneau défait un tour complet de l’IA. Si une partie d’une modification est refusée, le diagramme reste tel qu’il était.
+- Les modifications de l’IA apparaissent aussitôt. Chacune correspond à une étape d’annulation (Ctrl+Z), les formes et les connecteurs modifiés par l’IA sont entourés de jaune, et **Annuler ces modifications**, sur la carte sous sa réponse, défait un tour complet de l’IA. Si une partie d’une modification est refusée, le diagramme reste tel qu’il était.
 - Pour un nouvel organigramme de processus, un diagramme de séquence ou un schéma du même genre, l’IA écrit du Mermaid que GenOffice transforme en formes sur votre PC. La disposition peut différer un peu de celle que produit le site web de draw.io.
 - Les diagrammes peuvent aussi être joints dans le panneau IA des autres éditeurs, choisis avec `@`, et trouvés par la recherche de fichiers de l’accueil. Les [commandes du terminal](help://cli) lisent, modifient et créent aussi des diagrammes (`ieumoffice diagram read`, `ieumoffice diagram apply`, `ieumoffice create --type drawio`).
 

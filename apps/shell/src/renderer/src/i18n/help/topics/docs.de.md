@@ -67,7 +67,7 @@ Rechtsklicken Sie irgendwo im Text — das Menü richtet sich nach dem, was Sie 
 ## KI
 
 - KI-Schaltfläche im Menüband und Seitenbereich: umformulieren, ausbauen, übersetzen, zusammenfassen, Tabellen-Voreinstellungen einfügen sowie freie Anweisungen.
-- Jeder KI-Durchgang legt zuerst einen Snapshot an; Sie können aus der Versionsliste zurückrollen, und auch das Zurückrollen lässt sich rückgängig machen.
+- Die Stellen, die die KI geändert hat, werden gelb markiert. **Diese Änderungen zurücknehmen** auf der Karte unter ihrer Antwort nimmt diesen Durchgang als Ganzes zurück (die späteren Durchgänge gehen mit zurück), und auch das Zurücknehmen lässt sich rückgängig machen.
 
 ## Speichern und exportieren
 
@@ -77,4 +77,4 @@ Rechtsklicken Sie irgendwo im Text — das Menü richtet sich nach dem, was Sie 
 
 ## Drucken
 
-ctrl+P über den Systemdialog, WYSIWYG-Seiten.
+ctrl+P öffnet das Druckfenster. Wählen Sie Drucker, Exemplare, beidseitigen Druck und Bereich (auch die Auswahl); unter **Seitenanordnung** gibt es mehrere Seiten pro Blatt, Broschüre, Plakat, Etiketten, ungerade oder gerade Seiten und Graustufen (siehe [Dateivorgänge](help://file-ops)).

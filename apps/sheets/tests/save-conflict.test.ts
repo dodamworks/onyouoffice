@@ -11,6 +11,17 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+/** every whole-file read the main process makes, by path */
+const fileReads = vi.fn()
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs/promises')>()
+  const readFile = ((...args: Parameters<typeof actual.readFile>) => {
+    fileReads(args[0])
+    return actual.readFile(...args)
+  }) as typeof actual.readFile
+  return { ...actual, default: { ...actual, readFile }, readFile }
+})
 import { IPC_CHANNELS } from '../src/shared/ipc-channels'
 
 type Handler = (event: { sender: { id: number } }, ...args: unknown[]) => unknown
@@ -206,6 +217,25 @@ afterEach(() => {
   setOpenPathProbe(null)
   rmSync(dir, { recursive: true, force: true })
   rmSync(userDataDirRef.value, { recursive: true, force: true })
+})
+
+describe('opening a workbook', () => {
+  it('does not read the file again for the recorded disk state: the snapshot digest gives it', async () => {
+    const path = writeWorkbook()
+    const original = readFileSync(path)
+    fileReads.mockClear()
+    const opened = await openWorkbook(path)
+    expect(fileReads.mock.calls.filter(([read]) => read === path)).toHaveLength(0)
+
+    setOpenPathProbe((p) => p === path)
+    // another pane's write: the recorded state is there, and a quiet save stands down
+    writeFileSync(path, externalBytes)
+    expect(await saveWorkbook(opened.sessionId, { quiet: true })).toEqual({ canceled: true })
+    // the file as it was read, written again: the recorded state is that content's
+    writeFileSync(path, original)
+    expect((await saveWorkbook(opened.sessionId)).canceled).toBe(false)
+    expect(showMessageBox).not.toHaveBeenCalled()
+  })
 })
 
 describe('split-view save guard (sheets)', () => {

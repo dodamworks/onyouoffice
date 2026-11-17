@@ -76,7 +76,7 @@ Klikněte pravým tlačítkem kamkoli do textu — nabídka se přizpůsobí tom
 ## AI
 
 - Tlačítko AI na pásku a postranní panel: přeformulovat, rozšířit, přeložit, shrnout, vložit předvolenou tabulku a libovolné vlastní pokyny.
-- Každý krok AI nejprve vytvoří snímek stavu; můžete se vrátit k libovolnému ze seznamu verzí a samotný návrat lze zase vrátit zpět.
+- Místa, která AI změnila, jsou označená žlutě. **Vrátit tyto změny** na kartě pod odpovědí vezme zpět celý tento krok (vrátí se i kroky po něm) a samotný návrat lze zase vrátit zpět.
 
 ## Ukládání a export
 
@@ -86,4 +86,4 @@ Klikněte pravým tlačítkem kamkoli do textu — nabídka se přizpůsobí tom
 
 ## Tisk
 
-ctrl+P přes systémový dialog, stránky WYSIWYG.
+ctrl+P otevře okno tisku. Zvolte tiskárnu, počet kopií, oboustranný tisk a rozsah (i výběr); v oddílu **Rozložení stránek** pak více stránek na list, brožuru, plakát, štítky, liché či sudé strany a odstíny šedi (viz [Práce se soubory](help://file-ops)).
