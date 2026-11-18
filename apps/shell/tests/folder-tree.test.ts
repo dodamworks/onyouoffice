@@ -669,31 +669,48 @@ describe('moveOnDisk across volumes', () => {
   })
 
   posixOnly('copies a read-only folder and the files inside it', () => {
+    const makeReadOnlyTree = (folder: string): string => {
+      makeTree(folder)
+      const locked = join(folder, 'sub', 'locked')
+      actualFs.mkdirSync(locked)
+      actualFs.writeFileSync(join(locked, 'e.txt'), 'epsilon')
+      actualFs.writeFileSync(join(locked, 'f.txt'), 'phi')
+      actualFs.chmodSync(locked, 0o555)
+      return locked
+    }
+
     const folder = join(from, 'project')
-    makeTree(folder)
-    const readOnly = join(folder, 'sub', 'locked')
-    actualFs.mkdirSync(readOnly)
-    actualFs.writeFileSync(join(readOnly, 'e.txt'), 'epsilon')
-    actualFs.writeFileSync(join(readOnly, 'f.txt'), 'phi')
-    actualFs.chmodSync(readOnly, 0o555)
+    const readOnly = makeReadOnlyTree(folder)
     const before = snapshot(folder)
+    const readOnlyBefore = snapshot(readOnly)
     const to = join(volume, 'project')
+
+    // Ask the host filesystem how recursive removal reports the same tree.
+    // On macOS Node may report ENOTEMPTY for the parent after an unlink is refused.
+    const reference = join(from, 'removal-reference')
+    makeReadOnlyTree(reference)
+    let expectedFailure: NodeJS.ErrnoException | undefined
+    try {
+      actualFs.rmSync(reference, { recursive: true, force: true })
+    } catch (err) {
+      expectedFailure = err as NodeJS.ErrnoException
+    }
+
     crossVolume()
     refusePlatformCopy()
-
-    let failure: unknown
-    try {
+    if (expectedFailure) {
+      expect(() => moveOnDisk(folder, to)).toThrow(
+        expect.objectContaining({ code: expectedFailure.code }),
+      )
+      expect(snapshot(readOnly)).toEqual(readOnlyBefore)
+      expect(modeOf(readOnly)).toBe(0o555)
+    } else {
       moveOnDisk(folder, to)
-    } catch (err) {
-      failure = err
+      expect(existsSync(folder)).toBe(false)
     }
 
     expect(snapshot(to)).toEqual(before)
     expect(modeOf(join(to, 'sub', 'locked'))).toBe(0o555)
-    // Emptying a read-only source folder is refused to anyone but root, on a
-    // local disk too; the complete copy at the destination stays.
-    if (process.getuid?.() === 0) expect(failure).toBeUndefined()
-    else expect(failure).toEqual(expect.objectContaining({ code: 'EACCES' }))
   })
 
   posixOnly('rolls back a part-way failure inside a read-only folder', () => {
