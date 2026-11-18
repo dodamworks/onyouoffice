@@ -340,8 +340,11 @@ describe('an AI edit that would take a memo with it', () => {
       endCharIdx: 5,
       path: null,
     }
-    const made = editor.plugin.insertMemo(anchor, 'me', 'note')
+    const made = editor.plugin.insertMemo(anchor, '', 'note')
     expect(made.ok).toBe(true)
+    expect(editor.plugin.listMemos().memos).toEqual(
+      expect.arrayContaining([expect.objectContaining({ author: 'Onyou Office', text: 'note' })]),
+    )
     if (!made.ok) return
     expect(editor.plugin.setMemo(made.id, 'changed')).toEqual({ ok: true })
     expect(editor.plugin.removeMemo(made.id)).toEqual({ ok: true })

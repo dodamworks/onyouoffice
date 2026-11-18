@@ -82,7 +82,8 @@ Open and edit Word, Excel, PowerPoint, and Hangul (HWP/HWPX) files in one worksp
 
 Download installers from [Releases](https://github.com/dodamworks/onyouoffice/releases/latest): **Windows x64**,
 **macOS Apple Silicon / Intel (beta)** and **Linux x64 (beta)**.
-Updates are installed manually.
+Updates are installed manually. Linux x64 users can also install the
+[standalone command-line tools](packaging/cli/README.md).
 
 To build from source, install Node.js 24, npm, Rust (`cargo`) and your platform's native build tools.
 
