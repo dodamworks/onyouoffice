@@ -66,6 +66,8 @@ export interface AgentPlaceRefusal {
   reason: 'not_found' | 'ambiguous' | 'no_such_occurrence' | 'unsupported_place' | 'has_objects'
   count: number
   matches?: AgentMatch[]
+  /** with has_objects: nothing goes in front of a line that holds a table or an object not set in it */
+  outOfLine?: true
 }
 
 /** Where a paragraph edit goes relative to the anchor paragraph; "end" is the end of the document. */

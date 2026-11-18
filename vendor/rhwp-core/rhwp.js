@@ -2606,6 +2606,36 @@ export class HwpDocument {
         wasm.hwpdocument_discardSnapshot(this.__wbg_ptr, id);
     }
     /**
+     * Copies a floating picture or drawing object of a body paragraph into the same
+     * paragraph, moved by (dx, dy) HWPUNIT (Hangul's Ctrl+drag of an object). The paragraph
+     * and the layout around it stay as they were.
+     * Returns `{"ok":true,"paraIdx":N,"controlIdx":N}` for the copy.
+     * @param {number} section_idx
+     * @param {number} para_idx
+     * @param {number} control_idx
+     * @param {number} dx
+     * @param {number} dy
+     * @returns {string}
+     */
+    duplicateFloatingControl(section_idx, para_idx, control_idx, dx, dy) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_duplicateFloatingControl(this.__wbg_ptr, section_idx, para_idx, control_idx, dx, dy);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * Batch 모드를 종료하고 누적된 이벤트를 반환한다.
      * @returns {string}
      */

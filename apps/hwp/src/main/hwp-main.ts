@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { copyFile, readFile, stat } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import { BrowserWindow, WebContentsView, app, dialog, ipcMain, shell } from 'electron'
 import type { WebContents } from 'electron'
@@ -27,7 +27,7 @@ import { hwpToText } from '@genoffice/file-parse'
 import { getUiLang } from '@genoffice/i18n'
 import { registerHwpAttachmentIpc } from './attachments-ipc'
 import { registerHwpImageIpc } from './ai-image'
-import { atomicWriteFile } from './atomic-write'
+import { atomicWriteFile, copyFileReplacing } from './atomic-write'
 import { readHwpDefaultFormat } from './default-format'
 import { badJob, printJobToPdf, printJobToPrinter } from './print-document'
 import { registerHwpPrintLayout } from './print-layout'
@@ -876,7 +876,7 @@ function registerHwpIpc(): void {
         let backupPath: string | undefined
         if (needsBackup(target, existsSync(target), written)) {
           backupPath = backupPathFor(target)
-          await copyFile(target, backupPath)
+          await copyFileReplacing(target, backupPath)
         }
         await atomicWriteFile(target, Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength))
         await rememberDiskState(wcId, target)

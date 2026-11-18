@@ -97,6 +97,7 @@ import {
 import { aiCreateRefusal } from '@genoffice/electron-utils/ai-create-guard'
 import { aiRunRefusal } from '@genoffice/electron-utils/ai-run-guard'
 import { registerAiJob } from '@genoffice/electron-utils/ai-activity'
+import { copyFileExclusive } from '@genoffice/electron-utils/copy-file'
 import { screenMediaCall } from './screen-media-call'
 import {
   encryptOoxml,
@@ -6140,7 +6141,7 @@ async function reserveSnapshotPath(): Promise<string> {
 async function placeStagedSave(stagedPath: string, targetPath: string): Promise<void> {
   const besideTarget = join(dirname(targetPath), `.${randomUUID()}.tmp.xlsx`)
   try {
-    await copyFile(stagedPath, besideTarget)
+    await copyFileExclusive(stagedPath, besideTarget)
     await promoteFileAtomically(besideTarget, targetPath)
   } catch (error) {
     await rm(besideTarget, { force: true }).catch(() => undefined)

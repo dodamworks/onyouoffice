@@ -2163,6 +2163,31 @@ describe('columns and breaks', () => {
     expect(top()).toBe(before)
   })
 
+  it('leaves 3 mm under a head table laid across the columns, over the first line of each column', () => {
+    const { plugin, doc } = open(blank(PAPER))
+    plugin.setColumns({ count: 2 })
+    plugin.insertTable(PAPER[0]!, null, 'before', [['학년', '반']], {
+      header: true,
+      acrossColumns: true,
+    })
+    const outerBottom = (from: HwpDocument) =>
+      (
+        JSON.parse(from.getTableProperties(0, 0, tableIn(from, 0).control)) as {
+          outerBottom: number
+        }
+      ).outerBottom
+    expect(outerBottom(doc())).toBe(850)
+    for (const bytes of [doc().exportHwpx(), doc().exportHwp()]) {
+      expect(outerBottom(new HwpDocument(bytes))).toBe(850)
+    }
+    const box = JSON.parse(doc().getTableBBox(0, 0, tableIn(doc(), 0).control)) as {
+      y: number
+      height: number
+    }
+    const line = JSON.parse(doc().getCursorRect(0, 0, 0)) as { y: number }
+    expect(line.y - (box.y + box.height)).toBeGreaterThan(11)
+  })
+
   it('takes a table across the columns only as the head of the document', () => {
     const { plugin, steps } = open(blank(PAPER))
     plugin.setColumns({ count: 2 })
@@ -3509,6 +3534,179 @@ describe('a paragraph that holds an object of its line', () => {
     expect(steps()).toBe(before)
     expect(doc().getCellParagraphCountByPath(0, 2, cell(0))).toBe(2)
     expect(cellText(0)).toBe('셀 글과 뒤 글.')
+  })
+
+  const savedLines = async (doc: HwpDocument, texts: string[]) => {
+    const forms = [doc.exportHwpx(), new HwpDocument(doc.exportHwp()).exportHwpx()]
+    return Promise.all(
+      forms.map(async (bytes) => {
+        const zip = await JSZip.loadAsync(bytes)
+        const xml = await zip.file('Contents/section0.xml')!.async('string')
+        const paragraphs = [...xml.matchAll(/<hp:p [^>]*>((?:(?!<hp:p ).)*?)<\/hp:p>/gs)].map(
+          (match) => match[1]!.replace(/<hp:linesegarray>.*?<\/hp:linesegarray>/gs, ''),
+        )
+        return texts.map((text) => paragraphs.filter((inner) => inner.includes(text)))
+      }),
+    )
+  }
+
+  it('adds paragraphs and tables before and after a line with an equation and leaves the line as it was', async () => {
+    const { plugin, doc } = open(
+      blank(['머리', '1. 일차함수 [[1]]의 그래프의 기울기는?', '[[2]] 로 시작하는 줄', '끝']),
+    )
+    plugin.insertEquations([
+      { find: '[[1]]', script: 'y=2x-3' },
+      { find: '[[2]]', script: 'a over b' },
+    ])
+    const anchors = ['의 그래프의 기울기는?', ' 로 시작하는 줄']
+    const kept = await savedLines(doc(), anchors)
+    expect(kept.flat(2).filter((xml) => xml.includes('<hp:equation'))).toHaveLength(4)
+    for (const anchor of anchors) {
+      for (const where of ['before', 'after'] as const) {
+        expect(plugin.insertParagraphs(anchor, null, where, [`${where} 글`])).toMatchObject({
+          ok: true,
+        })
+        expect(plugin.insertTable(anchor, null, where, [[where, '표']], false)).toMatchObject({
+          ok: true,
+        })
+      }
+    }
+    expect(bodyText(doc())).toEqual([
+      '머리',
+      'before 글',
+      '',
+      '1. 일차함수 의 그래프의 기울기는?',
+      '',
+      'after 글',
+      'before 글',
+      '',
+      ' 로 시작하는 줄',
+      '',
+      'after 글',
+      '끝',
+    ])
+    expect(controlsOf(doc(), 'eqed')).toEqual([3, 8])
+    expect(places(doc(), 3)).toEqual([8])
+    expect(places(doc(), 8)).toEqual([0])
+    expect(await savedLines(doc(), anchors)).toEqual(kept)
+  })
+
+  it('lays a head table across the columns in front of a first line that holds an equation', () => {
+    const { plugin, doc, steps } = open(
+      blank(['1. 일차함수 [[1]]의 그래프의 기울기는?', '① -3', '끝']),
+    )
+    plugin.insertEquations([{ find: '[[1]]', script: 'y=2x-3' }])
+    plugin.setColumns({ count: 2 })
+    expect(
+      plugin.insertTable('의 그래프의 기울기는?', null, 'before', [['학년', '반']], {
+        header: true,
+        acrossColumns: true,
+      }),
+    ).toMatchObject({ ok: true, acrossColumns: true, place: { para: 0 } })
+    expect(textOf(doc(), 0)).toBe('1. 일차함수 의 그래프의 기울기는?')
+    expect(controlsOf(doc(), 'eqed')).toEqual([0])
+    expect(controlsOf(doc(), 'tbl')).toEqual([0])
+    for (const bytes of [doc().exportHwpx(), doc().exportHwp()]) {
+      const again = new HwpDocument(bytes)
+      expect(textOf(again, 0)).toBe('1. 일차함수 의 그래프의 기울기는?')
+      expect(controlsOf(again, 'eqed')).toEqual([0])
+    }
+    const before = steps()
+    const refused = { ok: false, reason: 'has_objects', count: 1, outOfLine: true }
+    expect(plugin.insertParagraphs('의 그래프의 기울기는?', null, 'before', ['x'])).toEqual(refused)
+    expect(
+      plugin.insertTable('의 그래프의 기울기는?', null, 'before', [['a', 'b']], false),
+    ).toEqual(refused)
+    expect(steps()).toBe(before)
+    expect(textOf(doc(), 0)).toBe('1. 일차함수 의 그래프의 기울기는?')
+    expect(controlsOf(doc(), 'tbl')).toEqual([0])
+  })
+
+  it('adds a line in front of one with a picture set in it or a footnote, not of one with a floating picture', () => {
+    const start = blank(['머리', '그림이 든 줄', '떠 있는 그림 줄', '각주가 붙는 줄', '끝'])
+    start.insertPicture(0, 1, 2, '', ONE_PIXEL, 2000, 2000, 1, 1, 'png', '')
+    start.setPictureProperties(0, 1, 0, JSON.stringify({ treatAsChar: true }))
+    start.insertPicture(0, 2, 2, '', ONE_PIXEL, 2000, 2000, 1, 1, 'png', '')
+    const { plugin, doc, steps } = open(start)
+    plugin.insertNote('footnote', '붙는 줄', null, '각주')
+    expect(plugin.insertParagraphs('그림이 든', null, 'before', ['앞 1'])).toMatchObject({
+      ok: true,
+    })
+    expect(plugin.insertParagraphs('각주가 붙는', null, 'before', ['앞 2'])).toMatchObject({
+      ok: true,
+    })
+    const before = steps()
+    expect(plugin.insertParagraphs('떠 있는', null, 'before', ['앞 3'])).toEqual({
+      ok: false,
+      reason: 'has_objects',
+      count: 1,
+      outOfLine: true,
+    })
+    expect(steps()).toBe(before)
+    expect(bodyText(doc())).toEqual([
+      '머리',
+      '앞 1',
+      '그림이 든 줄',
+      '떠 있는 그림 줄',
+      '앞 2',
+      '각주가 붙는 줄',
+      '끝',
+    ])
+    expect(places(doc(), 2)).toEqual([2])
+    expect(controlsOf(doc(), 'fn')).toEqual([5])
+  })
+
+  it('leaves the first line of a later section alone, whose section stays in front of a split', () => {
+    const start = blank(['머리', '둘째 구역 첫 줄', '끝'])
+    start.splitSection(0, 1, 0)
+    const { plugin, doc, steps } = open(start)
+    const before = steps()
+    expect(plugin.insertParagraphs('둘째 구역 첫 줄', null, 'before', ['x'])).toEqual({
+      ok: false,
+      reason: 'has_objects',
+      count: 1,
+    })
+    expect(steps()).toBe(before)
+    expect(doc().getTextRange(1, 0, 0, doc().getParagraphLength(1, 0))).toBe('둘째 구역 첫 줄')
+  })
+
+  it('adds paragraphs before and after a cell line that holds an equation and leaves the line as it was', async () => {
+    const made = open(blank(['머리', '수식 [[1]]', '표 앞', '끝']))
+    made.plugin.insertEquations([{ find: '[[1]]', script: 'a over b' }])
+    made.plugin.insertTable('표 앞', null, 'after', [['칸 끝말', '둘째 칸']], false)
+    const zip = await JSZip.loadAsync(made.doc().exportHwpx())
+    const xml = await zip.file('Contents/section0.xml')!.async('string')
+    const equation = xml.match(/<hp:equation [\s\S]*?<\/hp:equation>/)![0]
+    const numbered = (id: number) => equation.replace(/ id="\d+"/, ` id="${id}"`)
+    zip.file(
+      'Contents/section0.xml',
+      xml
+        .replace('<hp:t>칸 끝말</hp:t>', `<hp:t>칸 </hp:t>${numbered(7001)}<hp:t> 끝말</hp:t>`)
+        .replace('<hp:t>둘째 칸</hp:t>', `${numbered(7002)}<hp:t>둘째 칸</hp:t>`),
+    )
+    const { plugin, doc } = open(new HwpDocument(await zip.generateAsync({ type: 'uint8array' })))
+    const cell = (index: number, paragraph: number) =>
+      JSON.stringify([{ controlIndex: 0, cellIndex: index, cellParaIndex: paragraph }])
+    const cellLines = (index: number) =>
+      Array.from({ length: doc().getCellParagraphCountByPath(0, 3, cell(index, 0)) }, (_, k) =>
+        doc().getTextInCellByPath(0, 3, cell(index, k), 0, 40),
+      )
+    expect(cellLines(0)).toEqual(['칸  끝말'])
+    expect(cellLines(1)).toEqual(['둘째 칸'])
+    const anchors = [' 끝말', '둘째 칸']
+    const kept = await savedLines(doc(), anchors)
+    expect(kept.flat(2).filter((line) => line.includes('<hp:equation'))).toHaveLength(4)
+    for (const anchor of anchors) {
+      for (const where of ['before', 'after'] as const) {
+        expect(plugin.insertParagraphs(anchor, null, where, [`${where} 글`])).toMatchObject({
+          ok: true,
+          inTable: true,
+        })
+      }
+    }
+    expect(cellLines(0)).toEqual(['before 글', '칸  끝말', 'after 글'])
+    expect(cellLines(1)).toEqual(['before 글', '둘째 칸', 'after 글'])
+    expect(await savedLines(doc(), anchors)).toEqual(kept)
   })
 
   it('replaces words beside an equation and leaves the equation where it stands', () => {
