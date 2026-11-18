@@ -2348,13 +2348,13 @@ function pageMapLines(map: AgentPageMap): string[] {
         line.column === undefined
           ? 'on a new page with insert_break (kind page'
           : 'in the next column with insert_break (kind column'
-      return `${named} is left alone at the foot${where}, ${after} starts on page ${line.nextPage}, and the empty line between keeps them apart in Hancom Hangul too${line.kept ? ', though it keeps with the next line' : ''}: to print it with ${after}, start it ${anew}, find with its words).`
+      return `${named} is left alone at the foot${where} in this layout, ${after} starts on page ${line.nextPage}, and an empty line stands between them${line.kept ? ': it keeps with the next line, which is that empty line' : ', so keeping it with the next line would keep it with that empty line'}. To print it with ${after}, start it ${anew}, find with its words).`
     }
     if (line.kept) {
-      return `${named} stands alone at the foot${where} in this layout, but it keeps with the next line (keep_with_next), so Hancom Hangul prints it with ${after} on page ${line.nextPage}: leave it.`
+      return `${named} stands alone at the foot${where} in this layout. It keeps with the next line (keep_with_next), which Hancom Hangul honours when it prints: leave it.`
     }
     const style = line.style || 'its style'
-    return `${named} is left alone at the foot${where}, ${after} starts on page ${line.nextPage}: keep this line with ${after} by giving it a style of its own with style_paragraphs (a new name, ${line.style ? `based_on ${line.style}, ` : ''}keep_with_next true, applied with find to this line only). Do not give ${style} itself keep_with_next: every paragraph of that style would keep with the next one.`
+    return `${named} is left alone at the foot${where} in this layout, ${after} starts on page ${line.nextPage}: keep this line with ${after} by giving it a style of its own with style_paragraphs (a new name, ${line.style ? `based_on ${line.style}, ` : ''}keep_with_next true, applied with find to this line only). Do not give ${style} itself keep_with_next: every paragraph of that style would keep with the next one.`
   })
   const below = map.pages.flatMap((page) =>
     'pastFoot' in page && page.pastFoot
@@ -2424,6 +2424,8 @@ const equationPlace = (equation: { before: string; after: string; previous?: str
 
 const HAS_OBJECTS_HELP =
   'Nothing was changed: a table, a picture, an equation or a form field sits in that paragraph, and the change would have moved or removed it. Use the paragraph before or after it as the anchor, or tell the user. An equation can be removed first with edit_equation (its number is in list_equations).'
+const OUT_OF_LINE_HELP =
+  'Nothing was changed: that paragraph holds a table or an object not set in its line (a head table laid across the columns, a floating picture or shape). It would move on with the paragraph, and this editor would lay what you add over the place of that object. Anchor to the paragraph before it with where "after", or tell the user.'
 const SPANS_OBJECT_ADVICE =
   'Replace the words in front of it or the words behind it on their own, with replace_text; an equation itself is changed with edit_equation (list_equations shows the words round each).'
 const SPANS_OBJECT_HELP = `Nothing was changed: an equation or another object of the line (a footnote mark, a picture set in the text) stands inside the text to be replaced, and the new text has no place for it. ${SPANS_OBJECT_ADVICE}`
@@ -2871,7 +2873,7 @@ function placeRefusal(result: AgentPlaceRefusal): string {
     case 'unsupported_place':
       return 'That text is inside an equation, which is not a paragraph that can be edited here.'
     case 'has_objects':
-      return HAS_OBJECTS_HELP
+      return result.outOfLine ? OUT_OF_LINE_HELP : HAS_OBJECTS_HELP
     default:
       return NOT_FOUND_HELP
   }

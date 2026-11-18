@@ -115,6 +115,7 @@ export const hwpdocument_discardDeleteFragment: (a: number, b: number) => void;
 export const hwpdocument_discardPictureTransform: (a: number, b: number) => void;
 export const hwpdocument_discardSectionRaw: (a: number, b: number) => void;
 export const hwpdocument_discardSnapshot: (a: number, b: number) => void;
+export const hwpdocument_duplicateFloatingControl: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
 export const hwpdocument_endBatch: (a: number) => [number, number, number, number];
 export const hwpdocument_ensureDefaultBullet: (a: number, b: number, c: number) => number;
 export const hwpdocument_ensureDefaultNumbering: (a: number) => number;

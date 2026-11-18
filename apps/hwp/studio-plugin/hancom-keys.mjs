@@ -32,6 +32,17 @@ import {
 } from './table-sizes.mjs'
 
 export { installHanjaKey } from './hanja.mjs'
+export {
+  axisLockedPoint,
+  cancelObjectDrag,
+  copyObjectDrag,
+  cropChange,
+  cropDragBox,
+  croppedBox,
+  cropsPicture,
+  dragKeepsRatio,
+  ratioResizedBox,
+} from './object-drag.mjs'
 
 export const HANCOM_KEYS_MODULE = '@ieum/hancom-keys'
 
@@ -1239,6 +1250,303 @@ export function hancomTableObjectKey(ih, e) {
   ih._cellBlockLetterImeGuard?.arm(e)
   if (dispatcher.isEnabled(id)) dispatcher.dispatch(id)
   return true
+}
+
+/** Hangul's steps for a selected picture or drawing object (help: 개체 이동하기). */
+export const OBJECT_MOVE_STEP_MM = 0.2
+export const OBJECT_SIZE_STEP_MM = 1
+
+/** The objects Tab goes through: what the studio selects as a picture-like object. */
+const CYCLED_OBJECT_TYPES = new Set(['image', 'shape', 'group', 'ole', 'equation'])
+
+/**
+ * Hancom's keys with a picture or drawing object selected (단축키 일람, 개체를 선택한 상태에서):
+ * arrows move it 0.2 mm and Shift+arrows size it 1 mm, Tab/Shift+Tab select the next/previous
+ * object on the page, Shift+PageUp/Down put it in front of/behind the other objects, Shift+Home/End
+ * in front of/behind the text, G/U group and ungroup, L opens its line tab, C the fill tab of a
+ * drawing object, Ctrl+E deletes it, Ctrl+Insert copies it and Shift+Delete cuts it. The first key
+ * of a sequence keeps it selected, so Ctrl+N,C captions it. Called before the studio's
+ * object-selection branch, which would close the selection on these keys and type a letter into
+ * the document; P, Delete, Enter, Esc and Ctrl+C/X/V stay with the studio.
+ */
+export function hancomPictureObjectKey(ih, e) {
+  const cursor = ih?.cursor
+  if (!cursor?.isInPictureObjectSelection?.()) return false
+  const dispatcher = ih.dispatcher
+  if (!dispatcher) return false
+  const ctrl = e.ctrlKey || e.metaKey
+  if (ctrl && !e.shiftKey && !e.altKey && hancomChordStart(ih, e)) return true
+  if (e.altKey) return false
+  if (ARROWS[e.key] && !ctrl) {
+    // a move step the user set in the studio's 격자 설정 (표/개체 이동) is theirs to keep
+    if (ih.ieumGridStepSet) return false
+    e.preventDefault()
+    stepSelectedObject(ih, e.key, e.shiftKey)
+    return true
+  }
+  if (e.key === 'Tab' && !ctrl) {
+    e.preventDefault()
+    selectNextObject(ih, e.shiftKey ? -1 : 1)
+    return true
+  }
+  if (e.shiftKey && !ctrl) {
+    if (e.key === 'PageUp' || e.key === 'PageDown') {
+      e.preventDefault()
+      orderSelectedObject(ih, e.key === 'PageUp' ? 'front' : 'back')
+      return true
+    }
+    if (e.key === 'Home' || e.key === 'End') {
+      e.preventDefault()
+      wrapSelectedObjects(ih, e.key === 'Home' ? 'InFrontOfText' : 'BehindText')
+      return true
+    }
+    if (e.key === 'Delete') {
+      e.preventDefault()
+      dispatcher.dispatch('edit:cut')
+      return true
+    }
+    return false
+  }
+  if (ctrl) {
+    if (e.shiftKey) return false
+    if (e.key === 'Insert') {
+      e.preventDefault()
+      dispatcher.dispatch('edit:copy')
+      return true
+    }
+    if (letterOf(e) !== 'e') return false
+    e.preventDefault()
+    dispatcher.dispatch('edit:delete')
+    return true
+  }
+  const letter = letterOf(e)
+  if (!['g', 'u', 'l', 'c'].includes(letter)) return false
+  // one of our letters: keep it out of the document even when it does nothing here
+  e.preventDefault()
+  ih._cellBlockLetterImeGuard?.arm(e)
+  const ref = cursor.getSelectedPictureRef?.()
+  if (letter === 'g') {
+    if (dispatcher.isEnabled('insert:group-shapes')) dispatcher.dispatch('insert:group-shapes')
+  } else if (letter === 'u') {
+    if (ref?.type === 'group' && dispatcher.isEnabled('insert:ungroup-shapes')) {
+      dispatcher.dispatch('insert:ungroup-shapes')
+    }
+  } else if (ref && ref.type !== 'equation' && (letter === 'l' || ref.type !== 'image')) {
+    // a picture has no fill tab: Hangul's C is for drawing objects and text boxes
+    openObjectTab(dispatcher, letter === 'l' ? 'line' : 'fill')
+  }
+  return true
+}
+
+/** An arrow with the studio's own move or size, at Hangul's step instead of the grid's. */
+function stepSelectedObject(ih, key, size) {
+  const kept = ih.gridStepMm
+  ih.gridStepMm = size ? OBJECT_SIZE_STEP_MM : OBJECT_MOVE_STEP_MM
+  try {
+    if (size) ih.resizeSelectedPicture(key)
+    else ih.moveSelectedPicture(key)
+  } finally {
+    ih.gridStepMm = kept
+  }
+}
+
+/** Compares two document paths (the layout's stableIndex), shorter first on a common start. */
+function comparePaths(a, b) {
+  for (let i = 0; i < Math.min(a.length, b.length); i += 1) {
+    if (a[i] !== b[i]) return a[i] - b[i]
+  }
+  return a.length - b.length
+}
+
+/**
+ * The page's objects in document order, as Tab goes through them: body objects the studio selects
+ * as pictures (not the master page's decorations, not header or footer objects).
+ */
+export function cycledObjects(controls) {
+  return controls
+    .filter(
+      (c) =>
+        CYCLED_OBJECT_TYPES.has(c.type) &&
+        c.secIdx !== undefined &&
+        c.paraIdx !== undefined &&
+        c.controlIdx !== undefined &&
+        !c.headerFooter &&
+        c.plane !== 1,
+    )
+    .map((c) => ({ c, path: c.stableIndex ?? [c.secIdx, c.paraIdx, c.controlIdx] }))
+    .sort((a, b) => comparePaths(a.path, b.path))
+    .map(({ c }) => c)
+}
+
+const sameObject = (control, ref) =>
+  control.secIdx === ref.sec &&
+  control.paraIdx === ref.ppi &&
+  control.controlIdx === ref.ci &&
+  JSON.stringify(control.cellPath ?? []) === JSON.stringify(ref.cellPath ?? [])
+
+/** Tab/Shift+Tab: the next/previous object on the selected object's page, round the end. */
+function selectNextObject(ih, direction) {
+  const ref = ih.cursor.getSelectedPictureRef?.()
+  if (!ref) return false
+  const page = ih.findPictureBbox?.(ref)?.pageIndex ?? ref.pageIndex
+  if (page === undefined) return false
+  let objects
+  try {
+    objects = cycledObjects(ih.wasm.getPageControlLayout(page).controls ?? [])
+  } catch {
+    return false
+  }
+  if (objects.length === 0) return false
+  const at = objects.findIndex((c) => sameObject(c, ref))
+  if (at !== -1 && objects.length === 1) return false
+  const next =
+    at === -1
+      ? objects[direction > 0 ? 0 : objects.length - 1]
+      : objects[(at + direction + objects.length) % objects.length]
+  selectObjectControl(ih, next, page)
+  return true
+}
+
+/** Selects the object a page layout entry names, as the studio does for a clicked one. */
+function selectObjectControl(ih, control, page) {
+  ih.cursor.clearSelection?.()
+  ih.exitPictureObjectSelectionIfNeeded?.()
+  ih.cursor.enterPictureObjectSelectionDirect(
+    control.secIdx,
+    control.paraIdx,
+    control.controlIdx,
+    control.type,
+    control.cellIdx,
+    control.cellParaIdx,
+    control.headerFooter,
+    control.outerTableControlIdx,
+    control.cellPath,
+    control.noteRef,
+    control.missing,
+    page,
+  )
+  ih.active = true
+  ih.caret?.hide?.()
+  ih.selectionRenderer?.clear?.()
+  ih.renderPictureObjectSelection()
+  ih.eventBus.emit('picture-object-selection-changed', true)
+}
+
+/** Which of two layout entries is drawn above the other: plane, then z-order, then path. */
+function drawnAbove(a, b) {
+  if ((a.plane ?? 2) !== (b.plane ?? 2)) return (a.plane ?? 2) > (b.plane ?? 2)
+  if ((a.zOrder ?? 0) !== (b.zOrder ?? 0)) return (a.zOrder ?? 0) > (b.zOrder ?? 0)
+  return comparePaths(a.stableIndex ?? [], b.stableIndex ?? []) > 0
+}
+
+/**
+ * The objects whose boxes hold a page point, the top one first: what Alt+click goes round.
+ * Objects behind the text count too; they are the ones a plain click cannot reach.
+ */
+export function objectsAtPoint(controls, x, y) {
+  return cycledObjects(controls)
+    .filter((c) => x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h)
+    .sort((a, b) => (drawnAbove(a, b) ? -1 : drawnAbove(b, a) ? 1 : 0))
+}
+
+/**
+ * Hangul's Alt+click (help: 개체 선택, "<Alt>로 선택"): selects the object under the pointer even
+ * when another lies over it, and each further Alt+click the next one down, round to the top. A
+ * text box is selected as an object, not opened for typing. Called from the studio's mousedown
+ * before its own picture handling (studio-hancom-object-alt-click); false leaves the click to it.
+ */
+export function hancomAltClickObject(ih, e) {
+  if (!e?.altKey || e.shiftKey || e.ctrlKey || e.metaKey || e.button !== 0) return false
+  const scroll = ih?.container?.querySelector?.('#scroll-content')
+  if (!scroll) return false
+  const zoom = ih.viewportManager.getZoom()
+  const rect = scroll.getBoundingClientRect()
+  const cx = e.clientX - rect.left
+  const cy = e.clientY - rect.top
+  const page = ih.virtualScroll.getPageAtPoint(cx, cy)
+  if (page === undefined || page < 0) return false
+  const x = (cx - ih.virtualScroll.getPageLeftResolved(page, scroll.clientWidth)) / zoom
+  const y = (cy - ih.virtualScroll.getPageOffset(page)) / zoom
+  let hits
+  try {
+    hits = objectsAtPoint(ih.wasm.getPageControlLayout(page).controls ?? [], x, y)
+  } catch {
+    return false
+  }
+  if (hits.length === 0) return false
+  e.preventDefault()
+  const ref = ih.cursor.isInPictureObjectSelection?.() ? ih.cursor.getSelectedPictureRef?.() : null
+  const at = ref ? hits.findIndex((c) => sameObject(c, ref)) : -1
+  selectObjectControl(ih, hits[(at + 1) % hits.length], page)
+  ih.textarea?.focus?.()
+  return true
+}
+
+/**
+ * Shift+PageUp/Down: the selected picture or drawing object goes to the front/back of the
+ * objects, in one undo step (vendor/rhwp-core patch 0053 orders pictures with the shapes).
+ */
+function orderSelectedObject(ih, mode) {
+  const ref = ih.cursor.getSelectedPictureRef?.()
+  if (!ref || ref.type === 'equation') return false
+  if ((ref.cellPath?.length ?? 0) > 0 || ref.headerFooter) return false
+  let moved = false
+  try {
+    ih.executeOperation({
+      kind: 'snapshot',
+      operationType: 'objectOrder',
+      operation: (bridge) => {
+        const done = bridge.changeShapeZOrder(ref.sec, ref.ppi, ref.ci, mode)
+        if (!done?.ok || !done.moves?.length) return null
+        moved = true
+        return ih.getCursorPosition()
+      },
+    })
+  } catch {
+    return false
+  }
+  ih.renderPictureObjectSelection()
+  return moved
+}
+
+/**
+ * Shift+Home/End: the selected objects go in front of or behind the text (본문과의 배치), in one
+ * undo step. An object placed like a character has no such placement and stays.
+ */
+function wrapSelectedObjects(ih, textWrap) {
+  const refs = ih.cursor.getSelectedPictureRefs?.() ?? []
+  const targets = refs.length > 0 ? refs : [ih.cursor.getSelectedPictureRef?.()].filter(Boolean)
+  let changed = false
+  try {
+    ih.executeOperation({
+      kind: 'snapshot',
+      operationType: 'objectWrap',
+      operation: () => {
+        for (const ref of targets) {
+          const props = ih.getObjectProperties(ref)
+          if (props.treatAsChar || props.textWrap === textWrap) continue
+          ih.setObjectProperties(ref, { textWrap })
+          changed = true
+        }
+        return changed ? ih.getCursorPosition() : null
+      },
+    })
+  } catch {
+    return false
+  }
+  if (changed) ih.eventBus.emit('document-changed')
+  ih.renderPictureObjectSelection()
+  return changed
+}
+
+/** L/C: the studio's object properties dialog, on its line or fill tab. */
+function openObjectTab(dispatcher, tab) {
+  if (!dispatcher.isEnabled('format:object-properties')) return false
+  dispatcher.dispatch('format:object-properties')
+  const tabs = globalThis.document?.querySelectorAll?.(`.dialog-tab[data-tab="${tab}"]`)
+  const button = tabs?.[tabs.length - 1]
+  button?.click()
+  return Boolean(button)
 }
 
 /**

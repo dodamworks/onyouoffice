@@ -553,6 +553,13 @@ export class HwpDocument {
      */
     discardSnapshot(id: number): void;
     /**
+     * Copies a floating picture or drawing object of a body paragraph into the same
+     * paragraph, moved by (dx, dy) HWPUNIT (Hangul's Ctrl+drag of an object). The paragraph
+     * and the layout around it stay as they were.
+     * Returns `{"ok":true,"paraIdx":N,"controlIdx":N}` for the copy.
+     */
+    duplicateFloatingControl(section_idx: number, para_idx: number, control_idx: number, dx: number, dy: number): string;
+    /**
      * Batch 모드를 종료하고 누적된 이벤트를 반환한다.
      */
     endBatch(): string;
@@ -3246,6 +3253,7 @@ export interface InitOutput {
     readonly hwpdocument_discardPictureTransform: (a: number, b: number) => void;
     readonly hwpdocument_discardSectionRaw: (a: number, b: number) => void;
     readonly hwpdocument_discardSnapshot: (a: number, b: number) => void;
+    readonly hwpdocument_duplicateFloatingControl: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_endBatch: (a: number) => [number, number, number, number];
     readonly hwpdocument_ensureDefaultBullet: (a: number, b: number, c: number) => number;
     readonly hwpdocument_ensureDefaultNumbering: (a: number) => number;
