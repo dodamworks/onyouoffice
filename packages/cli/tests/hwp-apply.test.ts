@@ -1,11 +1,78 @@
 // Modified by Onyou Office on 2026-10-31 for the independent Onyou Office local development build.
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import {
+  chmodSync,
+  constants,
+  copyFileSync,
+  existsSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
+import { copyFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import JSZip from 'jszip'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import init, { HwpDocument } from '@rhwp/core'
 import { run, tempDir } from './helpers'
+
+vi.mock('node:fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs')>()
+  return {
+    ...actual,
+    chmodSync: vi.fn(actual.chmodSync),
+    copyFileSync: vi.fn(actual.copyFileSync),
+  }
+})
+
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs/promises')>()
+  return { ...actual, copyFile: vi.fn(actual.copyFile) }
+})
+
+const actualFs = await vi.importActual<typeof import('node:fs')>('node:fs')
+const actualPromises = await vi.importActual<typeof import('node:fs/promises')>('node:fs/promises')
+
+afterEach(() => {
+  vi.mocked(chmodSync).mockImplementation(actualFs.chmodSync)
+  vi.mocked(copyFileSync).mockImplementation(actualFs.copyFileSync)
+  vi.mocked(copyFile).mockImplementation(actualPromises.copyFile)
+  Object.defineProperty(process, 'platform', hostPlatform)
+})
+
+const errnoError = (code: string) => Object.assign(new Error(`${code}: injected`), { code })
+
+/**
+ * The mount these tests describe (gvfs SMB, WebDAV) is a POSIX one: on Windows
+ * the copy helpers keep to CopyFileW and never reach the fallback under test.
+ * `node:path` and the rest settled at import, so only the platform checks made
+ * at call time see the change.
+ */
+const hostPlatform = Object.getOwnPropertyDescriptor(process, 'platform')!
+const usePosixMount = () =>
+  Object.defineProperty(process, 'platform', { ...hostPlatform, value: 'linux' })
+
+/**
+ * A mount that refuses chmod (gvfs SMB, WebDAV). The platform copy fails as
+ * libuv fails there: an exclusive copy refuses a file that is already there;
+ * otherwise the destination has been created or truncated by then and is
+ * removed on the way out.
+ */
+function refuseChmodLikeGvfs(): void {
+  const failCopy = (target: unknown, mode?: number): never => {
+    const path = String(target)
+    if (((mode ?? 0) & constants.COPYFILE_EXCL) !== 0 && existsSync(path))
+      throw errnoError('EEXIST')
+    writeFileSync(path, '')
+    rmSync(path)
+    throw errnoError('ENOTSUP')
+  }
+  vi.mocked(copyFileSync).mockImplementation((_source, target, mode) => failCopy(target, mode))
+  vi.mocked(copyFile).mockImplementation(async (_source, target, mode) => failCopy(target, mode))
+  vi.mocked(chmodSync).mockImplementation(() => {
+    throw errnoError('ENOTSUP')
+  })
+}
 
 /** The documents are built with the engine the editor runs; there is no other writer here. */
 beforeAll(async () => {
@@ -689,5 +756,35 @@ describe('what the read ops answer', () => {
       .map((result) => result.output)
     expect(text).toContain('끝.')
     expect(setup).toContain('"margin_left":30')
+  })
+})
+
+describe('hwp apply in a folder that refuses chmod', () => {
+  beforeEach(usePosixMount)
+
+  it('still edits the file and keeps the old bytes in the .bak', async () => {
+    const dir = tempDir()
+    const original = report().exportHwp()
+    const path = write(dir, 'report.hwp', original)
+    const opsPath = ops(dir, EDITS)
+    refuseChmodLikeGvfs()
+    const r = await run(['hwp', 'apply', path, '--ops', opsPath, '--json'])
+    expect(r.code, r.stdout).toBe(0)
+    expect(textOf(path).join('\n')).toContain('8월 1일부터 시행합니다.')
+    expect(r.json().detail.backup_path).toBe(`${path}.bak`)
+    expect(readFileSync(`${path}.bak`).equals(Buffer.from(original))).toBe(true)
+  })
+
+  it('replaces an older .bak with the bytes from before this edit', async () => {
+    const dir = tempDir()
+    const original = report().exportHwp()
+    const path = write(dir, 'report.hwp', original)
+    writeFileSync(`${path}.bak`, 'an older backup')
+    const opsPath = ops(dir, EDITS)
+    refuseChmodLikeGvfs()
+    const r = await run(['hwp', 'apply', path, '--ops', opsPath, '--json'])
+    expect(r.code, r.stdout).toBe(0)
+    expect(textOf(path).join('\n')).toContain('8월 1일부터 시행합니다.')
+    expect(readFileSync(`${path}.bak`).equals(Buffer.from(original))).toBe(true)
   })
 })

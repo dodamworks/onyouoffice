@@ -1,6 +1,4 @@
 import {
-  constants,
-  copyFileSync,
   existsSync,
   linkSync,
   readFileSync,
@@ -11,7 +9,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { createHash, randomUUID, type Hash } from 'node:crypto'
-import { copyFile, open, readFile, stat, writeFile } from 'node:fs/promises'
+import { open, readFile, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { BrowserWindow, WebContentsView, app, dialog, ipcMain, shell, webContents } from 'electron'
@@ -53,6 +51,8 @@ import {
 import { registerAiJob } from '@genoffice/electron-utils/ai-activity'
 import { aiRunRefusal } from '@genoffice/electron-utils/ai-run-guard'
 import { aiFeaturesOn } from '@genoffice/electron-utils/app-choice'
+import { copyFileReplacing } from '@genoffice/electron-utils/atomic-write'
+import { copyFileExclusiveSync } from '@genoffice/electron-utils/copy-file'
 import { sharedSubscriptionStatuses } from '@genoffice/ai-provider/subscription'
 import { PDF_CHANNELS, PDF_TOOLS_HANDOFF, type PdfToolsHandoffTool } from '../shared/ipc'
 import { CertificateEncryptionError, WrongPasswordError, decryptDocument } from './pdf-crypt'
@@ -1327,7 +1327,7 @@ export interface NoClobberFileOps {
 
 const defaultNoClobberFileOps: NoClobberFileOps = {
   link: linkSync,
-  copyExclusive: (source, target) => copyFileSync(source, target, constants.COPYFILE_EXCL),
+  copyExclusive: copyFileExclusiveSync,
   unlink: unlinkSync,
   identity: (path) => {
     const stats = statSync(path, { bigint: true })
@@ -2072,7 +2072,7 @@ function registerPdfIpc(): void {
         : await dialog.showSaveDialog(options)
       if (picked.canceled || !picked.filePath) return null
       const target = /\.pdf$/i.test(picked.filePath) ? picked.filePath : `${picked.filePath}.pdf`
-      await copyFile(path, target)
+      await copyFileReplacing(path, target)
       untitledCopyPdfPaths.delete(path)
       allowedByWc.set(e.sender.id, new Set([target]))
       openPathByWc.set(e.sender.id, target)
