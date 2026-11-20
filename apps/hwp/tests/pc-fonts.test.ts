@@ -6,8 +6,10 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   LINUX_FONT_FILE_READS,
   fontFilesToRead,
+  isHeadlessStudio,
   linuxFontFileReads,
   noteFontsApplying,
+  readHostFontNames,
   refreshPcFonts,
   sameFaces,
 } from '../studio-plugin/pc-fonts.mjs'
@@ -180,6 +182,69 @@ describe('refreshPcFonts', () => {
     for (const listener of [...listeners]) listener()
     expect(await done).toBe(true)
     expect(listeners.size).toBe(0)
+  })
+
+  it('loads stored fonts only and skips queryLocalFonts/detect in headless export mode', async () => {
+    const { deps, calls } = studio([malgun], [], { headless: true })
+    expect(await refreshPcFonts(deps)).toBe(false)
+    expect(calls).toEqual(['stored'])
+    expect(deps.queryLocalFonts).not.toHaveBeenCalled()
+    expect(deps.detect).not.toHaveBeenCalled()
+  })
+})
+
+describe('headless flag and host SFNT metadata lookup', () => {
+  it('reads the headless flag from the studio query string', () => {
+    expect(isHeadlessStudio('?chrome=embed&lang=ko&headless=1')).toBe(true)
+    expect(isHeadlessStudio('?chrome=embed&lang=ko')).toBe(false)
+    expect(isHeadlessStudio('?headless=0')).toBe(false)
+  })
+
+  it('returns null when no host reader is present so standalone browsers fall back', async () => {
+    expect(await readHostFontNames([malgun], null)).toBeNull()
+  })
+
+  it('passes only plain face identifier fields to the host reader and preserves slot alignment', async () => {
+    const reader = vi.fn(async (faces: ReadonlyArray<Record<string, string>>) => {
+      expect(faces).toEqual([
+        {
+          family: 'Malgun Gothic',
+          fullName: 'Malgun Gothic',
+          postscriptName: 'MalgunGothicRegular',
+          style: '',
+        },
+        {
+          family: 'NanumGothic',
+          fullName: 'NanumGothic',
+          postscriptName: 'NanumGothic',
+          style: '',
+        },
+      ])
+      return [
+        {
+          families: ['맑은 고딕', 'Malgun Gothic'],
+          fullNames: ['맑은 고딕'],
+          postscriptNames: ['MalgunGothicRegular'],
+          styles: ['Regular'],
+          weightClass: 400,
+          italic: false,
+        },
+      ]
+    })
+    const result = await readHostFontNames([malgun, nanum], reader)
+    expect(result).toHaveLength(2)
+    expect(result?.[0]).toMatchObject({ families: ['맑은 고딕', 'Malgun Gothic'] })
+    expect(result?.[1]).toBeNull()
+  })
+
+  it('returns empty slots instead of falling back to renderer blobs when the host lookup fails', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const failing = vi.fn(async () => {
+      throw new Error('ipc failed')
+    })
+    const result = await readHostFontNames([malgun, nanum], failing)
+    expect(result).toEqual([null, null])
+    warn.mockRestore()
   })
 })
 

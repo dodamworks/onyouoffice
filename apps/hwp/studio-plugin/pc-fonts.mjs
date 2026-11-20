@@ -115,6 +115,57 @@ export function linuxFontFileReads(search = globalThis.location?.search ?? '') {
   return Number.isSafeInteger(given) && given > 0 ? given : LINUX_FONT_FILE_READS
 }
 
+/**
+ * Whether this editor runs inside a hidden `--headless-export` window (`&headless=1`).
+ * Electron keeps `document.visibilityState === 'visible'` on hidden windows with
+ * `backgroundThrottling: false`, so headless runs carry an explicit marker instead of
+ * relying on visibility alone.
+ */
+export function isHeadlessStudio(search = globalThis.location?.search ?? '') {
+  return new URLSearchParams(search).get('headless') === '1'
+}
+
+/** The host window's IPC reader for per-face SFNT metadata, when hosted inside the app. */
+function defaultHostFontNamesReader() {
+  try {
+    const fn = globalThis.parent?.hwpApi?.readFontNames
+    return typeof fn === 'function' ? (faces) => fn(faces) : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Reads per-face SFNT name and style metadata from the host main process when running inside
+ * the app, so the renderer never calls `FontData.blob()` across every installed font (#488,
+ * #591). Returns null only when no host reader exists (standalone browser), letting the
+ * caller fall back to blob reads there; inside the app a failed lookup returns empty slots
+ * and never falls back to renderer blob reads.
+ * @param {ReadonlyArray<{ family?: string; fullName?: string; postscriptName?: string; style?: string }>} fontDataList
+ * @param {null | ((faces: ReadonlyArray<{ family: string; fullName: string; postscriptName: string; style: string }>) => Promise<ReadonlyArray<unknown>>)} [reader]
+ */
+export async function readHostFontNames(fontDataList, reader = defaultHostFontNamesReader()) {
+  if (!reader) return null
+  if (fontDataList.length === 0) return []
+  try {
+    const queries = fontDataList.map((face) => ({
+      family: typeof face?.family === 'string' ? face.family : '',
+      fullName: typeof face?.fullName === 'string' ? face.fullName : '',
+      postscriptName: typeof face?.postscriptName === 'string' ? face.postscriptName : '',
+      style: typeof face?.style === 'string' ? face.style : '',
+    }))
+    const resolved = await reader(queries)
+    if (!Array.isArray(resolved)) return new Array(fontDataList.length).fill(null)
+    return Array.from({ length: fontDataList.length }, (_, index) => {
+      const entry = resolved[index]
+      return entry && typeof entry === 'object' ? entry : null
+    })
+  } catch (error) {
+    console.warn('[pc-fonts] Host font metadata lookup failed; using enumerated names only:', error)
+    return new Array(fontDataList.length).fill(null)
+  }
+}
+
 /** A name with a letter beyond ASCII: the PC's list gives a font's name in the PC's language first. */
 const LOCAL_NAME = /[\u0080-\uffff]/
 
@@ -176,6 +227,15 @@ export function refreshPcFonts(studio) {
 }
 
 async function refresh(studio) {
+  const headless = studio.headless ?? isHeadlessStudio()
+  if (headless) {
+    try {
+      await studio.loadStored()
+    } catch (error) {
+      console.warn('[pc-fonts] Stored font list not loaded in headless mode:', error)
+    }
+    return false
+  }
   if (!studio.queryLocalFonts) return false
   try {
     await whenVisible(studio.document)
@@ -227,8 +287,9 @@ export const PRINT_FONTS_WAIT_MS = 30_000
 export async function printFontsReady({
   wait = PRINT_FONTS_WAIT_MS,
   doc = globalThis.document,
+  headless = isHeadlessStudio(),
 } = {}) {
-  if (doc?.visibilityState && doc.visibilityState !== 'visible') return pcFontsKnown()
+  if (headless || (doc?.visibilityState && doc.visibilityState !== 'visible')) return pcFontsKnown()
   let timer
   try {
     await Promise.race([

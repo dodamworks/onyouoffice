@@ -757,6 +757,62 @@ describe('what the read ops answer', () => {
     expect(text).toContain('끝.')
     expect(setup).toContain('"margin_left":30')
   })
+
+  it('saves a converted markdown table after filling cells past one page per row', async () => {
+    const dir = tempDir()
+    const mdPath = join(dir, 'sample.md')
+    const lines = ['# 표 저장 검증 재현 문서', '']
+    for (let i = 1; i <= 12; i++) {
+      lines.push(`가상 문단 ${i}입니다. 표가 첫 쪽 하단에 걸리도록 본문 길이를 맞춥니다.`, '')
+    }
+    lines.push(
+      '| 항목 | 설명 | 비고 |',
+      '| --- | --- | --- |',
+      '| 항목 1 | 초안 | 초안 |',
+      '| 항목 2 | 초안 | 초안 |',
+      '| 항목 3 | 초안 | 초안 |',
+      '| 항목 4 | 초안 | 초안 |',
+      '| 항목 5 | 초안 | 초안 |',
+      '',
+      '표 뒤 마무리 문단입니다.',
+    )
+    writeFileSync(mdPath, lines.join('\n'), 'utf8')
+    const baseline = join(dir, 'baseline.hwp')
+    const conv = await run(['convert', mdPath, '--to', 'hwp', '--out', baseline, '--json'])
+    expect(conv.code, conv.stdout).toBe(0)
+
+    const longText =
+      '가상 표 셀에 들어가는 반복 문장입니다. 표 행 높이가 한 쪽을 넘겨 불가피하게 나뉘더라도 저장 후 다시 열었을 때 쪽 수와 행 분할이 그대로 유지되어야 합니다. '.repeat(
+        8,
+      )
+    const cells = []
+    for (let row = 2; row <= 6; row++) {
+      for (const col of [2, 3]) {
+        cells.push({ row, col, text: longText })
+      }
+    }
+    const edited = join(dir, 'edited.hwp')
+    const apply = await run([
+      'hwp',
+      'apply',
+      baseline,
+      '--ops',
+      ops(dir, [{ op: 'fill_cells', table: 1, overwrite: true, cells }]),
+      '--out',
+      edited,
+      '--json',
+    ])
+    expect(apply.code, apply.stdout).toBe(0)
+    expect(existsSync(edited)).toBe(true)
+    expect(isOle(edited)).toBe(true)
+    const reopened = new HwpDocument(readFileSync(edited))
+    try {
+      expect(reopened.pageCount()).toBeGreaterThanOrEqual(10)
+      expect(JSON.parse(reopened.exportHwpVerify())).toMatchObject({ recovered: true })
+    } finally {
+      reopened.free()
+    }
+  })
 })
 
 describe('hwp apply in a folder that refuses chmod', () => {
