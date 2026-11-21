@@ -25,6 +25,8 @@ import {
   useAiSidebarEnabled,
   useSplitPaneFocusPing,
   useSplitPaneRole,
+  createZoomWheelClassifier,
+  wheelZoomStepPercent,
   type TemplateDocument,
 } from '@genoffice/ui'
 import {
@@ -124,6 +126,8 @@ const MIN_ZOOM = 50
 const MAX_ZOOM = 200
 const ZOOM_STEP = 10
 const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z))
+const wheelZoomed = (z: number, intent: 'zoom-in' | 'zoom-out') =>
+  wheelZoomStepPercent(z, intent === 'zoom-in' ? 1 : -1, MIN_ZOOM, MAX_ZOOM)
 const inTextField = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   !!target.closest(
@@ -267,6 +271,9 @@ export default function App() {
   const [servedVersion, setServedVersion] = useState(-1)
   const zoomRef = useRef(zoom)
   zoomRef.current = zoom
+  /** Ctrl/⌘+wheel on the stage and inside the frame share one classifier, so a pinch
+   * that crosses the frame edge stays one stream. Five points per notch, onto the 5% grid. */
+  const zoomWheelRef = useRef<ReturnType<typeof createZoomWheelClassifier> | null>(null)
   const [panelOpen, setPanelOpen] = useState(
     () => localStorage.getItem('htmlapp.stylePanel') !== '0',
   )
@@ -1009,9 +1016,18 @@ export default function App() {
           return
         case 'gx:textEditCancel':
           return
-        case 'gx:zoom':
-          if (canvasModeRef.current !== 'present') setZoom((z) => clampZoom(z - msg.delta * 0.6))
+        case 'gx:zoom': {
+          if (canvasModeRef.current === 'present') return
+          // the frame's own clock differs from this one: time the event on arrival
+          const deltaMode = typeof msg.deltaMode === 'number' ? msg.deltaMode : 0
+          zoomWheelRef.current ??= createZoomWheelClassifier()
+          const intent = zoomWheelRef.current.feed(
+            { deltaY: Number(msg.delta) || 0, deltaMode },
+            performance.now(),
+          )
+          if (intent) setZoom((z) => wheelZoomed(z, intent))
           return
+        }
         case 'gx:keyCommand': {
           if (canvasModeRef.current === 'present') {
             if (msg.command === 'escape') setCanvasModeState('edit')
@@ -1829,7 +1845,9 @@ export default function App() {
       if (canvasModeRef.current === 'present') return
       if (!(event.target as HTMLElement | null)?.closest?.('.preview-stage')) return
       event.preventDefault()
-      setZoom((z) => clampZoom(z - event.deltaY * 0.6))
+      zoomWheelRef.current ??= createZoomWheelClassifier()
+      const intent = zoomWheelRef.current.feed(event, performance.now())
+      if (intent) setZoom((z) => wheelZoomed(z, intent))
     }
     window.addEventListener('wheel', onWheel, { passive: false })
     return () => window.removeEventListener('wheel', onWheel)

@@ -11,6 +11,7 @@ import {
   PASSWORD_FLAG,
   PC_FONTS_MODULE,
   STUDIO_PATCHES,
+  WHEEL_ZOOM_MODULE,
   applyPatch,
   hancomHooks,
   missingHancomCommands,
@@ -544,8 +545,12 @@ describe('rhwp font file reads patch', () => {
   ].join('\n')
   const patched = applyPatch('studio-font-file-reads', localFonts)
 
-  it('asks which font files to read once for the list, before the first read', () => {
-    expect(patched).toContain(`import { fontFilesToRead } from '${PC_FONTS_MODULE}';`)
+  it('asks the host main process for SFNT metadata before falling back to blob reads', () => {
+    expect(patched).toContain(
+      `import { fontFilesToRead, readHostFontNames } from '${PC_FONTS_MODULE}';`,
+    )
+    expect(patched).toContain('const hostNames = await readHostFontNames(fontDataList);')
+    expect(patched).toContain('if (hostNames) {')
     expect(patched).toContain(
       '  let nextIndex = 0;\n  const readsFile = fontFilesToRead(fontDataList);\n  const worker = ',
     )
@@ -605,6 +610,59 @@ describe('rhwp missing font marks patch', () => {
       applyPatch('studio-missing-font-marks', toolbar.replace('button.title', 'x')),
     ).toThrow(/studio-missing-font-marks/)
     expect(STUDIO_PATCHES).toContain('studio-missing-font-marks')
+  })
+})
+
+describe('rhwp wheel zoom patch', () => {
+  // the studio's text around the patch, as the pinned release has it
+  const manager = [
+    "import { ZoomInputSettle, type ZoomInputSettleHost } from './zoom-input-settle.ts';",
+    '',
+    'const WHEEL_ZOOM_SENSITIVITY = 0.00625;',
+    '',
+    'export class ViewportManager {',
+    '  private onWheelBound: (e: WheelEvent) => void;',
+    '',
+    '  private onWheel(e: WheelEvent): void {',
+    '    if (boundedDelta === 0) return;',
+    '    const target = this.clampZoom(this.zoomTarget * Math.exp(-boundedDelta * WHEEL_ZOOM_SENSITIVITY));',
+    '    if (target === this.zoomTarget) return;',
+    '  }',
+    '}',
+    '',
+  ].join('\n')
+  const patched = applyPatch('studio-wheel-zoom', manager)
+
+  it("steps the studio's Ctrl+wheel zoom with the app's shared classifier", () => {
+    expect(patched).toContain(
+      `import { createZoomWheelClassifier, wheelZoomStep } from '${WHEEL_ZOOM_MODULE}';`,
+    )
+    expect(patched).toContain('  private readonly ieumZoomWheel = createZoomWheelClassifier();')
+    expect(patched).toContain('    const wheelIntent = this.ieumZoomWheel.feed(e, e.timeStamp);')
+    expect(patched).toContain('    if (wheelIntent === null) return;')
+    expect(patched).not.toContain('Math.exp(-boundedDelta')
+    // the step lands before the studio's own no-op check, which stays
+    expect(patched.indexOf('wheelZoomStep(')).toBeLessThan(
+      patched.indexOf('if (target === this.zoomTarget) return;'),
+    )
+  })
+
+  it('keeps CRLF sources working, fails when the text is gone, and is in the studio build', () => {
+    expect(applyPatch('studio-wheel-zoom', manager.replaceAll('\n', '\r\n'))).toContain(
+      '    if (wheelIntent === null) return;\r\n',
+    )
+    expect(() =>
+      applyPatch('studio-wheel-zoom', manager.replace('Math.exp(-boundedDelta', 'Math.exp(-delta')),
+    ).toThrow(/studio-wheel-zoom/)
+    expect(STUDIO_PATCHES).toContain('studio-wheel-zoom')
+  })
+
+  it('transpiles, the patched lines included', () => {
+    const out = ts.transpileModule(patched, {
+      compilerOptions: { target: ts.ScriptTarget.ES2022 },
+      reportDiagnostics: true,
+    })
+    expect(out.diagnostics ?? []).toEqual([])
   })
 })
 
@@ -763,6 +821,7 @@ describe('the studio source the build fetched', () => {
     'src/i18n/locales/ko.ts',
     'src/i18n/locales/en.ts',
     'src/view/canvas-view.ts',
+    'src/view/viewport-manager.ts',
   ].map((file) => join(studio, file))
 
   // only where a build has fetched it; a fresh checkout has nothing to look at

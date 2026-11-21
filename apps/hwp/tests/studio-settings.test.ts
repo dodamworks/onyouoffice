@@ -52,4 +52,11 @@ describe('studio locale and url', () => {
     expect(studioUrl('ko', null)).toBe('./studio/index.html?chrome=embed&lang=ko')
     expect(studioUrl('ko', 0)).toBe('./studio/index.html?chrome=embed&lang=ko')
   })
+
+  it('marks hidden headless-export views so start-up font enumeration is skipped', () => {
+    expect(studioUrl('ko', null, true)).toBe('./studio/index.html?chrome=embed&lang=ko&headless=1')
+    expect(studioUrl('en', 511, true)).toBe(
+      './studio/index.html?chrome=embed&lang=en&fontReads=511&headless=1',
+    )
+  })
 })
